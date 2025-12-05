@@ -2,10 +2,10 @@
 require("dotenv").config();
 const twilio = require("twilio");
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 
-// Use environment variables for security
+// Environment variables
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhone = process.env.TWILIO_PHONE;
@@ -16,7 +16,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Temporary in-memory OTP storage
+// In-memory OTP store
 const otpStore = {};
 
 app.post("/send-otp", async (req, res) => {
@@ -43,7 +43,7 @@ app.post("/send-otp", async (req, res) => {
 app.post("/verify-otp", (req, res) => {
   const { phone, otp } = req.body;
   if (otpStore[phone] && otpStore[phone].toString() === otp.toString()) {
-    delete otpStore[phone]; // consume OTP
+    delete otpStore[phone]; // OTP consumed
     res.json({ success: true });
   } else {
     res.status(400).json({ error: "Invalid OTP" });
