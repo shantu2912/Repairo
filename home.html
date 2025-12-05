@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Repairo — Home Services, fast & trusted</title>
+  <meta name="description" content="Book electricians, plumbers, AC & appliance technicians near you. Vetted pros, transparent pricing, easy booking." />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+     <div class="brand">
+  <img src="C:\Users\user\OneDrive\Desktop\Repairo\logo.png" alt="Repairo logo" class="site-logo" />
+  <div>
+    <div class="brand-title">Repairo</div>
+    <div class="brand-sub">Home services • Verified pros</div>
+  </div>
+</div>
+
+      </div>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="services.html" class="nav-link">Services</a>
+        <a href="about.html" class="nav-link">About</a>
+        <button class="btn btn-ghost" id="openAdminTop">For Pros</button>
+        <button class="btn" id="openBookTop">Book Now</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-left">
+        <h1>Trusted technicians at your doorstep — same-day bookings available</h1>
+        <p class="lead">Plumbing, electrical, AC, appliance repair and more. Transparent pricing, verified reviews, and simple scheduling.</p>
+
+        <div class="search-card" role="search">
+          <input id="heroSearch" type="search" placeholder="Search services, e.g. ‘tap repair’, ‘AC service’" aria-label="Search services">
+          <select id="heroCity" aria-label="Select city">
+            <option>Choose city</option>
+            <option>Mumbai</option>
+            <option>Delhi</option>
+            <option>Bengaluru</option>
+            <option>Hyderabad</option>
+          </select>
+          <button class="btn" id="heroSearchBtn">Search</button>
+        </div>
+
+        <ul class="trust-grid" aria-hidden>
+          <li><strong>1M+</strong><span>Bookings</span></li>
+          <li><strong>4.8★</strong><span>Average rating</span></li>
+          <li><strong>24/7</strong><span>Customer support</span></li>
+        </ul>
+
+        <div class="cta-row">
+          <button class="btn btn-large" id="heroBookBtn">Book a service</button>
+          <a href="#services" class="link-muted">See popular services</a>
+        </div>
+
+      </div>
+
+      <div class="hero-right">
+        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=900&auto=format&fit=crop&ixlib=rb-4.0.3&s=2a1c0d5e0d7d4ec8d6f8f2f8ab2a7f73" alt="Technician working" />
+      </div>
+    </section>
+
+    <section id="services" class="container section">
+      <h2>Popular categories</h2>
+      <div class="category-row" id="categoryRow"></div>
+    </section>
+
+    <section class="container section">
+      <div class="section-head">
+        <h2>Most Booked Services</h2>
+        <a href="services.html" class="link-muted">View all services</a>
+      </div>
+      <div class="services-grid" id="mostBooked"></div>
+    </section>
+
+    <section class="container section bg-card">
+      <div class="split">
+        <div>
+          <h3>How it works</h3>
+          <ol>
+            <li>Choose a service and pick a convenient slot.</li>
+            <li>We assign a nearby vetted technician.</li>
+            <li>Pay after the job or prepay for instant confirmation.</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Why Repairo</h3>
+          <ul>
+            <li>Verified professionals</li>
+            <li>Transparent pricing & invoices</li>
+            <li>Secure payments & support</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+<script src="otp.js"></script>
+    <section class="container section">
+      <h2>Customer reviews</h2>
+      <div class="reviews-grid">
+        <blockquote class="review">“Booked an AC service — technician arrived on time, very professional.” <cite>— Neha, Mumbai</cite></blockquote>
+        <blockquote class="review">“Quick plumbing fix, fair price.” <cite>— Raj, Bengaluru</cite></blockquote>
+        <blockquote class="review">“Excellent electrician, highly recommended.” <cite>— Amit, Delhi</cite></blockquote>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© 2025 Repairo</div>
+      <div class="footer-links"><a href="about.html">About</a> <a href="services.html">Services</a> <a href="#">Support</a></div>
+    </div>
+  </footer>
+
+  <!-- Booking modal -->
+  <div id="bookingModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="bkClose">✕</button>
+      <h3>Book a service</h3>
+      <form id="bkForm">
+        <label>Service
+          <select id="bkService"></select>
+        </label>
+        <label>Date & Time
+          <input type="date" id="bkDate" required />
+        </label>
+        <label>Address
+          <input type="text" id="bkAddr" placeholder="House no, street, city" required />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="bkCancel">Cancel</button>
+          <button type="submit" class="btn">Confirm booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin quick panel -->
+  <div id="adminPanel" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="adminClose">✕</button>
+      <h3>Admin — Bookings (demo)</h3>
+      <div id="adminList" style="max-height:320px;overflow:auto"></div>
+      <div style="margin-top:10px;text-align:right"><button class="btn btn-ghost" id="adminClose2">Close</button></div>
+    </div>
+  </div>
+
+  <script>
+    // Demo data (realistic)
+    const CATEGORIES = [
+      {id:'plumbing', name:'Plumbing', img:'https://images.unsplash.com/photo-1580906855283-20ec1d3f73a0?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=ee1b1d9c'},
+      {id:'electric', name:'Electrician', img:'https://images.unsplash.com/photo-1581091012184-5c1a09c02036?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=4b613a19'},
+      {id:'ac', name:'AC & Appliance', img:'https://images.unsplash.com/photo-1606166325683-1ed308edcc81?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=9f9c0eb3'},
+      {id:'carpentry', name:'Carpentry', img:'https://images.unsplash.com/photo-1598300056393-4cf8c8cd7c46?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=0f5f7e9b'}
+    ];
+
+    const SERVICES = [
+      {id:'tap_repair', name:'Tap/Leak repair', price:'₹99', rating:4.8, category:'plumbing'},
+      {id:'ac_service', name:'AC Full Service', price:'₹899', rating:4.7, category:'ac'},
+      {id:'wm_repair', name:'Washing machine repair', price:'₹249', rating:4.75, category:'ac'},
+      {id:'switch_replace', name:'Switch & Socket', price:'₹149', rating:4.82, category:'electric'},
+      {id:'door_fix', name:'Door hinge & repair', price:'₹199', rating:4.6, category:'carpentry'}
+    ];
+
+    // Render categories
+    const catRow = document.getElementById('categoryRow');
+    CATEGORIES.forEach(c=>{
+      const a = document.createElement('a'); a.className='category-card'; a.href = `service-detail.html?id=${c.id}`;
+      a.innerHTML = `<img src="${c.img}" alt="${c.name}"/><div><strong>${c.name}</strong><span class="muted">Trusted pros</span></div>`;
+      catRow.appendChild(a);
+    });
+
+    // Most booked
+    const mb = document.getElementById('mostBooked');
+    SERVICES.slice(0,4).forEach(s=>{
+      const c = document.createElement('article'); c.className='service-card';
+      c.innerHTML = `<img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=1a6c7f6f" alt="${s.name}"><div class="svc"> <h4>${s.name}</h4><div class="meta"><span class="price">${s.price}</span><span class="rating">★ ${s.rating}</span></div><p class="muted small">Starting price • Vetted technicians</p><div class="svc-actions"><button class="btn btn-ghost" onclick="openDetail('${s.id}')">Details</button><button class="btn" onclick="openBooking('${s.id}')">Book</button></div></div>`;
+      mb.appendChild(c);
+    });
+
+    // Booking modal wiring
+    const bookingModal = document.getElementById('bookingModal');
+    const bkService = document.getElementById('bkService');
+    const bkForm = document.getElementById('bkForm');
+    const bkClose = document.getElementById('bkClose');
+    const bkCancel = document.getElementById('bkCancel');
+
+    function populateBkService(){ bkService.innerHTML=''; SERVICES.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent = s.name + ' — ' + s.price; bkService.appendChild(o); }); }
+    populateBkService();
+
+    function openBooking(sid){ if(sid) bkService.value = sid; bookingModal.style.display='flex'; bookingModal.setAttribute('aria-hidden','false'); }
+    document.getElementById('heroBookBtn').onclick = ()=>openBooking();
+    document.getElementById('openBookTop').onclick = ()=>openBooking();
+
+    bkClose.onclick = ()=>{ bookingModal.style.display='none'; bookingModal.setAttribute('aria-hidden','true'); }
+    bkCancel.onclick = bkClose;
+
+    bkForm.addEventListener('submit', function(e){ e.preventDefault(); const payload = { id:'bk_'+Math.random().toString(36).slice(2,8), service:bkService.value, date:document.getElementById('bkDate').value, addr:document.getElementById('bkAddr').value, created:new Date().toISOString(), status:'pending' }; const arr = JSON.parse(localStorage.getItem('repairo_bookings')||'[]'); arr.push(payload); localStorage.setItem('repairo_bookings', JSON.stringify(arr)); alert('Booking created (demo). Check Admin > Bookings to view.'); bkClose(); });
+
+    // Open detail placeholder
+    function openDetail(sid){ window.location.href = 'service-detail.html?id=' + sid; }
+    window.openDetail = openDetail; window.openBooking = openBooking;
+
+    // Admin panel
+    const adminPanel = document.getElementById('adminPanel');
+    document.getElementById('openAdminTop').onclick = ()=>{ adminPanel.style.display='flex'; adminPanel.setAttribute('aria-hidden','false'); renderAdminList(); };
+    document.getElementById('adminClose').onclick = ()=>{ adminPanel.style.display='none'; adminPanel.setAttribute('aria-hidden','true'); };
+    document.getElementById('adminClose2').onclick = document.getElementById('adminClose').onclick;
+
+    function renderAdminList(){ const list = JSON.parse(localStorage.getItem('repairo_bookings')||'[]'); const root = document.getElementById('adminList'); root.innerHTML=''; if(!list.length) root.innerHTML='<div class="muted">No bookings yet.</div>'; list.forEach(b=>{ const div = document.createElement('div'); div.className='admin-item'; div.innerHTML = `<div><strong>${b.service}</strong> <div class="muted small">${b.addr} • ${b.date}</div></div><div><span class="badge">${b.status}</span></div>`; root.appendChild(div); }); }
+
+    // Search
+    document.getElementById('heroSearchBtn').onclick = ()=>{ const q = document.getElementById('heroSearch').value.toLowerCase(); if(!q) return window.location.href='services.html'; const hits = SERVICES.filter(s=> s.name.toLowerCase().includes(q)); if(hits.length) window.location.href = 'services.html?q=' + encodeURIComponent(q); else alert('No matching services in demo.'); }
+
+  </script>
+</body>
+</html>
+
