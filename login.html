@@ -1,0 +1,138 @@
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Repairo — OTP Auth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+.fade { animation: fadeIn .35s ease-out; }
+@keyframes fadeIn { from {opacity:0} to {opacity:1} }
+@keyframes slowRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="relative min-h-screen bg-slate-100 dark:bg-slate-900 transition-all duration-300">
+
+<!-- Rotating Blurred Logo Background -->
+<div class="pointer-events-none fixed inset-0 flex justify-center items-center opacity-10">
+  <img src="C:\Users\user\OneDrive\Desktop\Repairo\repairologo.png"
+       class="w-[550px] h-[550px] blur-2xl select-none animate-[slowRotate_45s_linear_infinite]"
+       alt="">
+</div>
+
+<!-- Main container -->
+<div class="min-h-screen flex flex-col justify-center items-center px-4">
+
+  <!-- Logo -->
+  <div class="mb-6 text-center">
+    <img src="C:\Users\user\OneDrive\Desktop\Repairo\repairologo.png" class="w-24 h-24 mx-auto">
+  </div>
+
+  <!-- Card -->
+  <div class="w-full max-w-md bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl fade">
+
+    <h2 id="title" class="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-4 text-center">Login with OTP</h2>
+
+    <!-- Name field (signup only) -->
+    <div id="nameBox" class="hidden">
+      <label class="text-sm text-gray-500 dark:text-gray-300">Full Name</label>
+      <input id="name" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="Your Name">
+    </div>
+
+    <!-- Phone -->
+    <label class="text-sm text-gray-500 dark:text-gray-300">Phone (+91)</label>
+    <input id="phone" class="w-full p-2 mt-1 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="+91 9876543210">
+
+    <!-- OTP -->
+    <input id="otp" class="w-full p-2 rounded-lg border mt-4 dark:bg-slate-700 dark:border-slate-600" placeholder="Enter 6-digit OTP">
+
+    <!-- Buttons -->
+    <button id="sendOtpBtn" class="w-full bg-teal-600 text-white p-2 rounded-lg mt-4">Send OTP</button>
+    <button id="verifyOtpBtn" class="w-full bg-teal-700 text-white p-2 rounded-lg mt-3">Verify OTP</button>
+
+    <!-- Message -->
+    <p id="msg" class="text-center mt-3 text-sm"></p>
+
+    <!-- Toggle -->
+    <p class="text-center text-sm mt-4 text-gray-600 dark:text-gray-300">
+      <span id="toggleText">
+        New user? <b class="text-teal-600 cursor-pointer" onclick="switchToSignup()">Create account</b>
+      </span>
+    </p>
+
+    <!-- Forgot password -->
+    <p class="text-center text-sm mt-3">
+      <b onclick="openForgot()" class="text-blue-600 cursor-pointer">Forgot Password?</b>
+    </p>
+
+    <!-- Technician signup -->
+    <p class="text-center text-sm mt-4">
+      <b onclick="openTechSignup()" class="text-purple-600 cursor-pointer">Technician Signup</b>
+    </p>
+
+    <!-- Dark mode -->
+    <button onclick="toggleDarkMode()" class="w-full mt-4 border p-2 rounded-lg text-sm dark:text-white">Toggle Dark Mode</button>
+
+  </div>
+</div>
+
+<!-- JS -->
+<script>
+let isSignup=false, isTech=false;
+
+function switchToSignup(){
+  isSignup=true; isTech=false;
+  document.getElementById("title").innerText="Create your Account";
+  document.getElementById("nameBox").classList.remove("hidden");
+  document.getElementById("toggleText").innerHTML=`Already have an account? <b class="text-teal-600 cursor-pointer" onclick="switchToLogin()">Login</b>`;
+}
+function switchToLogin(){
+  isSignup=false; isTech=false;
+  document.getElementById("title").innerText="Login with OTP";
+  document.getElementById("nameBox").classList.add("hidden");
+  document.getElementById("toggleText").innerHTML=`New user? <b class="text-teal-600 cursor-pointer" onclick="switchToSignup()">Create account</b>`;
+}
+function openTechSignup(){isTech=true;isSignup=false;document.getElementById("title").innerText="Technician Signup";document.getElementById("nameBox").classList.remove("hidden");document.getElementById("toggleText").innerHTML=`<b class='text-blue-600 cursor-pointer' onclick="switchToLogin()">Back to Login</b>`;}
+function openForgot(){alert("Forgot password works only for email-based login.");}
+function toggleDarkMode(){document.documentElement.classList.toggle("dark");localStorage.setItem("theme", document.documentElement.classList.contains("dark")?"dark":"light");}
+
+/* Twilio OTP Integration */
+const phoneInput=document.getElementById("phone");
+const otpInput=document.getElementById("otp");
+const msg=document.getElementById("msg");
+const sendBtn=document.getElementById("sendOtpBtn");
+const verifyBtn=document.getElementById("verifyOtpBtn");
+
+function show(m,color="red"){msg.innerText=m;msg.style.color=color;}
+
+sendBtn.onclick=async()=>{
+  const phone=phoneInput.value.trim();
+  if(!phone.startsWith("+")) return show("Use full number with country code");
+  try{
+    const res=await fetch("http://localhost:5000/send-otp",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone})});
+    const data=await res.json();
+    if(data.success) show("OTP sent!","green");
+    else show("Failed to send OTP");
+  }catch(err){show("Error: "+err.message);}
+};
+
+verifyBtn.onclick=async()=>{
+  const phone=phoneInput.value.trim();
+  const otp=otpInput.value.trim();
+  try{
+    const res=await fetch("http://localhost:5000/verify-otp",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone,otp})});
+    const data=await res.json();
+    if(data.success){
+      show("OTP verified! Redirecting...","green");
+      setTimeout(()=>{if(isTech) window.location.href="tech-dashboard.html";else window.location.href="dashboard.html";},800);
+    }else show("Invalid OTP");
+  }catch(err){show("Error: "+err.message);}
+};
+</script>
+
+</body>
+</html>
