@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Repairo — Technician (Map)</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    /* GLOBAL (matches your dashboard style) */
+    body { margin:0; font-family: system-ui, sans-serif; background:#f3f6fc; color:#222; }
+    .container { max-width:1200px; margin:auto; padding:18px; }
+
+    /* HEADER */
+    .site-header { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.07); padding:14px 0; position:sticky; top:0; z-index:40; }
+    .header-inner { display:flex; justify-content:space-between; align-items:center; }
+    .brand { display:flex; gap:12px; align-items:center; }
+    .logo-mark { width:40px; height:40px; border-radius:50%; background:#0ea5e9; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .brand-title { font-size:18px; font-weight:600; }
+    .brand-sub { font-size:12px; color:#777; }
+    .main-nav a { margin:0 10px; text-decoration:none; color:#444; font-weight:500; }
+    .main-nav a:hover { color:#0ea5e9; }
+
+    /* CARD */
+    .card { background:#fff; padding:18px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.07); margin-bottom:20px; }
+
+    /* JOB LIST */
+    #layout { display:grid; grid-template-columns: 1fr 440px; gap:18px; align-items:start; }
+    #jobListContainer { }
+    .job-card { border-radius:10px; padding:14px; margin-bottom:12px; background:linear-gradient(180deg,#fff,#fbfdff); box-shadow:0 1px 4px rgba(0,0,0,0.04); display:flex; justify-content:space-between; gap:12px; align-items:center; cursor:pointer; transition:transform .08s ease; }
+    .job-card:hover { transform:translateY(-3px); }
+    .job-left strong { color:#0ea5e9; display:block; margin-bottom:6px; }
+    .muted { color:#6b7280; font-size:13px; }
+    .badge { display:inline-block; padding:6px 10px; border-radius:12px; font-size:12px; text-transform:capitalize; background:#e5e7eb; color:#444; }
+    .badge.assigned { background:#dbeafe; color:#1d4ed8; }
+    .badge.pending { background:#fef3c7; color:#b45309; }
+    .badge.started { background:#d1fae5; color:#059669; }
+    .badge.completed { background:#e5e7eb; color:#555; }
+    .actions { display:flex; gap:8px; align-items:center; }
+    button { border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn { background:#0ea5e9; color:#fff; }
+    .btn-ghost { background:#f3f4f6; color:#333; }
+
+    /* MAP */
+    #mapWrap { display:flex; flex-direction:column; gap:12px; }
+    #map { height:520px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.06); }
+
+    /* HIGHLIGHT */
+    .job-card.highlight { outline:3px solid rgba(14,165,233,0.12); box-shadow:0 4px 12px rgba(14,165,233,0.08); }
+
+    /* FOOTER */
+    .site-footer { text-align:center; margin-top:30px; padding:20px; color:#666; }
+
+    /* Responsive */
+    @media (max-width:1000px){
+      #layout { grid-template-columns: 1fr; }
+      #map { height:360px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo-mark">T</div>
+        <div>
+          <div class="brand-title">Technician</div>
+          <div class="brand-sub">Jobs & Map</div>
+        </div>
+      </div>
+      <nav class="main-nav">
+        <a href="home.html">Home</a>
+        <a href="technician-app.html" style="color:#0ea5e9;font-weight:600">Jobs</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="layout">
+      <!-- Left: Job list -->
+      <div id="jobListContainer">
+        <section class="card">
+          <h2>Assigned / Nearby jobs</h2>
+          <div id="jobList" style="margin-top:12px;"></div>
+        </section>
+        <section class="card">
+          <h3>Live location (demo)</h3>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <button id="startShare" class="btn">Start Sharing</button>
+            <button id="stopShare" class="btn-ghost">Stop</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right: Map -->
+      <div id="mapWrap">
+        <section class="card">
+          <h3>Jobs Map</h3>
+          <div id="map"></div>
+        </section>
+
+        <section class="card">
+          <h4>Legend</h4>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <div><span class="badge assigned">assigned</span></div>
+            <div><span class="badge pending">pending</span></div>
+            <div><span class="badge started">started</span></div>
+            <div><span class="badge completed">completed</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">© 2025 Repairo</footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/* ===========================
+   Technician page with map
+   - Adds dummy lat/lng for jobs without coords
+   - Renders job cards and map markers
+   - Clicking card centers marker; clicking marker highlights card
+   - Simulated tech live-location marker moving
+   =========================== */
+
+/* Demo tech id */
+const TECH_ID = 't1';
+
+/* Default center (Mumbai) for dummy coords */
+const DEFAULT_CENTER = { lat: 19.075983, lng: 72.877655 };
+
+/* Utility: ensure localStorage has demo bookings if empty.
+   This will create sample bookings so the page isn't empty. */
+function seedDemoBookingsIfEmpty(){
+  const current = JSON.parse(localStorage.getItem('repairo_bookings') || 'null');
+  if (current && current.length) return;
+
+  const demo = [
+    { id: 'bk_yogsxd3', service: 'tap_repair', addr: 'Andheri West', date: '2025-12-01', time: '10:00', status: 'completed' },
+    { id: 'bk_hnbb7m4', service: 'tap_repair', addr: 'Bandra East', date: '2025-12-01', time: '11:30', status: 'completed' },
+    { id: 'bk_ykbxtqz', service: 'tap_repair', addr: 'Dadar', date: '2025-12-02', time: '14:00', status: 'assigned', technician: 't2' },
+    { id: 'bk_34n8062', service: 'ac_service', addr: 'Colaba', date: '2025-12-02', time: '09:00', status: 'completed' },
+    { id: 'bk_2sjacdg', service: 'tap_repair', addr: 'Chembur', date: '2025-12-02', time: '15:00', status: 'pending' },
+    { id: 'bk_gve92j', service: 'tap_repair', addr: 'Powai', date: '2025-12-03', time: '13:00', status: 'assigned', technician: 't1' },
+    { id: 'bk_gx6rts', service: 'tap_repair', addr: 'Malad', date: '2025-12-02', time: '', status: 'assigned', technician: 't1' },
+    { id: 'bk_tgfidif', service: 'tap_repair', addr: 'Vile Parle', date: '2025-12-06', time: '23:20', status: 'pending' },
+    { id: 'bk_s21zsu9', service: 'tap_repair', addr: 'Kandivali', date: '2025-12-10', time: '04:02', status: 'assigned', technician: 't1' },
+  ];
+
+  localStorage.setItem('repairo_bookings', JSON.stringify(demo));
+}
+
+/* Ensure bookings have lat/lng. If missing, assign a jittered coordinate near DEFAULT_CENTER. */
+function ensureCoordsForBookings(){
+  const arr = JSON.parse(localStorage.getItem('repairo_bookings') || '[]');
+  let changed = false;
+
+  function jitter(base, meters){
+    // convert approx meters to degrees roughly (very rough)
+    const delta = (meters / 111320); // degrees ~ meters / 111,320
+    return base + (Math.random()*2 - 1) * delta;
+  }
+
+  for (let b of arr){
+    if (typeof b.lat === 'number' && typeof b.lng === 'number') continue;
+    // create jitter within ~0.5-3km
+    b.lat = jitter(DEFAULT_CENTER.lat, 500 + Math.random()*2500);
+    b.lng = jitter(DEFAULT_CENTER.lng, 500 + Math.random()*2500);
+    changed = true;
+  }
+
+  if (changed) localStorage.setItem('repairo_bookings', JSON.stringify(arr));
+}
+
+/* Load bookings used in page (only pending or assigned to this tech) */
+function loadRelevantJobs(){
+  const arr = JSON.parse(localStorage.getItem('repairo_bookings') || '[]');
+  return arr.filter(b => (b.technician === TECH_ID) || b.status === 'pending' || b.technician == null);
+}
+
+/* RENDERING: Job list and map markers */
+let map, markers = {}, techMarker = null;
+
+/* Initialize Leaflet map */
+function initMap(){
+  map = L.map('map', { zoomControl: true }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // technician live marker (green)
+  techMarker = L.circleMarker([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
+    radius: 9,
+    color: '#0ea5e9',
+    fillColor: '#0ea5e9',
+    fillOpacity: 1
+  }).addTo(map).bindPopup('You (demo)');
+}
+
+/* Clear all markers */
+function clearMarkers(){
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+}
+
+/* Render markers for jobs */
+function renderMarkers(jobs){
+  clearMarkers();
+  for (const j of jobs){
+    if (!j.lat || !j.lng) continue;
+    const latlng = [j.lat, j.lng];
+
+    const color = statusColor(j.status);
+    const icon = L.circleMarker(latlng, {
+      radius: 8,
+      color: color,
+      fillColor: color,
+      fillOpacity: 0.9
+    }).addTo(map);
+
+    icon.bindPopup(`<strong>${escapeHtml(j.service)}</strong><br>${escapeHtml(j.addr)}<br><em>${escapeHtml(j.status)}</em>`, { minWidth:140 });
+
+    icon.on('click', () => {
+      highlightJobCard(j.id);
+      // open popup already handled by Leaflet
+    });
+
+    markers[j.id] = icon;
+  }
+}
+
+/* status -> color */
+function statusColor(status){
+  switch(status){
+    case 'assigned': return '#3b82f6'; // blue
+    case 'pending': return '#f59e0b'; // amber
+    case 'started': return '#10b981'; // green
+    case 'completed': return '#9ca3af'; // gray
+    case 'enroute': return '#06b6d4';
+    default: return '#6b7280';
+  }
+}
+
+/* RENDER job cards */
+function renderJobList(){
+  const jobs = loadRelevantJobs();
+  const root = document.getElementById('jobList');
+  root.innerHTML = '';
+
+  if (!jobs.length){
+    root.innerHTML = '<div class="muted">No jobs assigned yet.</div>';
+    return;
+  }
+
+  for (const j of jobs){
+    const el = document.createElement('div');
+    el.className = 'job-card';
+    el.id = 'jobcard-' + j.id;
+
+    el.innerHTML = `
+      <div class="job-left">
+        <strong>${escapeHtml(j.service)}</strong>
+        <div class="muted">${escapeHtml(j.addr)} • ${escapeHtml(j.date)} ${escapeHtml(j.time || '')}</div>
+      </div>
+
+      <div style="text-align:right;">
+        <div><span class="badge ${escapeHtml(j.status)}">${escapeHtml(j.status)}</span></div>
+        <div class="actions" style="margin-top:8px">
+          <button class="btn-ghost" onclick="setStatus('${j.id}','enroute'); event.stopPropagation();">En route</button>
+          <button class="btn" onclick="setStatus('${j.id}','started'); event.stopPropagation();">Start</button>
+          <button class="btn-ghost" onclick="setStatus('${j.id}','completed'); event.stopPropagation();">Complete</button>
+        </div>
+      </div>
+    `;
+
+    // click on whole card: center map and open popup
+    el.addEventListener('click', () => {
+      const m = markers[j.id];
+      if (m){
+        map.setView(m.getLatLng(), 15, { animate: true });
+        m.openPopup();
+      }
+      highlightJobCard(j.id);
+    });
+
+    root.appendChild(el);
+  }
+
+  // after list is built, render markers for the same jobs
+  renderMarkers(jobs);
+}
+
+/* highlight job card in list */
+function highlightJobCard(id){
+  // clear previous
+  document.querySelectorAll('.job-card').forEach(c => c.classList.remove('highlight'));
+  const el = document.getElementById('jobcard-' + id);
+  if (el) {
+    el.classList.add('highlight');
+    // scroll into view if on small screens
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+/* Set status for a booking (updates localStorage, re-renders list & markers) */
+function setStatus(id, st){
+  const arr = JSON.parse(localStorage.getItem('repairo_bookings') || '[]');
+  const i = arr.findIndex(x => x.id === id);
+  if (i === -1) return alert('Job not found');
+
+  arr[i].status = st;
+  if (!arr[i].technician) arr[i].technician = TECH_ID;
+  localStorage.setItem('repairo_bookings', JSON.stringify(arr));
+
+  renderJobList();
+}
+
+/* simulate tech live location moving slightly and update techMarker */
+let liveInterval = null;
+function startSimulatedLiveLocation(){
+  if (liveInterval) return;
+  // start near DEFAULT_CENTER
+  let lat = DEFAULT_CENTER.lat, lng = DEFAULT_CENTER.lng;
+  techMarker.setLatLng([lat, lng]);
+
+  liveInterval = setInterval(() => {
+    // small random walk
+    lat += (Math.random() - 0.5) * 0.001; // ~100m
+    lng += (Math.random() - 0.5) * 0.001;
+    techMarker.setLatLng([lat, lng]);
+    // optionally center map on tech when sharing
+    // map.panTo([lat, lng], { animate: true });
+    console.log('Simulated tech location:', lat, lng);
+  }, 3000);
+}
+
+function stopSimulatedLiveLocation(){
+  if (!liveInterval) return;
+  clearInterval(liveInterval); liveInterval = null;
+}
+
+/* Utility: escape HTML to avoid injection when rendering content */
+function escapeHtml(s){
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#39;');
+}
+
+/* Init flow */
+function init(){
+  seedDemoBookingsIfEmpty();
+  ensureCoordsForBookings();
+
+  initMap();
+  renderJobList();
+
+  // map fits markers best
+  setTimeout(() => {
+    const jobs = loadRelevantJobs().filter(j => j.lat && j.lng);
+    if (jobs.length){
+      const group = L.featureGroup(jobs.map(j => L.marker([j.lat, j.lng])));
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
+  }, 500);
+
+  // live sharing buttons
+  document.getElementById('startShare').onclick = () => {
+    startSimulatedLiveLocation();
+    alert('Started sharing location (demo)');
+  };
+  document.getElementById('stopShare').onclick = () => {
+    stopSimulatedLiveLocation();
+    alert('Stopped sharing location (demo)');
+  };
+}
+
+/* Kickoff */
+init();
+
+</script>
+</body>
+</html>
