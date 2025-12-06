@@ -52,3 +52,18 @@ app.post("/verify-otp", (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+
+// ADMIN LOGIN
+app.post("/admin-login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Hardcoded admin credentials (CHANGE THESE)
+  const ADMIN_USER = "Repairo2027";
+  const ADMIN_PASS = "123456789";
+
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    return res.json({ success: true });
+  }
+
+  return res.status(401).json({ success: false, message: "Invalid admin login" });
+});
