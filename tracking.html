@@ -141,13 +141,13 @@ function renderTracking() {
 
   /* Initialize map first time */
   if (!map) {
-    map = L.map('map').setView([19.07, 72.88], 12);
+    map = L.map('map').setView([20.9333, 77.7500], 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19
     }).addTo(map);
 
-    marker = L.marker([19.07, 72.88]).addTo(map);
+    marker = L.marker([20.937424,77.779549]).addTo(map);
   }
 
   /* Demo: simulate tech moving around */
