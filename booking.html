@@ -1,57 +1,143 @@
-<!-- save as booking.html -->
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Repairo — Booking</title>
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root{
+      --teal:#0ea5e9;
+      --muted:#6b7280;
+      --card-bg:#ffffff;
+      --page-bg:#f3f8f9;
+      --radius:12px;
+    }
+    body{
+      margin:0;
+      background:var(--page-bg);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto;
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+    }
+    .container{
+      max-width:900px;
+      margin:auto;
+      padding:24px;
+    }
+    /* HEADER */
+    .site-header{
+      background:#fff;
+      box-shadow:0 4px 14px rgba(14,65,87,0.05);
+      position:sticky;top:0;z-index:30;
+    }
+    .header-inner{
+      display:flex;justify-content:space-between;align-items:center;padding:14px 0;
+    }
+    .brand{display:flex;align-items:center;gap:12px;}
+    .logo-mark{
+      width:44px;height:44px;border-radius:50%;
+      background:var(--teal);color:#fff;font-weight:700;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .brand-title{font-size:18px;font-weight:700;}
+    .brand-sub{font-size:13px;color:var(--muted)}
+    .main-nav a{
+      text-decoration:none;margin-left:16px;
+      font-weight:600;color:#075985;
+    }
+    .main-nav a:hover{color:var(--teal);}
+    /* CARD */
+    .card{
+      background:var(--card-bg);
+      padding:24px;
+      border-radius:var(--radius);
+      box-shadow:0 8px 24px rgba(14,65,87,0.06);
+      margin-top:32px;
+    }
+    h2{margin-top:0;color:#075985}
+    label{
+      display:block;margin-top:16px;font-weight:600;color:#075985;
+    }
+    select,input{
+      width:100%;padding:12px;margin-top:6px;
+      border-radius:10px;border:1px solid #d8e3e8;
+      font-size:15px;
+    }
+    select:focus,input:focus{
+      outline:none;border-color:var(--teal);
+    }
+    /* BUTTONS */
+    .btn{
+      background:var(--teal);color:#fff;border:0;
+      padding:12px 18px;font-size:15px;
+      border-radius:10px;font-weight:700;cursor:pointer;
+    }
+    .btn:hover{opacity:.9}
+    .btn-ghost{
+      background:#eaf6fb;color:#0b7285;
+      font-weight:600;border:0;padding:12px 18px;
+      border-radius:10px;cursor:pointer;
+    }
+    /* FOOTER */
+    .site-footer{
+      margin-top:50px;padding:20px 0;text-align:center;color:var(--muted);
+    }
+  </style>
 </head>
+
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand"><div class="logo-mark">R</div><div><div class="brand-title">Repairo</div><div class="brand-sub">Book service</div></div></div>
-      <nav class="main-nav">
-        <a href="home.html">Home</a>
-        <a href="services.html">Services</a>
-        <a href="profile.html">Profile</a>
-      </nav>
-    </div>
-  </header>
 
-  <main class="container">
-    <section class="card">
-      <h2>Book a service</h2>
-      <label>Service
-        <select id="serviceSelect"></select>
-      </label>
-      <label>Date
-        <input id="date" type="date">
-      </label>
-      <label>Time
-        <input id="time" type="time">
-      </label>
-      <label>Address
-        <input id="addr" placeholder="House no, street, area">
-      </label>
-      <label>Notes (optional)
-        <input id="notes" placeholder="Gate code, floor etc.">
-      </label>
-
-      <div style="display:flex;gap:12px;margin-top:12px">
-        <button class="btn" id="confirm">Confirm booking</button>
-        <button class="btn btn-ghost" id="cancel">Cancel</button>
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="brand">
+      <div class="logo-mark">R</div>
+      <div>
+        <div class="brand-title">Repairo</div>
+        <div class="brand-sub">Book service</div>
       </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div>© 2025 Repairo</div>
-      <div class="footer-links"><a href="about.html">About</a> <a href="services.html">Services</a></div>
     </div>
-  </footer>
+
+    <nav class="main-nav">
+      <a href="home.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2>Book a service</h2>
+
+    <label>Service</label>
+    <select id="serviceSelect"></select>
+
+    <label>Date</label>
+    <input id="date" type="date">
+
+    <label>Time</label>
+    <input id="time" type="time">
+
+    <label>Address</label>
+    <input id="addr" placeholder="House no, street, area">
+
+    <label>Notes (optional)</label>
+    <input id="notes" placeholder="Gate code, floor etc.">
+
+    <div style="display:flex;gap:12px;margin-top:20px">
+      <button class="btn" id="confirm">Confirm booking</button>
+      <button class="btn-ghost" id="cancel">Cancel</button>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  © 2025 Repairo
+</footer>
 
 <script>
+// SERVICE LIST
 const SERVICES = [
   {id:'tap_repair', name:'Tap/Leak repair', price:'₹99'},
   {id:'ac_service', name:'AC Full Service', price:'₹899'},
@@ -59,42 +145,51 @@ const SERVICES = [
   {id:'switch_replace', name:'Switch & Socket', price:'₹149'}
 ];
 
+// Pre-selected service from link
 const params = new URLSearchParams(location.search);
 const pre = params.get('service');
 
+// Fill dropdown
 const sel = document.getElementById('serviceSelect');
 SERVICES.forEach(s=>{
-  const o=document.createElement('option'); o.value=s.id; o.textContent = `${s.name} — ${s.price}`; sel.appendChild(o);
+  const o = document.createElement('option');
+  o.value = s.id;
+  o.textContent = `${s.name} — ${s.price}`;
+  sel.appendChild(o);
 });
 if(pre) sel.value = pre;
 
+// CONFIRM BOOKING
 document.getElementById('confirm').onclick = ()=>{
   const booking = {
-    id: 'bk_' + Math.random().toString(36).slice(2,9),
+    id:'bk_'+Math.random().toString(36).slice(2,9),
     service: sel.value,
-    date: (document.getElementById('date').value || new Date().toISOString().slice(0,10)),
+    date: document.getElementById('date').value || new Date().toISOString().slice(0,10),
     time: document.getElementById('time').value || 'ASAP',
     addr: document.getElementById('addr').value || '—',
     notes: document.getElementById('notes').value || '',
     created: new Date().toISOString(),
-    status: 'pending',
-    technician: null
+    status:'pending',
+    technician:null
   };
 
-  // Naive tech assignment (first available) — replace with server logic
-  const TECHS = [{id:'t1',name:'Ravi'},{id:'t2',name:'Sunil'}];
-  const assigned = TECHS[0];
-  if(assigned){ booking.technician = assigned.id; booking.status = 'assigned'; booking.eta='25 mins'; }
+  // Demo tech assignment
+  const TECHS=[{id:'t1'},{id:'t2'}];
+  booking.technician = TECHS[0].id;
+  booking.status = 'assigned';
 
+  // Save booking
   const arr = JSON.parse(localStorage.getItem('repairo_bookings')||'[]');
   arr.push(booking);
-  localStorage.setItem('repairo_bookings', JSON.stringify(arr));
+  localStorage.setItem('repairo_bookings',JSON.stringify(arr));
 
-  alert('Booking created (demo): ' + booking.id);
-  location.href = 'tracking.html?booking=' + booking.id;
+  alert('Booking created! ID: '+booking.id);
+ location.href = 'payment.html?booking=' + booking.id;
+
 };
 
 document.getElementById('cancel').onclick = ()=> location.href='services.html';
 </script>
+
 </body>
 </html>
