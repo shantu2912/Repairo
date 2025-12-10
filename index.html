@@ -50,8 +50,8 @@
           <input id="heroSearch" type="search" placeholder="Search services, e.g. ‘tap repair’, ‘AC service’" />
           <select id="heroCity">
             <option>Choose city</option>
-            <option>Mumbai</option>
-            <option>Delhi</option>
+            <option>Amravati</option>
+            <option>Nagpur</option>
             <option>Bengaluru</option>
             <option>Hyderabad</option>
           </select>
@@ -208,6 +208,18 @@ document.getElementById("openBookTop").onclick = () => {
   window.location.href = "booking.html";
 };
 
+  // Load logged-in user
+const user = JSON.parse(localStorage.getItem("repairo_user"));
+
+if (user) {
+  const navLogin = document.querySelector("a[href='loginuser.html']");
+  if (navLogin) {
+    navLogin.textContent = user.name.split(" ")[0]; // Show first name only
+    navLogin.style.fontWeight = "700";
+    navLogin.style.color = "#0d9488";
+  }
+}
+
     // MOST BOOKED SERVICES (CLEAN)
     const mb = document.getElementById('mostBooked');
     SERVICES.forEach(s => {
@@ -251,7 +263,7 @@ document.getElementById("openBookTop").onclick = () => {
     document.getElementById('bkCancel').onclick = () => bookingModal.style.display='none';
 
     document.getElementById('openAdminTop').onclick = () => {
-      document.getElementById('adminPanel').style.display='flex';
+      window.location.href = "Admin-login.html";
     };
     document.getElementById('adminClose').onclick =
     document.getElementById('adminClose2').onclick = () =>
