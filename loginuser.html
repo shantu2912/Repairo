@@ -28,7 +28,7 @@
 
   <!-- Logo -->
   <div class="mb-6 text-center">
-    <img src="repairologo.png" class="w-24 h-24 mx-auto">
+    <img src="fixzen.png" class="w-24 h-24 mx-auto">
   </div>
 
   <!-- Card -->
@@ -205,6 +205,14 @@ document.getElementById("verifyOtpBtn").onclick=async()=>{
     const data=await res.json();
 
     if(data.success){
+    const user = {
+    name: document.getElementById("name").value || "User",
+    phone: phone,
+    isTech: isTech
+  };
+
+  localStorage.setItem("repairo_user", JSON.stringify(user));
+
       show("OTP verified! Redirecting...","green");
       setTimeout(()=>{ window.location.href="index.html"; },800);
     } else {
