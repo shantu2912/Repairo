@@ -10,13 +10,11 @@
 
 <body>
 
-  <!-- SPLASH INTRO -->
+  <!-- SPLASH SCREEN -->
 <div id="splash">
-  <video id="splashVideo"
-         src="logo_animation.mp4"
-         autoplay
-         muted
-         playsinline></video>
+  <video id="splashVideo" autoplay muted playsinline>
+    <source src="logo_animation.mp4" type="video/mp4">
+  </video>
 </div>
 
   <div id="app" class="hidden">
@@ -280,21 +278,23 @@ if (user) {
 
   </script>
 </div>
+
 <script>
-const splash = document.getElementById("splash");
-const video = document.getElementById("splashVideo");
-const app = document.getElementById("app");
+  const splash = document.getElementById("splash");
+  const video = document.getElementById("splashVideo");
+  const app = document.getElementById("app");
 
-video.addEventListener("ended", () => {
-  splash.classList.add("fade-out");
-
-  setTimeout(() => {
+  function showApp() {
     splash.style.display = "none";
     app.classList.remove("hidden");
-    app.classList.add("fade-in");
-  }, 800);
-});
+  }
+
+  video.addEventListener("ended", showApp);
+
+  // Fallback if video doesn't autoplay (GitHub safe)
+  setTimeout(showApp, 4500);
 </script>
+
 
 
 </body>
