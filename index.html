@@ -1,46 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Repairo — Home Services, fast & trusted</title>
+  <meta name="description" content="Book electricians, plumbers, AC & appliance technicians near you. Vetted pros, transparent pricing, easy booking." />
+  <link rel="stylesheet" href="style.css">
+</head>
+
 <body>
-    <div class="animation01">
-        <div class="rhombus_small">
-            <div class="rhombus">
-                <div class="border_box">
-                    <span class="line line01"></span>
-                    <span class="line line02"></span>
-                    <span class="line line03"></span>
-                    <span class="line line04"></span>
-                    <span class="circle circle01"></span>
-                    <span class="circle circle02"></span>
-                    <span class="circle circle03"></span>
-                    <span class="circle circle04"></span>
-                    <span class="animation_line animation_line01"></span>
-                    <span class="animation_line_wrapper animation_line02_wrapper"><span class="animation_line animation_line02"></span></span>
-                    <span class="animation_line animation_line03"></span>
-                    <span class="animation_line_wrapper animation_line04_wrapper"><span class="animation_line animation_line04"></span></span>
-                    <span class="animation_line animation_line05"></span>
-                    <span class="animation_line_wrapper animation_line06_wrapper"><span class="animation_line animation_line06"></span></span>
-                    <span class="animation_line animation_line07"></span>
-                    <span class="animation_line_wrapper animation_line08_wrapper"><span class="animation_line animation_line08"></span></span>
-                </div>
-                <div class="wave">
-                    <div class="wave_wrapper"><div class="wave_box"></div></div>
-                </div>
-            </div>
+
+  <!-- SPLASH INTRO -->
+<div id="splash">
+  <video id="splashVideo"
+         src="logo_animation.mp4"
+         autoplay
+         muted
+         playsinline></video>
+</div>
+
+  <div id="app" class="hidden">
+  <!-- YOUR ENTIRE WEBSITE CODE HERE -->
+   <!-- HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <div class="brand">
+        <img src="fixzen.png" alt="Repairo logo" class="site-logo" />
+        <div>
+          <div class="brand-title">FixZen</div>
+          <div class="brand-sub">Home services • Verified pros</div>
         </div>
+      </div>
+
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="services.html" class="nav-link">Services</a>
+        <a href="my_booking.html.html" class="nav-link">MY Booking </a>
+         <a href="tracking.html" class="nav-link">Tracking</a>
+          <a href="about.html" class="nav-link">About</a>
+        <a href="technician-app.html" class="nav-link">Technician</a>
+        <a href="loginuser.html" class="nav-link">LOGIN</a>
+        <a href="admin-login.html" class="nav-link">admin-login</a>
+        <button class="btn" id="openBookTop">Book Now</button>
+      </nav>
+
     </div>
-    <div class="animation02">
-        <div class="rhombus_box">
-            <span class="rhombus_item_wrapper rhombus_item01_wrapper"><span class="rhombus_item"></span></span>
-            <span class="rhombus_item_wrapper rhombus_item02_wrapper"><span class="rhombus_item"></span></span>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- HERO -->
+    <section class="hero container">
+      <div class="hero-left">
+        <h1>Trusted technicians at your doorstep — same-day bookings available</h1>
+        <p class="lead">Plumbing, electrical, AC, appliance repair and more. Transparent pricing, verified reviews, and simple scheduling.</p>
+
+        <div class="search-card">
+          <input id="heroSearch" type="search" placeholder="Search services, e.g. ‘tap repair’, ‘AC service’" />
+          <select id="heroCity">
+            <option>Choose city</option>
+            <option>Amravati</option>
+            <option>Nagpur</option>
+            <option>Bengaluru</option>
+            <option>Hyderabad</option>
+          </select>
+          <button class="btn" id="heroSearchBtn">Search</button>
         </div>
-        <div class="double_content">
-            <div class="double_wrapper02 dotted02"><div class="dotted_hide"><div class="double_wrapper01 dotted01"><span class="dotted_right"></span></div></div></div>
-            <div class="double_wrapper02 white02"><div class="double_wrapper01 white01"></div></div>
-            <div class="double_wrapper02 gray02"><div class="double_wrapper01 gray01"></div></div>
-            <div class="double_wrapper02 orange02"><div class="double_wrapper01 orange01"></div></div>
+
+        <ul class="trust-grid">
+          <li><strong>1M+</strong><span>Bookings</span></li>
+          <li><strong>4.8★</strong><span>Avg rating</span></li>
+          <li><strong>24/7</strong><span>Support</span></li>
+        </ul>
+
+        <div class="cta-row">
+          <button class="btn btn-large" id="heroBookBtn">Book a service</button>
+          <a href="#services" class="link-muted">See popular services</a>
         </div>
-        <div class="name">
-            <p>KURI-CHAN</p>
-            <span class="name_circle01"></span>
-            <span class="name_circle02"></span>
+      </div>
+
+      <div class="hero-right">
+        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=900&auto=format&fit=crop" alt="Technician working" />
+      </div>
+    </section>
+
+    <!-- POPULAR CATEGORIES -->
+    <section id="services" class="container section">
+      <h2>Popular categories</h2>
+      <div class="category-row" id="categoryRow"></div>
+    </section>
+
+    <!-- MOST BOOKED SERVICES -->
+    <section class="container section">
+      <div class="section-head">
+        <h2>Most Booked Services</h2>
+        <a href="services.html" class="link-muted">View all services</a>
+      </div>
+
+      <div class="services-grid" id="mostBooked"></div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="container section bg-card">
+      <div class="split">
+        <div>
+          <h3>How it works</h3>
+          <ol>
+            <li>Choose a service and pick a convenient slot.</li>
+            <li>We assign a nearby vetted technician.</li>
+            <li>Pay after the job or prepay for instant confirmation.</li>
+          </ol>
         </div>
+
+        <div>
+          <h3>Why Repairo</h3>
+          <ul>
+            <li>Verified professionals</li>
+            <li>Transparent pricing & invoices</li>
+            <li>Secure payments & support</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="container section">
+      <h2>Customer reviews</h2>
+      <div class="reviews-grid">
+        <blockquote>“Booked an AC service — technician arrived on time, very professional.” <cite>— Neha</cite></blockquote>
+        <blockquote>“Quick plumbing fix, fair price.” <cite>— Raj</cite></blockquote>
+        <blockquote>“Excellent electrician, highly recommended.” <cite>— Amit</cite></blockquote>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© 2025 Repairo</div>
+      <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="services.html">Services</a>
+        <a href="#">Support</a>
+      </div>
     </div>
+  </footer>
+
+  <!-- BOOKING MODAL -->
+  <div id="bookingModal" class="modal">
+    <div class="modal-dialog">
+      <button class="modal-close" id="bkClose">✕</button>
+      <h3>Book a service</h3>
+
+      <form id="bkForm">
+        <label>Service
+          <select id="bkService"></select>
+        </label>
+
+        <label>Date
+          <input type="date" id="bkDate" required>
+        </label>
+
+        <label>Address
+          <input type="text" id="bkAddr" placeholder="House no, street, city" required>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="bkCancel">Cancel</button>
+          <button type="submit" class="btn">Confirm booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" class="modal">
+    <div class="modal-dialog">
+      <button class="modal-close" id="adminClose">✕</button>
+      <h3>Admin — Bookings</h3>
+      <div id="adminList" style="max-height:320px;overflow:auto"></div>
+      <button class="btn btn-ghost" id="adminClose2">Close</button>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    // CATEGORIES
+    const CATEGORIES = [
+      {id:'plumbing', name:'Plumbing', img:'tap_repaire.jpg'},
+      {id:'electric', name:'Electrician', img:'electrcian.png'},
+      {id:'ac', name:'AC & Appliance', img:'air-conditioner.png'},
+      {id:'carpentry', name:'Carpentry', img:'carpenter.png'}
+    ];
+
+    // SERVICES (NO PRICE, NO RATING)
+    const SERVICES = [
+      {id:'tap_repair', name:'Tap/Leak repair', category:'plumbing'},
+      {id:'ac_service', name:'AC Full Service', category:'ac'},
+      {id:'wm_repair', name:'Washing machine repair', category:'ac'},
+      {id:'switch_replace', name:'Switch & Socket', category:'electric'},
+      {id:'door_fix', name:'Door hinge & repair', category:'carpentry'}
+    ];
+
+    // LOAD CATEGORIES
+    const catRow = document.getElementById('categoryRow');
+    CATEGORIES.forEach(c => {
+      catRow.innerHTML += `
+        <a class="category-card" href="service-detail.html?id=${c.id}">
+          <img src="${c.img}" alt="${c.name}">
+          <div><strong>${c.name}</strong><span class="muted">Trusted pros</span></div>
+        </a>`;
+    });
+
+document.getElementById("openBookTop").onclick = () => {
+  window.location.href = "booking.html";
+};
+
+  // Load logged-in user
+const user = JSON.parse(localStorage.getItem("repairo_user"));
+
+if (user) {
+  const navLogin = document.querySelector("a[href='loginuser.html']");
+  if (navLogin) {
+    navLogin.textContent = user.name.split(" ")[0]; // Show first name only
+    navLogin.style.fontWeight = "700";
+    navLogin.style.color = "#0d9488";
+  }
+}
+
+    // MOST BOOKED SERVICES (CLEAN)
+    const mb = document.getElementById('mostBooked');
+    SERVICES.forEach(s => {
+      mb.innerHTML += `
+      <article class="service-card">
+        <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop" alt="${s.name}" />
+        <div class="svc">
+          <h4>${s.name}</h4>
+          <p class="muted small">Vetted technicians</p>
+          <div class="svc-actions">
+            <button class="btn btn-ghost" onclick="openDetail('${s.id}')">Details</button>
+            <button class="btn" onclick="openBooking('${s.id}')">Book</button>
+          </div>
+        </div>
+      </article>`;
+    });
+
+    // BOOKING + ADMIN + SEARCH (unchanged)
+    const bookingModal = document.getElementById('bookingModal');
+    const bkService = document.getElementById('bkService');
+    const bkForm = document.getElementById('bkForm');
+
+    function openBooking(id){
+      bkService.value = id;
+      bookingModal.style.display='flex';
+    }
+    window.openBooking = openBooking;
+
+    function openDetail(id){
+      location.href = 'service-detail.html?id=' + id;
+    }
+    window.openDetail = openDetail;
+
+    bkForm.addEventListener('submit', e => {
+      e.preventDefault();
+      alert("Booking created (demo).");
+      bookingModal.style.display='none';
+    });
+
+    document.getElementById('bkClose').onclick = () => bookingModal.style.display='none';
+    document.getElementById('bkCancel').onclick = () => bookingModal.style.display='none';
+
+    
+    document.getElementById('adminClose').onclick =
+    document.getElementById('adminClose2').onclick = () =>
+      document.getElementById('adminPanel').style.display='none';
+
+  </script>
+</div>
+<script>
+const splash = document.getElementById("splash");
+const video = document.getElementById("splashVideo");
+const app = document.getElementById("app");
+
+video.addEventListener("ended", () => {
+  splash.classList.add("fade-out");
+
+  setTimeout(() => {
+    splash.style.display = "none";
+    app.classList.remove("hidden");
+    app.classList.add("fade-in");
+  }, 800);
+});
+</script>
+
+
 </body>
+</html>
