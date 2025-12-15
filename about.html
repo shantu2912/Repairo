@@ -1,46 +1,443 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>About Repairo</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIXZEN | Engineering Peace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. THE "HOLOGRAPHIC PEARL" PALETTE --- */
+        :root {
+            --bg: #f8faff; /* Very cool white */
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --white-glass: rgba(255, 255, 255, 0.7);
+            --white-glass-border: rgba(255, 255, 255, 0.9);
+            
+            /* Unique Gradients */
+            --grad-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Deep Indigo */
+            --grad-accent: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); /* Minty Fresh */
+            --grad-blob-1: #ff9a9e;
+            --grad-blob-2: #a18cd1;
+            --grad-blob-3: #fbc2eb;
+            
+            --shadow-float: 0 20px 40px -5px rgba(100, 116, 139, 0.1);
+            --shadow-hover: 0 30px 60px -10px rgba(100, 116, 139, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- 2. INTERACTIVE BACKGROUND (Parallax) --- */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            transition: transform 0.2s ease-out; /* Smooth follow delay */
+        }
+        
+        .orb-1 { width: 500px; height: 500px; background: var(--grad-blob-1); top: -10%; left: -10%; }
+        .orb-2 { width: 400px; height: 400px; background: var(--grad-blob-2); bottom: 10%; right: -5%; }
+        .orb-3 { width: 300px; height: 300px; background: var(--grad-blob-3); top: 40%; left: 40%; opacity: 0.4; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 25px; position: relative; z-index: 2; }
+
+        /* --- 3. HERO SECTION --- */
+        .hero {
+            height: 90vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0; animation: fadeUp 1s forwards 0.2s;
+        }
+
+        .subtitle {
+            font-size: 1.25rem; color: var(--text-light); max-width: 600px;
+            margin-bottom: 40px; opacity: 0; animation: fadeUp 1s forwards 0.4s;
+        }
+
+        /* Unique "Liquid" Button */
+        .btn-liquid {
+            display: inline-block;
+            position: relative;
+            padding: 15px 40px;
+            border-radius: 50px;
+            background: white;
+            color: #330867;
+            font-weight: 700;
+            text-decoration: none;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            opacity: 0; animation: fadeUp 1s forwards 0.6s;
+        }
+        .btn-liquid:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+        .btn-liquid::after {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 0%; height: 100%;
+            background: var(--grad-accent);
+            z-index: -1;
+            transition: width 0.4s ease;
+        }
+        .btn-liquid:hover::after { width: 100%; }
+
+        /* --- 4. ANIMATED PROCESS (The Connector) --- */
+        .process-section { padding: 120px 0; }
+        .section-header { text-align: center; margin-bottom: 80px; }
+        
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            position: relative;
+        }
+
+        /* The Moving Line */
+        .connector-line {
+            position: absolute;
+            top: 40px; left: 50px; right: 50px;
+            height: 3px;
+            background: #e2e8f0;
+            z-index: 0;
+            overflow: hidden;
+        }
+        /* The "Fill" animation for the line */
+        .connector-fill {
+            height: 100%; width: 0%;
+            background: var(--grad-primary);
+            transition: width 2s ease;
+        }
+
+        .step-card {
+            background: var(--white-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--white-glass-border);
+            padding: 30px 20px;
+            border-radius: 20px;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            box-shadow: var(--shadow-float);
+        }
+
+        .step-card:hover { transform: translateY(-15px) scale(1.02); }
+
+        .step-icon {
+            width: 60px; height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        
+        /* Floating badge number */
+        .step-num {
+            position: absolute; top: -5px; right: -5px;
+            width: 25px; height: 25px;
+            background: var(--text-dark); color: white;
+            border-radius: 50%;
+            font-size: 0.8rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* --- 5. PROFESSIONAL CEO CARDS (New Design) --- */
+        .team-section { padding: 100px 0 150px; }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 24px;
+            padding: 0 0 30px 0;
+            text-align: center;
+            position: relative;
+            transition: all 0.5s ease;
+            box-shadow: var(--shadow-float);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* Magnetic Hover Effect Class (JS handles movement) */
+        .profile-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Top colored bar */
+        .card-header-bg {
+            height: 100px;
+            background: var(--grad-primary);
+            width: 100%;
+        }
+
+        /* Floating Image */
+        .profile-img-box {
+            width: 120px; height: 120px;
+            margin: -60px auto 20px; /* Pull up to overlap header */
+            border-radius: 50%;
+            padding: 5px;
+            background: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .profile-img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #f1f5f9;
+        }
+
+        .profile-name { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; }
+        .profile-role { color: #667eea; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .divider { width: 50px; height: 3px; background: #f1f5f9; margin: 15px auto; }
+
+        .profile-bio {
+            padding: 0 25px;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        /* Skill Tags */
+        .tags {
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; padding: 0 20px;
+        }
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            color: var(--text-light);
+            transition: 0.3s;
+        }
+        .profile-card:hover .tag {
+            background: #667eea; color: white; border-color: #667eea;
+        }
+
+        /* --- UTILS & ANIMATIONS --- */
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile */
+        @media (max-width: 900px) {
+            .process-grid { grid-template-columns: 1fr; gap: 40px; }
+            .connector-line { display: none; }
+        }
+    </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand"><div class="logo-mark">R</div><div><div class="brand-title">Repairo</div><div class="brand-sub">Home services • Verified pros</div></div></div>
-      <nav class="main-nav"><a href="index.html">Home</a><a href="services.html">Services</a><a class="active" href="about.html">About</a></nav>
+
+    <div class="ambient-bg" id="parallax-container">
+        <div class="orb orb-1" data-speed="2"></div>
+        <div class="orb orb-2" data-speed="-2"></div>
+        <div class="orb orb-3" data-speed="1"></div>
     </div>
-  </header>
 
-  <main class="container">
-    <section class="about-hero">
-      <h1>We make home repairs effortless</h1>
-      <p class="lead">Background verified technicians, transparent pricing and easy scheduling — built for busy people.</p>
-    </section>
+    <header class="hero container">
+        <h1>Debugging
 
-    <section class="container section">
-      <h2>Our values</h2>
-      <div class="split">
-        <div>
-          <h3>Verified pros</h3>
-          <p class="muted">Every technician passes ID verification and skills validation before joining.</p>
+<br>Daily Life.</h1>
+        <p class="subtitle">Life has bugs. We provide the patch. FIXZEN is the intelligent interface connecting expert technicians to your doorstep.</p>
+        <a href="#team" class="btn-liquid">Meet The Architects</a>
+    </header>
+
+    <section class="process-section container">
+        <div class="section-header">
+            <h2 style="font-size: 2.5rem; margin-bottom: 10px;">The Logic</h2>
+            <p style="color:var(--text-light)">How we process your request.</p>
         </div>
-        <div>
-          <h3>Transparent pricing</h3>
-          <p class="muted">Prices are shown up-front. No hidden extras.</p>
+
+        <div class="process-grid">
+            <div class="connector-line"><div class="connector-fill" id="line-fill"></div></div>
+
+            <div class="step-card reveal">
+                <div class="step-icon">
+                    📡 <div class="step-num">1</div>
+                </div>
+                <h3>Demand</h3>
+                <p style="font-size:0.9rem; color:var(--text-light); margin-top:10px;">
+                    User signal detected via App. Analysis initiated.
+                </p>
+            </div>
+
+            <div class="step-card reveal" style="transition-delay: 0.1s;">
+                <div class="step-icon">
+                    🧠 <div class="step-num">2</div>
+                </div>
+                <h3>Algorithm</h3>
+                <p style="font-size:0.9rem; color:var(--text-light); margin-top:10px;">
+                    Matching skill-set and geo-location logic.
+                </p>
+            </div>
+
+            <div class="step-card reveal" style="transition-delay: 0.2s;">
+                <div class="step-icon">
+                    🛠️ <div class="step-num">3</div>
+                </div>
+                <h3>Execution</h3>
+                <p style="font-size:0.9rem; color:var(--text-light); margin-top:10px;">
+                    Technician deployed. Repair protocol active.
+                </p>
+            </div>
+
+            <div class="step-card reveal" style="transition-delay: 0.3s;">
+                <div class="step-icon">
+                    ✨ <div class="step-num">4</div>
+                </div>
+                <h3>Resolution</h3>
+                <p style="font-size:0.9rem; color:var(--text-light); margin-top:10px;">
+                    System restored. Transaction secured. Zen achieved.
+                </p>
+            </div>
         </div>
-      </div>
     </section>
 
-    <section class="container section">
-      <h2>Careers & partnerships</h2>
-      <p class="muted">If you run a service business and want to partner, reach out at <a href="mailto:partners@repairo.example">partners@repairo.example</a></p>
-    </section>
-  </main>
+    <section id="team" class="team-section container">
+        <div class="section-header">
+            <h2 style="font-size: 2.5rem;">The Leadership</h2>
+        </div>
 
-  <footer class="site-footer"><div class="container footer-inner"><div>© 2025 Repairo</div></div></footer>
+        <div class="team-grid">
+            
+            <div class="profile-card">
+                <div class="card-header-bg"></div>
+                <div class="profile-img-box">
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80" alt="CEO" class="profile-img">
+                </div>
+                <h3 class="profile-name">Shantanu Ingole</h3>
+                <p class="profile-role">Co-Founder & CEO</p>
+                <div class="divider"></div>
+                <p class="profile-bio">Core Algorithm Architect. Focused on system efficiency and backend logic.</p>
+                <div class="tags">
+                    <span class="tag">Backend</span>
+                    <span class="tag">Strategy</span>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="card-header-bg" style="background: var(--grad-accent);"></div>
+                <div class="profile-img-box">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" alt="CEO" class="profile-img">
+                </div>
+                <h3 class="profile-name">Vedant Gawande</h3>
+                <p class="profile-role" style="color:#0ea5e9">Head of Operations</p>
+                <div class="divider"></div>
+                <p class="profile-bio">Managing the technician network and on-ground quality assurance.</p>
+                <div class="tags">
+                    <span class="tag">Logistics</span>
+                    <span class="tag">QA</span>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="card-header-bg" style="background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);"></div>
+                <div class="profile-img-box">
+                    <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80" alt="CEO" class="profile-img">
+                </div>
+                <h3 class="profile-name">Shrikrushna Satpute</h3>
+                <p class="profile-role" style="color:#d57eeb">Head of Product</p>
+                <div class="divider"></div>
+                <p class="profile-bio">Designing the user journey. Bridging the gap between human and code.</p>
+                <div class="tags">
+                    <span class="tag">UI/UX</span>
+                    <span class="tag">Frontend</span>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="card-header-bg" style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);"></div>
+                <div class="profile-img-box">
+                    <img src="https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=400&q=80" alt="CEO" class="profile-img">
+                </div>
+                <h3 class="profile-name">Tanmay Korde</h3>
+                <p class="profile-role" style="color:#8ec5fc">Head of Growth</p>
+                <div class="divider"></div>
+                <p class="profile-bio">Expanding the FIXZEN footprint through strategic partnerships.</p>
+                <div class="tags">
+                    <span class="tag">Marketing</span>
+                    <span class="tag">Sales</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        // 1. MOUSE PARALLAX (Move background blobs)
+        document.addEventListener("mousemove", (e) => {
+            const orbs = document.querySelectorAll(".orb");
+            const x = (e.clientX * -1) / 30;
+            const y = (e.clientY * -1) / 30;
+
+            orbs.forEach(orb => {
+                const speed = orb.getAttribute('data-speed');
+                orb.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+
+        // 2. SCROLL REVEAL + LINE DRAWING
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Reveal Process Cards
+                    if(entry.target.classList.contains('step-card')) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                    // Draw the connector line
+                    if(entry.target.classList.contains('process-grid')) {
+                        document.getElementById('line-fill').style.width = '100%';
+                    }
+                }
+            });
+        }, { threshold: 0.2 });
+
+        // Observe Cards
+        document.querySelectorAll('.step-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            observer.observe(el);
+        });
+        
+        // Observe Grid for Line animation
+        observer.observe(document.querySelector('.process-grid'));
+
+    </script>
 </body>
 </html>
-
