@@ -20,32 +20,38 @@
   <div id="app" class="hidden">
   <!-- YOUR ENTIRE WEBSITE CODE HERE -->
    <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-inner">
-
-      <div class="brand">
-        <img src="fixzen.png" alt="Repairo logo" class="site-logo" />
-        <div>
-          <div class="brand-title">FixZen</div>
-          <div class="brand-sub">Home services • Verified pros</div>
-        </div>
+  <header class="site-header fixed top-0 left-0 w-full bg-white shadow-md z-50">
+  <div class="container header-inner flex justify-between items-center p-4 max-w-7xl mx-auto">
+    
+    <!-- Brand -->
+    <div class="brand flex items-center space-x-3">
+      <img src="fixzen.png" alt="Repairo logo" class="site-logo w-12 h-12" />
+      <div>
+        <div class="brand-title text-xl font-bold text-blue-600">FixZen</div>
+        <div class="brand-sub text-sm text-gray-600">Home services • Verified pros</div>
       </div>
-
-      <nav class="main-nav">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="services.html" class="nav-link">Services</a>
-        <a href="my_booking.html.html" class="nav-link">MY Booking </a>
-         <a href="tracking.html" class="nav-link">Tracking</a>
-          <a href="about.html" class="nav-link">About</a>
-        <a href="technician-app.html" class="nav-link">Technician</a>
-        <a href="loginuser.html" class="nav-link">LOGIN</a>
-        <a href="admin-login.html" class="nav-link">admin-login</a>
-        <button class="btn" id="openBookTop">Book Now</button>
-      </nav>
-
     </div>
-  </header>
 
+    <!-- Navigation -->
+    <nav class="main-nav hidden md:flex space-x-6 items-center">
+      <a href="index.html" class="nav-link active hover:text-blue-500">Home</a>
+      <a href="services.html" class="nav-link hover:text-blue-500">Services</a>
+      <a href="my_booking.html" class="nav-link hover:text-blue-500">My Booking</a>
+      <a href="tracking.html" class="nav-link hover:text-blue-500">Tracking</a>
+      <a href="about.html" class="nav-link hover:text-blue-500">About</a>
+      <a href="technician-app.html" class="nav-link hover:text-blue-500">Technician</a>
+      <a href="loginuser.html" class="nav-link hover:text-blue-500">Login</a>
+      <a href="admin-login.html" class="nav-link hover:text-blue-500">Admin</a>
+      <button class="btn bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600" id="openBookTop">Book Now</button>
+    </nav>
+
+    <!-- Mobile menu button -->
+    <div class="md:hidden">
+      <button id="menu-btn" class="text-2xl font-bold">☰</button>
+    </div>
+
+  </div>
+</header>
   <!-- MAIN -->
   <main>
 
@@ -185,6 +191,14 @@
   </div>
 
   <!-- SCRIPT -->
+   <script>
+const menuBtn = document.getElementById('menu-btn');
+const nav = document.querySelector('.main-nav');
+
+menuBtn.addEventListener('click', () => {
+  nav.classList.toggle('hidden');
+});
+</script>
   <script>
     // CATEGORIES
     const CATEGORIES = [
