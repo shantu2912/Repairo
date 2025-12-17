@@ -114,7 +114,7 @@
                 </div>
             </div>
             <nav class="flex-1 overflow-y-auto py-2">
-                <template x-for="(item, index) in [{ name: 'HOME', icon: 'fa-house' }, { name: 'REGISTER AS PARTNER', icon: 'fa-handshake' }, { name: 'MAKE PAYMENT', icon: 'fa-credit-card' }, { name: 'TERM & CONDITION', icon: 'fa-file-contract',link:'terms.html' }, { name: 'PRIVACY POLICY', icon: 'fa-user-shield' }, { name: 'CONTACT US', icon: 'fa-headset' }, { name: 'PARTNER LOGIN', icon: 'fa-arrow-right-to-bracket' }]">
+                <template x-for="(item, index) in [{ name: 'HOME', icon: 'fa-house',link:'#' }, { name: 'REGISTER AS PARTNER', icon: 'fa-handshake' ,link:'#'}, { name: 'MAKE PAYMENT', icon: 'fa-credit-card' ,link:'#'}, { name: 'TERM & CONDITION', icon: 'fa-file-contract',link:'terms.html' }, { name: 'PRIVACY POLICY', icon: 'fa-user-shield',link:'#' }, { name: 'CONTACT US', icon: 'fa-headset' ,link:'#'}, { name: 'PARTNER LOGIN', icon: 'fa-arrow-right-to-bracket' ,link:'#'}]">
                     <a href="#" class="group relative flex items-center justify-between px-6 py-4 border-b border-brand-beige/30 hover:bg-brand-cream/50 transition-colors">
                         <div class="flex items-center gap-4 z-10"><div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all duration-300 group-hover:scale-110"><i :class="`fa-solid ${item.icon}`"></i></div><span class="text-sm font-bold text-brand-dark tracking-wide group-hover:translate-x-1 transition-transform" x-text="item.name"></span></div>
                         <i class="fa-solid fa-chevron-right text-xs text-brand-gold opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"></i>
@@ -283,3 +283,4 @@
     </div>
 </body>
 </html>
+
