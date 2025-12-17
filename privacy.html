@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Privacy Policy - FixZen</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',    // Primary
+                        'brand-gold': '#A07D54',     // Accent
+                        'brand-cream': '#EEEAE2',    // Bg
+                        'brand-dark': '#4D4C4B',     // Text
+                        'brand-blue': '#3E5974',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'shield-pulse': 'shieldPulse 3s infinite',
+                    },
+                    keyframes: {
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        shieldPulse: { '0%, 100%': { transform: 'scale(1)', opacity: '1' }, '50%': { transform: 'scale(1.05)', opacity: '0.8' } }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white">
+
+    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-white pb-24 overflow-hidden flex flex-col">
+
+        <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-brand-beige/30 px-6 py-4 flex items-center gap-4">
+            <button onclick="window.history.back()" class="w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive hover:bg-brand-olive hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1 class="font-sans font-bold text-lg text-brand-olive">Privacy Policy</h1>
+        </header>
+
+        <div class="px-6 pt-8 pb-6 animate-slide-up bg-gradient-to-b from-white to-brand-cream/30">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-brand-gold font-bold text-xs uppercase tracking-widest mb-2">Your Data, Secured</p>
+                    <h2 class="font-serif text-3xl text-brand-olive leading-tight mb-2">We Protect <br> Your Privacy.</h2>
+                </div>
+                <div class="w-16 h-16 rounded-full bg-brand-olive/5 flex items-center justify-center animate-shield-pulse">
+                    <i class="fa-solid fa-fingerprint text-3xl text-brand-gold"></i>
+                </div>
+            </div>
+            <p class="text-sm text-brand-dark/70 leading-relaxed mt-4">
+                At FixZen, trust is our foundation. This policy outlines how we collect, use, and protect your personal information when you invite our experts into your home.
+            </p>
+        </div>
+
+        <div class="px-6 space-y-4 animate-slide-up" style="animation-delay: 0.2s;" x-data="{ activePolicy: 1 }">
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <button @click="activePolicy = activePolicy === 1 ? null : 1" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue"><i class="fa-solid fa-database text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Information We Collect</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activePolicy === 1 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activePolicy === 1" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-3 bg-brand-cream/10 border-t border-brand-beige/20">
+                    <p>We collect only what is necessary to serve you:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><strong>Identity:</strong> Name, Profile Photo.</li>
+                        <li><strong>Contact:</strong> Phone Number, Email Address.</li>
+                        <li><strong>Location:</strong> Precise GPS location to match you with nearby technicians.</li>
+                        <li><strong>Home Details:</strong> Addresses saved for service delivery.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <button @click="activePolicy = activePolicy === 2 ? null : 2" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600"><i class="fa-solid fa-rocket text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">How We Use Data</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activePolicy === 2 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activePolicy === 2" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-brand-cream/10 border-t border-brand-beige/20">
+                    <p>• <strong>Service Matching:</strong> To find the closest available expert for your specific problem.</p>
+                    <p>• <strong>Safety:</strong> To track the technician's journey to your home for your safety.</p>
+                    <p>• <strong>Communication:</strong> To send booking confirmations, invoices, and technician arrival updates.</p>
+                </div>
+            </div>
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <button @click="activePolicy = activePolicy === 3 ? null : 3" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><i class="fa-solid fa-share-nodes text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Who We Share With</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activePolicy === 3 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activePolicy === 3" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-brand-cream/10 border-t border-brand-beige/20">
+                    <p class="font-bold text-brand-olive">We DO NOT sell your personal data.</p>
+                    <p>We share data strictly with:</p>
+                    <p>1. <strong>The Technician:</strong> Only your first name and location, 1 hour before the job starts.</p>
+                    <p>2. <strong>Payment Gateways:</strong> Encrypted transaction data for processing payments.</p>
+                    <p>3. <strong>Legal Authorities:</strong> Only if required by Indian law.</p>
+                </div>
+            </div>
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <button @click="activePolicy = activePolicy === 4 ? null : 4" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-lock text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Security Measures</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activePolicy === 4 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activePolicy === 4" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-brand-cream/10 border-t border-brand-beige/20">
+                    <p>• All data is encrypted using <strong>256-bit SSL encryption</strong>.</p>
+                    <p>• Technician phone numbers are masked; they cannot see your real number, only call through the app.</p>
+                    <p>• We conduct mandatory background verification on all partners before they join the platform.</p>
+                </div>
+            </div>
+
+             <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <button @click="activePolicy = activePolicy === 5 ? null : 5" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i class="fa-solid fa-user-check text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Your Rights</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activePolicy === 5 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activePolicy === 5" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-brand-cream/10 border-t border-brand-beige/20">
+                    <p>You have the right to:</p>
+                    <p>• Request a copy of all data we hold about you.</p>
+                    <p>• Request deletion of your account and data ("Right to be Forgotten").</p>
+                    <p>• Opt-out of marketing communications at any time.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-8 px-6 pb-8 text-center animate-slide-up" style="animation-delay: 0.3s;">
+            <p class="text-[10px] text-brand-dark/40 mb-4">
+                Have questions about your data? <br> Email us at <a href="#" class="text-brand-gold font-bold underline">privacy@fixzen.com</a>
+            </p>
+            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4">
+                <p class="text-xs text-brand-olive font-medium">FixZen India Pvt Ltd.</p>
+                <p class="text-[10px] text-brand-dark/50">Nagpur, Maharashtra - 440001</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
