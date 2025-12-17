@@ -1,295 +1,315 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FixZen — Premium Home Services</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen - Premium Home Services</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',    // Primary Dark
+                        'brand-gold': '#A07D54',     // Accent Gold
+                        'brand-cream': '#EEEAE2',    // Bg
+                        'brand-dark': '#4D4C4B',     // Text
+                        'brand-blue': '#3E5974',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    boxShadow: {
+                        'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)',
+                        'neon': '0 0 20px rgba(160, 125, 84, 0.4)',
+                    },
+                    // *** NEW: ADVANCED CINEMATIC ANIMATIONS ***
+                    animation: {
+                        'wrench': 'wrench 2.5s ease-in-out infinite',
+                        'slide-in-item': 'slideInItem 0.4s ease-out forwards',
+                        'float-icon': 'floatIcon 3s ease-in-out infinite',
+                        'text-scroll': 'textScroll 6s infinite',
+                        
+                        // Loader Animations
+                        'chaos-spin': 'chaosSpin 2s linear infinite',
+                        'forge-flash': 'forgeFlash 1.5s ease-out forwards 1s',
+                        'draw-text': 'drawText 2s ease-out forwards 1.2s',
+                        'fill-text': 'fillText 1s ease-out forwards 2.5s',
+                        'logo-shine': 'logoShine 2s ease-in-out forwards 2.8s',
+                        'sub-text-slide': 'subTextSlide 1s ease-out forwards 3s',
+                    },
+                    keyframes: {
+                        // ... existing keyframes ...
+                        wrench: { '0%, 100%': { transform: 'rotate(0deg)' }, '10%, 20%': { transform: 'rotate(-10deg)' }, '30%, 40%': { transform: 'rotate(10deg)' }, '50%': { transform: 'rotate(0deg)' } },
+                        slideInItem: { '0%': { opacity: '0', transform: 'translateY(-10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
+                        textScroll: { '0%, 20%': { transform: 'translateY(0%)' }, '25%, 45%': { transform: 'translateY(-25%)' }, '50%, 70%': { transform: 'translateY(-50%)' }, '75%, 95%': { transform: 'translateY(-75%)' }, '100%': { transform: 'translateY(-0%)' } },
+                        
+                        // *** NEW LOADER KEYFRAMES ***
+                        chaosSpin: {
+                            '0%': { transform: 'rotate(0deg) scale(1)', opacity: '0.5' },
+                            '50%': { transform: 'rotate(180deg) scale(1.2)', opacity: '1' },
+                            '100%': { transform: 'rotate(360deg) scale(1)', opacity: '0.5' }
+                        },
+                        forgeFlash: {
+                            '0%': { opacity: '0', transform: 'scale(0)' },
+                            '50%': { opacity: '1', transform: 'scale(1.5)' },
+                            '100%': { opacity: '0', transform: 'scale(2)' }
+                        },
+                        drawText: {
+                            'to': { strokeDashoffset: '0' }
+                        },
+                        fillText: {
+                            'from': { fillOpacity: '0' },
+                            'to': { fillOpacity: '1' }
+                        },
+                        logoShine: {
+                            '0%': { backgroundPosition: '-200%' },
+                            '100%': { backgroundPosition: '200%' }
+                        },
+                        subTextSlide: {
+                            'from': { opacity: '0', transform: 'translateY(20px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-  <style>
-    :root {
-      --primary-olive: #3A352B;
-      --primary-brown: #A07D54;
-      --neutral-bg: #F8F7F4;
-      --accent-blue: #2C3E50;
-      --text-dark: #2D2C2B;
-      --white: #ffffff;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background: var(--neutral-bg);
-      color: var(--text-dark);
-      overflow-x: hidden;
-    }
-
-    h1, h2, .logo-text {
-      font-family: 'Outfit', serif;
-    }
-
-   header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* Vertical alignment */
-  padding: 12px 20px;
-  background: var(--white);
-}
-
-.menu-container {
-  display: flex;
-  align-items: center; /* Keeps text and icon on one line */
-  gap: 8px;            /* Space between text and icon */
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-/* Optional: Slight hover effect for a professional feel */
-.menu-container:hover {
-  background: var(--neutral-bg);
-}
-
-.menu-container h3 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;           /* Removes default heading margins */
-  color: var(--primary-olive);
-}
-
-.menu-trigger {
-  font-size: 24px;
-  line-height: 1;      /* Prevents the icon from adding extra height */
-  color: var(--primary-olive);
-}
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .site-logo { width: 30px; height: 30px; border-radius: 6px; }
-    .logo-text { font-size: 20px; font-weight: 800; color: var(--primary-olive); }
-
-    /* HERO SLIDER SECTION */
-    .hero {
-      padding: 16px;
-    }
-
-    .hero-container {
-      position: relative;
-      height: 220px;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-    }
-
-    .slider {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-
-    .slide {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
-      background-size: cover;
-      background-position: center;
-    }
-
-    /* Image Rotation Animation */
-    .slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800'); animation: cycle 12s infinite; }
-    .slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800'); animation: cycle 12s infinite 4s; }
-    .slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1558383331-f520f2888351?auto=format&fit=crop&w=800'); animation: cycle 12s infinite 8s; }
-
-    @keyframes cycle {
-      0%, 33.33% { opacity: 1; }
-      38%, 100% { opacity: 0; }
-    }
-
-    .hero-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.7) 20%, transparent);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px;
-      color: var(--white);
-      z-index: 2;
-    }
-
-    .hero-overlay h1 { font-size: 24px; margin-bottom: 4px; }
-    .hero-overlay p { font-size: 14px; opacity: 0.9; }
-
-    /* MOBILE SEARCH */
-    .search-wrapper {
-      padding: 0 20px;
-      margin-top: -25px;
-      position: relative;
-      z-index: 10;
-    }
-
-    .search-box {
-      background: var(--white);
-      border-radius: 14px;
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-
-    .search-box input {
-      border: none;
-      outline: none;
-      flex: 1;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    /* CATEGORIES GRID */
-    .section { padding: 35px 20px 100px; }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 18px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .category {
-      background: var(--white);
-      border-radius: 18px;
-      padding: 14px 4px;
-      text-align: center;
-      transition: transform 0.2s;
-    }
-
-    .category:active { transform: scale(0.92); }
-
-    .icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: #F2F2F2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 8px;
-      font-size: 22px;
-    }
-
-    .category span { font-size: 12px; font-weight: 600; color: var(--text-dark); }
-
-    /* MOBILE BOTTOM NAV */
-    nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(10px);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0 24px;
-      border-top: 1px solid rgba(0,0,0,0.05);
-      z-index: 1000;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: #8E8E93;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    nav a.active { color: var(--primary-brown); }
-    .nav-icon { font-size: 20px; }
-    nav span { font-size: 10px; font-weight: 600; }
-
-    /* Mobile Responsive Tweaks */
-    @media (max-width: 380px) {
-      .grid { grid-template-columns: repeat(3, 1fr); }
-      .hero-container { height: 180px; }
-    }
-  </style>
+    <style>
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Loader Styles */
+        .fixzen-svg-text {
+            fill: transparent;
+            stroke: #A07D54; /* Brand Gold */
+            stroke-width: 1.5;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            fill-opacity: 0;
+        }
+        .fixzen-filled-text {
+            background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
 </head>
-<body>
 
- <header>
-  <div class="brand">
-    <img src="fixzen.png" alt="FixZen" class="site-logo" />
-    <span class="logo-text">FixZen</span>
-  </div>
+<body class="bg-brand-cream text-brand-dark antialiased"
+      x-data="{ 
+          loading: true, 
+          searchOpen: false, 
+          sidebarOpen: false, 
+          slideIndex: 0,
+          servicesExpanded: false,
+          searchQuery: ''
+      }"
+      x-init="
+          // INCREASED LOADING TIME FOR THE NEW ANIMATION
+          setTimeout(() => loading = false, 4500); 
+          setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
+      ">
 
-  <div class="menu-container">
-    <h3>Menu</h3>
-    <div class="menu-trigger">≡</div>
-  </div>
-</header>
-   
-  </header>
+    <div x-show="loading" 
+         x-transition:leave="transition ease-in-out duration-1000"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-110"
+         class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center overflow-hidden">
+        
+        <div class="absolute inset-0 flex items-center justify-center opacity-20">
+            <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
+            <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
+        </div>
 
-  <section class="hero">
-    <div class="hero-container">
-      <div class="slider">
-        <div class="slide"></div>
-        <div class="slide"></div>
-        <div class="slide"></div>
-      </div>
-      <div class="hero-overlay">
-        <h1>Professional</h1>
-         <h1>Home Services</h1>
-        <p>Expert help for every corner of your home. </p>
-      </div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-64 h-64 bg-brand-gold rounded-full blur-[100px] animate-forge-flash opacity-0"></div>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center">
+            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" 
+                      class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">
+                    FIXZEN
+                </text>
+            </svg>
+            
+            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">
+                FIXZEN
+            </h1>
+
+            <div class="mt-4 flex items-center gap-3 opacity-0 animate-sub-text-slide">
+                <div class="h-px w-12 bg-brand-gold/50"></div>
+                <p class="text-brand-beige text-sm uppercase tracking-[0.3em] font-medium">Premium Home Care</p>
+                <div class="h-px w-12 bg-brand-gold/50"></div>
+            </div>
+        </div>
     </div>
-  </section>
-
-  <div class="search-wrapper">
-    <div class="search-box">
-      <span>🔍</span>
-      <input type="text" placeholder="What service do you need?" />
+    <div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
+        <div class="absolute inset-0 bg-brand-olive/60 backdrop-blur-sm" x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"></div>
+        <aside class="absolute left-0 top-0 h-full w-[80%] max-w-[300px] bg-brand-cream shadow-2xl flex flex-col"
+               x-show="sidebarOpen"
+               x-transition:enter="transform transition ease-out duration-300"
+               x-transition:enter-start="-translate-x-full"
+               x-transition:enter-end="translate-x-0"
+               x-transition:leave="transform transition ease-in duration-300"
+               x-transition:leave-start="translate-x-0"
+               x-transition:leave-end="-translate-x-full">
+            <div class="h-48 bg-brand-olive p-8 flex flex-col justify-end relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-brand-gold/20 rounded-full blur-2xl"></div>
+                <button @click="sidebarOpen = false" class="absolute top-4 right-4 text-white/50 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="relative z-10 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-full border-2 border-brand-gold p-0.5"><img src="https://i.pravatar.cc/150?img=3" class="w-full h-full rounded-full object-cover"></div>
+                    <div><h3 class="text-white font-bold text-lg">Hello, User</h3><div class="flex items-center gap-1 bg-brand-gold/20 px-2 py-0.5 rounded text-[10px] text-brand-gold border border-brand-gold/30"><i class="fa-solid fa-crown"></i> Gold Member</div></div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-6 space-y-2">
+                <a href="#" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white text-brand-olive font-medium transition-all group"><div class="w-8 h-8 rounded-full bg-brand-beige/30 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors"><i class="fa-solid fa-house"></i></div><span>Home</span></a>
+                <a href="#" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white text-brand-olive font-medium transition-all group"><div class="w-8 h-8 rounded-full bg-brand-beige/30 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors"><i class="fa-solid fa-calendar-check"></i></div><span>My Bookings</span></a>
+                <a href="#" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white text-brand-olive font-medium transition-all group"><div class="w-8 h-8 rounded-full bg-brand-beige/30 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors"><i class="fa-solid fa-wallet"></i></div><span>Wallet</span><span class="ml-auto text-xs font-bold text-brand-olive">₹450</span></a>
+                <div class="h-px bg-brand-beige/50 my-2"></div>
+                <a href="#" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white text-brand-olive font-medium transition-all group"><div class="w-8 h-8 rounded-full bg-brand-beige/30 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors"><i class="fa-solid fa-gear"></i></div><span>Settings</span></a>
+            </nav>
+        </aside>
     </div>
-  </div>
 
-  <section class="section">
-    <div class="section-header">
-      <h2 style="font-size: 20px;">Top Services</h2>
-      
+    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-brand-cream pb-24 overflow-hidden" x-show="!loading">
+
+        <header class="absolute top-0 w-full z-40 px-6 py-4 flex justify-between items-center text-white">
+            <button @click="sidebarOpen = true" class="bg-black/20 backdrop-blur-md p-2 rounded-full cursor-pointer hover:bg-black/30 transition active:scale-90"><i class="fa-solid fa-bars text-lg px-1"></i></button>
+            <div class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"><i class="fa-solid fa-location-dot text-brand-gold text-xs"></i><span class="text-xs font-bold">Nagpur, MH</span></div>
+            <div class="relative bg-black/20 backdrop-blur-md p-2 rounded-full cursor-pointer hover:bg-black/30 transition"><i class="fa-solid fa-bell text-lg px-1"></i><span class="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full border border-black"></span></div>
+        </header>
+
+        <div class="relative h-[380px] rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
+            <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out" x-show="slideIndex === 0" x-transition:enter="opacity-0" x-transition:enter-end="opacity-100"><img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div><div class="absolute bottom-24 left-6 right-6"><span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Top Rated</span><h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2">Expert Electricians <br> <span class="text-brand-beige font-serif italic">at your door.</span></h2></div></div>
+            <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out" x-show="slideIndex === 1" style="display: none;"><img src="https://images.unsplash.com/photo-1581578731117-104f2a417954?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-brand-blue via-brand-blue/40 to-transparent"></div><div class="absolute bottom-24 left-6 right-6"><span class="bg-white text-brand-blue text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Summer Sale</span><h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2">50% OFF on <br> <span class="text-brand-beige font-serif italic">AC Repair.</span></h2></div></div>
+            <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out" x-show="slideIndex === 2" style="display: none;"><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div><div class="absolute bottom-24 left-6 right-6"><span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Hygiene First</span><h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2">Deep Cleaning <br> <span class="text-brand-beige font-serif italic">Solutions.</span></h2></div></div>
+            <div class="absolute bottom-20 right-6 flex gap-2">
+                <div class="h-1.5 rounded-full transition-all duration-500" :class="slideIndex === 0 ? 'w-6 bg-brand-gold' : 'w-2 bg-white/50'"></div>
+                <div class="h-1.5 rounded-full transition-all duration-500" :class="slideIndex === 1 ? 'w-6 bg-brand-gold' : 'w-2 bg-white/50'"></div>
+                <div class="h-1.5 rounded-full transition-all duration-500" :class="slideIndex === 2 ? 'w-6 bg-brand-gold' : 'w-2 bg-white/50'"></div>
+            </div>
+        </div>
+
+        <div class="px-6 -mt-10 relative z-50">
+            <div x-show="searchOpen" x-transition.opacity class="fixed inset-0 bg-brand-olive/80 backdrop-blur-sm -z-10" @click="searchOpen = false"></div>
+            <div class="bg-white rounded-[2rem] p-2 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-white/40 flex items-center gap-2 transition-all duration-500 ease-out transform" :class="searchOpen ? 'scale-105 ring-4 ring-brand-gold/30 translate-y-[-10px]' : ''">
+                 <div class="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300" :class="searchOpen ? 'bg-brand-gold text-white rotate-90' : 'bg-brand-cream text-brand-olive'"><i class="fa-solid" :class="searchOpen ? 'fa-arrow-right' : 'fa-magnifying-glass'"></i></div>
+                 <div class="flex-1 h-12 relative flex items-center" @click="searchOpen = true">
+                     <div x-show="!searchOpen && searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none"><span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span><div class="relative h-5 w-32 overflow-hidden"><div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full"><div class="h-5 flex items-center">AC Repair</div><div class="h-5 flex items-center">Plumbing</div><div class="h-5 flex items-center">Cleaning</div><div class="h-5 flex items-center">AC Repair</div></div></div></div>
+                     <input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg z-10 placeholder-brand-dark/30" :placeholder="searchOpen ? 'What do you need?' : ''">
+                 </div>
+                 <div class="flex items-center gap-1"><button class="w-10 h-10 rounded-full hover:bg-brand-cream text-brand-dark/60 transition-colors relative"><i class="fa-solid fa-microphone"></i><span class="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span></button><button class="w-10 h-10 rounded-full bg-brand-olive text-white shadow-lg hover:scale-110 transition-transform"><i class="fa-solid fa-sliders"></i></button></div>
+            </div>
+            <div x-show="searchOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="absolute top-full left-6 right-6 mt-4 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-5 border border-white/50 z-50 overflow-hidden">
+                 <div class="mb-4"><p class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest mb-3">Recent</p><div class="space-y-2"><div class="flex items-center gap-3 p-2 hover:bg-brand-cream rounded-xl cursor-pointer transition-colors"><div class="w-8 h-8 rounded-full bg-brand-cream flex items-center justify-center text-brand-dark/50"><i class="fa-regular fa-clock"></i></div><span class="text-sm font-medium text-brand-dark">Kitchen Deep Clean</span></div><div class="flex items-center gap-3 p-2 hover:bg-brand-cream rounded-xl cursor-pointer transition-colors"><div class="w-8 h-8 rounded-full bg-brand-cream flex items-center justify-center text-brand-dark/50"><i class="fa-regular fa-clock"></i></div><span class="text-sm font-medium text-brand-dark">Tap Leakage</span></div></div></div>
+                 <div><p class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest mb-3">Trending in Nagpur</p><div class="flex flex-wrap gap-2"><span class="px-4 py-2 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 rounded-xl text-xs font-bold text-orange-600 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-fire"></i> AC Repair</span><span class="px-4 py-2 bg-brand-cream rounded-xl text-xs font-bold text-brand-dark shadow-sm">Painting</span><span class="px-4 py-2 bg-brand-cream rounded-xl text-xs font-bold text-brand-dark shadow-sm">Sofa Cleaning</span></div></div>
+            </div>
+        </div>
+
+        <div class="px-6 mt-8">
+            <h2 class="font-sans font-bold text-lg text-brand-olive mb-5 flex items-center gap-2">
+                All Services <span class="h-px flex-1 bg-brand-beige"></span>
+            </h2>
+            <div class="grid grid-cols-4 gap-y-6 gap-x-2">
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/9373/9373444.png" class="w-10 h-10 object-contain animate-float-icon">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">AC</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2983/2983935.png" class="w-10 h-10 object-contain animate-float-icon" style="animation-delay: 0.2s">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">Electric</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2829/2829824.png" class="w-10 h-10 object-contain animate-float-icon" style="animation-delay: 0.4s">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">Plumbing</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/9902/9902312.png" class="w-10 h-10 object-contain animate-float-icon" style="animation-delay: 0.6s">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">Clean</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2954/2954860.png" class="w-10 h-10 object-contain animate-float-icon" style="animation-delay: 0.8s">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">Paint</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2400/2400490.png" class="w-10 h-10 object-contain animate-float-icon" style="animation-delay: 1s">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">Wood</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2765/2765239.png" class="w-10 h-10 object-contain animate-float-icon" style="animation-delay: 1.2s">
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive">Pest</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer" @click="servicesExpanded = !servicesExpanded">
+                    <div class="w-16 h-16 rounded-[22px] bg-brand-olive text-white shadow-lg flex items-center justify-center text-xl transition-all duration-300 active:scale-90"
+                         :class="servicesExpanded ? 'bg-red-500 rotate-180' : ''">
+                        <i class="fa-solid" :class="servicesExpanded ? 'fa-xmark' : 'fa-plus'"></i>
+                    </div>
+                    <span class="text-[10px] font-bold text-brand-olive" x-text="servicesExpanded ? 'Close' : 'More'"></span>
+                </div>
+                <template x-if="servicesExpanded">
+                    <div class="col-span-4 grid grid-cols-4 gap-x-2 animate-slide-in-item">
+                        <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                            <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center"><img src="https://cdn-icons-png.flaticon.com/512/3050/3050239.png" class="w-10 h-10 object-contain"></div><span class="text-[10px] font-bold text-brand-olive">Salon</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                            <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center"><img src="https://cdn-icons-png.flaticon.com/512/1261/1261143.png" class="w-10 h-10 object-contain"></div><span class="text-[10px] font-bold text-brand-olive">Repair</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                            <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center"><img src="https://cdn-icons-png.flaticon.com/512/679/679720.png" class="w-10 h-10 object-contain"></div><span class="text-[10px] font-bold text-brand-olive">Movers</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 group cursor-pointer">
+                            <div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center"><img src="https://cdn-icons-png.flaticon.com/512/1518/1518965.png" class="w-10 h-10 object-contain"></div><span class="text-[10px] font-bold text-brand-olive">Garden</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="px-6 mt-8">
+            <div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-3xl p-5 flex items-center justify-between text-white relative overflow-hidden shadow-lg">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="relative z-10"><p class="text-brand-gold font-bold text-xs uppercase tracking-wider mb-1">FixZen Promise</p><h3 class="font-serif text-lg leading-tight">100% Satisfaction <br>or Money Back</h3></div>
+                <div class="relative z-10 bg-white/20 backdrop-blur-md p-3 rounded-full"><i class="fa-solid fa-shield-heart text-2xl text-brand-gold"></i></div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
+            <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-between items-center shadow-super-float">
+                <a href="#" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-calendar-check text-xl"></i></a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-wallet text-xl"></i></a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-regular fa-user text-xl"></i></a>
+            </div>
+        </div>
+
     </div>
-
-    <div class="grid">
-      <div class="category"><div class="icon" style="background:#EBF8FF">❄️</div><span>AC Repair</span></div>
-      <div class="category"><div class="icon" style="background:#FFF9E6">⚡</div><span>Electrician</span></div>
-      <div class="category"><div class="icon" style="background:#E6FFFA">🚿</div><span>Plumber</span></div>
-      <div class="category"><div class="icon" style="background:#FAF5FF">🧰</div><span>Carpenter</span></div>
-      <div class="category"><div class="icon" style="background:#FFF5F5">🧺</div><span>Cleaning</span></div>
-      <div class="category"><div class="icon" style="background:#F0FFF4">🪴</div><span>Gardening</span></div>
-      <div class="category"><div class="icon" style="background:#EBF8FF">🛡️</div><span>Pest</span></div>
-      <div class="category"><div class="icon" style="background:#F7FAFC">🧱</div><span>Flooring</span></div>
-    </div>
-  </section>
-
-  <nav>
-    <a href="#" class="active"><span class="nav-icon">🏠</span><span>Home</span></a>
-    <a href="#"><span class="nav-icon">📅</span><span>Bookings</span></a>
-    <a href="#"><span class="nav-icon">💬</span><span>Support</span></a>
-    <a href="#"><span class="nav-icon">👤</span><span>Profile</span></a>
-  </nav>
-
 </body>
 </html>
