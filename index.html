@@ -3,156 +3,210 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FixZen — Home Services</title>
+  <title>FixZen — Premium Home Services</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
 
   <style>
-    /* === COLOR SYSTEM (FROM PROVIDED THEME) === */
     :root {
-      --primary-olive: #5D5646;
+      --primary-olive: #3A352B;
       --primary-brown: #A07D54;
-      --neutral-light: #DFD4C3;
-      --neutral-bg: #EEEAE2;
-      --accent-blue: #3E5974;
-      --text-dark: #4D4C4B;
+      --neutral-light: #E8E2D6;
+      --neutral-bg: #F8F7F4;
+      --accent-blue: #2C3E50;
+      --text-dark: #2D2C2B;
+      --text-muted: #706F6C;
       --white: #ffffff;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', sans-serif;
+      font-family: 'DM Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background: var(--neutral-bg);
       color: var(--text-dark);
+      line-height: 1.5;
     }
 
     /* HEADER */
     header {
       background: var(--white);
-      padding: 14px 18px;
+      padding: 16px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--neutral-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    .logo {
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .site-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .logo-text {
       font-size: 20px;
       font-weight: 800;
+      letter-spacing: -0.5px;
       color: var(--primary-olive);
-      letter-spacing: 0.5px;
+    }
+
+    .menu-trigger {
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--primary-olive);
     }
 
     /* HERO */
     .hero {
-      padding: 20px 18px;
+      padding: 20px;
     }
 
-    .hero-slider {
+    .hero-card {
       position: relative;
+      height: 260px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
     }
 
-    .slides {
-      position: absolute;
-      inset: 0;
-    }
-
-    .slide {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-    }
-
-    .slide.active {
-      opacity: 1;
+    .hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .hero-overlay {
-      position: relative;
-      z-index: 2;
-      height: 100%;
-      background: linear-gradient(180deg, rgba(93,86,70,0.85), rgba(93,86,70,0.65));
-      padding: 22px;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0.1));
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      color: var(--neutral-bg);
+      padding: 24px;
+      color: var(--white);
     }
 
     .hero-overlay h1 {
-      font-size: 22px;
-      margin-bottom: 6px;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 8px;
     }
 
     .hero-overlay p {
-      font-size: 14px;
-      margin-bottom: 14px;
-      color: var(--neutral-light);
+      font-size: 15px;
+      opacity: 0.9;
+      font-weight: 400;
     }
 
-    /* SECTION */
+    /* SEARCH */
+    .search-wrapper {
+      padding: 0 24px;
+      margin-top: -28px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .search-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    /* CATEGORIES */
     .section {
-      padding: 10px 18px 80px;
+      padding: 40px 20px 100px;
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin: 16px 0 12px;
+      align-items: baseline;
+      margin-bottom: 20px;
     }
 
     .section-header h2 {
-      font-size: 18px;
+      font-size: 22px;
+      font-weight: 800;
       color: var(--primary-olive);
     }
 
     .section-header a {
-      font-size: 13px;
-      color: var(--accent-blue);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-brown);
       text-decoration: none;
-      font-weight: 600;
     }
 
-    /* GRID */
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 16px;
     }
 
     .category {
       background: var(--white);
-      border-radius: 14px;
-      padding: 14px 8px;
+      border-radius: 20px;
+      padding: 16px 8px;
       text-align: center;
-      border: 1px solid var(--neutral-light);
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .category:active {
+      transform: scale(0.95);
+      background: var(--neutral-light);
     }
 
     .icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: var(--neutral-bg);
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #F1F4F8; /* Light accent tint */
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 8px;
-      font-size: 20px;
-      color: var(--accent-blue);
+      margin: 0 auto 12px;
+      font-size: 24px;
+      transition: background 0.3s ease;
     }
 
     .category span {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: block;
     }
 
     /* BOTTOM NAV */
@@ -161,79 +215,67 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: var(--white);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
       display: flex;
       justify-content: space-around;
-      padding: 10px 0;
+      padding: 12px 0 28px; /* Extra padding for modern mobile home bars */
       border-top: 1px solid var(--neutral-light);
+      z-index: 1000;
     }
 
     nav a {
       text-decoration: none;
-      font-size: 12px;
-      color: var(--text-dark);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      opacity: 0.6;
+      gap: 6px;
+      transition: 0.2s;
     }
 
     nav a.active {
-      color: var(--accent-blue);
-      opacity: 1;
-      font-weight: 600;
+      color: var(--primary-brown);
     }
 
-    /* WHATSAPP */
-    .whatsapp {
-      position: fixed;
-      bottom: 78px;
-      right: 16px;
-      background: var(--accent-blue);
-      color: var(--white);
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      text-decoration: none;
+    .nav-icon {
+      font-size: 20px;
     }
 
-    @media (max-width: 480px) {
-      .grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    @media (max-width: 400px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+      .hero-overlay h1 { font-size: 22px; }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo">FixZen</div>
-    <div>☰</div>
+    <div class="brand">
+      <img src="fixzen.png" alt="FixZen" class="site-logo" />
+      <span class="logo-text">FixZen</span>
+    </div>
+    <div class="menu-trigger">≡</div>
   </header>
 
   <section class="hero">
-    <div class="hero-card hero-slider">
-      <div class="slides">
-        <div class="slide active" style="background-image:url('https://images.unsplash.com/photo-1581578731548-c64695cc6952');"></div>
-        <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1598300056393-4aac492f4344');"></div>
-        <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6b6a6a8b');"></div>
-      </div>
-
+    <div class="hero-card">
+      <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800" alt="Service" class="hero-img">
       <div class="hero-overlay">
-        <h1>Trusted home services, done right</h1>
-        <p>Professionals near you. Clean work. Honest pricing.</p>
-        <div class="search-box">
-          🔍
-          <input type="text" placeholder="Search for services" />
-        </div>
+        <h1>Professional <br>Home Services</h1>
+        <p>Expert help for every corner of your home.</p>
       </div>
     </div>
   </section>
+
+  <div class="search-wrapper">
+    <div class="search-box">
+      <span style="opacity: 0.5;">🔍</span>
+      <input type="text" placeholder="Search for a service..." />
+    </div>
+  </div>
 
   <section class="section">
     <div class="section-header">
@@ -243,36 +285,34 @@
 
     <div class="grid">
       <div class="category"><div class="icon">❄️</div><span>AC Repair</span></div>
-      <div class="category"><div class="icon">⚡</div><span>Electrician</span></div>
-      <div class="category"><div class="icon">🚿</div><span>Plumber</span></div>
-      <div class="category"><div class="icon">🧰</div><span>Carpenter</span></div>
-      <div class="category"><div class="icon">🧺</div><span>Washing</span></div>
-      <div class="category"><div class="icon">🔥</div><span>Geyser</span></div>
-      <div class="category"><div class="icon">🛵</div><span>Bike</span></div>
-      <div class="category"><div class="icon">🧱</div><span>Tiles</span></div>
+      <div class="category"><div class="icon" style="background: #FFF9E6;">⚡</div><span>Electrician</span></div>
+      <div class="category"><div class="icon" style="background: #E6F4FF;">🚿</div><span>Plumber</span></div>
+      <div class="category"><div class="icon" style="background: #F3E8FF;">🧰</div><span>Carpenter</span></div>
+      <div class="category"><div class="icon" style="background: #E6FFFA;">🧺</div><span>Washing</span></div>
+      <div class="category"><div class="icon" style="background: #FFF5F5;">🔥</div><span>Geyser</span></div>
+      <div class="category"><div class="icon" style="background: #F7FAFC;">🛵</div><span>Bike</span></div>
+      <div class="category"><div class="icon" style="background: #F0FFF4;">🧱</div><span>Tiles</span></div>
     </div>
   </section>
 
-  <a class="whatsapp" href="#">💬</a>
-
   <nav>
-    <a class="active" href="#">🏠<span>Home</span></a>
-    <a href="#">📅<span>Booking</span></a>
-    <a href="#">➕<span>Service</span></a>
-    <a href="#">↩️<span>Return</span></a>
-    <a href="#">👤<span>Account</span></a>
+    <a class="active" href="#">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="#">
+      <span class="nav-icon">📅</span>
+      <span>Bookings</span>
+    </a>
+    <a href="#">
+      <span class="nav-icon">✨</span>
+      <span>Services</span>
+    </a>
+    <a href="#">
+      <span class="nav-icon">👤</span>
+      <span>Profile</span>
+    </a>
   </nav>
-
-  <script>
-    const slides = document.querySelectorAll('.slide');
-    let index = 0;
-
-    setInterval(() => {
-      slides[index].classList.remove('active');
-      index = (index + 1) % slides.length;
-      slides[index].classList.add('active');
-    }, 3500);
-  </script>
 
 </body>
 </html>
