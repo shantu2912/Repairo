@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Contact Us - FixZen</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',    // Primary
+                        'brand-gold': '#A07D54',     // Accent
+                        'brand-cream': '#EEEAE2',    // Bg
+                        'brand-dark': '#4D4C4B',     // Text
+                        'brand-blue': '#3E5974',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    boxShadow: {
+                        'glass-card': '0 8px 32px 0 rgba(93, 86, 70, 0.15)',
+                        'neon-gold': '0 0 15px rgba(160, 125, 84, 0.3)',
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'fade-in-delayed': 'fadeIn 0.8s ease-out 0.3s forwards',
+                    },
+                    keyframes: {
+                        slideUp: { '0%': { transform: 'translateY(30px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
+                    },
+                    backgroundImage: {
+                       'contact-hero': "url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop')",
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(223, 212, 195, 0.5);
+        }
+        .glass-input:focus {
+            border-color: #A07D54;
+            box-shadow: 0 0 0 3px rgba(160, 125, 84, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white">
+
+    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-[#FAFAF8] pb-24 overflow-hidden flex flex-col">
+
+        <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/40 px-6 py-4 flex items-center gap-4">
+            <button onclick="window.history.back()" class="w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-brand-olive hover:bg-brand-gold hover:text-white transition-colors shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1 class="font-sans font-bold text-lg text-brand-olive">Get in Touch</h1>
+        </header>
+
+        <div class="relative h-[280px] bg-contact-hero bg-cover bg-center animate-slide-up rounded-b-[40px] overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/70 to-brand-olive/30"></div>
+            <div class="absolute inset-0 flex flex-col justify-center px-8 text-white">
+                <p class="text-brand-beige font-bold text-xs uppercase tracking-widest mb-3">We're here for you</p>
+                <h2 class="font-serif text-3xl leading-tight mb-6">How can we <br>help today?</h2>
+                
+                <div class="flex gap-4 animate-fade-in-delayed opacity-0">
+                    <a href="tel:+919876543210" class="flex-1 h-12 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl flex items-center justify-center gap-2 font-bold text-sm hover:bg-brand-gold transition-colors active:scale-95">
+                        <i class="fa-solid fa-phone-volume"></i> Call Us
+                    </a>
+                    <a href="https://wa.me/919876543210" class="flex-1 h-12 bg-green-500/80 backdrop-blur-md border border-white/30 rounded-xl flex items-center justify-center gap-2 font-bold text-sm hover:bg-green-600 transition-colors active:scale-95">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Chat
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 mt-10 animate-slide-up" style="animation-delay: 0.2s;">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="font-sans font-bold text-lg text-brand-olive">Meet Leadership</h3>
+                <span class="text-[10px] text-brand-gold font-bold uppercase tracking-wider">The Visionaries</span>
+            </div>
+            
+            <div class="flex overflow-x-auto gap-4 hide-scroll pb-4 -mx-6 px-6">
+                
+                <div class="min-w-[200px] bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 relative group overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-brand-gold"></div>
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full p-1 border-2 border-brand-gold/30 mb-3 relative">
+                             <img src="https://i.pravatar.cc/150?img=68" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                             <div class="absolute bottom-0 right-0 w-6 h-6 bg-brand-gold rounded-full flex items-center justify-center text-white text-xs border-2 border-white"><i class="fa-brands fa-linkedin-in"></i></div>
+                        </div>
+                        <h4 class="font-bold text-brand-olive">Aarav Malhotra</h4>
+                        <p class="text-[10px] text-brand-gold font-bold uppercase tracking-wider mb-2">Founder & CEO</p>
+                        <p class="text-xs text-brand-dark/60 leading-tight">Visionary behind FixZen's premium service model.</p>
+                    </div>
+                </div>
+
+                 <div class="min-w-[200px] bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 relative group overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-brand-blue"></div>
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full p-1 border-2 border-brand-blue/30 mb-3 relative">
+                             <img src="https://i.pravatar.cc/150?img=47" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                             <div class="absolute bottom-0 right-0 w-6 h-6 bg-brand-blue rounded-full flex items-center justify-center text-white text-xs border-2 border-white"><i class="fa-brands fa-linkedin-in"></i></div>
+                        </div>
+                        <h4 class="font-bold text-brand-olive">Priya Sharma</h4>
+                        <p class="text-[10px] text-brand-blue font-bold uppercase tracking-wider mb-2">Co-Founder & COO</p>
+                        <p class="text-xs text-brand-dark/60 leading-tight">Driving operational excellence and partner success.</p>
+                    </div>
+                </div>
+
+                 <div class="min-w-[200px] bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 relative group overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-brand-olive"></div>
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full p-1 border-2 border-brand-olive/30 mb-3 relative">
+                             <img src="https://i.pravatar.cc/150?img=12" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                             <div class="absolute bottom-0 right-0 w-6 h-6 bg-brand-olive rounded-full flex items-center justify-center text-white text-xs border-2 border-white"><i class="fa-brands fa-linkedin-in"></i></div>
+                        </div>
+                        <h4 class="font-bold text-brand-olive">Vikram Singh</h4>
+                        <p class="text-[10px] text-brand-olive font-bold uppercase tracking-wider mb-2">Chief Tech Officer</p>
+                        <p class="text-xs text-brand-dark/60 leading-tight">Architect of our seamless booking platform.</p>
+                    </div>
+                </div>
+
+                 <div class="min-w-[200px] bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 relative group overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-red-400"></div>
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full p-1 border-2 border-red-400/30 mb-3 relative">
+                             <img src="https://i.pravatar.cc/150?img=5" class="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                             <div class="absolute bottom-0 right-0 w-6 h-6 bg-red-400 rounded-full flex items-center justify-center text-white text-xs border-2 border-white"><i class="fa-brands fa-linkedin-in"></i></div>
+                        </div>
+                        <h4 class="font-bold text-brand-olive">Ananya Desai</h4>
+                        <p class="text-[10px] text-red-400 font-bold uppercase tracking-wider mb-2">Chief Experience Officer</p>
+                        <p class="text-xs text-brand-dark/60 leading-tight">Ensuring every customer interaction is delightful.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="px-6 mt-8 animate-slide-up space-y-8" style="animation-delay: 0.4s;">
+            
+            <div>
+                <h3 class="font-sans font-bold text-lg text-brand-olive mb-4">Send a Message</h3>
+                <form class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" placeholder="First Name" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium">
+                        <input type="text" placeholder="Last Name" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium">
+                    </div>
+                    <input type="email" placeholder="Email Address" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium">
+                    <select class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all text-brand-dark/70 font-medium appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23A07D54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-13%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2013l128%20127.7c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.7%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-13z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-no-repeat bg-[right_1rem_center]">
+                        <option>Select Subject</option>
+                        <option>Service Inquiry</option>
+                        <option>Payment Issue</option>
+                        <option>Feedback</option>
+                        <option>Partner Inquiry</option>
+                    </select>
+                    <textarea rows="4" placeholder="How can we help?" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium resize-none"></textarea>
+                    <button type="button" class="w-full py-4 bg-brand-olive text-white rounded-xl font-bold shadow-lg shadow-brand-olive/20 hover:bg-brand-gold transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <span>Send Message</span>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-brand-cream/50 rounded-2xl p-6 flex flex-col gap-6 border border-brand-beige/30">
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-brand-olive text-sm mb-1">Headquarters</h4>
+                        <p class="text-xs text-brand-dark/70 leading-relaxed">
+                            FixZen Tower, Plot No. 108, <br>
+                            Civil Lines, Nagpur, <br>
+                            Maharashtra - 440001
+                        </p>
+                    </div>
+                </div>
+                 <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-brand-olive text-sm mb-1">Support Hours</h4>
+                        <p class="text-xs text-brand-dark/70 leading-relaxed">
+                            Mon - Sat: 9:00 AM - 8:00 PM <br>
+                            Sunday: 10:00 AM - 4:00 PM
+                        </p>
+                    </div>
+                </div>
+                <div class="border-t border-brand-beige/30 pt-4 flex justify-between items-center">
+                    <span class="text-xs font-bold text-brand-olive">Follow Us</span>
+                    <div class="flex gap-3 text-brand-gold/70">
+                        <a href="#" class="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:text-brand-gold hover:shadow-sm transition-all"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:text-brand-gold hover:shadow-sm transition-all"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:text-brand-gold hover:shadow-sm transition-all"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
