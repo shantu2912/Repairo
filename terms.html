@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Terms & Conditions - FixZen</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',    // Primary
+                        'brand-gold': '#A07D54',     // Accent
+                        'brand-cream': '#EEEAE2',    // Bg
+                        'brand-dark': '#4D4C4B',     // Text
+                        'brand-blue': '#3E5974',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white">
+
+    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-white pb-24 overflow-hidden flex flex-col">
+
+        <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-brand-beige/30 px-6 py-4 flex items-center gap-4">
+            <button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive hover:bg-brand-olive hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1 class="font-sans font-bold text-lg text-brand-olive">Terms & Conditions</h1>
+        </header>
+
+        <div class="px-6 pt-8 pb-4 animate-slide-up">
+            <p class="text-brand-gold font-bold text-xs uppercase tracking-widest mb-2">Last Updated: Dec 18, 2025</p>
+            <h2 class="font-serif text-3xl text-brand-olive leading-tight mb-4">Service Rules & <br> Agreements</h2>
+            <p class="text-sm text-brand-dark/70 leading-relaxed">
+                Welcome to FixZen. By booking a service, you agree to the following terms designed to ensure a safe and professional experience for both you and our partners.
+            </p>
+        </div>
+
+        <div class="px-6 space-y-4 animate-slide-up" style="animation-delay: 0.2s;" x-data="{ activeAccordion: 1 }">
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
+                <button @click="activeAccordion = activeAccordion === 1 ? null : 1" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Booking & Cancellations</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 1 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activeAccordion === 1" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
+                    <p>• <strong>Confirmation:</strong> A booking is confirmed only when you receive an in-app notification or SMS.</p>
+                    <p>• <strong>Rescheduling:</strong> You may reschedule free of cost up to 2 hours before the service time.</p>
+                    <p>• <strong>Cancellation Fee:</strong> Cancellations made within 60 minutes of the scheduled time will incur a convenience fee of ₹50.</p>
+                </div>
+            </div>
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
+                <button @click="activeAccordion = activeAccordion === 2 ? null : 2" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-wallet text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Pricing & Payment</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 2 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activeAccordion === 2" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
+                    <p>• <strong>Transparency:</strong> Prices shown on the app are final estimates. However, additional spare parts (if needed) are charged separately.</p>
+                    <p>• <strong>Visitation Charge:</strong> A minimum visitation fee of ₹99 applies if no service is availed after inspection.</p>
+                    <p>• <strong>Modes:</strong> We accept UPI, Credit/Debit Cards, and Cash after service.</p>
+                </div>
+            </div>
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
+                <button @click="activeAccordion = activeAccordion === 3 ? null : 3" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-shield-heart text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">FixZen Warranty</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 3 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activeAccordion === 3" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
+                    <p>• <strong>7-Day Guarantee:</strong> We provide a 7-day service warranty on all repairs. If the issue reoccurs, we fix it for free.</p>
+                    <p>• <strong>Scope:</strong> Warranty covers labor charges only. Spare parts carry their own manufacturer warranty.</p>
+                </div>
+            </div>
+
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
+                <button @click="activeAccordion = activeAccordion === 4 ? null : 4" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-user-shield text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Safety & Conduct</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 4 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activeAccordion === 4" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
+                    <p>• <strong>Respect:</strong> FixZen has a zero-tolerance policy for harassment or abusive behavior towards our partners.</p>
+                    <p>• <strong>Access:</strong> Customers must ensure safe access to the premises and keep pets away during the service.</p>
+                    <p>• <strong>Theft/Damages:</strong> FixZen is insured. Any proven theft or damage caused by our partner is covered up to ₹10,000.</p>
+                </div>
+            </div>
+
+             <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
+                <button @click="activeAccordion = activeAccordion === 5 ? null : 5" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-lock text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Data Privacy</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 5 ? 'rotate-180' : ''"></i>
+                </button>
+                <div x-show="activeAccordion === 5" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
+                    <p>• Your personal data (Phone, Address) is shared only with the assigned technician for service delivery.</p>
+                    <p>• We do not sell your data to third-party advertisers.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-8 px-6 text-center animate-slide-up" style="animation-delay: 0.3s;">
+            <p class="text-[10px] text-brand-dark/40 mb-4">By using FixZen, you acknowledge that you have read and understood these terms.</p>
+            <button onclick="window.location.href='index.html'" class="w-full py-4 bg-brand-olive text-white rounded-2xl font-bold shadow-xl shadow-brand-olive/20 active:scale-95 transition-transform">
+                I Agree & Continue
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>
