@@ -35,19 +35,42 @@
       font-family: 'Outfit', serif;
     }
 
-    /* FIXED HEADER */
-    header {
-      background: var(--white);
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
+   header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Vertical alignment */
+  padding: 12px 20px;
+  background: var(--white);
+}
 
+.menu-container {
+  display: flex;
+  align-items: center; /* Keeps text and icon on one line */
+  gap: 8px;            /* Space between text and icon */
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+/* Optional: Slight hover effect for a professional feel */
+.menu-container:hover {
+  background: var(--neutral-bg);
+}
+
+.menu-container h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;           /* Removes default heading margins */
+  color: var(--primary-olive);
+}
+
+.menu-trigger {
+  font-size: 24px;
+  line-height: 1;      /* Prevents the icon from adding extra height */
+  color: var(--primary-olive);
+}
     .brand { display: flex; align-items: center; gap: 10px; }
     .site-logo { width: 30px; height: 30px; border-radius: 6px; }
     .logo-text { font-size: 20px; font-weight: 800; color: var(--primary-olive); }
@@ -207,12 +230,18 @@
 </head>
 <body>
 
-  <header>
-    <div class="brand">
-      <img src="fixzen.png" alt="FixZen" class="site-logo" />
-      <span class="logo-text">FixZen</span>
-    </div>
-    <div style="font-size: 24px;">👤</div>
+ <header>
+  <div class="brand">
+    <img src="fixzen.png" alt="FixZen" class="site-logo" />
+    <span class="logo-text">FixZen</span>
+  </div>
+
+  <div class="menu-container">
+    <h3>Menu</h3>
+    <div class="menu-trigger">≡</div>
+  </div>
+</header>
+   
   </header>
 
   <section class="hero">
@@ -240,7 +269,7 @@
   <section class="section">
     <div class="section-header">
       <h2 style="font-size: 20px;">Top Services</h2>
-      <a href="#" style="color: var(--primary-brown); text-decoration: none; font-size: 14px; font-weight: 700;">View All</a>
+      
     </div>
 
     <div class="grid">
