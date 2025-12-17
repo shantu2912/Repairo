@@ -2,251 +2,206 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FixZen — Premium Home Services</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary-olive: #3A352B;
       --primary-brown: #A07D54;
-      --neutral-light: #E8E2D6;
       --neutral-bg: #F8F7F4;
       --accent-blue: #2C3E50;
       --text-dark: #2D2C2B;
-      --text-muted: #706F6C;
       --white: #ffffff;
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, serif;
       -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background: var(--neutral-bg);
       color: var(--text-dark);
-      line-height: 1.5;
+      overflow-x: hidden;
     }
 
-    /* HEADER */
+    h1, h2, .logo-text {
+      font-family: 'Outfit', serif;
+    }
+
+    /* FIXED HEADER */
     header {
       background: var(--white);
-      padding: 16px 20px;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      z-index: 1000;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .site-logo { width: 30px; height: 30px; border-radius: 6px; }
+    .logo-text { font-size: 20px; font-weight: 800; color: var(--primary-olive); }
 
-    .site-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-    }
-
-    .logo-text {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--primary-olive);
-    }
-
-    .menu-trigger {
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--primary-olive);
-    }
-
-    /* HERO */
+    /* HERO SLIDER SECTION */
     .hero {
-      padding: 20px;
+      padding: 16px;
     }
 
-    .hero-card {
+    .hero-container {
       position: relative;
-      height: 260px;
-      border-radius: 24px;
+      height: 220px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
     }
 
-    .hero-img {
+    .slider {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Image Rotation Animation */
+    .slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800'); animation: cycle 12s infinite; }
+    .slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800'); animation: cycle 12s infinite 4s; }
+    .slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1558383331-f520f2888351?auto=format&fit=crop&w=800'); animation: cycle 12s infinite 8s; }
+
+    @keyframes cycle {
+      0%, 33.33% { opacity: 1; }
+      38%, 100% { opacity: 0; }
     }
 
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0.1));
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 20%, transparent);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 24px;
+      padding: 20px;
       color: var(--white);
+      z-index: 2;
     }
 
-    .hero-overlay h1 {
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 8px;
-    }
+    .hero-overlay h1 { font-size: 24px; margin-bottom: 4px; }
+    .hero-overlay p { font-size: 14px; opacity: 0.9; }
 
-    .hero-overlay p {
-      font-size: 15px;
-      opacity: 0.9;
-      font-weight: 400;
-    }
-
-    /* SEARCH */
+    /* MOBILE SEARCH */
     .search-wrapper {
-      padding: 0 24px;
-      margin-top: -28px;
+      padding: 0 20px;
+      margin-top: -25px;
       position: relative;
       z-index: 10;
     }
 
     .search-box {
       background: var(--white);
-      border-radius: 16px;
-      padding: 16px 20px;
+      border-radius: 14px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
 
     .search-box input {
       border: none;
       outline: none;
       flex: 1;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
-      color: var(--text-dark);
     }
 
-    /* CATEGORIES */
-    .section {
-      padding: 40px 20px 100px;
-    }
+    /* CATEGORIES GRID */
+    .section { padding: 35px 20px 100px; }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 20px;
-    }
-
-    .section-header h2 {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--primary-olive);
-    }
-
-    .section-header a {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--primary-brown);
-      text-decoration: none;
+      margin-bottom: 18px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 12px;
     }
 
     .category {
       background: var(--white);
-      border-radius: 20px;
-      padding: 16px 8px;
+      border-radius: 18px;
+      padding: 14px 4px;
       text-align: center;
-      transition: all 0.3s ease;
-      border: 1px solid transparent;
-      cursor: pointer;
+      transition: transform 0.2s;
     }
 
-    .category:active {
-      transform: scale(0.95);
-      background: var(--neutral-light);
-    }
+    .category:active { transform: scale(0.92); }
 
     .icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      background: #F1F4F8; /* Light accent tint */
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #F2F2F2;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 12px;
-      font-size: 24px;
-      transition: background 0.3s ease;
+      margin: 0 auto 8px;
+      font-size: 22px;
     }
 
-    .category span {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-dark);
-      display: block;
-    }
+    .category span { font-size: 12px; font-weight: 600; color: var(--text-dark); }
 
-    /* BOTTOM NAV */
+    /* MOBILE BOTTOM NAV */
     nav {
       position: fixed;
       bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.95);
+      width: 100%;
+      background: rgba(255,255,255,0.96);
       backdrop-filter: blur(10px);
       display: flex;
       justify-content: space-around;
-      padding: 12px 0 28px; /* Extra padding for modern mobile home bars */
-      border-top: 1px solid var(--neutral-light);
+      padding: 10px 0 24px;
+      border-top: 1px solid rgba(0,0,0,0.05);
       z-index: 1000;
     }
 
     nav a {
       text-decoration: none;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
+      color: #8E8E93;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      transition: 0.2s;
+      gap: 4px;
     }
 
-    nav a.active {
-      color: var(--primary-brown);
-    }
+    nav a.active { color: var(--primary-brown); }
+    .nav-icon { font-size: 20px; }
+    nav span { font-size: 10px; font-weight: 600; }
 
-    .nav-icon {
-      font-size: 20px;
-    }
-
-    @media (max-width: 400px) {
+    /* Mobile Responsive Tweaks */
+    @media (max-width: 380px) {
       .grid { grid-template-columns: repeat(3, 1fr); }
-      .hero-overlay h1 { font-size: 22px; }
+      .hero-container { height: 180px; }
     }
   </style>
 </head>
@@ -257,61 +212,53 @@
       <img src="fixzen.png" alt="FixZen" class="site-logo" />
       <span class="logo-text">FixZen</span>
     </div>
-    <div class="menu-trigger">≡</div>
+    <div style="font-size: 24px;">👤</div>
   </header>
 
   <section class="hero">
-    <div class="hero-card">
-      <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800" alt="Service" class="hero-img">
+    <div class="hero-container">
+      <div class="slider">
+        <div class="slide"></div>
+        <div class="slide"></div>
+        <div class="slide"></div>
+      </div>
       <div class="hero-overlay">
-        <h1>Professional <br>Home Services</h1>
-        <p>Expert help for every corner of your home.</p>
+        <h1>Trusted Pros</h1>
+        <p>Book verified experts in 60 seconds.</p>
       </div>
     </div>
   </section>
 
   <div class="search-wrapper">
     <div class="search-box">
-      <span style="opacity: 0.5;">🔍</span>
-      <input type="text" placeholder="Search for a service..." />
+      <span>🔍</span>
+      <input type="text" placeholder="What service do you need?" />
     </div>
   </div>
 
   <section class="section">
     <div class="section-header">
-      <h2>Top Categories</h2>
-      <a href="#">View all</a>
+      <h2 style="font-size: 20px;">Top Services</h2>
+      <a href="#" style="color: var(--primary-brown); text-decoration: none; font-size: 14px; font-weight: 700;">View All</a>
     </div>
 
     <div class="grid">
-      <div class="category"><div class="icon">❄️</div><span>AC Repair</span></div>
-      <div class="category"><div class="icon" style="background: #FFF9E6;">⚡</div><span>Electrician</span></div>
-      <div class="category"><div class="icon" style="background: #E6F4FF;">🚿</div><span>Plumber</span></div>
-      <div class="category"><div class="icon" style="background: #F3E8FF;">🧰</div><span>Carpenter</span></div>
-      <div class="category"><div class="icon" style="background: #E6FFFA;">🧺</div><span>Washing</span></div>
-      <div class="category"><div class="icon" style="background: #FFF5F5;">🔥</div><span>Geyser</span></div>
-      <div class="category"><div class="icon" style="background: #F7FAFC;">🛵</div><span>Bike</span></div>
-      <div class="category"><div class="icon" style="background: #F0FFF4;">🧱</div><span>Tiles</span></div>
+      <div class="category"><div class="icon" style="background:#EBF8FF">❄️</div><span>AC Repair</span></div>
+      <div class="category"><div class="icon" style="background:#FFF9E6">⚡</div><span>Electrician</span></div>
+      <div class="category"><div class="icon" style="background:#E6FFFA">🚿</div><span>Plumber</span></div>
+      <div class="category"><div class="icon" style="background:#FAF5FF">🧰</div><span>Carpenter</span></div>
+      <div class="category"><div class="icon" style="background:#FFF5F5">🧺</div><span>Cleaning</span></div>
+      <div class="category"><div class="icon" style="background:#F0FFF4">🪴</div><span>Gardening</span></div>
+      <div class="category"><div class="icon" style="background:#EBF8FF">🛡️</div><span>Pest</span></div>
+      <div class="category"><div class="icon" style="background:#F7FAFC">🧱</div><span>Flooring</span></div>
     </div>
   </section>
 
   <nav>
-    <a class="active" href="#">
-      <span class="nav-icon">🏠</span>
-      <span>Home</span>
-    </a>
-    <a href="#">
-      <span class="nav-icon">📅</span>
-      <span>Bookings</span>
-    </a>
-    <a href="#">
-      <span class="nav-icon">✨</span>
-      <span>Services</span>
-    </a>
-    <a href="#">
-      <span class="nav-icon">👤</span>
-      <span>Profile</span>
-    </a>
+    <a href="#" class="active"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="#"><span class="nav-icon">📅</span><span>Bookings</span></a>
+    <a href="#"><span class="nav-icon">💬</span><span>Support</span></a>
+    <a href="#"><span class="nav-icon">👤</span><span>Profile</span></a>
   </nav>
 
 </body>
