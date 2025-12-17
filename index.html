@@ -1,315 +1,278 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Repairo — Home Services, fast & trusted</title>
-  <meta name="description" content="Book electricians, plumbers, AC & appliance technicians near you. Vetted pros, transparent pricing, easy booking." />
-  <link rel="stylesheet" href="style.css">
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixZen — Home Services</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* === COLOR SYSTEM (FROM PROVIDED THEME) === */
+    :root {
+      --primary-olive: #5D5646;
+      --primary-brown: #A07D54;
+      --neutral-light: #DFD4C3;
+      --neutral-bg: #EEEAE2;
+      --accent-blue: #3E5974;
+      --text-dark: #4D4C4B;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--neutral-bg);
+      color: var(--text-dark);
+    }
+
+    /* HEADER */
+    header {
+      background: var(--white);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--neutral-light);
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary-olive);
+      letter-spacing: 0.5px;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 20px 18px;
+    }
+
+    .hero-slider {
+      position: relative;
+    }
+
+    .slides {
+      position: absolute;
+      inset: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+    }
+
+    .hero-overlay {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(93,86,70,0.85), rgba(93,86,70,0.65));
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      color: var(--neutral-bg);
+    }
+
+    .hero-overlay h1 {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .hero-overlay p {
+      font-size: 14px;
+      margin-bottom: 14px;
+      color: var(--neutral-light);
+    }
+
+    /* SECTION */
+    .section {
+      padding: 10px 18px 80px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 12px;
+    }
+
+    .section-header h2 {
+      font-size: 18px;
+      color: var(--primary-olive);
+    }
+
+    .section-header a {
+      font-size: 13px;
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .category {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      border: 1px solid var(--neutral-light);
+    }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--neutral-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 20px;
+      color: var(--accent-blue);
+    }
+
+    .category span {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* BOTTOM NAV */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid var(--neutral-light);
+    }
+
+    nav a {
+      text-decoration: none;
+      font-size: 12px;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.6;
+    }
+
+    nav a.active {
+      color: var(--accent-blue);
+      opacity: 1;
+      font-weight: 600;
+    }
+
+    /* WHATSAPP */
+    .whatsapp {
+      position: fixed;
+      bottom: 78px;
+      right: 16px;
+      background: var(--accent-blue);
+      color: var(--white);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
 <body>
 
-  <!-- SPLASH SCREEN -->
-<div id="splash">
-  <video id="splashVideo" autoplay muted playsinline>
-    <source src="logo_animation.mp4" type="video/mp4">
-  </video>
-</div>
+  <header>
+    <div class="logo">FixZen</div>
+    <div>☰</div>
+  </header>
 
-  <div id="app" class="hidden">
-  <!-- YOUR ENTIRE WEBSITE CODE HERE -->
-   <!-- HEADER -->
-  <header class="site-header fixed top-0 left-0 w-full bg-white shadow-md z-50">
-  <div class="container header-inner flex justify-between items-center p-4 max-w-7xl mx-auto">
-    
-    <!-- Brand -->
-    <div class="brand flex items-center space-x-3">
-      <img src="fixzen.png" alt="Repairo logo" class="site-logo w-12 h-12" />
-      <div>
-        <div class="brand-title text-xl font-bold text-blue-600">FixZen</div>
-        <div class="brand-sub text-sm text-gray-600">Home services • Verified pros</div>
+  <section class="hero">
+    <div class="hero-card hero-slider">
+      <div class="slides">
+        <div class="slide active" style="background-image:url('https://images.unsplash.com/photo-1581578731548-c64695cc6952');"></div>
+        <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1598300056393-4aac492f4344');"></div>
+        <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6b6a6a8b');"></div>
       </div>
-    </div>
 
-    <!-- Navigation -->
-    <nav class="main-nav hidden md:flex space-x-6 items-center">
-      <a href="index.html" class="nav-link active hover:text-blue-500">Home</a>
-      <a href="services.html" class="nav-link hover:text-blue-500">Services</a>
-      <a href="my_booking.html" class="nav-link hover:text-blue-500">My Booking</a>
-      <a href="tracking.html" class="nav-link hover:text-blue-500">Tracking</a>
-      <a href="about.html" class="nav-link hover:text-blue-500">About</a>
-      <a href="technician-app.html" class="nav-link hover:text-blue-500">Technician</a>
-      <a href="loginuser.html" class="nav-link hover:text-blue-500">Login</a>
-      <a href="admin-login.html" class="nav-link hover:text-blue-500">Admin</a>
-      <button class="btn bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600" id="openBookTop">Book Now</button>
-    </nav>
-
-    <!-- Mobile menu button -->
-    <div class="md:hidden">
-      <button id="menu-btn" class="text-2xl font-bold">☰</button>
-    </div>
-
-  </div>
-</header>
-  <!-- MAIN -->
-  <main>
-
-    <!-- HERO -->
-    <section class="hero container">
-      <div class="hero-left">
-        <h1>Trusted technicians at your doorstep — same-day bookings available</h1>
-        <p class="lead">Plumbing, electrical, AC, appliance repair and more. Transparent pricing, verified reviews, and simple scheduling.</p>
-
-        <div class="search-card">
-          <input id="heroSearch" type="search" placeholder="Search services, e.g. ‘tap repair’, ‘AC service’" />
-          <select id="heroCity">
-            <option>Choose city</option>
-            <option>Amravati</option>
-            <option>Nagpur</option>
-            <option>Bengaluru</option>
-            <option>Hyderabad</option>
-          </select>
-          <button class="btn" id="heroSearchBtn">Search</button>
-        </div>
-
-        <ul class="trust-grid">
-          <li><strong>1M+</strong><span>Bookings</span></li>
-          <li><strong>4.8★</strong><span>Avg rating</span></li>
-          <li><strong>24/7</strong><span>Support</span></li>
-        </ul>
-
-        <div class="cta-row">
-          <button class="btn btn-large" id="heroBookBtn">Book a service</button>
-          <a href="#services" class="link-muted">See popular services</a>
+      <div class="hero-overlay">
+        <h1>Trusted home services, done right</h1>
+        <p>Professionals near you. Clean work. Honest pricing.</p>
+        <div class="search-box">
+          🔍
+          <input type="text" placeholder="Search for services" />
         </div>
       </div>
-
-      <div class="hero-right">
-        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=900&auto=format&fit=crop" alt="Technician working" />
-      </div>
-    </section>
-
-    <!-- POPULAR CATEGORIES -->
-    <section id="services" class="container section">
-      <h2>Popular categories</h2>
-      <div class="category-row" id="categoryRow"></div>
-    </section>
-
-    <!-- MOST BOOKED SERVICES -->
-    <section class="container section">
-      <div class="section-head">
-        <h2>Most Booked Services</h2>
-        <a href="services.html" class="link-muted">View all services</a>
-      </div>
-
-      <div class="services-grid" id="mostBooked"></div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section class="container section bg-card">
-      <div class="split">
-        <div>
-          <h3>How it works</h3>
-          <ol>
-            <li>Choose a service and pick a convenient slot.</li>
-            <li>We assign a nearby vetted technician.</li>
-            <li>Pay after the job or prepay for instant confirmation.</li>
-          </ol>
-        </div>
-
-        <div>
-          <h3>Why Repairo</h3>
-          <ul>
-            <li>Verified professionals</li>
-            <li>Transparent pricing & invoices</li>
-            <li>Secure payments & support</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- REVIEWS -->
-    <section class="container section">
-      <h2>Customer reviews</h2>
-      <div class="reviews-grid">
-        <blockquote>“Booked an AC service — technician arrived on time, very professional.” <cite>— Neha</cite></blockquote>
-        <blockquote>“Quick plumbing fix, fair price.” <cite>— Raj</cite></blockquote>
-        <blockquote>“Excellent electrician, highly recommended.” <cite>— Amit</cite></blockquote>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div>© 2025 Repairo</div>
-      <div class="footer-links">
-        <a href="about.html">About</a>
-        <a href="services.html">Services</a>
-        <a href="#">Support</a>
-      </div>
     </div>
-  </footer>
+  </section>
 
-  <!-- BOOKING MODAL -->
-  <div id="bookingModal" class="modal">
-    <div class="modal-dialog">
-      <button class="modal-close" id="bkClose">✕</button>
-      <h3>Book a service</h3>
-
-      <form id="bkForm">
-        <label>Service
-          <select id="bkService"></select>
-        </label>
-
-        <label>Date
-          <input type="date" id="bkDate" required>
-        </label>
-
-        <label>Address
-          <input type="text" id="bkAddr" placeholder="House no, street, city" required>
-        </label>
-
-        <div class="modal-actions">
-          <button type="button" class="btn btn-ghost" id="bkCancel">Cancel</button>
-          <button type="submit" class="btn">Confirm booking</button>
-        </div>
-      </form>
+  <section class="section">
+    <div class="section-header">
+      <h2>Top Categories</h2>
+      <a href="#">View all</a>
     </div>
-  </div>
 
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" class="modal">
-    <div class="modal-dialog">
-      <button class="modal-close" id="adminClose">✕</button>
-      <h3>Admin — Bookings</h3>
-      <div id="adminList" style="max-height:320px;overflow:auto"></div>
-      <button class="btn btn-ghost" id="adminClose2">Close</button>
+    <div class="grid">
+      <div class="category"><div class="icon">❄️</div><span>AC Repair</span></div>
+      <div class="category"><div class="icon">⚡</div><span>Electrician</span></div>
+      <div class="category"><div class="icon">🚿</div><span>Plumber</span></div>
+      <div class="category"><div class="icon">🧰</div><span>Carpenter</span></div>
+      <div class="category"><div class="icon">🧺</div><span>Washing</span></div>
+      <div class="category"><div class="icon">🔥</div><span>Geyser</span></div>
+      <div class="category"><div class="icon">🛵</div><span>Bike</span></div>
+      <div class="category"><div class="icon">🧱</div><span>Tiles</span></div>
     </div>
-  </div>
+  </section>
 
-  <!-- SCRIPT -->
-   <script>
-const menuBtn = document.getElementById('menu-btn');
-const nav = document.querySelector('.main-nav');
+  <a class="whatsapp" href="#">💬</a>
 
-menuBtn.addEventListener('click', () => {
-  nav.classList.toggle('hidden');
-});
-</script>
+  <nav>
+    <a class="active" href="#">🏠<span>Home</span></a>
+    <a href="#">📅<span>Booking</span></a>
+    <a href="#">➕<span>Service</span></a>
+    <a href="#">↩️<span>Return</span></a>
+    <a href="#">👤<span>Account</span></a>
+  </nav>
+
   <script>
-    // CATEGORIES
-    const CATEGORIES = [
-      {id:'plumbing', name:'Plumbing', img:'tap_repaire.jpg'},
-      {id:'electric', name:'Electrician', img:'electrcian.png'},
-      {id:'ac', name:'AC & Appliance', img:'air-conditioner.png'},
-      {id:'carpentry', name:'Carpentry', img:'carpenter.png'}
-    ];
+    const slides = document.querySelectorAll('.slide');
+    let index = 0;
 
-    // SERVICES (NO PRICE, NO RATING)
-    const SERVICES = [
-      {id:'tap_repair', name:'Tap/Leak repair', category:'plumbing'},
-      {id:'ac_service', name:'AC Full Service', category:'ac'},
-      {id:'wm_repair', name:'Washing machine repair', category:'ac'},
-      {id:'switch_replace', name:'Switch & Socket', category:'electric'},
-      {id:'door_fix', name:'Door hinge & repair', category:'carpentry'}
-    ];
-
-    // LOAD CATEGORIES
-    const catRow = document.getElementById('categoryRow');
-    CATEGORIES.forEach(c => {
-      catRow.innerHTML += `
-        <a class="category-card" href="service-detail.html?id=${c.id}">
-          <img src="${c.img}" alt="${c.name}">
-          <div><strong>${c.name}</strong><span class="muted">Trusted pros</span></div>
-        </a>`;
-    });
-
-document.getElementById("openBookTop").onclick = () => {
-  window.location.href = "booking.html";
-};
-
-  // Load logged-in user
-const user = JSON.parse(localStorage.getItem("repairo_user"));
-
-if (user) {
-  const navLogin = document.querySelector("a[href='loginuser.html']");
-  if (navLogin) {
-    navLogin.textContent = user.name.split(" ")[0]; // Show first name only
-    navLogin.style.fontWeight = "700";
-    navLogin.style.color = "#0d9488";
-  }
-}
-
-    // MOST BOOKED SERVICES (CLEAN)
-    const mb = document.getElementById('mostBooked');
-    SERVICES.forEach(s => {
-      mb.innerHTML += `
-      <article class="service-card">
-        <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop" alt="${s.name}" />
-        <div class="svc">
-          <h4>${s.name}</h4>
-          <p class="muted small">Vetted technicians</p>
-          <div class="svc-actions">
-            <button class="btn btn-ghost" onclick="openDetail('${s.id}')">Details</button>
-            <button class="btn" onclick="openBooking('${s.id}')">Book</button>
-          </div>
-        </div>
-      </article>`;
-    });
-
-    // BOOKING + ADMIN + SEARCH (unchanged)
-    const bookingModal = document.getElementById('bookingModal');
-    const bkService = document.getElementById('bkService');
-    const bkForm = document.getElementById('bkForm');
-
-    function openBooking(id){
-      bkService.value = id;
-      bookingModal.style.display='flex';
-    }
-    window.openBooking = openBooking;
-
-    function openDetail(id){
-      location.href = 'service-detail.html?id=' + id;
-    }
-    window.openDetail = openDetail;
-
-    bkForm.addEventListener('submit', e => {
-      e.preventDefault();
-      alert("Booking created (demo).");
-      bookingModal.style.display='none';
-    });
-
-    document.getElementById('bkClose').onclick = () => bookingModal.style.display='none';
-    document.getElementById('bkCancel').onclick = () => bookingModal.style.display='none';
-
-    
-    document.getElementById('adminClose').onclick =
-    document.getElementById('adminClose2').onclick = () =>
-      document.getElementById('adminPanel').style.display='none';
-
+    setInterval(() => {
+      slides[index].classList.remove('active');
+      index = (index + 1) % slides.length;
+      slides[index].classList.add('active');
+    }, 3500);
   </script>
-</div>
-
-<script>
-  const splash = document.getElementById("splash");
-  const video = document.getElementById("splashVideo");
-  const app = document.getElementById("app");
-
-  function showApp() {
-    splash.style.display = "none";
-    app.classList.remove("hidden");
-  }
-
-  video.addEventListener("ended", showApp);
-
-  // Fallback if video doesn't autoplay (GitHub safe)
-  setTimeout(showApp, 4500);
-</script>
-
-
 
 </body>
 </html>
