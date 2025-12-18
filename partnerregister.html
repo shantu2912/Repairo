@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen - Partner Registry</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold': '#A07D54',
+                        'brand-cream': '#F8F5F0',
+                        'brand-dark': '#2D2B28',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'], 
+                        serif: ['"Playfair Display"', 'serif'] 
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F8F5F0; }
+        .premium-input {
+            width: 100%; background-color: white; border: 2px solid #DFD4C3;
+            padding: 0.85rem 1rem; border-radius: 1rem; font-size: 0.875rem;
+            font-weight: 600; outline: none; transition: all 0.3s ease;
+        }
+        .premium-input:focus { border-color: #A07D54; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1); }
+        .input-label {
+            display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.1em; color: #A07D54; margin-bottom: 0.4rem; margin-left: 0.2rem;
+        }
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+            padding: 2rem; border-radius: 2.5rem; border: 1px solid white;
+            box-shadow: 0 20px 50px rgba(93, 86, 70, 0.08);
+        }
+        .btn-gold {
+            width: 100%; padding: 1.1rem; border-radius: 1.2rem; background-color: #A07D54;
+            color: white; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 0.2em; transition: all 0.3s ease; display: flex;
+            align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .loader {
+            border: 2px solid #f3f3f3; border-top: 2px solid #A07D54;
+            border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body class="min-h-screen p-4 font-sans flex flex-col items-center" x-data="{ isSubmitting: false, isSuccess: false }">
+
+    <template x-if="isSuccess">
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-brand-olive/60 backdrop-blur-md">
+            <div class="bg-white rounded-[3rem] p-10 max-w-sm w-full text-center shadow-2xl animate__animated animate__zoomIn">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa-solid fa-check text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-brand-olive mb-2">Application Sent!</h3>
+                <p class="text-brand-dark/60 text-sm mb-8">Our team will verify your documents and contact you within 24-48 hours.</p>
+                <a href="index.html" class="btn-gold">Return Home</a>
+            </div>
+        </div>
+    </template>
+
+    <div class="w-full max-w-xl flex flex-col items-center mt-6 mb-8 animate__animated animate__fadeInDown">
+        <a href="index.html" class="mb-4">
+            <img src="fixzen.png" alt="FixZen Logo" class="w-24 h-24 rounded-full shadow-lg border-2 border-white object-cover">
+        </a>
+        <h1 class="font-sans font-extrabold text-2xl tracking-[0.15em] text-brand-olive uppercase">Partner Registration</h1>
+        <p class="font-serif italic text-brand-gold text-sm">Join the elite FixZen professional network</p>
+    </div>
+
+    <div class="w-full max-w-xl animate__animated animate__fadeInUp">
+        <div class="glass-card">
+            <form @submit.prevent="isSubmitting = true; setTimeout(() => { isSubmitting = false; isSuccess = true; }, 2000)" class="space-y-5">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="input-label">Full Name</label>
+                        <input type="text" class="premium-input" placeholder="e.g. Tanmay Korde" required>
+                    </div>
+                    <div>
+                        <label class="input-label">Mobile Number</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-xs">+91</span>
+                            <input type="tel" class="premium-input pl-12" placeholder="98765 43210" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="input-label">Expertise Category</label>
+                    <div class="relative">
+                        <select class="premium-input appearance-none cursor-pointer">
+                            <option>AC & Appliance Repair</option>
+                            <option>Electrical Specialist</option>
+                            <option>Master Plumber</option>
+                            <option>Interior Painting</option>
+                            <option>Deep Cleaning</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-brand-gold text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="input-label">Years of Experience</label>
+                        <input type="number" class="premium-input" placeholder="e.g. 5" required>
+                    </div>
+                    <div>
+                        <label class="input-label">Aadhar Number</label>
+                        <input type="text" class="premium-input" placeholder="1234 5678 9012" maxlength="12" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="input-label">Preferred Service Area</label>
+                    <input type="text" class="premium-input" placeholder="e.g. Dharampeth, Nagpur" required>
+                </div>
+
+                <div class="p-6 border-2 border-dashed border-brand-beige rounded-2xl text-center bg-brand-cream/30 hover:border-brand-gold transition-colors group">
+                    <i class="fa-solid fa-id-card text-2xl text-brand-gold mb-2 group-hover:scale-110 transition-transform"></i>
+                    <p class="text-[9px] font-bold text-brand-olive uppercase tracking-widest">Identity Proof (Aadhar/License)</p>
+                    <input type="file" class="hidden" id="fileUpload">
+                    <button type="button" onclick="document.getElementById('fileUpload').click()" class="mt-2 text-[10px] font-bold text-brand-gold underline uppercase">Click to Upload</button>
+                </div>
+
+                <button type="submit" class="btn-gold shadow-lg" :disabled="isSubmitting">
+                    <span x-show="!isSubmitting">Submit Application</span>
+                    <div x-show="isSubmitting" class="loader"></div>
+                    <i x-show="!isSubmitting" class="fa-solid fa-paper-plane text-[10px]"></i>
+                </button>
+
+                <p class="text-[8px] text-center text-brand-dark/40 font-bold uppercase tracking-widest">
+                    Verified partners earn 30% more on average.
+                </p>
+            </form>
+        </div>
+
+        <div class="mt-8 text-center pb-10">
+            <a href="index.html" class="text-xs font-bold text-brand-olive hover:text-brand-gold transition-colors uppercase tracking-widest">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
