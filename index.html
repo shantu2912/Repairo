@@ -123,7 +123,7 @@
                 </template>
             </nav>
             <div class="p-6 bg-brand-cream/30">
-                <button class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white transition-colors uppercase tracking-widest">Log Out</button>
+                <button class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white transition-colors uppercase tracking-widest">Log In</button>
                 <div class="mt-4 flex justify-center gap-4 text-brand-gold/60"><i class="fa-brands fa-whatsapp text-lg hover:text-green-500 cursor-pointer transition-colors"></i><i class="fa-brands fa-instagram text-lg hover:text-pink-500 cursor-pointer transition-colors"></i><i class="fa-brands fa-twitter text-lg hover:text-blue-400 cursor-pointer transition-colors"></i></div>
             </div>
         </aside>
@@ -189,84 +189,185 @@
             </div>
         </div>
 
-        <div class="px-6 mt-8"><div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-3xl p-5 flex items-center justify-between text-white relative overflow-hidden shadow-lg"><div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div><div class="relative z-10"><p class="text-brand-gold font-bold text-xs uppercase tracking-wider mb-1">FixZen Promise</p><h3 class="font-serif text-lg leading-tight">100% Satisfaction <br>or Money Back</h3></div><div class="relative z-10 bg-white/20 backdrop-blur-md p-3 rounded-full"><i class="fa-solid fa-shield-heart text-2xl text-brand-gold"></i></div></div></div>
+        <!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen - Premium Home Services</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',    // Primary
+                        'brand-gold': '#A07D54',     // Accent
+                        'brand-cream': '#EEEAE2',    // Bg
+                        'brand-dark': '#4D4C4B',     // Text
+                        'brand-blue': '#3E5974',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    boxShadow: {
+                        'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)',
+                        'neon': '0 0 20px rgba(160, 125, 84, 0.4)',
+                    },
+                    animation: {
+                        'wrench': 'wrench 2.5s ease-in-out infinite',
+                        'slide-in-item': 'slideInItem 0.4s ease-out forwards',
+                        'float-icon': 'floatIcon 3s ease-in-out infinite',
+                        'text-scroll': 'textScroll 6s infinite',
+                        'chaos-spin': 'chaosSpin 2s linear infinite',
+                        'forge-flash': 'forgeFlash 1.5s ease-out forwards 1s',
+                        'draw-text': 'drawText 2s ease-out forwards 1.2s',
+                        'fill-text': 'fillText 1s ease-out forwards 2.5s',
+                        'logo-shine': 'logoShine 2s ease-in-out forwards 2.8s',
+                        'sub-text-slide': 'subTextSlide 1s ease-out forwards 3s',
+                    },
+                    keyframes: {
+                        wrench: { '0%, 100%': { transform: 'rotate(0deg)' }, '10%, 20%': { transform: 'rotate(-10deg)' }, '30%, 40%': { transform: 'rotate(10deg)' }, '50%': { transform: 'rotate(0deg)' } },
+                        slideInItem: { '0%': { opacity: '0', transform: 'translateX(-20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                        floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
+                        textScroll: { '0%, 20%': { transform: 'translateY(0%)' }, '25%, 45%': { transform: 'translateY(-25%)' }, '50%, 70%': { transform: 'translateY(-50%)' }, '75%, 95%': { transform: 'translateY(-75%)' }, '100%': { transform: 'translateY(-0%)' } },
+                        chaosSpin: { '0%': { transform: 'rotate(0deg) scale(1)', opacity: '0.5' }, '50%': { transform: 'rotate(180deg) scale(1.2)', opacity: '1' }, '100%': { transform: 'rotate(360deg) scale(1)', opacity: '0.5' } },
+                        forgeFlash: { '0%': { opacity: '0', transform: 'scale(0)' }, '50%': { opacity: '1', transform: 'scale(1.5)' }, '100%': { opacity: '0', transform: 'scale(2)' } },
+                        drawText: { 'to': { strokeDashoffset: '0' } },
+                        fillText: { 'from': { fillOpacity: '0' }, 'to': { fillOpacity: '1' } },
+                        logoShine: { '0%': { backgroundPosition: '-200%' }, '100%': { backgroundPosition: '200%' } },
+                        subTextSlide: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
+        .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+
+<body class="bg-brand-cream text-brand-dark antialiased"
+      x-data="{ 
+          loading: true, 
+          searchOpen: false, 
+          sidebarOpen: false, 
+          slideIndex: 0,
+          servicesExpanded: false,
+          searchQuery: ''
+      }"
+      x-init="
+          setTimeout(() => loading = false, 4500); 
+          setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
+      ">
+
+    <div x-show="loading" x-transition:leave="transition ease-in-out duration-1000" class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center overflow-hidden">
+        <div class="relative z-10 flex flex-col items-center">
+            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text></svg>
+            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
+        </div>
+    </div>
+
+    <div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
+        <div class="absolute inset-0 bg-brand-olive/40 backdrop-blur-md" x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"></div>
+        <aside class="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col border-r border-white/50"
+               x-show="sidebarOpen" x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0">
+            <div class="p-6 border-b border-brand-beige/50">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-sans font-extrabold text-2xl text-brand-olive tracking-widest">FIXZEN</h2>
+                    <button @click="sidebarOpen = false" class="w-8 h-8 rounded-full bg-white border border-brand-beige flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="bg-brand-olive rounded-2xl p-4 flex items-center gap-3 shadow-lg">
+                    <img src="https://i.pravatar.cc/150?img=3" class="w-12 h-12 rounded-full border-2 border-brand-gold">
+                    <div><p class="text-white font-bold text-sm">Guest User</p><p class="text-brand-beige text-xs">Welcome to FixZen</p></div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-2">
+                <template x-for="item in [{ name: 'HOME', icon: 'fa-house', link: '#' }, { name: 'REGISTER AS PARTNER', icon: 'fa-handshake', link: '#' }, { name: 'CONTACT US', icon: 'fa-headset', link: '#' }]">
+                    <a :href="item.link" class="flex items-center gap-4 px-6 py-4 hover:bg-brand-cream/50 transition-colors">
+                        <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i :class="`fa-solid ${item.icon}`"></i></div>
+                        <span class="text-sm font-bold text-brand-dark uppercase tracking-wide" x-text="item.name"></span>
+                    </a>
+                </template>
+            </nav>
+            <div class="p-6 bg-brand-cream/30">
+                <a href="loginuser.html" class="block w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white transition-all uppercase tracking-widest text-center">Log In</a>
+            </div>
+        </aside>
+    </div>
+
+    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-brand-cream pb-32 overflow-hidden" x-show="!loading">
+
+        <header class="absolute top-0 w-full z-40 px-6 py-4 flex justify-between items-center text-white">
+            <button @click="sidebarOpen = true" class="bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/30 transition"><i class="fa-solid fa-bars text-lg px-1"></i></button>
+            <div class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"><i class="fa-solid fa-location-dot text-brand-gold text-xs"></i><span class="text-xs font-bold">Nagpur, MH</span></div>
+            <div class="flex items-center gap-3">
+                <div class="relative bg-brand-gold/90 backdrop-blur-md p-2 rounded-full shadow-neon"><i class="fa-solid fa-cart-shopping text-lg px-1 text-white"></i></div>
+            </div>
+        </header>
+
+        <div class="relative h-[380px] rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900">
+            <div class="absolute inset-0 transition-opacity duration-1000" x-show="slideIndex === 0" x-transition.opacity><img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-transparent to-transparent"></div><div class="absolute bottom-24 left-6 right-6"><h2 class="text-3xl font-sans font-bold text-white leading-tight">Expert Electricians <br> <span class="text-brand-beige font-serif italic">at your door.</span></h2></div></div>
+            <div class="absolute inset-0 transition-opacity duration-1000" x-show="slideIndex === 1" x-transition.opacity><img src="https://images.unsplash.com/photo-1581578731117-104f2a417954?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-transparent"></div><div class="absolute bottom-24 left-6 right-6"><h2 class="text-3xl font-sans font-bold text-white leading-tight">50% OFF on <br> <span class="text-brand-beige font-serif italic">AC Repair.</span></h2></div></div>
+            <div class="absolute inset-0 transition-opacity duration-1000" x-show="slideIndex === 2" x-transition.opacity><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-transparent to-transparent"></div><div class="absolute bottom-24 left-6 right-6"><h2 class="text-3xl font-sans font-bold text-white leading-tight">Deep Cleaning <br> <span class="text-brand-beige font-serif italic">Solutions.</span></h2></div></div>
+        </div>
+
+        <div class="px-6 -mt-10 relative z-50">
+            <div x-show="searchOpen" class="fixed inset-0 bg-brand-olive/80 backdrop-blur-sm -z-10" @click="searchOpen = false"></div>
+            <div class="bg-white rounded-[2rem] p-2 shadow-super-float border border-white/40 flex items-center gap-2" :class="searchOpen ? 'scale-105' : ''">
+                 <div class="w-12 h-12 rounded-full flex items-center justify-center bg-brand-cream text-brand-olive"><i class="fa-solid fa-magnifying-glass"></i></div>
+                 <div class="flex-1 h-12 relative flex items-center" @click="searchOpen = true">
+                     <input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg" :placeholder="searchOpen ? 'Search Services...' : 'Need help?'">
+                 </div>
+            </div>
+        </div>
+
+        <div class="px-6 mt-8">
+            <h2 class="font-sans font-bold text-lg text-brand-olive mb-5 flex items-center gap-2">All Services <span class="h-px flex-1 bg-brand-beige"></span></h2>
+            <div class="grid grid-cols-4 gap-y-6 gap-x-2">
+                <div class="flex flex-col items-center gap-2 group cursor-pointer"><div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center group-hover:shadow-lg transition-all"><img src="https://cdn-icons-png.flaticon.com/512/9373/9373444.png" class="w-10 h-10 object-contain animate-float-icon"></div><span class="text-[10px] font-bold text-brand-olive">AC</span></div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer"><div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center group-hover:shadow-lg transition-all"><img src="https://cdn-icons-png.flaticon.com/512/2983/2983935.png" class="w-10 h-10 object-contain animate-float-icon"></div><span class="text-[10px] font-bold text-brand-olive">Electric</span></div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer"><div class="w-16 h-16 rounded-[22px] bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center group-hover:shadow-lg transition-all"><img src="https://cdn-icons-png.flaticon.com/512/2829/2829824.png" class="w-10 h-10 object-contain animate-float-icon"></div><span class="text-[10px] font-bold text-brand-olive">Plumbing</span></div>
+                <div class="flex flex-col items-center gap-2 group cursor-pointer" @click="servicesExpanded = !servicesExpanded"><div class="w-16 h-16 rounded-[22px] bg-brand-olive text-white shadow-lg flex items-center justify-center text-xl" :class="servicesExpanded ? 'bg-red-500 rotate-180' : ''"><i class="fa-solid" :class="servicesExpanded ? 'fa-xmark' : 'fa-plus'"></i></div><span class="text-[10px] font-bold text-brand-olive" x-text="servicesExpanded ? 'Close' : 'More'"></span></div>
+            </div>
+        </div>
+
+        <div class="px-6 mt-8">
+            <div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-3xl p-5 flex items-center justify-between text-white relative overflow-hidden">
+                <div class="relative z-10"><p class="text-brand-gold font-bold text-xs uppercase tracking-wider">FixZen Promise</p><h3 class="font-serif text-lg">100% Satisfaction</h3></div>
+                <div class="relative z-10 bg-white/20 backdrop-blur-md p-3 rounded-full"><i class="fa-solid fa-shield-heart text-2xl text-brand-gold"></i></div>
+            </div>
+        </div>
 
         <div class="pl-6 mt-10 mb-6">
             <div class="flex justify-between items-end mb-4 pr-6">
                 <h2 class="font-sans font-bold text-lg text-brand-olive">Top Experts Near You</h2>
-                <a href="#" class="text-xs font-bold text-brand-gold hover:underline">View All</a>
+                <a href="#" class="text-xs font-bold text-brand-gold">View All</a>
             </div>
             <div class="flex overflow-x-auto gap-4 no-scrollbar pb-8 pr-6">
-                <div class="min-w-[260px] bg-white rounded-[2rem] p-4 shadow-md border border-brand-beige/30 flex flex-col relative group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+                <div class="min-w-[260px] bg-white rounded-[2rem] p-4 shadow-md border border-brand-beige/30 flex flex-col hover:-translate-y-1 transition-transform">
                     <div class="flex items-center gap-3 mb-3">
                         <img src="https://i.pravatar.cc/150?img=11" class="w-14 h-14 rounded-2xl object-cover shadow-sm">
-                        <div>
-                            <div class="flex items-center gap-1">
-                                <h3 class="font-bold text-brand-olive">Arjun Verma</h3>
-                                <i class="fa-solid fa-circle-check text-blue-500 text-[10px]"></i>
-                            </div>
-                            <p class="text-[10px] text-brand-dark/50">AC Specialist • 5 Years Exp</p>
-                        </div>
+                        <div><h3 class="font-bold text-brand-olive">Arjun Verma</h3><p class="text-[10px] text-brand-dark/50">AC Specialist • 5 Yrs</p></div>
                     </div>
                     <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center gap-1 bg-brand-cream px-2 py-1 rounded-lg">
-                            <i class="fa-solid fa-star text-brand-gold text-[10px]"></i>
-                            <span class="text-xs font-bold text-brand-dark">4.9</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-[10px] text-brand-dark/40 line-through">₹599</span>
-                            <span class="text-sm font-bold text-brand-olive">₹499<span class="text-[10px] font-normal">/hr</span></span>
-                        </div>
+                        <div class="flex items-center gap-1 bg-brand-cream px-2 py-1 rounded-lg"><i class="fa-solid fa-star text-brand-gold text-[10px]"></i><span class="text-xs font-bold">4.9</span></div>
+                        <span class="text-sm font-bold text-brand-olive">₹499/hr</span>
                     </div>
-                    <button class="mt-3 w-full py-2.5 rounded-xl bg-brand-olive text-white text-xs font-bold tracking-wide hover:bg-brand-gold transition-colors">Book Now</button>
-                </div>
-
-                <div class="min-w-[260px] bg-white rounded-[2rem] p-4 shadow-md border border-brand-beige/30 flex flex-col relative group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-                    <div class="flex items-center gap-3 mb-3">
-                        <img src="https://i.pravatar.cc/150?img=5" class="w-14 h-14 rounded-2xl object-cover shadow-sm">
-                        <div>
-                            <div class="flex items-center gap-1">
-                                <h3 class="font-bold text-brand-olive">Sarah Khan</h3>
-                                <i class="fa-solid fa-circle-check text-blue-500 text-[10px]"></i>
-                            </div>
-                            <p class="text-[10px] text-brand-dark/50">Deep Cleaning • 4.8 Rating</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center gap-1 bg-brand-cream px-2 py-1 rounded-lg">
-                            <i class="fa-solid fa-star text-brand-gold text-[10px]"></i>
-                            <span class="text-xs font-bold text-brand-dark">4.8</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-[10px] text-brand-dark/40 line-through">₹999</span>
-                            <span class="text-sm font-bold text-brand-olive">₹899<span class="text-[10px] font-normal">/hr</span></span>
-                        </div>
-                    </div>
-                    <button class="mt-3 w-full py-2.5 rounded-xl bg-brand-olive text-white text-xs font-bold tracking-wide hover:bg-brand-gold transition-colors">Book Now</button>
-                </div>
-
-                 <div class="min-w-[260px] bg-white rounded-[2rem] p-4 shadow-md border border-brand-beige/30 flex flex-col relative group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-                    <div class="flex items-center gap-3 mb-3">
-                        <img src="https://i.pravatar.cc/150?img=12" class="w-14 h-14 rounded-2xl object-cover shadow-sm">
-                        <div>
-                            <div class="flex items-center gap-1">
-                                <h3 class="font-bold text-brand-olive">Rahul S.</h3>
-                                <i class="fa-solid fa-circle-check text-blue-500 text-[10px]"></i>
-                            </div>
-                            <p class="text-[10px] text-brand-dark/50">Plumbing • 8 Years Exp</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center gap-1 bg-brand-cream px-2 py-1 rounded-lg">
-                            <i class="fa-solid fa-star text-brand-gold text-[10px]"></i>
-                            <span class="text-xs font-bold text-brand-dark">4.7</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-[10px] text-brand-dark/40 line-through">₹399</span>
-                            <span class="text-sm font-bold text-brand-olive">₹299<span class="text-[10px] font-normal">/hr</span></span>
-                        </div>
-                    </div>
-                    <button class="mt-3 w-full py-2.5 rounded-xl bg-brand-olive text-white text-xs font-bold tracking-wide hover:bg-brand-gold transition-colors">Book Now</button>
+                    <button class="mt-3 w-full py-2.5 rounded-xl bg-brand-olive text-white text-xs font-bold">Book Now</button>
                 </div>
             </div>
         </div>
@@ -274,16 +375,15 @@
         <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
             <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-between items-center shadow-super-float">
                 <a href="#" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
-                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-calendar-check text-xl"></i></a>
-                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-wallet text-xl"></i></a>
-                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-regular fa-user text-xl"></i></a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold"><i class="fa-solid fa-calendar-check text-xl"></i></a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold"><i class="fa-solid fa-wallet text-xl"></i></a>
+                <a href="loginuser.html" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors">
+                    <i class="fa-regular fa-user text-xl"></i>
+                </a>
             </div>
         </div>
 
     </div>
 </body>
 </html>
-
-
-
 
