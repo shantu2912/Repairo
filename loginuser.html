@@ -1,227 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<title>Repairo — OTP Auth</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen - Premium Access</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
-<!-- Tailwind CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold': '#A07D54',
+                        'brand-cream': '#EEEAE2',
+                        'brand-dark': '#4D4C4B',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] }
+                }
+            }
+        }
+    </script>
 
-<style>
-.fade { animation: fadeIn .35s ease-out; }
-@keyframes fadeIn { from {opacity:0} to {opacity:1} }
-@keyframes slowRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+    <style>
+        .input-group { @apply relative mb-5; }
+        .fixzen-label { @apply absolute left-4 -top-2.5 bg-white dark:bg-brand-dark px-2 text-[10px] font-bold uppercase tracking-widest text-brand-gold z-10; }
+        .fixzen-input { @apply w-full p-4 rounded-2xl border border-brand-beige/50 bg-white/50 backdrop-blur-sm text-sm focus:ring-2 focus:ring-brand-gold outline-none transition-all dark:bg-brand-dark dark:text-white; }
+        .btn-primary { @apply w-full py-4 rounded-2xl bg-brand-olive text-white font-extrabold text-sm uppercase tracking-[0.2em] hover:bg-brand-gold active:scale-95 transition-all shadow-xl shadow-brand-olive/20 flex items-center justify-center gap-3; }
+        #authCard { transition: height 0.4s ease; }
+    </style>
 </head>
 
-<body class="relative min-h-screen bg-slate-100 dark:bg-slate-900 transition-all duration-300">
+<body class="bg-brand-cream dark:bg-brand-olive transition-colors duration-500 min-h-screen flex items-center justify-center p-6 font-sans">
 
-<!-- Background Blur Logo -->
-<div class="pointer-events-none fixed inset-0 flex justify-center items-center opacity-10">
-  <img src="C:\Users\user\OneDrive\Desktop\Repairo\repairologo.png"
-       class="w-[550px] h-[550px] blur-2xl select-none animate-[slowRotate_45s_linear_infinite]">
-</div>
+    <div class="relative z-10 w-full max-w-md">
+        <div class="text-center mb-8 animate__animated animate__fadeIn">
+            <h1 class="font-sans font-extrabold text-4xl tracking-[0.2em] text-brand-olive dark:text-brand-gold uppercase">FIXZEN</h1>
+            <p class="text-[10px] uppercase tracking-[0.4em] font-medium opacity-50 dark:text-brand-cream mt-2">Elevated Home Maintenance</p>
+        </div>
 
-<!-- Main container -->
-<div class="min-h-screen flex flex-col justify-center items-center px-4">
+        <div id="authCard" class="bg-white/90 dark:bg-brand-dark/95 backdrop-blur-2xl p-8 rounded-[3rem] shadow-2xl border border-white dark:border-brand-olive/30 overflow-hidden">
+            
+            <h2 id="title" class="font-serif italic text-3xl text-brand-olive dark:text-brand-gold mb-10 text-center">Sign In</h2>
 
-  <!-- Logo -->
-  <div class="mb-6 text-center">
-    <img src="fixzen.png" class="w-24 h-24 mx-auto">
-  </div>
+            <form id="mainForm" onsubmit="return false;" class="space-y-1">
+                
+                <div id="signupFields" class="hidden space-y-5 animate__animated animate__fadeIn">
+                    <div class="input-group">
+                        <label class="fixzen-label">Full Name</label>
+                        <input id="name" type="text" class="fixzen-input" placeholder="Your Name">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="fixzen-label">Mobile Number</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-xs border-r border-brand-beige pr-3">+91</span>
+                            <input id="phone" type="tel" class="fixzen-input pl-16" placeholder="9876543210" maxlength="10">
+                        </div>
+                    </div>
+                </div>
 
-  <!-- Card -->
-  <div class="w-full max-w-md bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl fade">
+                <div id="credentials">
+                    <div class="input-group">
+                        <label class="fixzen-label">Username</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold/40"><i class="fa-solid fa-user text-xs"></i></span>
+                            <input id="username" type="text" class="fixzen-input pl-10" placeholder="username">
+                        </div>
+                    </div>
 
-    <h2 id="title" class="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-4 text-center">
-      Login with OTP
-    </h2>
+                    <div class="input-group">
+                        <label class="fixzen-label">Password</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold/40"><i class="fa-solid fa-lock text-xs"></i></span>
+                            <input id="password" type="password" class="fixzen-input pl-10 pr-12" placeholder="••••••••">
+                            <button type="button" onclick="togglePass()" class="absolute right-4 top-1/2 -translate-y-1/2 text-brand-olive/30 hover:text-brand-gold">
+                                <i id="passIcon" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Name (Signup + Tech) -->
-    <div id="nameBox" class="hidden">
-      <label class="text-sm text-gray-500 dark:text-gray-300">Full Name</label>
-      <input id="name" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="Your Name">
+                <div id="otpSection" class="hidden animate__animated animate__fadeInUp py-4 text-center">
+                    <label class="text-[10px] block mb-4 uppercase tracking-widest font-bold text-brand-gold">Verify Phone</label>
+                    <input id="otp" type="text" maxlength="6" class="w-full text-center p-4 rounded-2xl border-2 border-dashed border-brand-gold bg-transparent text-2xl font-bold tracking-[0.5em] focus:border-brand-olive outline-none dark:text-white" placeholder="000000">
+                    <button onclick="verifyOtp()" class="btn-primary mt-6 bg-brand-gold">Confirm Verification</button>
+                </div>
+
+                <div id="primaryAction" class="pt-6">
+                    <button id="authBtn" onclick="handleAuth()" class="btn-primary">
+                        <span>Sign In</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                </div>
+            </form>
+
+            <p id="msg" class="text-center mt-6 text-[10px] font-bold uppercase tracking-widest min-h-[20px]"></p>
+
+            <div id="bottomNav" class="mt-8 pt-8 border-t border-brand-beige/30 text-center">
+                <p id="toggleText" class="text-xs font-medium text-brand-dark/60 dark:text-brand-cream/40">
+                    Don't have an account? 
+                    <button onclick="switchToSignup()" class="text-brand-gold font-bold hover:underline ml-1">Create Now</button>
+                </p>
+            </div>
+        </div>
+
+        <div class="flex justify-center mt-10">
+            <button onclick="toggleDarkMode()" class="p-3 rounded-full bg-white dark:bg-brand-dark shadow-lg text-brand-gold transition-all">
+                <i class="fa-solid fa-circle-half-stroke"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- Technician Extra Fields -->
-    <div id="techFields" class="hidden">
+    <script>
+        const API_BASE = "https://repairo-3.onrender.com";
+        let isSignup = false;
 
-      <label class="text-sm text-gray-500 dark:text-gray-300">Aadhar Number</label>
-      <input id="aadhar" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="1234 5678 9012">
+        function togglePass() {
+            const pass = document.getElementById("password");
+            const icon = document.getElementById("passIcon");
+            pass.type = pass.type === "password" ? "text" : "password";
+            icon.classList.toggle("fa-eye"); icon.classList.toggle("fa-eye-slash");
+        }
 
-      <label class="text-sm text-gray-500 dark:text-gray-300">Bank Account Number</label>
-      <input id="bankAcc" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="Account Number">
+        function switchToSignup() {
+            isSignup = true;
+            document.getElementById("title").innerText = "Join FixZen";
+            document.getElementById("authBtn").querySelector('span').innerText = "Send OTP";
+            document.getElementById("signupFields").classList.remove("hidden");
+            document.getElementById("toggleText").innerHTML = `Already a member? <button onclick="switchToLogin()" class="text-brand-gold font-bold hover:underline ml-1">Sign In</button>`;
+            showMsg("");
+        }
 
-      <label class="text-sm text-gray-500 dark:text-gray-300">Bank IFSC Code</label>
-      <input id="ifsc" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="IFSC Code (e.g., HDFC0001234)">
+        function switchToLogin() {
+            isSignup = false;
+            document.getElementById("title").innerText = "Sign In";
+            document.getElementById("authBtn").querySelector('span').innerText = "Sign In";
+            document.getElementById("signupFields").classList.add("hidden");
+            document.getElementById("otpSection").classList.add("hidden");
+            document.getElementById("credentials").classList.remove("hidden");
+            document.getElementById("primaryAction").classList.remove("hidden");
+            document.getElementById("toggleText").innerHTML = `Don't have an account? <button onclick="switchToSignup()" class="text-brand-gold font-bold hover:underline ml-1">Create Now</button>`;
+            showMsg("");
+        }
 
-      <!-- Photo Upload -->
-      <label class="text-sm text-gray-500 dark:text-gray-300">Upload Photo</label>
-      <input id="techPhoto" type="file" accept="image/*"
-             class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600 cursor-pointer">
+        function showMsg(t, err = true) {
+            const m = document.getElementById("msg");
+            m.innerText = t; 
+            m.className = `text-center mt-6 text-[10px] font-bold uppercase tracking-widest ${err ? 'text-red-400' : 'text-brand-gold animate-pulse'}`;
+        }
 
-      <img id="previewImg" class="hidden w-24 h-24 rounded-full object-cover mt-2 border">
-    </div>
+        async function handleAuth() {
+            const u = document.getElementById("username").value.trim();
+            const p = document.getElementById("password").value.trim();
+            const phone = document.getElementById("phone").value.trim();
 
-    <!-- Phone -->
-    <label class="text-sm text-gray-500 dark:text-gray-300">Phone (+91)</label>
-    <input id="phone" class="w-full p-2 mt-1 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="+91 9876543210">
+            if (!u || !p) return showMsg("Credentials required");
 
-    <!-- OTP -->
-    <input id="otp" class="w-full p-2 rounded-lg border mt-4 dark:bg-slate-700 dark:border-slate-600" placeholder="Enter 6-digit OTP">
+            if (isSignup) {
+                if (!phone || phone.length < 10) return showMsg("Valid phone required");
+                
+                showMsg("Sending OTP to your phone...", false);
+                try {
+                    const res = await fetch(`${API_BASE}/send-otp`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ phone: "+91" + phone })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showMsg("OTP Sent Successfully", false);
+                        // Show OTP Input
+                        document.getElementById("signupFields").classList.add("hidden");
+                        document.getElementById("credentials").classList.add("hidden");
+                        document.getElementById("primaryAction").classList.add("hidden");
+                        document.getElementById("otpSection").classList.remove("hidden");
+                    } else {
+                        showMsg("Failed: " + data.message);
+                    }
+                } catch (e) { showMsg("Server connection error"); }
+            } else {
+                showMsg("Verifying...", false);
+                setTimeout(() => window.location.href = "index.html", 1200);
+            }
+        }
 
-    <!-- Buttons -->
-    <button id="sendOtpBtn" class="w-full bg-teal-600 text-white p-2 rounded-lg mt-4">Send OTP</button>
-    <button id="verifyOtpBtn" class="w-full bg-teal-700 text-white p-2 rounded-lg mt-3">Verify OTP</button>
+        async function verifyOtp() {
+            const phone = "+91" + document.getElementById("phone").value.trim();
+            const otp = document.getElementById("otp").value.trim();
 
-    <!-- Message -->
-    <p id="msg" class="text-center mt-3 text-sm"></p>
+            if (otp.length < 6) return showMsg("Enter 6-digit code");
 
-    <!-- Toggle -->
-    <p class="text-center text-sm mt-4 text-gray-600 dark:text-gray-300">
-      <span id="toggleText">
-        New user? <b class="text-teal-600 cursor-pointer" onclick="switchToSignup()">Create account</b>
-      </span>
-    </p>
+            try {
+                const res = await fetch(`${API_BASE}/verify-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone, otp })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showMsg("Account Verified!", false);
+                    localStorage.setItem("fixzen_user", JSON.stringify({username: document.getElementById("username").value}));
+                    setTimeout(() => window.location.href = "index.html", 1000);
+                } else {
+                    showMsg("Invalid code, try again");
+                }
+            } catch (e) { showMsg("Verification failed"); }
+        }
 
-    <!-- Forgot password -->
-    <p class="text-center text-sm mt-3">
-      <b onclick="openForgot()" class="text-blue-600 cursor-pointer">Forgot Password?</b>
-    </p>
-
-    <!-- Technician Signup -->
-    <p class="text-center text-sm mt-4">
-      <b onclick="openTechSignup()" class="text-purple-600 cursor-pointer">Technician Signup</b>
-    </p>
-
-    <!-- Dark mode -->
-    <button onclick="toggleDarkMode()"
-            class="w-full mt-4 border p-2 rounded-lg text-sm dark:text-white">
-      Toggle Dark Mode
-    </button>
-
-  </div>
-</div>
-
-<!-- JS -->
-<script>
-let isSignup=false, isTech=false;
-
-function switchToSignup(){
-  isSignup=true; isTech=false;
-
-  document.getElementById("title").innerText="Create your Account";
-  document.getElementById("nameBox").classList.remove("hidden");
-  document.getElementById("techFields").classList.add("hidden");
-
-  document.getElementById("toggleText").innerHTML =
-    `Already have an account? <b class="text-teal-600 cursor-pointer" onclick="switchToLogin()">Login</b>`;
-}
-
-function switchToLogin(){
-  isSignup=false; isTech=false;
-
-  document.getElementById("title").innerText="Login with OTP";
-  document.getElementById("nameBox").classList.add("hidden");
-  document.getElementById("techFields").classList.add("hidden");
-
-  document.getElementById("toggleText").innerHTML =
-    `New user? <b class="text-teal-600 cursor-pointer" onclick="switchToSignup()">Create account</b>`;
-}
-
-function openTechSignup(){
-  isTech=true; isSignup=false;
-
-  document.getElementById("title").innerText="Technician Signup";
-  document.getElementById("nameBox").classList.remove("hidden");
-  document.getElementById("techFields").classList.remove("hidden");
-
-  document.getElementById("toggleText").innerHTML =
-    `<b class='text-blue-600 cursor-pointer' onclick="switchToLogin()">Back to Login</b>`;
-}
-
-function openForgot(){
-  alert("Forgot password works only for email-based login.");
-}
-
-function toggleDarkMode(){
-  document.documentElement.classList.toggle("dark");
-  localStorage.setItem("theme",
-    document.documentElement.classList.contains("dark") ? "dark" : "light"
-  );
-}
-
-/* Photo Preview */
-const techPhoto=document.getElementById("techPhoto");
-const previewImg=document.getElementById("previewImg");
-
-if(techPhoto){
-  techPhoto.addEventListener("change", e=>{
-    const file=e.target.files[0];
-    if(file){
-      previewImg.src=URL.createObjectURL(file);
-      previewImg.classList.remove("hidden");
-    }
-  });
-}
-
-/* OTP System */
-const phoneInput=document.getElementById("phone");
-const otpInput=document.getElementById("otp");
-const msg=document.getElementById("msg");
-
-function show(m,color="red"){ msg.innerText=m; msg.style.color=color; }
-
-document.getElementById("sendOtpBtn").onclick=async()=>{
-  const phone=phoneInput.value.trim();
-  if(!phone.startsWith("+")) return show("Use full number with country code");
-
-  try{
-    const res=await fetch("https://repairo-3.onrender.com/send-otp",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone})
-    });
-
-    const data=await res.json();
-    if(data.success) show("OTP sent!","green");
-    else show("Failed to send OTP");
-  }
-  catch(err){ show("Error: "+err.message); }
-};
-
-document.getElementById("verifyOtpBtn").onclick=async()=>{
-  const phone=phoneInput.value.trim();
-  const otp=otpInput.value.trim();
-
-  try{
-    const res=await fetch("https://repairo-3.onrender.com/verify-otp",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone,otp})
-    });
-
-    const data=await res.json();
-
-    if(data.success){
-    const user = {
-    name: document.getElementById("name").value || "User",
-    phone: phone,
-    isTech: isTech
-  };
-
-  localStorage.setItem("repairo_user", JSON.stringify(user));
-
-      show("OTP verified! Redirecting...","green");
-      setTimeout(()=>{ window.location.href="index.html"; },800);
-    } else {
-      show("Invalid OTP");
-    }
-  }
-  catch(err){ show("Error: "+err.message); }
-};
-</script>
-
+        function toggleDarkMode() { document.documentElement.classList.toggle("dark"); }
+    </script>
 </body>
 </html>
