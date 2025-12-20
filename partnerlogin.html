@@ -12,23 +12,16 @@
     <style>
         body { background-color: #F2EDE4; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* THE VISIBLE BOX FIX */
         .login-input-box {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 1rem 1.5rem;
-            border-radius: 9999px; /* Pill Shape */
-            border: 2px solid #A07D54; /* Explicit Gold Border */
-            background-color: #FFFFFF; /* White background to pop */
+            border-radius: 9999px;
+            border: 2px solid #A07D54;
+            background-color: #FFFFFF;
             margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .login-input-box:focus-within {
-            border-color: #5D5646; /* Changes to olive on click */
-            box-shadow: 0 0 10px rgba(160, 125, 84, 0.2);
         }
 
         input {
@@ -61,10 +54,9 @@
             text-transform: uppercase;
             letter-spacing: 0.2em;
             font-size: 12px;
-            transition: background 0.3s;
+            cursor: pointer;
+            border: none;
         }
-
-        .btn-premium:hover { background-color: #A07D54; }
     </style>
 </head>
 
@@ -81,13 +73,12 @@
     </div>
 
     <div class="w-full max-w-[480px] bg-white rounded-[3rem] p-10 shadow-2xl border border-white">
-        
         <h2 class="font-serif italic text-3xl text-[#5D5646] text-center mb-10">Welcome Back</h2>
 
-        <form>
+        <form id="loginForm">
             <label class="label-text">Partner ID / User</label>
             <div class="login-input-box">
-                <input type="text" placeholder="Enter username">
+                <input type="text" id="techNameInput" placeholder="Enter your name" required>
                 <i class="fa-solid fa-user text-[#A07D54]/40"></i>
             </div>
 
@@ -97,23 +88,31 @@
                     <input type="checkbox" class="w-3 h-3 accent-[#A07D54]">
                     <span class="text-[8px] font-bold text-[#A07D54]">REMEMBER</span>
                 </div>
-
                 <input type="password" class="text-center tracking-[0.5em]" placeholder="••••">
-
                 <a href="#" class="text-[8px] font-bold text-[#A07D54] shrink-0 hover:underline">SUPPORT?</a>
             </div>
 
-            <button type="button" class="btn-premium">
+            <button type="submit" class="btn-premium">
                 Launch Dashboard <i class="fa-solid fa-shield-halved ml-2"></i>
             </button>
         </form>
-
-        <div class="mt-8 text-center border-t border-gray-100 pt-6">
-            <a href="#" class="text-[10px] font-bold text-[#A07D54] tracking-widest uppercase hover:underline">
-                New Partner? Create Account
-            </a>
-        </div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 1. Get the name from the input
+            const name = document.getElementById('techNameInput').value;
+            
+            // 2. Save the name to LocalStorage (Browser Memory)
+            localStorage.setItem('technicianName', name);
+            
+            // 3. Redirect to your dashboard page 
+            // Change 'new.html' to whatever your dashboard file is named
+            window.location.href = 'techniciandashboard.html'; 
+        });
+    </script>
 
 </body>
 </html>
