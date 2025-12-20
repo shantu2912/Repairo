@@ -33,33 +33,72 @@
 
     <style>
         [x-cloak] { display: none !important; }
-        body { background-color: #F8F5F0; color: #2D2B28; }
+        body { background-color: #F8F5F0; color: #2D2B28; overflow-x: hidden; }
+        
+        /* Premium Glass Morphism */
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(20px);
             border: 1px solid white;
-            box-shadow: 0 15px 35px rgba(93, 86, 70, 0.08);
+            box-shadow: 0 15px 35px rgba(93, 86, 70, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .stat-card {
-            @apply p-5 rounded-[2rem] border border-brand-beige/30 bg-white transition-all hover:shadow-lg;
+        
+        .glass-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 25px 45px rgba(93, 86, 70, 0.12);
+        }
+
+        /* Staggered Animation Delays */
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* Floating Animation for the Camera Button */
+        @keyframes float {
+            0% { transform: translate(-50%, -16px); }
+            50% { transform: translate(-50%, -24px); }
+            100% { transform: translate(-50%, -16px); }
+        }
+        .floating-action {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Custom Stat Pulse */
+        .stat-pulse {
+            position: relative;
+        }
+        .stat-pulse::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 2rem;
+            border: 2px solid #A07D54;
+            opacity: 0;
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            100% { transform: scale(1.05); opacity: 0; }
         }
     </style>
 </head>
 
 <body class="font-sans antialiased pb-32" x-data="dashboardHandler()" x-init="init()">
 
-    <header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur-lg border-b border-brand-beige/20 p-5">
+    <header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur-lg border-b border-brand-beige/20 p-5 animate__animated animate__fadeInDown">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-brand-olive flex items-center justify-center text-white text-xl font-bold shadow-lg border-2 border-white">
+                <div class="w-12 h-12 rounded-full bg-brand-olive flex items-center justify-center text-white text-xl font-bold shadow-lg border-2 border-white transform hover:rotate-12 transition-transform cursor-pointer">
                     <span x-text="techName.charAt(0)"></span>
                 </div>
                 <div>
-                    <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold">Pro Partner</h1>
+                    <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold animate__animated animate__fadeInLeft">Pro Partner</h1>
                     <p class="font-serif italic text-lg text-brand-olive leading-tight" x-text="techName"></p>
                 </div>
             </div>
-            <button @click="logout()" class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-brand-olive/40 hover:text-red-500 transition-colors">
+            <button @click="logout()" class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-brand-olive/40 hover:text-red-500 hover:rotate-90 transition-all duration-500">
                 <i class="fa-solid fa-power-off"></i>
             </button>
         </div>
@@ -67,22 +106,22 @@
 
     <main class="max-w-md mx-auto p-6 space-y-8">
 
-        <section class="animate__animated animate__fadeIn">
+        <section>
             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-olive/50 mb-4 ml-2">Today at a Glance</h2>
             <div class="grid grid-cols-2 gap-4">
-                <div class="stat-card">
+                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-1">
                     <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">Active Jobs</span>
                     <h3 class="text-3xl font-extrabold mt-1 text-brand-olive" x-text="stats.activeJobs">0</h3>
                 </div>
-                <div class="stat-card">
+                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-2">
                     <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">Earnings</span>
                     <h3 class="text-3xl font-extrabold mt-1 text-green-700" x-text="'₹' + stats.earnings">₹0</h3>
                 </div>
-                <div class="stat-card">
+                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-3">
                     <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">Pending</span>
                     <h3 class="text-3xl font-extrabold mt-1 text-brand-olive" x-text="stats.pending">0</h3>
                 </div>
-                <div class="stat-card flex flex-col justify-center">
+                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-4 stat-pulse">
                     <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">SLA Status</span>
                     <div class="flex items-center gap-2 mt-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
@@ -95,11 +134,12 @@
         <section class="space-y-4">
             <div class="flex justify-between items-center ml-2">
                 <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-olive/50">Current Repairs</h2>
-                <span class="text-[9px] font-bold text-brand-gold underline uppercase">Timeline</span>
+                <span class="text-[9px] font-bold text-brand-gold underline uppercase cursor-pointer hover:text-brand-olive transition-colors">Timeline</span>
             </div>
 
-            <template x-for="job in jobs" :key="job.id">
-                <div class="glass-card p-6 rounded-[2.5rem] border-l-[6px] border-brand-gold animate__animated animate__fadeInUp">
+            <template x-for="(job, index) in jobs" :key="job.id">
+                <div class="glass-card p-6 rounded-[2.5rem] border-l-[6px] border-brand-gold animate__animated animate__slideInRight" 
+                     :style="'animation-delay: ' + (index * 0.2) + 's'">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <span class="text-[9px] font-bold bg-brand-gold/10 text-brand-gold px-2 py-1 rounded" x-text="'#' + job.id"></span>
@@ -108,7 +148,7 @@
                         </div>
                         <div class="text-right">
                             <p class="text-[9px] font-black text-red-500 uppercase">Deadline</p>
-                            <p class="text-sm font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg" x-text="job.timeLeft"></p>
+                            <p class="text-sm font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg animate-pulse" x-text="job.timeLeft"></p>
                         </div>
                     </div>
 
@@ -121,39 +161,26 @@
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <a :href="'tel:' + job.phone" class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center shadow-sm active:scale-90 transition-transform"><i class="fa-solid fa-phone"></i></a>
-                            <button class="px-5 py-2.5 rounded-xl bg-brand-olive text-white text-[10px] font-black uppercase tracking-widest shadow-md active:scale-95 transition-all">Start</button>
+                            <a :href="'tel:' + job.phone" class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center shadow-sm hover:bg-green-600 hover:text-white transition-all active:scale-90"><i class="fa-solid fa-phone"></i></a>
+                            <button class="px-5 py-2.5 rounded-xl bg-brand-olive text-white text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-brand-gold active:scale-95 transition-all">Start</button>
                         </div>
                     </div>
                 </div>
             </template>
         </section>
 
-        <section class="grid grid-cols-2 gap-4">
-            <div class="bg-white p-5 rounded-[2rem] border border-brand-beige/30">
-                <i class="fa-solid fa-screwdriver-wrench text-brand-gold mb-2"></i>
-                <h4 class="text-[10px] font-black uppercase text-brand-olive">Toolkit</h4>
-                <p class="text-[9px] text-red-500 font-bold mt-1">2 Parts Low</p>
-            </div>
-            <div class="bg-white p-5 rounded-[2rem] border border-brand-beige/30">
-                <i class="fa-solid fa-graduation-cap text-brand-gold mb-2"></i>
-                <h4 class="text-[10px] font-black uppercase text-brand-olive">Knowledge</h4>
-                <p class="text-[9px] text-brand-dark/40 font-bold mt-1">12 New Guides</p>
-            </div>
-        </section>
-
-        <section class="p-6 rounded-[2.5rem] bg-brand-olive text-white shadow-xl shadow-brand-olive/20">
+        <section class="p-6 rounded-[2.5rem] bg-brand-olive text-white shadow-xl shadow-brand-olive/20 animate__animated animate__zoomIn">
             <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold/60 mb-6">Expert Metrics</h2>
             <div class="grid grid-cols-3 gap-4 text-center">
-                <div>
+                <div class="hover:scale-110 transition-transform cursor-default">
                     <p class="text-xl font-extrabold italic" x-text="performance.fixRate + '%'"></p>
                     <p class="text-[8px] font-bold uppercase text-white/50 tracking-tighter">Fix Rate</p>
                 </div>
-                <div class="border-x border-white/10">
+                <div class="border-x border-white/10 hover:scale-110 transition-transform cursor-default">
                     <p class="text-xl font-extrabold italic" x-text="performance.avgTime + 'm'"></p>
                     <p class="text-[8px] font-bold uppercase text-white/50 tracking-tighter">Avg Repair</p>
                 </div>
-                <div>
+                <div class="hover:scale-110 transition-transform cursor-default">
                     <p class="text-xl font-extrabold text-brand-gold italic" x-text="performance.rating + '★'"></p>
                     <p class="text-[8px] font-bold uppercase text-white/50 tracking-tighter">Rating</p>
                 </div>
@@ -162,17 +189,17 @@
 
     </main>
 
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50 animate__animated animate__fadeInUp">
         <div class="bg-white/90 backdrop-blur-2xl border border-white rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
-            <button class="w-12 h-12 text-brand-gold"><i class="fa-solid fa-house-chimney-wrench text-lg"></i></button>
-            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold transition-colors"><i class="fa-solid fa-box-open text-lg"></i></button>
+            <button class="w-12 h-12 text-brand-gold transform hover:scale-120 transition-transform"><i class="fa-solid fa-house-chimney-wrench text-lg"></i></button>
+            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold hover:scale-120 transition-all"><i class="fa-solid fa-box-open text-lg"></i></button>
             
-            <button class="w-14 h-14 bg-brand-gold rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-gold/40 transform -translate-y-4 border-4 border-white active:scale-90 transition-all">
+            <button class="w-14 h-14 bg-brand-gold rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-gold/40 border-4 border-white active:scale-90 transition-all fixed left-1/2 floating-action">
                 <i class="fa-solid fa-camera text-xl"></i>
             </button>
             
-            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold transition-colors"><i class="fa-solid fa-book-open text-lg"></i></button>
-            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold transition-colors"><i class="fa-solid fa-circle-user text-lg"></i></button>
+            <div class="w-14 h-12"></div> <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold hover:scale-120 transition-all"><i class="fa-solid fa-book-open text-lg"></i></button>
+            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold hover:scale-120 transition-all"><i class="fa-solid fa-circle-user text-lg"></i></button>
         </div>
     </nav>
 
@@ -183,39 +210,14 @@
                 stats: { activeJobs: 4, earnings: '4,250', pending: 12 },
                 performance: { fixRate: 98, avgTime: 42, rating: 4.9 },
                 jobs: [
-                    { 
-                        id: 'FZ-1024', 
-                        device: 'iPhone 15 Pro Max', 
-                        issue: 'Cracked Screen Replacement', 
-                        timeLeft: '42:10', 
-                        customerName: 'Rajesh Kumar', 
-                        customerInitials: 'RK', 
-                        location: 'Nagpur West', 
-                        phone: '9876543210' 
-                    },
-                    { 
-                        id: 'FZ-1028', 
-                        device: 'MacBook Air M2', 
-                        issue: 'Keyboard Backlight Failure', 
-                        timeLeft: '02:15:00', 
-                        customerName: 'Sonal S.', 
-                        customerInitials: 'SS', 
-                        location: 'Civil Lines', 
-                        phone: '9876543211' 
-                    }
+                    { id: 'FZ-1024', device: 'iPhone 15 Pro Max', issue: 'Cracked Screen Replacement', timeLeft: '42:10', customerName: 'Rajesh Kumar', customerInitials: 'RK', location: 'Nagpur West', phone: '9876543210' },
+                    { id: 'FZ-1028', device: 'MacBook Air M2', issue: 'Keyboard Backlight Failure', timeLeft: '02:15:00', customerName: 'Sonal S.', customerInitials: 'SS', location: 'Civil Lines', phone: '9876543211' }
                 ],
-
                 init() {
-                    // Pull name from LocalStorage (Saved during login)
                     const savedName = localStorage.getItem('active_tech');
-                    if (savedName) {
-                        this.techName = savedName;
-                    } else {
-                        // Redirect if not logged in
-                        window.location.href = 'partnerlogin.html';
-                    }
+                    if (savedName) this.techName = savedName;
+                    else window.location.href = 'partnerlogin.html';
                 },
-
                 logout() {
                     localStorage.removeItem('active_tech');
                     window.location.href = 'partnerlogin.html';
