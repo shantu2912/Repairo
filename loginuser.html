@@ -63,6 +63,8 @@
     </style>
 </head>
 
+<!-- SAME HEAD, SAME STYLES, SAME UI ABOVE — NO CHANGES -->
+
 <body
 class="min-h-screen flex items-center justify-center font-sans"
 x-data="{
@@ -73,19 +75,27 @@ x-data="{
   showPassword: false,
   form: { name:'', phone:'', user:'', pass:'', otp:'' },
 
+  normalizePhone() {
+    return '+91' + this.form.phone.trim();
+  },
+
   async handleAction() {
     this.message = '';
-    if (!this.form.phone || this.form.phone.length < 10) {
+    if (!this.form.phone || this.form.phone.length !== 10) {
       this.message = 'ENTER VALID PHONE NUMBER';
       return;
     }
+
     this.loading = true;
     try {
+      const phone = this.normalizePhone();
+
       const { data: existingUser, error } = await supabase
         .from('profiles')
         .select('id')
-        .eq('phone', '+91' + this.form.phone)
+        .eq('phone', phone)
         .maybeSingle();
+
       if (error) throw error;
 
       if (this.isNewUser) {
@@ -94,10 +104,10 @@ x-data="{
           this.loading = false;
           return;
         }
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          phone: '+91' + this.form.phone
-        });
+
+        const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
         if (otpError) throw otpError;
+
         this.step = 'otp';
       } else {
         if (!existingUser) {
@@ -105,7 +115,7 @@ x-data="{
           this.loading = false;
           return;
         }
-        this.showPassword = true; // show password field for login
+        this.showPassword = true;
       }
     } catch (err) {
       this.message = err.message.toUpperCase();
@@ -119,16 +129,18 @@ x-data="{
       this.message = 'ENTER PASSWORD';
       return;
     }
+
     this.loading = true;
     this.message = '';
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        phone: '+91' + this.form.phone,
+        phone: this.normalizePhone(),
         password: this.form.pass
       });
       if (error) throw error;
+
       window.location.href = 'index.html';
-    } catch (err) {
+    } catch {
       this.message = 'INVALID LOGIN CREDENTIALS';
     } finally {
       this.loading = false;
@@ -136,34 +148,52 @@ x-data="{
   },
 
   async verifyOtp() {
-    if (!this.form.otp || this.form.otp.length < 6) {
+    if (!this.form.otp || this.form.otp.length !== 6) {
       this.message = 'ENTER VALID OTP';
       return;
     }
+
     this.loading = true;
     this.message = '';
     try {
+      const phone = this.normalizePhone();
+
       const { data, error } = await supabase.auth.verifyOtp({
-        phone: '+91' + this.form.phone,
+        phone,
         token: this.form.otp,
         type: 'sms'
       });
       if (error) throw error;
+
       const user = data.user;
       if (!user) throw new Error('USER NOT FOUND');
-      const { error: passError } = await supabase.auth.updateUser({
-        password: this.form.pass
-      });
-      if (passError) throw passError;
-      const { error: profileError } = await supabase
+
+      // 🔒 HARD BLOCK — CHECK AGAIN
+      const { data: alreadyExists } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
-          full_name: this.form.name,
-          username: this.form.user,
-          phone: '+91' + this.form.phone
-        });
-      if (profileError) throw profileError;
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (alreadyExists) {
+        this.message = 'ACCOUNT ALREADY EXISTS';
+        return;
+      }
+
+      await supabase.auth.updateUser({ password: this.form.pass });
+
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: user.id,
+        full_name: this.form.name,
+        username: this.form.user,
+        phone
+      });
+
+      if (profileError) {
+        this.message = 'ACCOUNT ALREADY EXISTS';
+        return;
+      }
+
       window.location.href = 'index.html';
     } catch (err) {
       this.message = err.message.toUpperCase();
@@ -173,6 +203,7 @@ x-data="{
   }
 }"
 >
+
 
 <div class="w-full max-w-md animate__animated animate__fadeIn">
 
