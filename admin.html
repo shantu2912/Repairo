@@ -1,255 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Repairo — Admin Panel</title>
-
-  <style>
-    /* ---------- GLOBAL ---------- */
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #f3f6fc;
-      color: #222;
-    }
-    .container { max-width: 1200px; margin: auto; padding: 18px; }
-
-    /* ---------- HEADER ---------- */
-    .site-header {
-      background: #ffffff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      padding: 14px 0;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-    .header-inner { display: flex; justify-content: space-between; align-items: center; }
-    .brand { display: flex; gap: 12px; align-items: center; }
-    .logo-mark {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: #0ea5e9;
-      color: white; display: flex; align-items: center; justify-content: center;
-      font-weight: bold; font-size: 18px;
-    }
-    .brand-title { font-size: 18px; font-weight: 600; }
-    .brand-sub { font-size: 12px; color: #777; }
-    .main-nav a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: #444;
-      font-weight: 500;
-    }
-    .main-nav a:hover { color: #0ea5e9; }
-
-    /* ---------- CARD ---------- */
-    .card {
-      background: white;
-      padding: 18px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-    }
-    h2, h3 { margin: 0 0 12px; }
-
-    /* ---------- TABLE ---------- */
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    .admin-table th {
-      background: #f1f5f9;
-      padding: 10px;
-      text-align: left;
-      font-weight: 600;
-      color: #222;
-    }
-    .admin-table td {
-      padding: 10px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    .admin-table tr:hover td {
-      background: #f9fafb;
-    }
-
-    /* ---------- BUTTONS ---------- */
-    button {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-    }
-    button:hover { opacity: 0.9; }
-    button:first-child {
-      background: #3b82f6; color: white;
-    }
-    button:last-child {
-      background: #10b981; color: white;
-    }
-
-    /* ---------- BADGES ---------- */
-    .muted { color: #666; font-size: 12px; }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      display: inline-block;
-      text-transform: capitalize;
-    }
-    .badge.online { background: #d1fae5; color: #059669; }
-    .badge.idle { background: #fef3c7; color: #d97706; }
-
-    /* ---------- FOOTER ---------- */
-    .site-footer {
-      margin-top: 40px;
-      padding: 18px 0;
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>FixZen Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-2xl font-bold text-[#5D5646] tracking-tighter">FIX <span class="text-[#A07D54]">ZEN</span> ADMIN</h1>
+            <button onclick="location.reload()" class="bg-white px-4 py-2 rounded-lg shadow-sm text-xs font-bold uppercase hover:bg-gray-100">Refresh Data</button>
+        </header>
 
-<body>
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand">
-        <div class="logo-mark">A</div>
-        <div>
-          <div class="brand-title">Admin</div>
-          <div class="brand-sub">Repairo dashboard</div>
+        <div class="grid grid-cols-3 gap-6 mb-8 text-center">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pending</p>
+                <p id="pendingCount" class="text-3xl font-bold text-yellow-600">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Approved</p>
+                <p id="approvedCount" class="text-3xl font-bold text-green-600">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rejected</p>
+                <p id="rejectedCount" class="text-3xl font-bold text-red-600">0</p>
+            </div>
         </div>
-      </div>
-      <nav class="main-nav">
-        <a href="home.html">Home</a>
-        <a href="admin-panel.html" style="color:#0ea5e9;font-weight:600">Admin</a>
-        <a href="technician-app.html">Tech</a>
-      </nav>
+
+        <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase">Technician</th>
+                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase">Category</th>
+                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase text-center">Status</th>
+                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="techList">
+                    </tbody>
+            </table>
+        </div>
     </div>
-  </header>
-
-  <!-- MAIN -->
-  <main class="container">
-
-    <!-- BOOKINGS -->
-    <section class="card">
-      <h2>Bookings</h2>
-      <div style="margin-top:12px">
-        <table class="admin-table" id="bkTable">
-          <thead>
-            <tr>
-              <th>ID</th><th>Service</th><th>Address</th>
-              <th>Date/Time</th><th>Tech</th><th>Status</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- TECHNICIANS -->
-    <section class="card" style="margin-top:18px">
-      <h3>Technicians</h3>
-      <div id="techList" style="display:flex;gap:16px;margin-top:12px"></div>
-    </section>
-
-  </main>
-
-  <footer class="site-footer">
-    © 2025 Repairo
-  </footer>
-
-<script>
-/* ---------------- TECH LIST ---------------- */
-const TECHS = [
-  {id:'t1',name:'Ravi',phone:'+91 90000',status:'online'},
-  {id:'t2',name:'Sunil',phone:'+91 90001',status:'idle'}
-];
-
-function renderTechs(){
-  const root = document.getElementById('techList');
-  root.innerHTML = '';
-
-  TECHS.forEach(t=>{
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.style.minWidth = '220px';
-
-    div.innerHTML = `
-      <strong>${t.name}</strong>
-      <div class="muted">${t.phone}</div>
-      <div style="margin-top:8px">
-        <span class="badge ${t.status}">${t.status}</span>
-      </div>
-    `;
-
-    root.appendChild(div);
-  });
-}
-
-/* ---------------- BOOKINGS ---------------- */
-function renderBookings(){
-  const tbody = document.querySelector('#bkTable tbody');
-  const arr = JSON.parse(localStorage.getItem('repairo_bookings') || '[]');
-  tbody.innerHTML = '';
-
-  if(!arr.length){
-    tbody.innerHTML = '<tr><td colspan="7" class="muted">No bookings yet.</td></tr>';
-    return;
-  }
-
-  arr.forEach(b=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${b.id}</td>
-      <td>${b.service}</td>
-      <td>${b.addr}</td>
-      <td>${b.date} ${b.time || ''}</td>
-      <td>${b.technician || '—'}</td>
-      <td>${b.status}</td>
-      <td>
-        <button onclick="assign('${b.id}')">Assign</button>
-        <button onclick="setStatus('${b.id}','completed')">Complete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-function assign(id){
-  const tech = prompt("Enter technician ID (e.g. t1):");
-  if(!tech) return;
-
-  const arr = JSON.parse(localStorage.getItem('repairo_bookings') || '[]');
-  const i = arr.findIndex(x => x.id === id);
-  if(i === -1) return alert("Booking not found");
-
-  arr[i].technician = tech;
-  arr[i].status = "assigned";
-  localStorage.setItem('repairo_bookings', JSON.stringify(arr));
-
-  renderBookings();
-  alert("Assigned to " + tech);
-}
-
-function setStatus(id, st){
-  const arr = JSON.parse(localStorage.getItem('repairo_bookings') || '[]');
-  const i = arr.findIndex(x => x.id === id);
-  if(i === -1) return;
-
-  arr[i].status = st;
-  localStorage.setItem('repairo_bookings', JSON.stringify(arr));
-
-  renderBookings();
-}
-
-renderTechs();
-renderBookings();
-</script>
-
+    <script type="module" src="admin.js"></script>
 </body>
 </html>
