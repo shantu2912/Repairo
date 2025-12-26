@@ -206,7 +206,9 @@
     <script>
         function dashboardHandler() {
             return {
-                techName: 'Expert',
+
+                
+                techName: 'shantanu',
                 stats: { activeJobs: 4, earnings: '4,250', pending: 12 },
                 performance: { fixRate: 98, avgTime: 42, rating: 4.9 },
                 jobs: [
@@ -214,14 +216,14 @@
                     { id: 'FZ-1028', device: 'MacBook Air M2', issue: 'Keyboard Backlight Failure', timeLeft: '02:15:00', customerName: 'Sonal S.', customerInitials: 'SS', location: 'Civil Lines', phone: '9876543211' }
                 ],
                 init() {
-                    const savedName = localStorage.getItem('active_tech');
-                    if (savedName) this.techName = savedName;
-                    else window.location.href = 'partnerlogin.html';
-                },
-                logout() {
-                    localStorage.removeItem('active_tech');
-                    window.location.href = 'partnerlogin.html';
-                }
+  const tech = JSON.parse(localStorage.getItem("active_tech"));
+  if (!tech) {
+    window.location.href = "partnerlogin.html";
+    return;
+  }
+  this.techName = tech.name;
+}
+
             }
         }
     </script>
