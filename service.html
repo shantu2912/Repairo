@@ -104,12 +104,12 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        // 🔴 PASTE YOUR KEYS HERE (Keep the quotes!)
-        const PROJECT_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co'; 
-        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        // 1. CONFIGURATION
+        // (Make sure your keys are correct here!)
+        const PROJECT_URL = 'PASTE_YOUR_PROJECT_URL_HERE'; 
+        const API_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
 
-        // --- 2. DEMO DATA (Fallback) ---
+        // 2. DEMO DATA (Fallback)
         const DEMO_DATA = {
             title: "AC Repair (Demo)",
             subtitle: "Cooling & Maintenance",
@@ -126,28 +126,28 @@
             const debugBar = document.getElementById('debug-bar');
             
             try {
-                // 1. CHECK KEYS
                 if (PROJECT_URL.includes('PASTE') || API_KEY.includes('PASTE')) {
                     throw new Error("Missing API Keys");
                 }
 
-                // 2. CONNECT TO SUPABASE
-                // Fix: We access the global 'supabase' object correctly now
+                // Initialize Supabase
                 const { createClient } = supabase; 
                 const db = createClient(PROJECT_URL, API_KEY);
 
-                // 3. GET DATA
                 const params = new URLSearchParams(window.location.search);
                 const slug = params.get('id') || 'ac';
 
-                // Fetch Service
+                // --- THE FIX IS HERE ---
+                // We added .limit(1) to prevent the "Cannot coerce" error
                 const { data: service, error: sError } = await db
                     .from('services')
                     .select('*, service_variants(*)')
                     .eq('slug', slug)
-                    .single();
+                    .limit(1)  // <--- THIS FIXES THE ERROR
+                    .maybeSingle(); // <--- Safely handles 0 or 1 result
 
-                if (sError || !service) throw new Error(sError ? sError.message : "Service not found");
+                if (sError) throw new Error(sError.message);
+                if (!service) throw new Error("Service not found in DB");
 
                 // Fetch Tech
                 const { data: tech } = await db
@@ -157,7 +157,7 @@
                     .limit(1)
                     .maybeSingle();
 
-                // SUCCESS: Render Real Data
+                // Render Real Data
                 renderUI(service, tech);
                 if(debugBar) debugBar.style.display = 'none';
 
@@ -170,7 +170,6 @@
                     debugBar.classList.add('demo-mode-active');
                 }
                 
-                // Map Demo Data to UI format
                 const demoService = { 
                     title: DEMO_DATA.title, 
                     subtitle: DEMO_DATA.subtitle, 
@@ -180,7 +179,6 @@
                 };
                 renderUI(demoService, DEMO_DATA.tech);
             } finally {
-                // Remove Loader
                 renderDates();
                 setTimeout(() => {
                     document.getElementById('loader').style.opacity = '0';
@@ -190,7 +188,7 @@
             }
         };
 
-        // --- RENDER HELPERS ---
+        // --- RENDER HELPERS (No Changes Here) ---
         function renderUI(s, t) {
             document.getElementById('txt-title').innerText = s.title;
             document.getElementById('txt-sub').innerText = s.subtitle;
@@ -199,7 +197,6 @@
             
             renderVariants(s.service_variants);
             
-            // Render Tech
             if(t) {
                 document.getElementById('tech-name').innerText = t.name;
                 document.getElementById('tech-img').src = t.image_url || `https://ui-avatars.com/api/?name=${t.name}`;
