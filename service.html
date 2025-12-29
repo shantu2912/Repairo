@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Service Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root { --bg: #F4F4F0; --dark: #1C2331; --white: #FFFFFF; --text: #1F2937; --muted: #6B7280; --green: #059669; --shadow: 0 8px 24px rgba(0,0,0,0.06); }
+        body { background: var(--bg); margin: 0; font-family: -apple-system, sans-serif; padding-bottom: 120px; color: var(--text); }
+        
+        /* STATUS BAR (FOR DEBUGGING) */
+        #debug-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #DC2626; color: white; padding: 10px; font-size: 0.8rem; text-align: center; z-index: 9999; display: none; }
+        .demo-mode-active { background: #D97706 !important; } /* Orange for Demo Mode */
+
+        /* LOADER */
+        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 2000; padding: 20px; transition: opacity 0.4s; display: flex; flex-direction: column; gap: 15px; }
+        .shim { background: #E5E7EB; border-radius: 16px; overflow: hidden; position: relative; }
+        .shim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: shimmer 1s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        /* UI ELEMENTS */
+        .header { background: var(--dark); height: 240px; border-radius: 0 0 40px 40px; padding: 20px; display: flex; justify-content: space-between; position: relative; }
+        .icon-btn { width: 44px; height: 44px; background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; border: none; font-size: 1.4rem; cursor: pointer; text-decoration: none; }
+        .hero-card { margin: -120px 20px 0; background: var(--white); border-radius: 28px; padding: 12px; box-shadow: var(--shadow); opacity: 0; transform: translateY(30px); transition: 0.6s; }
+        .hero-img { width: 100%; height: 220px; object-fit: cover; border-radius: 22px; background: #eee; }
+        .hero-info { padding: 18px 8px 8px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .title { font-size: 1.8rem; font-weight: 800; color: var(--dark); margin: 0; line-height: 1; letter-spacing: -0.5px; }
+        .label { padding: 35px 24px 15px; font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; }
+        .scroll-row { display: flex; gap: 15px; overflow-x: auto; padding: 0 24px 20px; scrollbar-width: none; }
+        
+        .v-card { min-width: 160px; background: var(--white); padding: 18px; border-radius: 24px; border: 2px solid transparent; transition: 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+        .v-card.active { border-color: var(--dark); background: #F8FAFC; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        .d-card { min-width: 75px; height: 90px; background: var(--white); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); border: 2px solid transparent; }
+        .d-card.active { background: var(--dark); color: white; transform: scale(1.05); border-color: var(--dark); }
+
+        .tech-card { margin: 0 24px; background: var(--white); padding: 16px; border-radius: 24px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); }
+        .tech-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--white); background: #eee; }
+        
+        .dock { position: fixed; bottom: 30px; left: 24px; right: 24px; background: var(--dark); border-radius: 24px; padding: 14px 14px 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); z-index: 100; transform: translateY(150%); transition: 0.6s; }
+        .book-btn { background: var(--white); color: var(--dark); border: none; padding: 16px 32px; border-radius: 18px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        .loaded .hero-card, .loaded .v-card, .loaded .tech-card, .loaded .dock { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="debug-bar">Loading...</div>
+
+    <div id="loader">
+        <div class="shim" style="height: 240px; border-radius: 0 0 40px 40px;"></div>
+        <div class="shim" style="height: 200px; margin: -100px 20px 0;"></div>
+        <div class="shim" style="height: 100px; margin: 20px;"></div>
+    </div>
+
+    <div class="header">
+        <a href="javascript:history.back()" class="icon-btn"><i class="ph ph-arrow-left"></i></a>
+        <button class="icon-btn"><i class="ph ph-heart"></i></button>
+    </div>
+
+    <div id="app">
+        <div class="hero-card">
+            <img id="img-hero" class="hero-img">
+            <div class="hero-info">
+                <div>
+                    <h1 id="txt-title" class="title">...</h1>
+                    <div style="color:var(--muted); font-size:0.95rem; margin-top:6px;" id="txt-sub">...</div>
+                </div>
+                <div style="background:#FEF3C7; color:#D97706; padding:6px 12px; border-radius:20px; font-weight:700; font-size:0.9rem;">
+                    <i class="ph-fill ph-star"></i> <span id="txt-rating">0.0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="label">Select Package</div>
+        <div id="list-variants" class="scroll-row"></div>
+
+        <div class="label">Schedule Date</div>
+        <div id="list-dates" class="scroll-row"></div>
+
+        <div class="label">Matched Expert</div>
+        <div class="tech-card">
+            <img id="tech-img" class="tech-img" src="">
+            <div>
+                <div id="tech-name" style="font-weight:700; font-size:1.05rem; color:var(--dark);">Finding Expert...</div>
+                <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
+                    <span id="tech-jobs">0</span> Jobs Done • <span id="tech-rating">0.0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="height: 120px;"></div>
+
+        <div class="dock">
+            <div>
+                <span style="font-size:0.75rem; color:rgba(255,255,255,0.6); letter-spacing:0.5px;">TOTAL ESTIMATE</span>
+                <div id="txt-price" style="font-size:1.5rem; font-weight:800; color:white;">₹0</div>
+            </div>
+            <button class="book-btn">Book Now <i class="ph-bold ph-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        // 🔴 PASTE YOUR KEYS HERE (Keep the quotes!)
+        const PROJECT_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co'; 
+        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+
+        // --- 2. DEMO DATA (Fallback) ---
+        const DEMO_DATA = {
+            title: "AC Repair (Demo)",
+            subtitle: "Cooling & Maintenance",
+            image_url: "https://images.unsplash.com/photo-1621905476059-5f8df4806592?q=80&w=2070",
+            rating: 4.8,
+            variants: [
+                { name: "Split AC Check", description: "Deep cleaning", price: 599 },
+                { name: "Window AC", description: "Filter clean", price: 499 }
+            ],
+            tech: { name: "Demo Tech", image_url: "", jobs_done: 100, rating: 4.9 }
+        };
+
+        window.onload = async () => {
+            const debugBar = document.getElementById('debug-bar');
+            
+            try {
+                // 1. CHECK KEYS
+                if (PROJECT_URL.includes('PASTE') || API_KEY.includes('PASTE')) {
+                    throw new Error("Missing API Keys");
+                }
+
+                // 2. CONNECT TO SUPABASE
+                // Fix: We access the global 'supabase' object correctly now
+                const { createClient } = supabase; 
+                const db = createClient(PROJECT_URL, API_KEY);
+
+                // 3. GET DATA
+                const params = new URLSearchParams(window.location.search);
+                const slug = params.get('id') || 'ac';
+
+                // Fetch Service
+                const { data: service, error: sError } = await db
+                    .from('services')
+                    .select('*, service_variants(*)')
+                    .eq('slug', slug)
+                    .single();
+
+                if (sError || !service) throw new Error(sError ? sError.message : "Service not found");
+
+                // Fetch Tech
+                const { data: tech } = await db
+                    .from('technicians')
+                    .select('*')
+                    .ilike('category', `%${slug}%`)
+                    .limit(1)
+                    .maybeSingle();
+
+                // SUCCESS: Render Real Data
+                renderUI(service, tech);
+                if(debugBar) debugBar.style.display = 'none';
+
+            } catch (err) {
+                // FAILURE: Show Demo Data
+                console.warn("Supabase Error:", err);
+                if(debugBar) {
+                    debugBar.style.display = 'block';
+                    debugBar.innerHTML = `⚠️ Connection Failed: <b>${err.message}</b>. Showing DEMO DATA.`;
+                    debugBar.classList.add('demo-mode-active');
+                }
+                
+                // Map Demo Data to UI format
+                const demoService = { 
+                    title: DEMO_DATA.title, 
+                    subtitle: DEMO_DATA.subtitle, 
+                    image_url: DEMO_DATA.image_url, 
+                    rating: DEMO_DATA.rating, 
+                    service_variants: DEMO_DATA.variants 
+                };
+                renderUI(demoService, DEMO_DATA.tech);
+            } finally {
+                // Remove Loader
+                renderDates();
+                setTimeout(() => {
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loader').style.display = 'none', 400);
+                    document.body.classList.add('loaded');
+                }, 500);
+            }
+        };
+
+        // --- RENDER HELPERS ---
+        function renderUI(s, t) {
+            document.getElementById('txt-title').innerText = s.title;
+            document.getElementById('txt-sub').innerText = s.subtitle;
+            document.getElementById('img-hero').src = s.image_url;
+            document.getElementById('txt-rating').innerText = s.rating;
+            
+            renderVariants(s.service_variants);
+            
+            // Render Tech
+            if(t) {
+                document.getElementById('tech-name').innerText = t.name;
+                document.getElementById('tech-img').src = t.image_url || `https://ui-avatars.com/api/?name=${t.name}`;
+                document.getElementById('tech-jobs').innerText = t.jobs_done || 0;
+                document.getElementById('tech-rating').innerText = t.rating || 0;
+            }
+        }
+
+        function renderVariants(list) {
+            const container = document.getElementById('list-variants');
+            container.innerHTML = '';
+            if(!list) return;
+            
+            list.sort((a,b) => a.price - b.price);
+            list.forEach((v, i) => {
+                const el = document.createElement('div');
+                el.className = `v-card ${i===0 ? 'active' : ''}`;
+                el.onclick = () => {
+                    document.querySelectorAll('.v-card').forEach(c => c.classList.remove('active'));
+                    el.classList.add('active');
+                    updatePrice(v.price);
+                };
+                el.innerHTML = `
+                    <div style="font-weight:700; font-size:1rem;">${v.name}</div>
+                    <div style="font-size:0.8rem; color:#6B7280; margin-bottom:10px;">${v.description}</div>
+                    <div style="font-weight:800; font-size:1.2rem;">₹${v.price}</div>
+                `;
+                container.appendChild(el);
+                if(i===0) updatePrice(v.price);
+            });
+        }
+
+        function renderDates() {
+            const container = document.getElementById('list-dates');
+            const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+            for(let i=0; i<7; i++) {
+                const d = new Date(); d.setDate(d.getDate() + i);
+                const el = document.createElement('div');
+                el.className = `d-card ${i===0 ? 'active' : ''}`;
+                el.onclick = () => {
+                    document.querySelectorAll('.d-card').forEach(c => c.classList.remove('active'));
+                    el.classList.add('active');
+                };
+                el.innerHTML = `
+                    <span style="font-size:0.7rem; font-weight:700; opacity:0.6;">${days[d.getDay()]}</span>
+                    <span style="font-size:1.3rem; font-weight:800;">${d.getDate()}</span>
+                `;
+                container.appendChild(el);
+            }
+        }
+
+        function updatePrice(p) {
+            document.getElementById('txt-price').innerText = '₹' + p;
+        }
+    </script>
+</body>
+</html>
