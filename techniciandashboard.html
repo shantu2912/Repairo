@@ -1,231 +1,389 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FixZen Pro | Expert Dashboard</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixZen Pro | Technician Dashboard</title>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-olive': '#5D5646',
-                        'brand-gold': '#A07D54',
-                        'brand-cream': '#F8F5F0',
-                        'brand-dark': '#2D2B28',
-                        'brand-beige': '#DFD4C3'
-                    },
-                    fontFamily: { 
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'], 
-                        serif: ['"Playfair Display"', 'serif'] 
-                    }
-                }
-            }
-        }
-    </script>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <style>
-        [x-cloak] { display: none !important; }
-        body { background-color: #F8F5F0; color: #2D2B28; overflow-x: hidden; }
-        
-        /* Premium Glass Morphism */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid white;
-            box-shadow: 0 15px 35px rgba(93, 86, 70, 0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .glass-card:hover {
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 25px 45px rgba(93, 86, 70, 0.12);
-        }
+<!-- Alpine -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-        /* Staggered Animation Delays */
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
-        .delay-4 { animation-delay: 0.4s; }
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        /* Floating Animation for the Camera Button */
-        @keyframes float {
-            0% { transform: translate(-50%, -16px); }
-            50% { transform: translate(-50%, -24px); }
-            100% { transform: translate(-50%, -16px); }
-        }
-        .floating-action {
-            animation: float 3s ease-in-out infinite;
-        }
+<!-- Icons / Fonts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
-        /* Custom Stat Pulse */
-        .stat-pulse {
-            position: relative;
-        }
-        .stat-pulse::after {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 2rem;
-            border: 2px solid #A07D54;
-            opacity: 0;
-            animation: pulse-ring 2s infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            100% { transform: scale(1.05); opacity: 0; }
-        }
-    </style>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        'brand-olive': '#5D5646',
+        'brand-gold': '#A07D54',
+        'brand-cream': '#F8F5F0',
+        'brand-dark': '#2D2B28',
+        'brand-beige': '#DFD4C3'
+      }
+    }
+  }
+}
+</script>
+<style>
+[x-cloak]{display:none}
+body{background:#F8F5F0;color:#2D2B28}
+.glass-card{
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(18px);
+  border:1px solid #fff;
+  box-shadow:0 15px 35px rgba(93,86,70,.08)
+}
+</style>
+
+<!-- ✅ SUPABASE CLIENT -->
+<script>
+window.sb = supabase.createClient(
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+);
+</script>
 </head>
 
-<body class="font-sans antialiased pb-32" x-data="dashboardHandler()" x-init="init()">
+<body
+x-data="dashboardHandler()"
+x-init="init()"
+x-cloak
+class="font-sans antialiased pb-36"
+>
 
-    <header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur-lg border-b border-brand-beige/20 p-5 animate__animated animate__fadeInDown">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-brand-olive flex items-center justify-center text-white text-xl font-bold shadow-lg border-2 border-white transform hover:rotate-12 transition-transform cursor-pointer">
-                    <span x-text="techName.charAt(0)"></span>
-                </div>
-                <div>
-                    <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold animate__animated animate__fadeInLeft">Pro Partner</h1>
-                    <p class="font-serif italic text-lg text-brand-olive leading-tight" x-text="techName"></p>
-                </div>
-            </div>
-            <button @click="logout()" class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-brand-olive/40 hover:text-red-500 hover:rotate-90 transition-all duration-500">
-                <i class="fa-solid fa-power-off"></i>
+<!-- HEADER -->
+<header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur border-b p-5">
+  <div class="max-w-md mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-full bg-brand-olive text-white flex items-center justify-center font-bold">
+        <span x-text="techName.charAt(0)"></span>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-black">Pro Partner</p>
+        <p class="font-serif italic text-lg text-brand-olive" x-text="techName"></p>
+      </div>
+    </div>
+    <button @click="logout()" class="text-brand-olive hover:text-red-500">
+      <i class="fa-solid fa-power-off"></i>
+    </button>
+  </div>
+</header>
+
+<main class="max-w-md mx-auto p-6 space-y-8">
+
+<!-- STATS -->
+<section>
+  <div class="grid grid-cols-2 gap-4">
+    <div class="glass-card p-5 rounded-[2rem]">
+      <p class="text-[9px] font-bold text-brand-gold uppercase">Active Jobs</p>
+      <h3 class="text-3xl font-extrabold text-brand-olive" x-text="stats.activeJobs"></h3>
+    </div>
+    <div class="glass-card p-5 rounded-[2rem]">
+      <p class="text-[9px] font-bold text-brand-gold uppercase">Earnings</p>
+      <h3 class="text-3xl font-extrabold text-green-700">
+        ₹<span x-text="stats.earnings"></span>
+      </h3>
+    </div>
+  </div>
+</section>
+
+<!-- JOBS -->
+<section id="jobsSection" class="space-y-4">
+
+  <div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-20">
+    Loading jobs…
+  </div>
+
+  <div x-show="!loading && jobs.length === 0"
+       class="text-center text-sm text-brand-dark/50 mt-20">
+    No active jobs
+  </div>
+
+  <template x-for="job in jobs" :key="job.id">
+    <div class="glass-card p-6 rounded-[2.5rem] border-l-4"
+         :class="job.urgent ? 'border-red-500':'border-brand-gold'">
+
+      <!-- TITLE -->
+      <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
+      <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
+      <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
+
+      <!-- FOOTER -->
+      <div class="flex justify-between items-center border-t mt-4 pt-4">
+
+        <!-- CUSTOMER -->
+        <div>
+          <p class="text-sm font-bold" x-text="job.customer_name"></p>
+          <p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
+          <p class="text-[9px] font-mono text-red-600 mt-1"
+             x-show="job.slaRemaining">
+             SLA: <span x-text="job.slaRemaining"></span>
+          </p>
+        </div>
+
+        <!-- STATUS + ACTION -->
+        <div class="flex flex-col items-end gap-2">
+
+          <span
+            class="text-[9px] font-black uppercase px-2 py-1 rounded-full"
+            :class="
+              job.status === 'assigned' ? 'bg-yellow-100 text-yellow-700' :
+              job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+              'bg-green-100 text-green-700'
+            "
+            x-text="job.status.replace('_',' ')"
+          ></span>
+
+          <button
+            x-show="job.status === 'assigned'"
+            @click="startJob(job.id)"
+            class="px-5 py-2 bg-brand-olive text-white rounded-xl text-[10px] font-black uppercase">
+            Start
+          </button>
+
+                    <button
+                    x-show="job.status === 'in_progress'"
+                    @click="completeJob(job)"
+                    class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
+                    Complete
+                    </button>
             </button>
         </div>
-    </header>
+      </div>
+    </div>
+  </template>
 
-    <main class="max-w-md mx-auto p-6 space-y-8">
+</section>
 
-        <section>
-            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-olive/50 mb-4 ml-2">Today at a Glance</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-1">
-                    <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">Active Jobs</span>
-                    <h3 class="text-3xl font-extrabold mt-1 text-brand-olive" x-text="stats.activeJobs">0</h3>
-                </div>
-                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-2">
-                    <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">Earnings</span>
-                    <h3 class="text-3xl font-extrabold mt-1 text-green-700" x-text="'₹' + stats.earnings">₹0</h3>
-                </div>
-                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-3">
-                    <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">Pending</span>
-                    <h3 class="text-3xl font-extrabold mt-1 text-brand-olive" x-text="stats.pending">0</h3>
-                </div>
-                <div class="glass-card p-5 rounded-[2rem] animate__animated animate__fadeInUp delay-4 stat-pulse">
-                    <span class="text-[9px] font-bold text-brand-gold uppercase tracking-widest">SLA Status</span>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                        <span class="text-[10px] font-black uppercase text-brand-olive">On Track</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+</main>
 
-        <section class="space-y-4">
-            <div class="flex justify-between items-center ml-2">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-olive/50">Current Repairs</h2>
-                <span class="text-[9px] font-bold text-brand-gold underline uppercase cursor-pointer hover:text-brand-olive transition-colors">Timeline</span>
-            </div>
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
+  <div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
 
-            <template x-for="(job, index) in jobs" :key="job.id">
-                <div class="glass-card p-6 rounded-[2.5rem] border-l-[6px] border-brand-gold animate__animated animate__slideInRight" 
-                     :style="'animation-delay: ' + (index * 0.2) + 's'">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span class="text-[9px] font-bold bg-brand-gold/10 text-brand-gold px-2 py-1 rounded" x-text="'#' + job.id"></span>
-                            <h4 class="text-lg font-extrabold text-brand-olive mt-2" x-text="job.device"></h4>
-                            <p class="text-[11px] font-medium text-brand-dark/60 italic" x-text="job.issue"></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-black text-red-500 uppercase">Deadline</p>
-                            <p class="text-sm font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg animate-pulse" x-text="job.timeLeft"></p>
-                        </div>
-                    </div>
+    <button class="w-12 h-12 text-brand-gold">
+      <i class="fa-solid fa-house"></i>
+    </button>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-brand-beige/30">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-brand-cream border border-brand-beige flex items-center justify-center font-bold text-brand-olive text-xs" x-text="job.customerInitials"></div>
-                            <div>
-                                <p class="text-xs font-bold text-brand-olive" x-text="job.customerName"></p>
-                                <p class="text-[9px] text-brand-dark/40 font-bold uppercase" x-text="job.location"></p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <a :href="'tel:' + job.phone" class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center shadow-sm hover:bg-green-600 hover:text-white transition-all active:scale-90"><i class="fa-solid fa-phone"></i></a>
-                            <button class="px-5 py-2.5 rounded-xl bg-brand-olive text-white text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-brand-gold active:scale-95 transition-all">Start</button>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </section>
+    <button @click="scrollToJobs()" class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
+      <i class="fa-solid fa-box-open"></i>
+    </button>
 
-        <section class="p-6 rounded-[2.5rem] bg-brand-olive text-white shadow-xl shadow-brand-olive/20 animate__animated animate__zoomIn">
-            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold/60 mb-6">Expert Metrics</h2>
-            <div class="grid grid-cols-3 gap-4 text-center">
-                <div class="hover:scale-110 transition-transform cursor-default">
-                    <p class="text-xl font-extrabold italic" x-text="performance.fixRate + '%'"></p>
-                    <p class="text-[8px] font-bold uppercase text-white/50 tracking-tighter">Fix Rate</p>
-                </div>
-                <div class="border-x border-white/10 hover:scale-110 transition-transform cursor-default">
-                    <p class="text-xl font-extrabold italic" x-text="performance.avgTime + 'm'"></p>
-                    <p class="text-[8px] font-bold uppercase text-white/50 tracking-tighter">Avg Repair</p>
-                </div>
-                <div class="hover:scale-110 transition-transform cursor-default">
-                    <p class="text-xl font-extrabold text-brand-gold italic" x-text="performance.rating + '★'"></p>
-                    <p class="text-[8px] font-bold uppercase text-white/50 tracking-tighter">Rating</p>
-                </div>
-            </div>
-        </section>
+    <div class="w-14 h-12"></div>
 
-    </main>
+    <button onclick="window.location.href='completed_jobs.html'"
+            class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
+      <i class="fa-solid fa-book-open"></i>
+    </button>
 
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50 animate__animated animate__fadeInUp">
-        <div class="bg-white/90 backdrop-blur-2xl border border-white rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
-            <button class="w-12 h-12 text-brand-gold transform hover:scale-120 transition-transform"><i class="fa-solid fa-house-chimney-wrench text-lg"></i></button>
-            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold hover:scale-120 transition-all"><i class="fa-solid fa-box-open text-lg"></i></button>
-            
-            <button class="w-14 h-14 bg-brand-gold rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-gold/40 border-4 border-white active:scale-90 transition-all fixed left-1/2 floating-action">
-                <i class="fa-solid fa-camera text-xl"></i>
-            </button>
-            
-            <div class="w-14 h-12"></div> <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold hover:scale-120 transition-all"><i class="fa-solid fa-book-open text-lg"></i></button>
-            <button class="w-12 h-12 text-brand-olive/30 hover:text-brand-gold hover:scale-120 transition-all"><i class="fa-solid fa-circle-user text-lg"></i></button>
-        </div>
-    </nav>
+    <button @click="logout()" class="w-12 h-12 text-brand-olive/40">
+      <i class="fa-solid fa-circle-user"></i>
+    </button>
 
-    <script>
-        function dashboardHandler() {
-            return {
+    <button
+      class="absolute left-1/2 -translate-x-1/2 -top-6
+             w-14 h-14 bg-brand-gold rounded-full
+             flex items-center justify-center text-white
+             shadow-lg border-4 border-white">
+      <i class="fa-solid fa-camera"></i>
+    </button>
 
-                
-                techName: 'shantanu',
-                stats: { activeJobs: 4, earnings: '4,250', pending: 12 },
-                performance: { fixRate: 98, avgTime: 42, rating: 4.9 },
-                jobs: [
-                    { id: 'FZ-1024', device: 'iPhone 15 Pro Max', issue: 'Cracked Screen Replacement', timeLeft: '42:10', customerName: 'Rajesh Kumar', customerInitials: 'RK', location: 'Nagpur West', phone: '9876543210' },
-                    { id: 'FZ-1028', device: 'MacBook Air M2', issue: 'Keyboard Backlight Failure', timeLeft: '02:15:00', customerName: 'Sonal S.', customerInitials: 'SS', location: 'Civil Lines', phone: '9876543211' }
-                ],
-                init() {
-  const tech = JSON.parse(localStorage.getItem("active_tech"));
-  if (!tech) {
-    window.location.href = "partnerlogin.html";
+  </div>
+</nav>
+
+<!-- LOGIC -->
+<script>
+function dashboardHandler(){
+   
+return{
+tech : null,
+  techName:'',
+  loading:true,
+  jobs:[],
+  stats:{activeJobs:0,earnings:0},
+  timer:null,
+
+  async init(){
+    this.tech = JSON.parse(localStorage.getItem("active_tech"));
+if(!this.tech){
+  window.location.href = "partnerlogin.html";
+  return;
+}
+this.techName = this.tech.name;
+
+    await this.fetchJobs();
+    this.startSLATimer();
+    this.subscribeRealtime();
+  },
+
+  async fetchJobs(){
+  this.loading = true;
+
+  // 1. Active jobs (assigned + in_progress)
+  const { data: activeJobs, error: activeError } = await window.sb
+    .from("jobs")
+    .select("*")
+    .in("status", ["assigned", "in_progress"])
+    .order("created_at", { ascending: false });
+
+  if(activeError){
+    console.error(activeError);
+    this.loading = false;
     return;
   }
-  this.techName = tech.name;
+
+  this.jobs = activeJobs.map(j => ({
+    ...j,
+    slaRemaining: j.sla_deadline
+      ? this.calcSLA(j.sla_deadline)
+      : null
+  }));
+this.stats.activeJobs = this.jobs.length;
+
+  // 2. Earnings from completed jobs
+  const { data: completedJobs, error: completedError } = await window.sb
+    .from("jobs")
+    .select("technician_fee")
+    .eq("status", "completed");
+
+  if(completedError){
+    console.error(completedError);
+    this.stats.earnings = 0;
+  } else {
+    this.stats.earnings = completedJobs.reduce(
+      (sum, j) => sum + (j.technician_fee || 0),
+      0
+    );
+  }
+
+  this.loading = false;
+},
+
+
+  startSLATimer(){
+    this.timer = setInterval(() => {
+      this.jobs = this.jobs.map(j => ({
+        ...j,
+        slaRemaining: j.sla_deadline
+          ? this.calcSLA(j.sla_deadline)
+          : null
+      }));
+    }, 1000);
+  },
+
+  calcSLA(deadline){
+    const diff = new Date(deadline) - new Date();
+    if(diff <= 0) return "BREACHED";
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    return `${h}h ${m}m ${s}s`;
+  },
+
+  subscribeRealtime(){
+  if(this.channel) return;
+
+  this.channel = window.sb
+    .channel('jobs-updates')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'jobs' },
+      () => this.fetchJobs()
+    )
+    .subscribe();
+},
+
+  async startJob(jobId){
+  if(!this.tech) return;
+
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "in_progress",
+      technician_id: this.tech.id
+    })
+    .eq("id", jobId);
+
+  if(error){
+    console.error(error);
+    alert("Failed to start job");
+    return;
+  }
+
+  await this.fetchJobs();
+},
+
+  scrollToJobs(){
+    document.querySelector('#jobsSection')
+      ?.scrollIntoView({behavior:'smooth'});
+  },
+
+  logout(){
+    localStorage.removeItem("active_tech");
+    window.location.href="partnerlogin.html";
+  },
+ async completeJob(job){
+  const ok = confirm("Mark this job as completed?");
+  if(!ok) return;
+
+  const completedAt = new Date().toISOString();
+  const fee = this.calculateFee({
+    ...job,
+    completed_at: completedAt
+  });
+
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "completed",
+      completed_at: completedAt,
+      technician_fee: fee
+    })
+    .eq("id", job.id);
+
+  if(error){
+    alert("Failed to complete job");
+    console.error(error);
+    return;
+  }
+
+  await this.fetchJobs();
+},
+
+calculateFee(job){
+  const BASE_FEES = {
+    "AC Repair": 800,
+    "Washing Machine": 600,
+    "Refrigerator": 700,
+    "RO Service": 500,
+    "General": 400
+  };
+
+  let base = BASE_FEES[job.category] ?? 400;
+
+  // SLA bonus
+  if(job.sla_deadline){
+    const breached = new Date(job.completed_at) > new Date(job.sla_deadline);
+    if(breached){
+      base = Math.round(base * 1.2); // +20%
+    }
+  }
+
+  return base;
 }
 
-            }
-        }
-    </script>
+}
+}
+</script>
+
 </body>
 </html>
