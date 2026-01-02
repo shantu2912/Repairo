@@ -143,12 +143,18 @@ class="font-sans antialiased pb-36"
             x-text="job.status.replace('_',' ')"
           ></span>
 
-          <button
-            x-show="job.status === 'assigned'"
-            @click="startJob(job.id)"
-            class="px-5 py-2 bg-brand-olive text-white rounded-xl text-[10px] font-black uppercase">
-            Start
-          </button>
+          <button x-show="job.status === 'assigned'"
+ @click="acceptJob(job.id)"
+ class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
+ Accept
+</button>
+
+<button x-show="job.status === 'assigned'"
+ @click="rejectJob(job.id)"
+ class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
+ Reject
+</button>
+
 
                     <button
                     x-show="job.status === 'in_progress'"
@@ -200,190 +206,153 @@ class="font-sans antialiased pb-36"
   </div>
 </nav>
 
-<!-- LOGIC -->
 <script>
 function dashboardHandler(){
-   
-return{
-tech : null,
-  techName:'',
-  loading:true,
-  jobs:[],
-  stats:{activeJobs:0,earnings:0},
-  timer:null,
+return {
+  tech: null,
+  techName: '',
+  loading: true,
+  jobs: [],
+  stats: { activeJobs: 0, earnings: 0 },
+  timer: null,
+  channel: null,
 
   async init(){
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
-if(!this.tech){
-  window.location.href = "partnerlogin.html";
-  return;
-}
-this.techName = this.tech.name;
+    if(!this.tech){
+      window.location.href = "partnerlogin.html";
+      return;
+    }
 
+    this.techName = this.tech.name;
     await this.fetchJobs();
-    this.startSLATimer();
     this.subscribeRealtime();
   },
 
+  /* 🔥 FETCH ONLY ASSIGNED JOBS */
   async fetchJobs(){
-  this.loading = true;
+    this.loading = true;
 
-  // 1. Active jobs (assigned + in_progress)
-  const { data: activeJobs, error: activeError } = await window.sb
-    .from("jobs")
-    .select("*")
-    .in("status", ["assigned", "in_progress"])
-    .order("created_at", { ascending: false });
+    const { data, error } = await window.sb
+      .from("jobs")
+      .select("*")
+      .eq("tech_id", this.tech.id)
+      .in("status", ["assigned", "in_progress"])
+      .order("created_at", { ascending: false });
 
-  if(activeError){
-    console.error(activeError);
+    if(error){
+      console.error(error);
+      this.loading = false;
+      return;
+    }
+
+    this.jobs = data;
+    this.stats.activeJobs = data.length;
+
+    // Earnings (only this tech)
+    const { data: completed } = await window.sb
+      .from("jobs")
+      .select("technician_fee")
+      .eq("tech_id", this.tech.id)
+      .eq("status", "completed");
+
+    this.stats.earnings = completed
+      ? completed.reduce((s,j)=>s+(j.technician_fee||0),0)
+      : 0;
+
     this.loading = false;
-    return;
-  }
-
-  this.jobs = activeJobs.map(j => ({
-    ...j,
-    slaRemaining: j.sla_deadline
-      ? this.calcSLA(j.sla_deadline)
-      : null
-  }));
-this.stats.activeJobs = this.jobs.length;
-
-  // 2. Earnings from completed jobs
-  const { data: completedJobs, error: completedError } = await window.sb
-    .from("jobs")
-    .select("technician_fee")
-    .eq("status", "completed");
-
-  if(completedError){
-    console.error(completedError);
-    this.stats.earnings = 0;
-  } else {
-    this.stats.earnings = completedJobs.reduce(
-      (sum, j) => sum + (j.technician_fee || 0),
-      0
-    );
-  }
-
-  this.loading = false;
-},
-
-
-  startSLATimer(){
-    this.timer = setInterval(() => {
-      this.jobs = this.jobs.map(j => ({
-        ...j,
-        slaRemaining: j.sla_deadline
-          ? this.calcSLA(j.sla_deadline)
-          : null
-      }));
-    }, 1000);
   },
 
-  calcSLA(deadline){
-    const diff = new Date(deadline) - new Date();
-    if(diff <= 0) return "BREACHED";
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    return `${h}h ${m}m ${s}s`;
+  /* ✅ ACCEPT JOB */
+  async acceptJob(jobId){
+    const { error } = await window.sb
+      .from("jobs")
+      .update({ status: "in_progress" })
+      .eq("id", jobId)
+      .eq("tech_id", this.tech.id);
+
+    if(error){
+      alert("Failed to accept job");
+      return;
+    }
+
+    this.fetchJobs();
+  },
+
+  /* ❌ REJECT JOB */
+  async rejectJob(jobId){
+    const ok = confirm("Reject this job?");
+    if(!ok) return;
+
+    const { error } = await window.sb
+      .from("jobs")
+      .update({
+        tech_id: null,
+        status: "assigned",
+        rejected_by: window.sb.sql`
+          array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+        `
+      })
+      .eq("id", jobId);
+
+    if(error){
+      alert("Failed to reject job");
+      return;
+    }
+
+    this.fetchJobs();
+  },
+
+  /* ✅ COMPLETE JOB */
+  async completeJob(job){
+    const completedAt = new Date().toISOString();
+    const fee = this.calculateFee(job);
+
+    const { error } = await window.sb
+      .from("jobs")
+      .update({
+        status: "completed",
+        completed_at: completedAt,
+        technician_fee: fee
+      })
+      .eq("id", job.id);
+
+    if(error){
+      alert("Failed to complete job");
+      return;
+    }
+
+    this.fetchJobs();
+  },
+
+  calculateFee(job){
+    const BASE = {
+      "AC Repair": 800,
+      "Washing Machine Repair": 600
+    };
+    return BASE[job.category] ?? 400;
   },
 
   subscribeRealtime(){
-  if(this.channel) return;
+    if(this.channel) return;
 
-  this.channel = window.sb
-    .channel('jobs-updates')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'jobs' },
-      () => this.fetchJobs()
-    )
-    .subscribe();
-},
-
-  async startJob(jobId){
-  if(!this.tech) return;
-
-  const { error } = await window.sb
-    .from("jobs")
-    .update({
-      status: "in_progress",
-      technician_id: this.tech.id
-    })
-    .eq("id", jobId);
-
-  if(error){
-    console.error(error);
-    alert("Failed to start job");
-    return;
-  }
-
-  await this.fetchJobs();
-},
-
-  scrollToJobs(){
-    document.querySelector('#jobsSection')
-      ?.scrollIntoView({behavior:'smooth'});
+    this.channel = window.sb
+      .channel("tech-jobs")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "jobs" },
+        () => this.fetchJobs()
+      )
+      .subscribe();
   },
 
   logout(){
     localStorage.removeItem("active_tech");
-    window.location.href="partnerlogin.html";
-  },
- async completeJob(job){
-  const ok = confirm("Mark this job as completed?");
-  if(!ok) return;
-
-  const completedAt = new Date().toISOString();
-  const fee = this.calculateFee({
-    ...job,
-    completed_at: completedAt
-  });
-
-  const { error } = await window.sb
-    .from("jobs")
-    .update({
-      status: "completed",
-      completed_at: completedAt,
-      technician_fee: fee
-    })
-    .eq("id", job.id);
-
-  if(error){
-    alert("Failed to complete job");
-    console.error(error);
-    return;
+    window.location.href = "partnerlogin.html";
   }
-
-  await this.fetchJobs();
-},
-
-calculateFee(job){
-  const BASE_FEES = {
-    "AC Repair": 800,
-    "Washing Machine": 600,
-    "Refrigerator": 700,
-    "RO Service": 500,
-    "General": 400
-  };
-
-  let base = BASE_FEES[job.category] ?? 400;
-
-  // SLA bonus
-  if(job.sla_deadline){
-    const breached = new Date(job.completed_at) > new Date(job.sla_deadline);
-    if(breached){
-      base = Math.round(base * 1.2); // +20%
-    }
-  }
-
-  return base;
-}
-
-}
-}
+}}
 </script>
+
 
 </body>
 </html>
