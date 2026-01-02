@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FixZen Admin | Booked Jobs</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-[#f7f4ef]">
+
+<!-- HEADER -->
+<div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+  <h1 class="text-2xl font-black text-[#4b453a]">
+    FIXZEN <span class="font-normal text-sm">Admin · Booked Jobs</span>
+  </h1>
+
+  <button onclick="loadJobs()"
+    class="px-4 py-2 rounded-xl bg-[#4b453a] text-white text-sm font-bold">
+    Refresh
+  </button>
+</div>
+
+<!-- TABLE -->
+<div class="max-w-7xl mx-auto bg-white rounded-3xl shadow overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50 text-xs text-gray-500">
+      <tr>
+        <th class="p-4 text-left">SERVICE</th>
+        <th class="p-4 text-left">CUSTOMER</th>
+        <th class="p-4">LOCATION</th>
+        <th class="p-4">TECHNICIAN</th>
+        <th class="p-4">STATUS</th>
+        <th class="p-4">FEE</th>
+        <th class="p-4">ACTION</th>
+      </tr>
+    </thead>
+
+    <tbody id="jobList"></tbody>
+  </table>
+</div>
+
+<!-- ASSIGN MODAL -->
+<div id="assignModal"
+  class="hidden fixed inset-0 bg-black/50 items-center justify-center">
+
+  <div class="bg-white p-6 rounded-2xl w-[350px]">
+    <h2 class="font-black mb-4">Assign Technician</h2>
+
+    <select id="techSelect"
+      class="w-full border rounded-lg p-2 mb-4">
+    </select>
+
+    <div class="flex gap-2">
+      <button onclick="confirmAssign()"
+        class="flex-1 bg-[#b18b5e] text-white py-2 rounded-lg font-bold">
+        Assign
+      </button>
+
+      <button onclick="closeAssign()"
+        class="flex-1 border py-2 rounded-lg">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- SUPABASE ---------------- */
+const sb = supabase.createClient(
+  'https://kzxdxnxgouthsywbsnvl.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+
+);
+
+const jobList = document.getElementById("jobList");
+let selectedJobId = null;
+
+/* ---------------- STATUS BADGE ---------------- */
+function statusBadge(status) {
+  const map = {
+    assigned: "bg-yellow-100 text-yellow-700",
+    in_progress: "bg-blue-100 text-blue-700",
+    completed: "bg-green-100 text-green-700",
+    cancelled: "bg-red-100 text-red-700"
+  };
+
+  return `
+    <span class="px-3 py-1 text-[10px] font-black rounded-full ${map[status]}">
+      ${status.replace("_", " ").toUpperCase()}
+    </span>
+  `;
+}
+
+/* ---------------- AUTO ASSIGN ---------------- */
+async function autoAssign(job) {
+  const { data: techs } = await sb
+    .from("technicians")
+    .select("id, jobs_done, rating")
+    .eq("status", "approved")
+    .eq("category", job.category)
+    .eq("area", job.location)
+    .order("jobs_done", { ascending: true })
+    .order("rating", { ascending: false })
+    .limit(1);
+
+  if (!techs || techs.length === 0) return;
+
+  const tech = techs[0];
+
+  await sb.from("jobs").update({
+    tech_id: tech.id,
+    status: "assigned"
+  }).eq("id", job.id);
+
+  await sb.from("technicians").update({
+    jobs_done: tech.jobs_done + 1
+  }).eq("id", tech.id);
+}
+
+/* ---------------- LOAD JOBS ---------------- */
+async function loadJobs() {
+  const { data, error } = await sb
+    .from("jobs")
+    .select(`
+      id,
+      tech_id,
+      category,
+      device,
+      issue,
+      customer_name,
+      phone,
+      location,
+      status,
+      technician_fee,
+      technicians ( name )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    alert("Failed to load jobs");
+    return;
+  }
+
+  jobList.innerHTML = "";
+
+  for (const j of data) {
+    if (!j.tech_id) await autoAssign(j);
+
+    jobList.innerHTML += `
+      <tr class="border-t">
+        <td class="p-4">
+          <p class="font-bold">${j.category}</p>
+          <p class="text-xs text-gray-500">${j.device}</p>
+          <p class="text-xs">${j.issue}</p>
+        </td>
+
+        <td class="p-4">
+          <p class="font-semibold">${j.customer_name}</p>
+          <p class="text-xs text-gray-500">${j.phone}</p>
+        </td>
+
+        <td class="p-4">${j.location}</td>
+
+        <td class="p-4 font-bold text-red-600">
+          ${j.tech_id ? j.technicians?.name : "Unassigned"}
+        </td>
+
+        <td class="p-4 text-center">
+          ${statusBadge(j.status)}
+        </td>
+
+        <td class="p-4 text-center font-bold">
+          ₹${j.technician_fee ?? 0}
+        </td>
+
+        <td class="p-4 text-center">
+          ${
+            !j.tech_id
+              ? `<button onclick="openAssign('${j.id}','${j.category}','${j.location}')"
+                  class="px-4 py-2 text-[10px] font-black rounded-xl bg-[#b18b5e] text-white">
+                  ASSIGN
+                </button>`
+              : `<button class="px-4 py-2 text-[10px] font-black rounded-xl bg-[#4b453a] text-white">
+                  VIEW
+                </button>`
+          }
+        </td>
+      </tr>
+    `;
+  }
+}
+
+/* ---------------- MANUAL ASSIGN ---------------- */
+window.openAssign = async (jobId, category, area) => {
+  selectedJobId = jobId;
+  const select = document.getElementById("techSelect");
+  select.innerHTML = "";
+
+  const { data } = await sb
+    .from("technicians")
+    .select("id, name, experience")
+    .eq("status", "approved")
+    .eq("category", category)
+    .eq("area", area);
+
+  if (!data || data.length === 0) {
+    select.innerHTML = `<option>No technician available</option>`;
+  } else {
+    data.forEach(t => {
+      select.innerHTML += `
+        <option value="${t.id}">
+          ${t.name} | ${t.experience} yrs
+        </option>`;
+    });
+  }
+
+  document.getElementById("assignModal").classList.remove("hidden");
+  document.getElementById("assignModal").classList.add("flex");
+};
+
+window.confirmAssign = async () => {
+  const techId = document.getElementById("techSelect").value;
+
+  await sb.from("jobs").update({
+    tech_id: techId,
+    status: "assigned"
+  }).eq("id", selectedJobId);
+
+  closeAssign();
+  loadJobs();
+};
+
+window.closeAssign = () => {
+  document.getElementById("assignModal").classList.add("hidden");
+  selectedJobId = null;
+};
+
+/* ---------------- INIT ---------------- */
+loadJobs();
+</script>
+
+</body>
+</html>
