@@ -79,6 +79,24 @@ x-data="{
     return '+91' + this.form.phone.trim();
   },
 
+
+    async getLatLngFromAddress(address) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data || data.length === 0) {
+      throw new Error('ADDRESS NOT FOUND');
+    }
+
+    return {
+      lat: data[0].lat,
+      lon: data[0].lon
+    };
+  },
+
+
   async handleAction() {
     this.message = '';
     if (!this.form.phone || this.form.phone.length !== 10) {
@@ -181,14 +199,19 @@ x-data="{
       }
 
       await supabase.auth.updateUser({ password: this.form.pass });
+// 📍 Convert address to lat/lng
+const location = await this.getLatLngFromAddress(this.form.address);
 
-      const { error: profileError } = await supabase.from('profiles').insert({
+const { error: profileError } = await supabase.from('profiles').insert({
   id: user.id,
   full_name: this.form.name,
   username: this.form.user,
   phone,
-  address: this.form.address   // ✅ SAVED
+  address: this.form.address,
+  latitude: location.lat,
+  longitude: location.lon
 });
+
 
       if (profileError) {
         this.message = 'ACCOUNT ALREADY EXISTS';
