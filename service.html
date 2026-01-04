@@ -3,52 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Service Details</title>
+    <title>Service Details | FixZen</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
-        :root { --bg: #F4F4F0; --dark: #1C2331; --white: #FFFFFF; --text: #1F2937; --muted: #6B7280; --green: #059669; --shadow: 0 8px 24px rgba(0,0,0,0.06); }
-        body { background: var(--bg); margin: 0; font-family: -apple-system, sans-serif; padding-bottom: 120px; color: var(--text); }
-        
-        /* STATUS BAR (FOR DEBUGGING) */
-        #debug-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #DC2626; color: white; padding: 10px; font-size: 0.8rem; text-align: center; z-index: 9999; display: none; }
-        .demo-mode-active { background: #D97706 !important; } /* Orange for Demo Mode */
+        /* --- PREMIUM DESIGN SYSTEM --- */
+        :root {
+            --bg: #F4F4F0; --dark: #1C2331; --white: #FFFFFF; 
+            --gold: #A07D54; --green: #059669; --text: #1F2937; --muted: #6B7280;
+            --shadow: 0 12px 40px rgba(0,0,0,0.08);
+            --ease: cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        body { background: var(--bg); margin: 0; font-family: -apple-system, sans-serif; padding-bottom: 120px; color: var(--text); -webkit-font-smoothing: antialiased; }
 
         /* LOADER */
-        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 2000; padding: 20px; transition: opacity 0.4s; display: flex; flex-direction: column; gap: 15px; }
+        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 2000; padding: 20px; transition: opacity 0.5s; display: flex; flex-direction: column; gap: 15px; }
         .shim { background: #E5E7EB; border-radius: 16px; overflow: hidden; position: relative; }
         .shim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: shimmer 1s infinite; }
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
         /* UI ELEMENTS */
-        .header { background: var(--dark); height: 240px; border-radius: 0 0 40px 40px; padding: 20px; display: flex; justify-content: space-between; position: relative; }
-        .icon-btn { width: 44px; height: 44px; background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; border: none; font-size: 1.4rem; cursor: pointer; text-decoration: none; }
-        .hero-card { margin: -120px 20px 0; background: var(--white); border-radius: 28px; padding: 12px; box-shadow: var(--shadow); opacity: 0; transform: translateY(30px); transition: 0.6s; }
+        .header { background: var(--dark); height: 240px; border-radius: 0 0 40px 40px; padding: 20px; display: flex; justify-content: space-between; }
+        .icon-btn { width: 44px; height: 44px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 1.4rem; border: none; cursor: pointer; transition: 0.2s; }
+        
+        .hero-card { margin: -120px 20px 0; background: var(--white); border-radius: 28px; padding: 12px; box-shadow: var(--shadow); transform: translateY(30px); opacity: 0; transition: 0.6s var(--ease); }
         .hero-img { width: 100%; height: 220px; object-fit: cover; border-radius: 22px; background: #eee; }
         .hero-info { padding: 18px 8px 8px; display: flex; justify-content: space-between; align-items: flex-end; }
         .title { font-size: 1.8rem; font-weight: 800; color: var(--dark); margin: 0; line-height: 1; letter-spacing: -0.5px; }
+        .rating-badge { background: #FEF3C7; color: #B45309; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; display: flex; gap: 4px; align-items: center; }
+
         .label { padding: 35px 24px 15px; font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; }
         .scroll-row { display: flex; gap: 15px; overflow-x: auto; padding: 0 24px 20px; scrollbar-width: none; }
         
-        .v-card { min-width: 160px; background: var(--white); padding: 18px; border-radius: 24px; border: 2px solid transparent; transition: 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+        /* VARIANTS */
+        .v-card { min-width: 160px; background: var(--white); padding: 18px; border-radius: 24px; border: 2px solid transparent; transition: 0.3s; cursor: pointer; position: relative; opacity: 0; transform: translateY(20px); }
         .v-card.active { border-color: var(--dark); background: #F8FAFC; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        
-        .d-card { min-width: 75px; height: 90px; background: var(--white); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); border: 2px solid transparent; }
+        .v-card.active::after { content: "Selected"; position: absolute; top: 0; right: 0; background: var(--dark); color: white; font-size: 0.6rem; padding: 4px 8px; border-radius: 0 0 0 10px; font-weight: 700; }
+
+        /* DATES */
+        .d-card { min-width: 75px; height: 90px; background: var(--white); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); border: 2px solid transparent; opacity: 0; transform: translateX(20px); transition: 0.2s; }
         .d-card.active { background: var(--dark); color: white; transform: scale(1.05); border-color: var(--dark); }
 
-        .tech-card { margin: 0 24px; background: var(--white); padding: 16px; border-radius: 24px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); }
+        /* TECH CARD */
+        .tech-card { margin: 0 24px; background: var(--white); padding: 16px; border-radius: 24px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); opacity: 0; transform: translateY(20px); transition: 0.5s var(--ease); }
         .tech-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--white); background: #eee; }
-        
-        .dock { position: fixed; bottom: 30px; left: 24px; right: 24px; background: var(--dark); border-radius: 24px; padding: 14px 14px 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); z-index: 100; transform: translateY(150%); transition: 0.6s; }
-        .book-btn { background: var(--white); color: var(--dark); border: none; padding: 16px 32px; border-radius: 18px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
+        /* DOCK */
+        .dock { position: fixed; bottom: 30px; left: 24px; right: 24px; background: var(--dark); border-radius: 24px; padding: 14px 14px 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); z-index: 100; transform: translateY(150%); transition: 0.6s var(--ease); }
+        .book-btn { background: var(--white); color: var(--dark); border: none; padding: 16px 32px; border-radius: 18px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        
         .loaded .hero-card, .loaded .v-card, .loaded .tech-card, .loaded .dock { opacity: 1; transform: translateY(0); }
+        .loaded .d-card { opacity: 1; transform: translateX(0); }
     </style>
 </head>
 <body>
 
-    <div id="debug-bar">Loading...</div>
+    <div id="status-bar" style="position:fixed; top:0; left:0; width:100%; background:#DC2626; color:white; font-size:0.8rem; padding:8px; text-align:center; z-index:9999; display:none;"></div>
 
     <div id="loader">
         <div class="shim" style="height: 240px; border-radius: 0 0 40px 40px;"></div>
@@ -57,7 +70,7 @@
     </div>
 
     <div class="header">
-        <a href="javascript:history.back()" class="icon-btn"><i class="ph ph-arrow-left"></i></a>
+        <a href="index.html" class="icon-btn"><i class="ph ph-arrow-left"></i></a>
         <button class="icon-btn"><i class="ph ph-heart"></i></button>
     </div>
 
@@ -69,9 +82,7 @@
                     <h1 id="txt-title" class="title">...</h1>
                     <div style="color:var(--muted); font-size:0.95rem; margin-top:6px;" id="txt-sub">...</div>
                 </div>
-                <div style="background:#FEF3C7; color:#D97706; padding:6px 12px; border-radius:20px; font-weight:700; font-size:0.9rem;">
-                    <i class="ph-fill ph-star"></i> <span id="txt-rating">0.0</span>
-                </div>
+                <div class="rating-badge"><i class="ph-fill ph-star"></i> <span id="txt-rating">0.0</span></div>
             </div>
         </div>
 
@@ -87,8 +98,11 @@
             <div>
                 <div id="tech-name" style="font-weight:700; font-size:1.05rem; color:var(--dark);">Finding Expert...</div>
                 <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
-                    <span id="tech-jobs">0</span> Jobs Done • <span id="tech-rating">0.0</span>
+                    <span id="tech-jobs">0</span> Jobs • <span id="tech-rating">0.0</span>
                 </div>
+            </div>
+            <div style="margin-left:auto; background:#D1FAE5; color:var(--green); padding:6px 12px; border-radius:12px; font-size:0.7rem; font-weight:800; display:flex; gap:4px; align-items:center;">
+                <i class="ph-fill ph-seal-check"></i> VERIFIED
             </div>
         </div>
         
@@ -99,87 +113,55 @@
                 <span style="font-size:0.75rem; color:rgba(255,255,255,0.6); letter-spacing:0.5px;">TOTAL ESTIMATE</span>
                 <div id="txt-price" style="font-size:1.5rem; font-weight:800; color:white;">₹0</div>
             </div>
-            <button class="book-btn">Book Now <i class="ph-bold ph-arrow-right"></i></button>
+            <button class="book-btn" onclick="bookNow()">Book Now <i class="ph-bold ph-arrow-right"></i></button>
         </div>
     </div>
 
     <script>
-        // 1. CONFIGURATION
-        // (Make sure your keys are correct here!)
+        // --- CONFIGURATION ---
+        // 🔴🔴 PASTE YOUR KEYS HERE 🔴🔴
         const PROJECT_URL = 'PASTE_YOUR_PROJECT_URL_HERE'; 
         const API_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
 
-        // 2. DEMO DATA (Fallback)
-        const DEMO_DATA = {
-            title: "AC Repair (Demo)",
-            subtitle: "Cooling & Maintenance",
-            image_url: "https://images.unsplash.com/photo-1621905476059-5f8df4806592?q=80&w=2070",
-            rating: 4.8,
-            variants: [
-                { name: "Split AC Check", description: "Deep cleaning", price: 599 },
-                { name: "Window AC", description: "Filter clean", price: 499 }
-            ],
-            tech: { name: "Demo Tech", image_url: "", jobs_done: 100, rating: 4.9 }
-        };
+        let currentService, selectedVariant, selectedDate, matchedTech;
 
         window.onload = async () => {
-            const debugBar = document.getElementById('debug-bar');
-            
+            const sb = document.getElementById('status-bar');
             try {
-                if (PROJECT_URL.includes('PASTE') || API_KEY.includes('PASTE')) {
-                    throw new Error("Missing API Keys");
-                }
+                if (PROJECT_URL.includes('PASTE')) throw new Error("Missing API Keys");
 
-                // Initialize Supabase
                 const { createClient } = supabase; 
                 const db = createClient(PROJECT_URL, API_KEY);
+                const slug = new URLSearchParams(window.location.search).get('id') || 'ac';
 
-                const params = new URLSearchParams(window.location.search);
-                const slug = params.get('id') || 'ac';
-
-                // --- THE FIX IS HERE ---
-                // We added .limit(1) to prevent the "Cannot coerce" error
+                // 1. Fetch Service (Anti-Crash Logic: .limit(1))
                 const { data: service, error: sError } = await db
                     .from('services')
                     .select('*, service_variants(*)')
                     .eq('slug', slug)
-                    .limit(1)  // <--- THIS FIXES THE ERROR
-                    .maybeSingle(); // <--- Safely handles 0 or 1 result
+                    .limit(1)  // Fixes duplicate error
+                    .maybeSingle(); 
 
-                if (sError) throw new Error(sError.message);
-                if (!service) throw new Error("Service not found in DB");
+                if (sError) throw sError;
+                if (!service) throw new Error("Service not found");
+                currentService = service;
 
-                // Fetch Tech
+                // 2. Fetch Tech
                 const { data: tech } = await db
                     .from('technicians')
                     .select('*')
                     .ilike('category', `%${slug}%`)
                     .limit(1)
                     .maybeSingle();
+                matchedTech = tech;
 
-                // Render Real Data
                 renderUI(service, tech);
-                if(debugBar) debugBar.style.display = 'none';
 
             } catch (err) {
-                // FAILURE: Show Demo Data
-                console.warn("Supabase Error:", err);
-                if(debugBar) {
-                    debugBar.style.display = 'block';
-                    debugBar.innerHTML = `⚠️ Connection Failed: <b>${err.message}</b>. Showing DEMO DATA.`;
-                    debugBar.classList.add('demo-mode-active');
-                }
-                
-                const demoService = { 
-                    title: DEMO_DATA.title, 
-                    subtitle: DEMO_DATA.subtitle, 
-                    image_url: DEMO_DATA.image_url, 
-                    rating: DEMO_DATA.rating, 
-                    service_variants: DEMO_DATA.variants 
-                };
-                renderUI(demoService, DEMO_DATA.tech);
+                console.error(err);
+                sb.style.display = 'block';
+                sb.innerHTML = `⚠️ Error: ${err.message}. Showing Demo Mode.`;
             } finally {
-                renderDates();
                 setTimeout(() => {
                     document.getElementById('loader').style.opacity = '0';
                     setTimeout(() => document.getElementById('loader').style.display = 'none', 400);
@@ -188,68 +170,98 @@
             }
         };
 
-        // --- RENDER HELPERS (No Changes Here) ---
         function renderUI(s, t) {
             document.getElementById('txt-title').innerText = s.title;
             document.getElementById('txt-sub').innerText = s.subtitle;
             document.getElementById('img-hero').src = s.image_url;
             document.getElementById('txt-rating').innerText = s.rating;
-            
-            renderVariants(s.service_variants);
-            
+
+            // Variants
+            const vContainer = document.getElementById('list-variants');
+            if (s.service_variants) {
+                s.service_variants.sort((a,b) => a.price - b.price);
+                s.service_variants.forEach((v, i) => {
+                    const el = document.createElement('div');
+                    el.className = `v-card ${i===0 ? 'active' : ''}`;
+                    el.style.transitionDelay = `${i*100}ms`;
+                    el.onclick = () => selectVariant(el, v);
+                    el.innerHTML = `
+                        <div style="font-weight:700;">${v.name}</div>
+                        <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">${v.description}</div>
+                        <div style="font-weight:800; font-size:1.2rem;">₹${v.price}</div>
+                    `;
+                    vContainer.appendChild(el);
+                    if(i===0) selectVariant(el, v);
+                });
+            }
+
+            // Tech
             if(t) {
                 document.getElementById('tech-name').innerText = t.name;
                 document.getElementById('tech-img').src = t.image_url || `https://ui-avatars.com/api/?name=${t.name}`;
                 document.getElementById('tech-jobs').innerText = t.jobs_done || 0;
-                document.getElementById('tech-rating').innerText = t.rating || 0;
+                document.getElementById('tech-rating').innerText = t.rating;
             }
-        }
 
-        function renderVariants(list) {
-            const container = document.getElementById('list-variants');
-            container.innerHTML = '';
-            if(!list) return;
-            
-            list.sort((a,b) => a.price - b.price);
-            list.forEach((v, i) => {
-                const el = document.createElement('div');
-                el.className = `v-card ${i===0 ? 'active' : ''}`;
-                el.onclick = () => {
-                    document.querySelectorAll('.v-card').forEach(c => c.classList.remove('active'));
-                    el.classList.add('active');
-                    updatePrice(v.price);
-                };
-                el.innerHTML = `
-                    <div style="font-weight:700; font-size:1rem;">${v.name}</div>
-                    <div style="font-size:0.8rem; color:#6B7280; margin-bottom:10px;">${v.description}</div>
-                    <div style="font-weight:800; font-size:1.2rem;">₹${v.price}</div>
-                `;
-                container.appendChild(el);
-                if(i===0) updatePrice(v.price);
-            });
-        }
-
-        function renderDates() {
-            const container = document.getElementById('list-dates');
-            const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+            // Dates
+            const dContainer = document.getElementById('list-dates');
             for(let i=0; i<7; i++) {
-                const d = new Date(); d.setDate(d.getDate() + i);
+                const d = new Date(); d.setDate(d.getDate()+i);
                 const el = document.createElement('div');
-                el.className = `d-card ${i===0 ? 'active' : ''}`;
+                el.className = `d-card ${i===0?'active':''}`;
+                el.style.transitionDelay = `${i*50}ms`;
                 el.onclick = () => {
-                    document.querySelectorAll('.d-card').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.d-card').forEach(c=>c.classList.remove('active'));
                     el.classList.add('active');
+                    selectedDate = d.toISOString();
                 };
-                el.innerHTML = `
-                    <span style="font-size:0.7rem; font-weight:700; opacity:0.6;">${days[d.getDay()]}</span>
-                    <span style="font-size:1.3rem; font-weight:800;">${d.getDate()}</span>
-                `;
-                container.appendChild(el);
+                el.innerHTML = `<span style="font-size:0.7rem; font-weight:700; opacity:0.6;">${['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]}</span><span style="font-size:1.3rem; font-weight:800;">${d.getDate()}</span>`;
+                dContainer.appendChild(el);
+                if(i===0) selectedDate = d.toISOString();
             }
         }
 
-        function updatePrice(p) {
-            document.getElementById('txt-price').innerText = '₹' + p;
+        function selectVariant(el, variant) {
+            document.querySelectorAll('.v-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            selectedVariant = variant;
+            document.getElementById('txt-price').innerText = '₹' + variant.price;
+        }
+
+        async function bookNow() {
+            const btn = document.querySelector('.book-btn');
+            if (PROJECT_URL.includes('PASTE')) return alert("Missing API Keys");
+
+            btn.innerHTML = `<i class="ph ph-spinner ph-spin"></i> Processing...`;
+
+            // 1. Generate OTP
+            const otp = Math.floor(1000 + Math.random() * 9000);
+
+            const { createClient } = supabase; 
+            const db = createClient(PROJECT_URL, API_KEY);
+
+            // 2. Save Booking
+            const { error } = await db.from('bookings').insert({
+                service_name: currentService.title,
+                variant_name: selectedVariant ? selectedVariant.name : 'Standard',
+                price: selectedVariant ? selectedVariant.price : 0,
+                date: selectedDate,
+                technician_id: matchedTech ? matchedTech.id : null,
+                status: 'pending',
+                otp: otp.toString()
+            });
+
+            if (error) {
+                alert("Error: " + error.message);
+                btn.innerHTML = `Book Now <i class="ph-bold ph-arrow-right"></i>`;
+            } else {
+                btn.style.background = "#059669";
+                btn.innerText = "✓ Confirmed!";
+                
+                // 3. Show OTP & Redirect
+                alert(`Booking Successful!\n\n🔐 Your OTP is: ${otp}\n(Show this to the technician)`);
+                setTimeout(() => window.location.href = 'bookings.html', 500);
+            }
         }
     </script>
 </body>
