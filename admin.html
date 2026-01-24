@@ -1,52 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <title>FixZen Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen Admin - Management Console</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold': '#A07D54',
+                        'brand-cream': '#EEEAE2',
+                        'brand-dark': '#4D4C4B',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    boxShadow: {
+                        'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-50 min-h-screen p-8">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-2xl font-bold text-[#5D5646] tracking-tighter">FIX <span class="text-[#A07D54]">ZEN</span> ADMIN</h1>
-            <button onclick="location.reload()" class="bg-white px-4 py-2 rounded-lg shadow-sm text-xs font-bold uppercase hover:bg-gray-100">Refresh Data</button>
-        </header>
 
-        <div class="grid grid-cols-3 gap-6 mb-8 text-center">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pending</p>
-                <p id="pendingCount" class="text-3xl font-bold text-yellow-600">0</p>
+<body class="bg-brand-cream text-brand-dark antialiased font-sans" x-data="{ sidebarOpen: false }">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-brand-olive/10 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <button @click="sidebarOpen = true" class="text-brand-olive hover:scale-110 transition-transform">
+                <i class="fa-solid fa-bars-staggered text-xl"></i>
+            </button>
+            <h1 class="text-xl font-extrabold tracking-tighter text-brand-olive">
+                FIX <span class="text-brand-gold">ZEN</span> <span class="text-[10px] uppercase tracking-[0.3em] ml-2 opacity-50">Admin</span>
+            </h1>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <button onclick="location.reload()" class="p-2 hover:bg-brand-cream rounded-full transition-colors">
+                <i class="fa-solid fa-rotate text-brand-olive"></i>
+            </button>
+            <div class="w-10 h-10 rounded-full border-2 border-brand-gold p-0.5">
+                <img src="https://ui-avatars.com/api/?background=5D5646&color=fff&name=Admin" class="rounded-full">
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Approved</p>
-                <p id="approvedCount" class="text-3xl font-bold text-green-600">0</p>
+        </div>
+        
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 pb-32">
+        
+        <div class="mb-10">
+            <h2 class="text-3xl font-bold text-brand-olive">Command Center</h2>
+            <p class="text-brand-dark/60 text-sm">Overseeing technician registrations and platform health.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-white flex flex-col items-center justify-center group hover:border-yellow-500/30 transition-all">
+                <div class="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                </div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pending Verification</p>
+                <p id="pendingCount" class="text-4xl font-extrabold text-brand-olive mt-1">0</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rejected</p>
-                <p id="rejectedCount" class="text-3xl font-bold text-red-600">0</p>
+
+            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-white flex flex-col items-center justify-center group hover:border-green-500/30 transition-all">
+                <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-user-check text-xl"></i>
+                </div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Partners</p>
+                <p id="approvedCount" class="text-4xl font-extrabold text-brand-olive mt-1">0</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-white flex flex-col items-center justify-center group hover:border-red-500/30 transition-all">
+                <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-user-xmark text-xl"></i>
+                </div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rejected Applications</p>
+                <p id="rejectedCount" class="text-4xl font-extrabold text-brand-olive mt-1">0</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
-            <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase">Technician</th>
-                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase">Category</th>
-                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase text-center">Status</th>
-                        <th class="p-4 text-[10px] font-bold text-gray-400 uppercase text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="techList">
-                    </tbody>
-            </table>
+        <div class="bg-white rounded-[2.5rem] shadow-super-float overflow-hidden border border-white/50">
+            <div class="px-8 py-6 border-b border-brand-cream flex justify-between items-center bg-gray-50/50">
+                <h3 class="font-bold text-brand-olive">Partnership Requests</h3>
+                <div class="flex gap-2">
+                    <span class="px-3 py-1 bg-brand-olive text-white text-[10px] font-bold rounded-full uppercase tracking-tighter">Live Updates</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-brand-dark/40 border-b border-brand-cream">
+                            <th class="px-8 py-5 text-[10px] font-bold uppercase tracking-widest">Technician Profile</th>
+                            <th class="px-8 py-5 text-[10px] font-bold uppercase tracking-widest">Category</th>
+                            <th class="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-center">Status</th>
+                            <th class="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="techList" class="divide-y divide-brand-cream/50">
+                        </tbody>
+                </table>
+            </div>
         </div>
+    </main>
+
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50">
+    <div class="bg-brand-olive/95 backdrop-blur-xl rounded-full p-2 flex justify-between items-center shadow-2xl border border-white/10">
+        <a href="admin.html" class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-brand-gold transition-colors">
+            <i class="fa-solid fa-users-gear text-xl"></i>
+        </a>
+        
+        <a href="admin-jobs.html" class="bg-brand-gold text-white px-6 py-3 rounded-full flex items-center gap-2 transition-all shadow-lg">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span class="text-xs font-bold">Manage Jobs</span>
+        </a>
+
+        <a href="index.html" class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-brand-gold transition-colors">
+            <i class="fa-solid fa-eye text-xl"></i>
+        </a>
     </div>
-    <a href="admin-jobs.html"
-   class="text-xs font-bold bg-black text-white px-4 py-2 rounded">
-  View Bookings
-</a>
+</div>
+
+    <div x-show="sidebarOpen" class="fixed inset-0 z-[100]" style="display: none;">
+        <div class="absolute inset-0 bg-brand-olive/60 backdrop-blur-md" @click="sidebarOpen = false"></div>
+        <aside class="absolute left-0 top-0 h-full w-72 bg-white shadow-2xl p-8"
+               x-transition:enter="transition ease-out duration-300 transform"
+               x-transition:enter-start="-translate-x-full"
+               x-transition:enter-end="translate-x-0">
+            <h2 class="font-extrabold text-2xl text-brand-olive mb-10">ADMIN MENU</h2>
+            <nav class="space-y-6">
+                <a href="#" class="flex items-center gap-4 text-brand-olive font-bold hover:text-brand-gold">
+                    <i class="fa-solid fa-users-gear w-6"></i> Technician Approval
+                </a>
+                <a href="admin-jobs.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                    <i class="fa-solid fa-clipboard-list w-6"></i> Booking Logs
+                </a>
+                <a href="index.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                    <i class="fa-solid fa-house w-6"></i> Public Site
+                </a>
+                <div class="pt-10">
+                    <button class="w-full py-3 rounded-xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100">Logout</button>
+                </div>
+            </nav>
+        </aside>
+    </div>
 
     <script type="module" src="admin.js"></script>
 </body>
