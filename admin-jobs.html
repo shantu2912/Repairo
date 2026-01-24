@@ -191,35 +191,42 @@ async function loadJobs() {
     `;
   }
 }
-
-/* ---------------- MANUAL ASSIGN ---------------- */
 window.openAssign = async (jobId, category, area) => {
   selectedJobId = jobId;
   const select = document.getElementById("techSelect");
+  select.innerHTML = "<option>Searching...</option>";
+
+  console.log("Searching for Category:", category);
+
+  // Use .ilike() instead of .eq() for case-insensitive matching
+  const { data, error } = await sb
+    .from("technicians")
+    .select("id, name, category, area, experience")
+    .eq("status", "approved")
+    .ilike("category", category); // This matches "Ac" or "AC" or "ac"
+
+  if (error) {
+    console.error("Supabase Error:", error.message);
+    return;
+  }
+
   select.innerHTML = "";
 
-  const { data } = await sb
-    .from("technicians")
-    .select("id, name, experience")
-    .eq("status", "approved")
-    .eq("category", category)
-    .eq("area", area);
-
   if (!data || data.length === 0) {
-    select.innerHTML = `<option>No technician available</option>`;
+    select.innerHTML = `<option>No experts found for "${category}"</option>`;
+    // LOG THE ACTUAL TECHS TO SEE WHY THEY DON'T MATCH
+    const { data: allTechs } = await sb.from("technicians").select("name, category, status").limit(5);
+    console.log("Current technicians in DB:", allTechs);
   } else {
+    select.innerHTML = `<option value="">Select Technician (${data.length} found)</option>`;
     data.forEach(t => {
-      select.innerHTML += `
-        <option value="${t.id}">
-          ${t.name} | ${t.experience} yrs
-        </option>`;
+      select.innerHTML += `<option value="${t.id}">${t.name} | ${t.area} | ${t.experience} yrs</option>`;
     });
   }
 
   document.getElementById("assignModal").classList.remove("hidden");
   document.getElementById("assignModal").classList.add("flex");
 };
-
 window.confirmAssign = async () => {
   const techId = document.getElementById("techSelect").value;
 
