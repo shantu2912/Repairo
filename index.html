@@ -8,21 +8,33 @@
 
     <style>
         /* =========================================
-           PART 1: ANIMATION STYLES (Do Not Touch)
+           GLOBAL SETTINGS
            ========================================= */
+        :root {
+            --primary: #00AEEF;
+            --dark: #212022;
+            --gold: #C8A676;
+            --white: #ffffff;
+            --bg: #F8F8F5;
+            --text-main: #1F2937;
+            --text-light: #9CA3AF;
+        }
+
         html, body {
             width: 100%; height: 100%; margin: 0; padding: 0;
-            /* Start with Dark Background for Animation */
-            background-color: #212022; 
-            overflow: hidden; /* Lock scroll during animation */
-            transition: background-color 0.5s ease; /* Smooth fade to white later */
+            background-color: #212022; /* Start Dark for Animation */
+            overflow: hidden; /* Locked during animation */
+            transition: background-color 0.5s ease;
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* --- YOUR ANIMATION CSS PASTE START --- */
+        /* =========================================
+           PART 1: ANIMATION CSS
+           ========================================= */
         .animation01, .animation02 { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        img { vertical-align: bottom; max-width: 100%; width: 100%; }
         
-        /* (Shortened for brevity - The code ensures your specific animation classes work) */
+        /* Rhombus & Lines */
         .border_box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 15vw; height: 15vw; }
         .line { display: block; position: absolute; background-color: #00AEEF; opacity: 0; }
         .line01 { top: 0; left: 100%; width: 0.15vw; height: 15.15vw; transform-origin: bottom; animation: animation01_line01 0.2s linear 0.3s forwards; }
@@ -33,33 +45,40 @@
         @keyframes animation01_line01 { 0% { transform: scale3d(1, 0, 1); opacity: 1; } 100% { transform: scale3d(1, 1, 1); opacity: 1; } }
         @keyframes animation01_line02 { 0% { transform: scale3d(0, 1, 1); opacity: 1; } 100% { transform: scale3d(1, 1, 1); opacity: 1; } }
         
+        /* Circles */
         .circle { display: block; position: absolute; width: 1.2vw; height: 1.2vw; border: 0.1vw solid #fff; border-radius: 50%; opacity: 0; }
         .circle01 { top: 96%; left: 96%; animation: animation01_circle 0.3s linear 0.3s forwards; }
         .circle02 { top: 96%; left: -99%; animation: animation01_circle 0.3s linear 0.45s forwards; }
         .circle03 { top: -4%; left: -99%; animation: animation01_circle 0.3s linear 0.65s forwards; }
         .circle04 { top: -4%; left: 96%; animation: animation01_circle 0.3s linear 0.85s forwards; }
-        
         @keyframes animation01_circle { 0% { transform: scale3d(0, 0, 1); opacity: 1; } 40%, 60% { transform: scale3d(1, 1, 1); opacity: 1; } 100% { transform: scale3d(0, 0, 1); opacity: 1; } }
         
+        /* Waves & Animation Lines */
         .wave { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 13.5vw; height: 13.5vw; overflow: hidden; }
         .wave_wrapper { width: 200%; height: 150%; position: absolute; top: -25%; left: -50%; animation: animation01_wave_wrapper 1s linear 1s forwards; }
         .wave_box { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #00AEEF; transform-origin: bottom; animation: animation01_wave_box 1s linear 1s forwards; opacity: 0; }
-        
         @keyframes animation01_wave_wrapper { 0%, 50%, 100% { transform: rotate(0); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-15deg); } }
         @keyframes animation01_wave_box { 0% { transform: scale3d(1, 0, 1); opacity: 1; } 100% { transform: scale3d(1, 1, 1); opacity: 1; } }
+
+        /* Animation Lines (Sparkles) */
+        .animation_line { position: absolute; background-color: #fff; opacity: 0; }
+        .animation_line_wrapper { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        .animation_line01 { top: -15%; left: 0; width: 0.2vw; height: 0.7vw; animation: animation_line01 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) 1.9s; }
+        .animation_line02_wrapper { transform: rotate(45deg); } .animation_line02 { top: -35%; left: 0; width: 0.2vw; height: 0.7vw; animation: animation_line01 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) 1.9s; }
+        @keyframes animation_line01 { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-1.5vw); opacity: 1; } }
         
+        /* Rhombus Transforms */
         .rhombus { position: absolute; width: 100%; height: 100%; animation: rhombus 0.2s linear 2.2s forwards; }
         .rhombus_small { position: absolute; width: 100%; height: 100%; animation: rhombus_small 0.4s linear 2.55s forwards; }
         @keyframes rhombus { 100% { transform: rotate(45deg); } }
         @keyframes rhombus_small { 99% { transform: scale3d(0.15, 0.15, 0.15); opacity: 1; } 100% { transform: scale3d(0.15, 0.15, 0.15); opacity: 0; } }
 
-        /* Rings & Final Reveal */
-        .rhombus_box { position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin: auto; width: 40vw; height: 40vw; animation: rhombus_box 0.4s linear 3.55s forwards; }
+        /* Final Reveal Elements */
+        .rhombus_box { position: absolute; top:0; left:0; right:0; bottom:0; margin: auto; width: 40vw; height: 40vw; animation: rhombus_box 0.4s linear 3.55s forwards; }
         .rhombus_item { position: absolute; width: 2.1vw; height: 2.1vw; background-color: #fff; transform: rotate(45deg); }
         .rhombus_item_wrapper { position: absolute; top:0; left:0; right:0; bottom:0; margin:auto; width: 2.1vw; height: 2.1vw; opacity: 0; }
-        .rhombus_item01_wrapper { animation: rhombus_item01 0.5s linear 2.95s forwards; }
+        .rhombus_item01_wrapper { animation: rhombus_item01 0.5s linear 2.95s forwards; } 
         .rhombus_item02_wrapper { animation: rhombus_item02 0.5s linear 2.95s forwards; }
-        
         @keyframes rhombus_item01 { 100% { transform: translateX(-18.5vw); opacity: 1; } }
         @keyframes rhombus_item02 { 100% { transform: translateX(18.5vw); opacity: 1; } }
         @keyframes rhombus_box { 100% { transform: rotate(360deg); } }
@@ -67,66 +86,67 @@
         .double_content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; }
         .double_wrapper02 { position: relative; width: 100%; height: 100%; animation: double_content forwards; opacity: 0; }
         .double_wrapper01 { position: absolute; border-radius: 50%; overflow: hidden; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; }
+        .double_wrapper01::before, .double_wrapper01::after { content: ""; display: block; position: absolute; }
         
-        /* Circles (Dotted, White, Gray, Orange) */
+        /* Colored Circles */
         .dotted02 { top: 0; animation-delay: 4.2s; } .dotted01 { width: 30vw; height: 30vw; border: dotted 0.5vw #fff; }
         .white02 { top: -100%; animation-delay: 4.7s; } .white01 { width: 29vw; height: 29vw; background: #fff; }
         .gray02 { top: -200%; animation-delay: 4.8s; } .gray01 { width: 8vw; height: 8vw; background: #808184; }
         .orange02 { top: -300%; animation-delay: 5.3s; } .orange01 { width: 27vw; height: 27vw; background: #00AEEF; }
-        
-        /* Circle Rotation Animations (Simplified for length) */
-        .double_wrapper01::before, .double_wrapper01::after { content: ""; display: block; position: absolute; }
-        /* Note: Using the exact keyframes from your code is implied here to keep logic intact */
         @keyframes double_content { 100% { opacity: 1; } }
 
-        /* Logo Reveal */
+        /* Logo Video */
         .logo-container { position: absolute; top: 50%; left: 50%; width: 26vw; height: 26vw; transform: translate(-50%, -50%); animation: logo-reveal 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) 5.8s forwards; opacity: 0; overflow: hidden; border-radius: 50%; z-index: 5; }
         .logo-video-placeholder { width: 100%; height: 100%; object-fit: cover; }
         @keyframes logo-reveal { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 
+
         /* =========================================
-           PART 2: MAIN DASHBOARD STYLES (Hidden Initially)
+           PART 2: HOME PAGE STYLES (DASHBOARD)
            ========================================= */
         #main-dashboard {
-            display: none; /* HIDDEN BY DEFAULT */
+            display: none; /* Hidden Initially */
             opacity: 0;
             transition: opacity 1s ease-in;
             height: 100%;
-            overflow-y: auto; /* Enable scroll only for dashboard */
-            background-color: #F8F8F5;
+            overflow-y: auto; /* Allow scrolling */
+            background-color: var(--bg);
             padding-bottom: 90px;
         }
 
-        :root { --primary: #00AEEF; --dark: #212022; --gold: #C8A676; --white: #ffffff; --text-main: #1F2937; }
-
-        .header-bg { background: linear-gradient(135deg, #1A2980, #26D0CE); height: 300px; border-radius: 0 0 40px 40px; padding: 20px; color: var(--white); position: relative; }
+        /* Header */
+        .header-bg { background: linear-gradient(135deg, #1A2980, #26D0CE); height: 320px; border-radius: 0 0 40px 40px; padding: 20px; color: var(--white); position: relative; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .menu-btn, .cart-btn { background: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .menu-btn, .cart-btn { background: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); cursor: pointer; }
         .cart-btn { background: var(--gold); position: relative; }
-        .badge { position: absolute; top: -5px; right: -5px; background: var(--white); color: var(--dark); font-size: 0.7rem; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .location-pill { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        
+        .badge { position: absolute; top: -5px; right: -5px; background: var(--white); color: var(--dark); font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .location-pill { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; }
+
         .hero { margin-top: 25px; padding-left: 10px; }
-        .tag-sale { background: var(--white); color: var(--dark); padding: 5px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: 800; display: inline-block; margin-bottom: 10px; }
+        .tag-sale { background: var(--white); color: var(--dark); padding: 5px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: 800; display: inline-block; margin-bottom: 10px; letter-spacing: 1px; }
         .hero h1 { font-size: 2.2rem; line-height: 1.2; margin: 0; }
 
+        /* Search */
         .search-container { margin: -30px 20px 0 20px; background: var(--white); border-radius: 30px; height: 60px; display: flex; align-items: center; padding: 0 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; z-index: 10; }
-        .search-input { border: none; outline: none; flex: 1; margin: 0 15px; font-size: 1rem; }
+        .search-input { border: none; outline: none; flex: 1; margin: 0 15px; font-size: 1rem; color: var(--text-main); }
 
+        /* Grids */
         .category-section { padding: 30px 20px 0 20px; }
         .cat-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
         .service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .service-item { display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
-        .icon-box { width: 55px; height: 55px; background: var(--white); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 8px; transition: transform 0.2s; }
-        .service-item:hover .icon-box { transform: translateY(-5px); color: var(--gold); }
-        .service-name { font-size: 0.7rem; color: var(--text-main); font-weight: 500; }
+        .service-item { display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .service-item:active { transform: scale(0.95); }
+        .icon-box { width: 55px; height: 55px; background: var(--white); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 8px; transition: all 0.2s; }
+        .service-item:hover .icon-box { transform: translateY(-5px); background: var(--primary); color: var(--white); }
+        .service-name { font-size: 0.7rem; color: var(--text-main); font-weight: 600; line-height: 1.2; }
 
+        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--white); height: 70px; border-radius: 35px; display: flex; align-items: center; justify-content: space-around; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 100; }
-        .nav-item { color: #9CA3AF; font-size: 1.2rem; cursor: pointer; }
-        .nav-item.active { background: var(--dark); color: var(--white); padding: 10px 20px; border-radius: 25px; display: flex; gap: 8px; align-items: center; }
-        .nav-item.active span { font-size: 0.9rem; font-weight: bold; }
+        .nav-item { color: #9CA3AF; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .nav-item.active { background: var(--dark); color: var(--white); padding: 10px 20px; border-radius: 25px; gap: 8px; }
         .nav-item span { display: none; }
-        .nav-item.active span { display: block; }
+        .nav-item.active span { display: block; font-size: 0.9rem; font-weight: bold; }
+
     </style>
 </head>
 <body>
@@ -138,6 +158,9 @@
                     <div class="border_box">
                         <span class="line line01"></span><span class="line line02"></span><span class="line line03"></span><span class="line line04"></span>
                         <span class="circle circle01"></span><span class="circle circle02"></span><span class="circle circle03"></span><span class="circle circle04"></span>
+                        <span class="animation_line animation_line01"></span>
+                        <span class="animation_line_wrapper animation_line02_wrapper"><span class="animation_line animation_line02"></span></span>
+                        <span class="animation_line animation_line03"></span>
                         <div class="wave"><div class="wave_wrapper"><div class="wave_box"></div></div></div>
                     </div>
                 </div>
@@ -178,7 +201,7 @@
 
         <div class="search-container">
             <i class="fa-solid fa-magnifying-glass" style="color: #9CA3AF;"></i>
-            <input type="text" class="search-input" placeholder="Search services...">
+            <input type="text" class="search-input" placeholder="Search for experts...">
             <i class="fa-solid fa-microphone" style="color: var(--gold); margin-right: 15px;"></i>
             <i class="fa-solid fa-sliders" style="background: var(--dark); color: white; padding: 8px; border-radius: 50%;"></i>
         </div>
@@ -200,10 +223,12 @@
         <div class="category-section">
             <div class="cat-title">Appliance Repair</div>
             <div class="service-grid">
-                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-snowflake"></i></div><div class="service-name">AC Repair</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-snowflake"></i></div><div class="service-name">AC Tech</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-temperature-arrow-down"></i></div><div class="service-name">Fridge</div></div>
-                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-shirt"></i></div><div class="service-name">Wash Machine</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-shirt"></i></div><div class="service-name">Washing M.</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-fire"></i></div><div class="service-name">Gas Stove</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-glass-water"></i></div><div class="service-name">RO Filter</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-elevator"></i></div><div class="service-name">Elevator</div></div>
             </div>
         </div>
 
@@ -213,17 +238,42 @@
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-mobile-screen"></i></div><div class="service-name">Mobile</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-laptop"></i></div><div class="service-name">Laptop</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-tv"></i></div><div class="service-name">TV / LED</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-print"></i></div><div class="service-name">Printer</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-video"></i></div><div class="service-name">CCTV</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-wifi"></i></div><div class="service-name">Network</div></div>
             </div>
         </div>
 
-        <div class="category-section" style="padding-bottom: 50px;">
+        <div class="category-section">
             <div class="cat-title">Automobile</div>
             <div class="service-grid">
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-car"></i></div><div class="service-name">Car Mech.</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-motorcycle"></i></div><div class="service-name">Bike Mech.</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-car-battery"></i></div><div class="service-name">Auto Elec.</div></div>
                 <div class="service-item"><div class="icon-box"><i class="fa-solid fa-truck-monster"></i></div><div class="service-name">Tyres</div></div>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="cat-title">Industrial & Specialized</div>
+            <div class="service-grid">
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-gears"></i></div><div class="service-name">Machinery</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-industry"></i></div><div class="service-name">Generator</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-fire-burner"></i></div><div class="service-name">Boiler</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-fan"></i></div><div class="service-name">HVAC</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-solar-panel"></i></div><div class="service-name">Solar Panel</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-fire-extinguisher"></i></div><div class="service-name">Fire Safety</div></div>
+            </div>
+        </div>
+
+        <div class="category-section" style="padding-bottom: 90px;">
+            <div class="cat-title">Other Services</div>
+            <div class="service-grid">
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-bug"></i></div><div class="service-name">Pest Ctrl</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-key"></i></div><div class="service-name">Locksmith</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-border-all"></i></div><div class="service-name">Glass Fit</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-layer-group"></i></div><div class="service-name">Ceiling</div></div>
+                <div class="service-item"><div class="icon-box"><i class="fa-solid fa-window-maximize"></i></div><div class="service-name">UPVC Win</div></div>
             </div>
         </div>
 
@@ -237,26 +287,22 @@
     </div>
 
     <script>
-        // Check if user has seen intro (Optional: remove 'if' if you want it to play every time)
-        
         const animationTime = 9000; // 9 Seconds
         
         setTimeout(() => {
-            // 1. Hide Animation Container
+            // 1. Hide Animation
             document.getElementById('animation-container').style.display = 'none';
             
-            // 2. Change Body Background to Dashboard Color
+            // 2. Change Background & Enable Scroll
             document.body.style.backgroundColor = '#F8F8F5';
-            document.body.style.overflow = 'auto'; // Enable scrolling
+            document.body.style.overflow = 'auto'; 
             
-            // 3. Reveal Main Dashboard
+            // 3. Show Dashboard
             const dashboard = document.getElementById('main-dashboard');
             dashboard.style.display = 'block';
             
-            // Small delay to allow 'display:block' to apply before changing opacity (for fade effect)
-            setTimeout(() => {
-                dashboard.style.opacity = '1';
-            }, 50);
+            // Fade In Effect
+            setTimeout(() => { dashboard.style.opacity = '1'; }, 50);
 
         }, animationTime);
     </script>
