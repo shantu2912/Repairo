@@ -5,24 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Details - FixZen</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // YOUR REAL KEYS (Verified)
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        
+        // Initialize Client immediately
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.sb = supabase; 
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-        // YOUR CREDENTIALS
-        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-
-        // Create client and attach to window so Alpine can see it
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        window.sb = supabase;
-        console.log("Supabase Initialized!"); // Debug log
-    </script>
 
     <script>
         tailwind.config = {
@@ -51,37 +50,23 @@
               
               if(!id) { window.location.href = 'index.html'; return; }
 
-              // 2. THE SAFETY LOOP (Waits for Supabase to be ready)
-              let attempts = 0;
-              while (!window.sb && attempts < 50) {
-                  await new Promise(r => setTimeout(r, 100)); // Wait 100ms
-                  attempts++;
-              }
-
-              if (!window.sb) {
-                  this.error = true;
-                  this.errorMsg = 'Database connection timed out. Please refresh.';
-                  this.loading = false;
-                  return;
-              }
-
               try {
-                  // Now we are safe to use window.sb
+                  // ✅ THE FIX: .limit(1) handles duplicates automatically
                   const { data, error } = await window.sb
                       .from('services')
                       .select('*')
                       .eq('id', id)
-                      .limit(1)
+                      .limit(1)  // <--- THIS IS THE MAGIC LINE
                       .single();
 
                   if (error) throw error;
-                  if (!data) throw new Error('Service ID not found: ' + id);
+                  if (!data) throw new Error('No data found for ID: ' + id);
                   
                   this.service = data;
               } catch (err) {
-                  console.error('FETCH ERROR:', err);
+                  console.error('FINAL ERROR:', err);
                   this.error = true;
-                  this.errorMsg = err.message;
+                  this.errorMsg = err.message; 
               } finally {
                   this.loading = false;
               }
@@ -89,7 +74,6 @@
 
           async bookService() {
               this.bookingLoading = true;
-              
               const { data: { user } } = await window.sb.auth.getUser();
               
               if (!user) {
