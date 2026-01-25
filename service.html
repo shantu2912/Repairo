@@ -1,268 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Service Details | FixZen</title>
+    <title>Service Details - FixZen</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <style>
-        /* --- PREMIUM DESIGN SYSTEM --- */
-        :root {
-            --bg: #F4F4F0; --dark: #1C2331; --white: #FFFFFF; 
-            --gold: #A07D54; --green: #059669; --text: #1F2937; --muted: #6B7280;
-            --shadow: 0 12px 40px rgba(0,0,0,0.08);
-            --ease: cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        body { background: var(--bg); margin: 0; font-family: -apple-system, sans-serif; padding-bottom: 120px; color: var(--text); -webkit-font-smoothing: antialiased; }
-
-        /* LOADER */
-        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 2000; padding: 20px; transition: opacity 0.5s; display: flex; flex-direction: column; gap: 15px; }
-        .shim { background: #E5E7EB; border-radius: 16px; overflow: hidden; position: relative; }
-        .shim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: shimmer 1s infinite; }
-        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-
-        /* UI ELEMENTS */
-        .header { background: var(--dark); height: 240px; border-radius: 0 0 40px 40px; padding: 20px; display: flex; justify-content: space-between; }
-        .icon-btn { width: 44px; height: 44px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 1.4rem; border: none; cursor: pointer; transition: 0.2s; }
-        
-        .hero-card { margin: -120px 20px 0; background: var(--white); border-radius: 28px; padding: 12px; box-shadow: var(--shadow); transform: translateY(30px); opacity: 0; transition: 0.6s var(--ease); }
-        .hero-img { width: 100%; height: 220px; object-fit: cover; border-radius: 22px; background: #eee; }
-        .hero-info { padding: 18px 8px 8px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .title { font-size: 1.8rem; font-weight: 800; color: var(--dark); margin: 0; line-height: 1; letter-spacing: -0.5px; }
-        .rating-badge { background: #FEF3C7; color: #B45309; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; display: flex; gap: 4px; align-items: center; }
-
-        .label { padding: 35px 24px 15px; font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; }
-        .scroll-row { display: flex; gap: 15px; overflow-x: auto; padding: 0 24px 20px; scrollbar-width: none; }
-        
-        /* VARIANTS */
-        .v-card { min-width: 160px; background: var(--white); padding: 18px; border-radius: 24px; border: 2px solid transparent; transition: 0.3s; cursor: pointer; position: relative; opacity: 0; transform: translateY(20px); }
-        .v-card.active { border-color: var(--dark); background: #F8FAFC; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .v-card.active::after { content: "Selected"; position: absolute; top: 0; right: 0; background: var(--dark); color: white; font-size: 0.6rem; padding: 4px 8px; border-radius: 0 0 0 10px; font-weight: 700; }
-
-        /* DATES */
-        .d-card { min-width: 75px; height: 90px; background: var(--white); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); border: 2px solid transparent; opacity: 0; transform: translateX(20px); transition: 0.2s; }
-        .d-card.active { background: var(--dark); color: white; transform: scale(1.05); border-color: var(--dark); }
-
-        /* TECH CARD */
-        .tech-card { margin: 0 24px; background: var(--white); padding: 16px; border-radius: 24px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); opacity: 0; transform: translateY(20px); transition: 0.5s var(--ease); }
-        .tech-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--white); background: #eee; }
-
-        /* DOCK */
-        .dock { position: fixed; bottom: 30px; left: 24px; right: 24px; background: var(--dark); border-radius: 24px; padding: 14px 14px 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); z-index: 100; transform: translateY(150%); transition: 0.6s var(--ease); }
-        .book-btn { background: var(--white); color: var(--dark); border: none; padding: 16px 32px; border-radius: 18px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-        
-        .loaded .hero-card, .loaded .v-card, .loaded .tech-card, .loaded .dock { opacity: 1; transform: translateY(0); }
-        .loaded .d-card { opacity: 1; transform: translateX(0); }
-    </style>
-</head>
-<body>
-
-    <div id="status-bar" style="position:fixed; top:0; left:0; width:100%; background:#DC2626; color:white; font-size:0.8rem; padding:8px; text-align:center; z-index:9999; display:none;"></div>
-
-    <div id="loader">
-        <div class="shim" style="height: 240px; border-radius: 0 0 40px 40px;"></div>
-        <div class="shim" style="height: 200px; margin: -100px 20px 0;"></div>
-        <div class="shim" style="height: 100px; margin: 20px;"></div>
-    </div>
-
-    <div class="header">
-        <a href="index.html" class="icon-btn"><i class="ph ph-arrow-left"></i></a>
-        <button class="icon-btn"><i class="ph ph-heart"></i></button>
-    </div>
-
-    <div id="app">
-        <div class="hero-card">
-            <img id="img-hero" class="hero-img">
-            <div class="hero-info">
-                <div>
-                    <h1 id="txt-title" class="title">...</h1>
-                    <div style="color:var(--muted); font-size:0.95rem; margin-top:6px;" id="txt-sub">...</div>
-                </div>
-                <div class="rating-badge"><i class="ph-fill ph-star"></i> <span id="txt-rating">0.0</span></div>
-            </div>
-        </div>
-
-        <div class="label">Select Package</div>
-        <div id="list-variants" class="scroll-row"></div>
-
-        <div class="label">Schedule Date</div>
-        <div id="list-dates" class="scroll-row"></div>
-
-        <div class="label">Matched Expert</div>
-        <div class="tech-card">
-            <img id="tech-img" class="tech-img" src="">
-            <div>
-                <div id="tech-name" style="font-weight:700; font-size:1.05rem; color:var(--dark);">Finding Expert...</div>
-                <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
-                    <span id="tech-jobs">0</span> Jobs • <span id="tech-rating">0.0</span>
-                </div>
-            </div>
-            <div style="margin-left:auto; background:#D1FAE5; color:var(--green); padding:6px 12px; border-radius:12px; font-size:0.7rem; font-weight:800; display:flex; gap:4px; align-items:center;">
-                <i class="ph-fill ph-seal-check"></i> VERIFIED
-            </div>
-        </div>
-        
-        <div style="height: 120px;"></div>
-
-        <div class="dock">
-            <div>
-                <span style="font-size:0.75rem; color:rgba(255,255,255,0.6); letter-spacing:0.5px;">TOTAL ESTIMATE</span>
-                <div id="txt-price" style="font-size:1.5rem; font-weight:800; color:white;">₹0</div>
-            </div>
-            <button class="book-btn" onclick="bookNow()">Book Now <i class="ph-bold ph-arrow-right"></i></button>
-        </div>
-    </div>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
-        // --- CONFIGURATION ---
-        // 🔴🔴 PASTE YOUR KEYS HERE 🔴🔴
-        const PROJECT_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co'; 
-        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-
-        let currentService, selectedVariant, selectedDate, matchedTech;
-
-        window.onload = async () => {
-            const sb = document.getElementById('status-bar');
-            try {
-                if (PROJECT_URL.includes('PASTE')) throw new Error("Missing API Keys");
-
-                const { createClient } = supabase; 
-                const db = createClient(PROJECT_URL, API_KEY);
-                const slug = new URLSearchParams(window.location.search).get('id') || 'ac';
-
-                // 1. Fetch Service (Anti-Crash Logic: .limit(1))
-                const { data: service, error: sError } = await db
-                    .from('services')
-                    .select('*, service_variants(*)')
-                    .eq('slug', slug)
-                    .limit(1)  // Fixes duplicate error
-                    .maybeSingle(); 
-
-                if (sError) throw sError;
-                if (!service) throw new Error("Service not found");
-                currentService = service;
-
-                // 2. Fetch Tech
-                const { data: tech } = await db
-                    .from('technicians')
-                    .select('*')
-                    .ilike('category', `%${slug}%`)
-                    .limit(1)
-                    .maybeSingle();
-                matchedTech = tech;
-
-                renderUI(service, tech);
-
-            } catch (err) {
-                console.error(err);
-                sb.style.display = 'block';
-                sb.innerHTML = `⚠️ Error: ${err.message}. Showing Demo Mode.`;
-            } finally {
-                setTimeout(() => {
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loader').style.display = 'none', 400);
-                    document.body.classList.add('loaded');
-                }, 500);
-            }
-        };
-
-        function renderUI(s, t) {
-            document.getElementById('txt-title').innerText = s.title;
-            document.getElementById('txt-sub').innerText = s.subtitle;
-            document.getElementById('img-hero').src = s.image_url;
-            document.getElementById('txt-rating').innerText = s.rating;
-
-            // Variants
-            const vContainer = document.getElementById('list-variants');
-            if (s.service_variants) {
-                s.service_variants.sort((a,b) => a.price - b.price);
-                s.service_variants.forEach((v, i) => {
-                    const el = document.createElement('div');
-                    el.className = `v-card ${i===0 ? 'active' : ''}`;
-                    el.style.transitionDelay = `${i*100}ms`;
-                    el.onclick = () => selectVariant(el, v);
-                    el.innerHTML = `
-                        <div style="font-weight:700;">${v.name}</div>
-                        <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">${v.description}</div>
-                        <div style="font-weight:800; font-size:1.2rem;">₹${v.price}</div>
-                    `;
-                    vContainer.appendChild(el);
-                    if(i===0) selectVariant(el, v);
-                });
-            }
-
-            // Tech
-            if(t) {
-                document.getElementById('tech-name').innerText = t.name;
-                document.getElementById('tech-img').src = t.image_url || `https://ui-avatars.com/api/?name=${t.name}`;
-                document.getElementById('tech-jobs').innerText = t.jobs_done || 0;
-                document.getElementById('tech-rating').innerText = t.rating;
-            }
-
-            // Dates
-            const dContainer = document.getElementById('list-dates');
-            for(let i=0; i<7; i++) {
-                const d = new Date(); d.setDate(d.getDate()+i);
-                const el = document.createElement('div');
-                el.className = `d-card ${i===0?'active':''}`;
-                el.style.transitionDelay = `${i*50}ms`;
-                el.onclick = () => {
-                    document.querySelectorAll('.d-card').forEach(c=>c.classList.remove('active'));
-                    el.classList.add('active');
-                    selectedDate = d.toISOString();
-                };
-                el.innerHTML = `<span style="font-size:0.7rem; font-weight:700; opacity:0.6;">${['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]}</span><span style="font-size:1.3rem; font-weight:800;">${d.getDate()}</span>`;
-                dContainer.appendChild(el);
-                if(i===0) selectedDate = d.toISOString();
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',    
+                        'brand-gold': '#A07D54',     
+                        'brand-cream': '#EEEAE2',    
+                        'brand-dark': '#4D4C4B',     
+                    },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)' },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' }
+                }
             }
         }
+    </script>
+</head>
 
-        function selectVariant(el, variant) {
-            document.querySelectorAll('.v-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            selectedVariant = variant;
-            document.getElementById('txt-price').innerText = '₹' + variant.price;
-        }
+<body class="bg-brand-cream text-brand-dark antialiased"
+      x-data="{ 
+          service: null, 
+          loading: true, 
+          bookingLoading: false,
+          error: false,
+          
+          async fetchService() {
+              const params = new URLSearchParams(window.location.search);
+              let id = params.get('id');
+              
+              if(!id) { window.location.href = 'index.html'; return; }
 
-        async function bookNow() {
-            const btn = document.querySelector('.book-btn');
-            if (PROJECT_URL.includes('PASTE')) return alert("Missing API Keys");
+              try {
+                  // 1. QUERY SUPABASE FOR SERVICE DETAILS
+                  const { data, error } = await window.supabase
+                      .from('services')
+                      .select('*')
+                      .eq('id', id) // Matches the ID (e.g., 'Carpenter')
+                      .single();
 
-            btn.innerHTML = `<i class="ph ph-spinner ph-spin"></i> Processing...`;
+                  if (error || !data) throw new Error('Service not found');
+                  
+                  this.service = data;
+              } catch (err) {
+                  console.error(err);
+                  this.error = true;
+              } finally {
+                  this.loading = false;
+              }
+          },
 
-            // 1. Generate OTP
-            const otp = Math.floor(1000 + Math.random() * 9000);
+          async bookService() {
+              this.bookingLoading = true;
+              
+              // 1. CHECK IF USER IS LOGGED IN
+              const { data: { user } } = await window.supabase.auth.getUser();
+              
+              if (!user) {
+                  alert('Please Log In to book a service!');
+                  window.location.href = 'loginuser.html'; 
+                  return;
+              }
 
-            const { createClient } = supabase; 
-            const db = createClient(PROJECT_URL, API_KEY);
+              // 2. INSERT BOOKING INTO DATABASE
+              const { error } = await window.supabase
+                  .from('bookings')
+                  .insert([
+                      { 
+                          user_id: user.id,
+                          service_name: this.service.name, 
+                          status: 'pending',
+                          total_amount: this.service.price,
+                          location_address: 'Current Location (GPS)', // Can be updated with real GPS logic
+                          scheduled_date: new Date().toISOString()
+                      },
+                  ]);
 
-            // 2. Save Booking
-            const { error } = await db.from('bookings').insert({
-                service_name: currentService.title,
-                variant_name: selectedVariant ? selectedVariant.name : 'Standard',
-                price: selectedVariant ? selectedVariant.price : 0,
-                date: selectedDate,
-                technician_id: matchedTech ? matchedTech.id : null,
-                status: 'pending',
-                otp: otp.toString()
-            });
+              this.bookingLoading = false;
 
-            if (error) {
-                alert("Error: " + error.message);
-                btn.innerHTML = `Book Now <i class="ph-bold ph-arrow-right"></i>`;
-            } else {
-                btn.style.background = "#059669";
-                btn.innerText = "✓ Confirmed!";
-                
-                // 3. Show OTP & Redirect
-                alert(`Booking Successful!\n\n🔐 Your OTP is: ${otp}\n(Show this to the technician)`);
-                setTimeout(() => window.location.href = 'bookings.html', 500);
-            }
-        }
+              if (error) {
+                  alert('Booking Failed: ' + error.message);
+              } else {
+                  // 3. SUCCESS! REDIRECT TO BOOKINGS PAGE
+                  window.location.href = 'bookings.html';
+              }
+          }
+      }" 
+      x-init="fetchService()">
+
+    <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
+        <a href="index.html" class="pointer-events-auto w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <button class="pointer-events-auto w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center text-brand-gold hover:scale-110 transition-transform">
+            <i class="fa-solid fa-share-nodes"></i>
+        </button>
+    </div>
+
+    <div x-show="loading" class="h-screen flex items-center justify-center bg-brand-cream">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-gold"></i>
+    </div>
+
+    <div x-show="error && !loading" class="h-screen flex flex-col items-center justify-center text-center p-6" style="display: none;">
+        <i class="fa-solid fa-triangle-exclamation text-4xl text-brand-gold mb-4"></i>
+        <h2 class="text-xl font-bold text-brand-olive">Service Not Found</h2>
+        <p class="text-sm opacity-60 mt-2">We are adding this service soon!</p>
+        <a href="index.html" class="mt-6 px-6 py-3 bg-brand-olive text-white rounded-xl font-bold hover:bg-brand-gold transition-colors">Go Home</a>
+    </div>
+
+    <div x-show="!loading && service" class="pb-32 animate__animated animate__fadeIn" style="display: none;">
+        
+        <div class="relative h-[45vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900">
+            <img :src="service?.image_url" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+            
+            <div class="absolute bottom-8 left-6 right-6 text-white animate-fade-in-up">
+                <span class="bg-brand-gold px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-lg">Premium Service</span>
+                <h1 class="text-3xl font-extrabold mt-3 leading-tight" x-text="service?.name"></h1>
+                <div class="flex items-center gap-3 mt-3">
+                    <div class="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg">
+                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                        <span class="font-bold text-sm" x-text="service?.rating"></span>
+                    </div>
+                    <span class="text-white/70 text-sm" x-text="'(' + service?.reviews + ' Reviews)'"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 mt-8 animate-fade-in-up" style="animation-delay: 0.2s">
+            
+            <div class="flex justify-between items-end mb-8 p-4 bg-white rounded-2xl shadow-sm border border-brand-beige/30">
+                <div>
+                    <p class="text-brand-gold font-bold text-[10px] uppercase tracking-widest mb-1">Total Cost</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-brand-olive">₹</span>
+                        <h2 class="text-4xl font-extrabold text-brand-olive" x-text="service?.price"></h2>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-bold border border-green-200 inline-flex items-center gap-1">
+                        <i class="fa-solid fa-tag"></i> Best Price
+                    </div>
+                    <p class="text-[10px] text-brand-dark/40 mt-1 line-through">₹<span x-text="service?.price + 200"></span></p>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-lg text-brand-olive mb-2">Description</h3>
+            <p class="text-brand-dark/70 leading-relaxed text-sm mb-8" x-text="service?.description"></p>
+
+            <h3 class="font-bold text-lg text-brand-olive mb-4">What's Included?</h3>
+            <ul class="space-y-3 mb-8">
+                <template x-for="feature in service?.features">
+                    <li class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-brand-beige/40 shadow-sm hover:border-brand-gold/50 transition-colors">
+                        <div class="w-8 h-8 rounded-full bg-brand-cream flex items-center justify-center text-brand-gold text-sm shrink-0">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <span class="text-sm font-medium text-brand-dark" x-text="feature"></span>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </div>
+
+    <div x-show="!loading && !error" class="fixed bottom-0 w-full z-40" style="display: none;">
+        <div class="bg-white/90 backdrop-blur-xl border-t border-brand-beige/50 p-6 pt-4 rounded-t-[30px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style="animation-delay: 0.4s">
+            <div class="flex gap-4 max-w-md mx-auto">
+                <a href="tel:+919876543210" class="w-16 h-14 rounded-2xl bg-brand-cream flex items-center justify-center text-brand-olive text-xl border border-brand-beige cursor-pointer hover:bg-brand-gold hover:text-white transition-colors active:scale-95">
+                    <i class="fa-solid fa-phone"></i>
+                </a>
+                <button @click="bookService()" 
+                        :disabled="bookingLoading"
+                        class="flex-1 bg-brand-olive text-white rounded-2xl font-bold text-lg hover:bg-brand-gold transition-colors shadow-lg shadow-brand-olive/30 active:scale-95 transform transition-transform flex items-center justify-center gap-2">
+                    <span x-show="!bookingLoading">Book Now</span>
+                    <i x-show="!bookingLoading" class="fa-solid fa-arrow-right text-sm"></i>
+                    <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        const supabase = createClient(
+          'https://kzxdxnxgouthsywbsnvl.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+        )
+        window.supabase = supabase;
     </script>
 </body>
 </html>
