@@ -95,28 +95,44 @@ function statusBadge(status) {
 
 /* ---------------- AUTO ASSIGN ---------------- */
 async function autoAssign(job) {
-  const { data: techs } = await sb
+  // Only assign if job is waiting
+  if (job.status !== "pending") return;
+
+  const rejected = job.rejected_by?.length
+    ? `(${job.rejected_by.join(",")})`
+    : "()";
+
+  const { data: techs, error } = await sb
     .from("technicians")
     .select("id, jobs_done, rating")
     .eq("status", "approved")
     .eq("category", job.category)
     .eq("area", job.location)
+    .not("id", "in", rejected)
     .order("jobs_done", { ascending: true })
     .order("rating", { ascending: false })
     .limit(1);
 
-  if (!techs || techs.length === 0) return;
-
-  const tech = techs[0];
+  if (error || !techs || techs.length === 0) return;
 
   await sb.from("jobs").update({
-    tech_id: tech.id,
-    status: "assigned"
+    tech_id: techs[0].id,
+    status: "assigned",
+    assigned_at: new Date().toISOString(),
+    assignment_round: job.assignment_round + 1
   }).eq("id", job.id);
 
-  await sb.from("technicians").update({
-    jobs_done: tech.jobs_done + 1
-  }).eq("id", tech.id);
+  await fetch("https://kzxdxnxgouthsywbsnvl.functions.supabase.co/send-push", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    token: techFCMToken,          // tech’s FCM token from DB
+    title: "New Job Assigned",
+    body: `${job.category} • ${job.location}`,
+    data: { job_id: job.id }
+  })
+});
+
 }
 
 /* ---------------- LOAD JOBS ---------------- */
@@ -146,7 +162,10 @@ async function loadJobs() {
   jobList.innerHTML = "";
 
   for (const j of data) {
-    if (!j.tech_id) await autoAssign(j);
+  if (j.status === "pending") {
+    await autoAssign(j);
+  }
+
 
     jobList.innerHTML += `
       <tr class="border-t">
@@ -246,6 +265,37 @@ window.closeAssign = () => {
 
 /* ---------------- INIT ---------------- */
 loadJobs();
+
+// ⏱️ AUTO TIMEOUT CHECK (every 30 seconds)
+setInterval(async () => {
+  const { data: jobs } = await sb
+    .from("jobs")
+    .select("*")
+    .eq("status", "assigned");
+
+  if (!jobs) return;
+
+  for (const job of jobs) {
+    if (!job.assigned_at || !job.tech_id) continue;
+
+    const elapsed =
+      (Date.now() - new Date(job.assigned_at).getTime()) / 1000;
+
+    // 5 minutes = 300 seconds
+    if (elapsed > 300) {
+      await sb.from("jobs").update({
+        tech_id: null,
+        status: "pending",
+        rejected_by: sb.sql`
+          array_append(coalesce(rejected_by,'{}'), ${job.tech_id})
+        `
+      }).eq("id", job.id);
+    }
+  }
+
+  loadJobs(); // re-trigger assignment
+}, 30000);
+
 </script>
 
 </body>
