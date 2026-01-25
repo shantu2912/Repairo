@@ -247,6 +247,17 @@ return {
     }
 
     this.jobs = data;
+    this.jobs = data.map(j => {
+  if (j.status === "assigned" && j.assigned_at) {
+    const remaining =
+      300 - Math.floor(
+        (Date.now() - new Date(j.assigned_at)) / 1000
+      );
+    j.slaRemaining = remaining > 0 ? `${remaining}s` : "Expired";
+  }
+  return j;
+});
+
     this.stats.activeJobs = data.length;
 
     // Earnings (only this tech)
@@ -265,43 +276,46 @@ return {
 
   /* ✅ ACCEPT JOB */
   async acceptJob(jobId){
-    const { error } = await window.sb
-      .from("jobs")
-      .update({ status: "in_progress" })
-      .eq("id", jobId)
-      .eq("tech_id", this.tech.id);
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "in_progress",
+      started_at: new Date().toISOString()
+    })
+    .eq("id", jobId)
+    .eq("tech_id", this.tech.id);
 
-    if(error){
-      alert("Failed to accept job");
-      return;
-    }
+  if(error){
+    alert("Failed to accept job");
+    return;
+  }
 
-    this.fetchJobs();
-  },
+  this.fetchJobs();
+},
 
   /* ❌ REJECT JOB */
   async rejectJob(jobId){
-    const ok = confirm("Reject this job?");
-    if(!ok) return;
+  const ok = confirm("Reject this job?");
+  if(!ok) return;
 
-    const { error } = await window.sb
-      .from("jobs")
-      .update({
-        tech_id: null,
-        status: "assigned",
-        rejected_by: window.sb.sql`
-          array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
-        `
-      })
-      .eq("id", jobId);
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      tech_id: null,
+      status: "pending",
+      rejected_by: window.sb.sql`
+        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+      `
+    })
+    .eq("id", jobId);
 
-    if(error){
-      alert("Failed to reject job");
-      return;
-    }
+  if(error){
+    alert("Failed to reject job");
+    return;
+  }
 
-    this.fetchJobs();
-  },
+  this.fetchJobs();
+},
 
   /* ✅ COMPLETE JOB */
   async completeJob(job){
