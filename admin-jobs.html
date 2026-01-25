@@ -74,12 +74,15 @@ const sb = supabase.createClient(
 
 );
 
+
+
 const jobList = document.getElementById("jobList");
 let selectedJobId = null;
 
 /* ---------------- STATUS BADGE ---------------- */
 function statusBadge(status) {
   const map = {
+    pending: "bg-gray-100 text-gray-700",
     assigned: "bg-yellow-100 text-yellow-700",
     in_progress: "bg-blue-100 text-blue-700",
     completed: "bg-green-100 text-green-700",
@@ -95,14 +98,13 @@ function statusBadge(status) {
 
 /* ---------------- AUTO ASSIGN ---------------- */
 async function autoAssign(job) {
-  // Only assign if job is waiting
   if (job.status !== "pending") return;
 
   const rejected = job.rejected_by?.length
     ? `(${job.rejected_by.join(",")})`
     : "()";
 
-  const { data: techs, error } = await sb
+  const { data: techs } = await sb
     .from("technicians")
     .select("id, jobs_done, rating")
     .eq("status", "approved")
@@ -113,60 +115,46 @@ async function autoAssign(job) {
     .order("rating", { ascending: false })
     .limit(1);
 
-  if (error || !techs || techs.length === 0) return;
+  if (!techs || techs.length === 0) return;
 
+  const techId = techs[0].id;
+
+  // Update job in DB
   await sb.from("jobs").update({
-    tech_id: techs[0].id,
+    tech_id: techId,
     status: "assigned",
     assigned_at: new Date().toISOString(),
     assignment_round: job.assignment_round + 1
   }).eq("id", job.id);
 
-  await fetch("https://kzxdxnxgouthsywbsnvl.functions.supabase.co/send-push", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    token: techFCMToken,          // tech’s FCM token from DB
-    title: "New Job Assigned",
-    body: `${job.category} • ${job.location}`,
-    data: { job_id: job.id }
-  })
-});
+  // Get technician FCM token
+  const { data: tech } = await sb
+    .from("technicians")
+    .select("fcm_token")
+    .eq("id", techId)
+    .single();
 
+  const techFCMToken = tech?.fcm_token;
+  if (!techFCMToken) return;
+
+  // Send push
+  await fetch("https://kzxdxnxgouthsywbsnvl.functions.supabase.co/send-push", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token: techFCMToken,
+      title: "New Job Assigned",
+      body: `${job.category} • ${job.location}`,
+      data: { job_id: job.id }
+    })
+  });
 }
 
-/* ---------------- LOAD JOBS ---------------- */
-async function loadJobs() {
-  const { data, error } = await sb
-    .from("jobs")
-    .select(`
-      id,
-      tech_id,
-      category,
-      device,
-      issue,
-      customer_name,
-      phone,
-      location,
-      status,
-      technician_fee,
-      technicians ( name )
-    `)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    alert("Failed to load jobs");
-    return;
-  }
-
+/* ---------------- RENDER JOBS ---------------- */
+function renderJobs(jobs) {
   jobList.innerHTML = "";
 
-  for (const j of data) {
-  if (j.status === "pending") {
-    await autoAssign(j);
-  }
-
-
+  for (const j of jobs) {
     jobList.innerHTML += `
       <tr class="border-t">
         <td class="p-4">
@@ -174,26 +162,20 @@ async function loadJobs() {
           <p class="text-xs text-gray-500">${j.device}</p>
           <p class="text-xs">${j.issue}</p>
         </td>
-
         <td class="p-4">
           <p class="font-semibold">${j.customer_name}</p>
           <p class="text-xs text-gray-500">${j.phone}</p>
         </td>
-
         <td class="p-4">${j.location}</td>
-
         <td class="p-4 font-bold text-red-600">
           ${j.tech_id ? j.technicians?.name : "Unassigned"}
         </td>
-
         <td class="p-4 text-center">
           ${statusBadge(j.status)}
         </td>
-
         <td class="p-4 text-center font-bold">
           ₹${j.technician_fee ?? 0}
         </td>
-
         <td class="p-4 text-center">
           ${
             !j.tech_id
@@ -210,32 +192,65 @@ async function loadJobs() {
     `;
   }
 }
+
+/* ---------------- LOAD JOBS ---------------- */
+async function loadJobs() {
+  // Fetch all jobs
+  const { data: jobs, error } = await sb
+    .from("jobs")
+    .select(`
+      id, tech_id, category, device, issue,
+      customer_name, phone, location, status, technician_fee,
+      technicians(name), rejected_by, assignment_round
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    alert("Failed to load jobs");
+    return;
+  }
+
+  // Auto-assign pending jobs first
+  for (const j of jobs) {
+    if (j.status === "pending") {
+      await autoAssign(j);
+    }
+  }
+
+  // Fetch fresh jobs after auto-assign
+  const { data: freshJobs } = await sb
+    .from("jobs")
+    .select(`
+      id, tech_id, category, device, issue,
+      customer_name, phone, location, status, technician_fee,
+      technicians(name)
+    `)
+    .order("created_at", { ascending: false });
+
+  renderJobs(freshJobs);
+}
+
+/* ---------------- ASSIGN MODAL ---------------- */
 window.openAssign = async (jobId, category, area) => {
   selectedJobId = jobId;
   const select = document.getElementById("techSelect");
   select.innerHTML = "<option>Searching...</option>";
 
-  console.log("Searching for Category:", category);
-
-  // Use .ilike() instead of .eq() for case-insensitive matching
   const { data, error } = await sb
     .from("technicians")
     .select("id, name, category, area, experience")
     .eq("status", "approved")
-    .ilike("category", category); // This matches "Ac" or "AC" or "ac"
+    .ilike("category", category);
 
   if (error) {
-    console.error("Supabase Error:", error.message);
+    console.error(error);
     return;
   }
 
   select.innerHTML = "";
-
   if (!data || data.length === 0) {
     select.innerHTML = `<option>No experts found for "${category}"</option>`;
-    // LOG THE ACTUAL TECHS TO SEE WHY THEY DON'T MATCH
-    const { data: allTechs } = await sb.from("technicians").select("name, category, status").limit(5);
-    console.log("Current technicians in DB:", allTechs);
   } else {
     select.innerHTML = `<option value="">Select Technician (${data.length} found)</option>`;
     data.forEach(t => {
@@ -246,8 +261,10 @@ window.openAssign = async (jobId, category, area) => {
   document.getElementById("assignModal").classList.remove("hidden");
   document.getElementById("assignModal").classList.add("flex");
 };
+
 window.confirmAssign = async () => {
   const techId = document.getElementById("techSelect").value;
+  if (!techId) return;
 
   await sb.from("jobs").update({
     tech_id: techId,
@@ -281,7 +298,6 @@ setInterval(async () => {
     const elapsed =
       (Date.now() - new Date(job.assigned_at).getTime()) / 1000;
 
-    // 5 minutes = 300 seconds
     if (elapsed > 300) {
       await sb.from("jobs").update({
         tech_id: null,
@@ -293,10 +309,10 @@ setInterval(async () => {
     }
   }
 
-  loadJobs(); // re-trigger assignment
+  loadJobs(); // refresh
 }, 30000);
-
 </script>
+
 
 </body>
 </html>
