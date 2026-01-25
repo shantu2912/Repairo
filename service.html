@@ -71,6 +71,7 @@
                       .from('services')
                       .select('*')
                       .eq('id', id)
+                      .limit(1)
                       .single();
 
                   if (error) throw error;
