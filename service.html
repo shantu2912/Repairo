@@ -7,6 +7,16 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <script>
+        // YOUR REAL KEYS (Verified from your screenshots)
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        
+        // Initialize Client immediately
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.sb = supabase; // We use 'window.sb' to be safe
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -14,22 +24,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
-        // YOUR REAL KEYS (I took these from your previous message)
-        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-        
-        // Initialize globally so Alpine can see it
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        window.sb = supabase; // Short alias
-    </script>
-
-    <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B' },
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)' },
                     animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' }
                 }
             }
@@ -43,33 +42,30 @@
           loading: true, 
           bookingLoading: false,
           error: false,
+          errorMsg: '',
           
           async fetchService() {
               const params = new URLSearchParams(window.location.search);
               let id = params.get('id');
               
-              // Only redirect if ID is missing
               if(!id) { window.location.href = 'index.html'; return; }
 
               try {
-                  // Use the global 'window.sb' we created in HEAD
+                  // Use the pre-loaded 'window.sb' client
                   const { data, error } = await window.sb
                       .from('services')
                       .select('*')
                       .eq('id', id)
                       .single();
 
-                  if (error) {
-                      console.error('Supabase Error:', error); // Log exact error
-                      throw error;
-                  }
-                  
-                  if (!data) throw new Error('No data returned');
+                  if (error) throw error;
+                  if (!data) throw new Error('No data found for ID: ' + id);
                   
                   this.service = data;
               } catch (err) {
-                  console.error(err);
+                  console.error('FINAL ERROR:', err);
                   this.error = true;
+                  this.errorMsg = err.message; // Show exact error on screen
               } finally {
                   this.loading = false;
               }
@@ -120,8 +116,7 @@
     <div x-show="error && !loading" class="h-screen flex flex-col items-center justify-center text-center p-6" style="display: none;">
         <i class="fa-solid fa-triangle-exclamation text-4xl text-brand-gold mb-4"></i>
         <h2 class="text-xl font-bold text-brand-olive">Service Not Found</h2>
-        <p class="text-sm opacity-60 mt-2">Could not load data from database.</p>
-        <p class="text-xs text-brand-dark/30 mt-4">(Check Console for details)</p>
+        <p class="text-sm opacity-60 mt-2 text-red-500 font-mono" x-text="errorMsg"></p>
         <a href="index.html" class="mt-6 px-6 py-3 bg-brand-olive text-white rounded-xl font-bold hover:bg-brand-gold transition-colors">Go Home</a>
     </div>
 
