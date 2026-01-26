@@ -11,7 +11,6 @@
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
         
-        // Initialize globally
         if (window.supabase) {
             window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
@@ -103,10 +102,10 @@
           }
       }"
       x-init="
-          // 1. Force loading to stop after 4 seconds (SAFETY TIMER)
+          // 1. Force loading to stop after 4s max
           setTimeout(() => { loading = false; }, 4000);
 
-          // 2. Try to connect to DB in the background
+          // 2. Try to connect to DB in background
           let attempts = 0;
           let check = setInterval(() => { 
               if(window.sb || attempts > 20) { 
@@ -123,9 +122,6 @@
         <div class="absolute inset-0 flex items-center justify-center opacity-20">
             <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
             <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
-        </div>
-        <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-64 h-64 bg-brand-gold rounded-full blur-[100px] animate-forge-flash opacity-0"></div>
         </div>
         <div class="relative z-10 flex flex-col items-center">
             <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
@@ -161,22 +157,32 @@
 
             <nav class="flex-1 overflow-y-auto py-2 hide-scroll">
                 <a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-house"></i></div>
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">HOME</span>
                 </a>
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">For Experts</p>
                 <a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-handshake"></i></div>
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">REGISTER AS TECHNICIAN</span>
                 </a>
-                
+                <a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">TECHNICIAN LOGIN</span>
+                </a>
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
                 <a href="bookings.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">MY BOOKINGS</span>
+                </a>
+                <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">ADMIN DASHBOARD</span>
+                </a>
+                <a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">CONTACT US</span>
                 </a>
             </nav>
 
@@ -245,6 +251,7 @@
         </div>
 
         <div class="pb-12 space-y-8 mt-6">
+            
             <div class="px-6 animate__animated animate__fadeInUp">
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Construction & Home</h2>
                 <div class="grid grid-cols-4 gap-3">
@@ -259,10 +266,10 @@
                         {n:'Tiler', i:'fa-border-all', img:'https://images.unsplash.com/photo-1623935833075-f3747d079946?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110">
-                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div class="absolute inset-0 bg-brand-gold/60 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white"></i>
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -277,19 +284,114 @@
                         {n:'AC Tech', i:'fa-snowflake', img:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&fit=crop'}, 
                         {n:'Fridge', i:'fa-temperature-arrow-down', img:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop'}, 
                         {n:'Washing M.', i:'fa-shirt', img:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop'}, 
-                        {n:'Microwave', i:'fa-stopwatch', img:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop'}
+                        {n:'Microwave', i:'fa-stopwatch', img:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop'},
+                        {n:'RO Filter', i:'fa-glass-water', img:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop'},
+                        {n:'Gas Stove', i:'fa-fire', img:'https://images.unsplash.com/photo-1585237672814-8f85a83ccb95?w=200&fit=crop'},
+                        {n:'Elevator', i:'fa-elevator', img:'https://images.unsplash.com/photo-1541336032412-2048956132b8?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110">
-                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div class="absolute inset-0 bg-brand-gold/60 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white"></i>
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
                     </template>
                 </div>
             </div>
+
+            <div class="px-6 animate__animated animate__fadeInUp">
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
+                <div class="grid grid-cols-4 gap-3">
+                    <template x-for="s in [
+                        {n:'Mobile', i:'fa-mobile-screen', img:'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&fit=crop'}, 
+                        {n:'Laptop', i:'fa-laptop', img:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&fit=crop'}, 
+                        {n:'Printer', i:'fa-print', img:'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200&fit=crop'}, 
+                        {n:'TV / LED', i:'fa-tv', img:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop'},
+                        {n:'CCTV', i:'fa-video', img:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop'},
+                        {n:'Network', i:'fa-wifi', img:'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=200&fit=crop'},
+                        {n:'Automation', i:'fa-robot', img:'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=200&fit=crop'}
+                    ]">
+                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white group-hover:scale-110"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="px-6 animate__animated animate__fadeInUp">
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Automobile</h2>
+                <div class="grid grid-cols-4 gap-3">
+                    <template x-for="s in [
+                        {n:'Car Mech', i:'fa-car', img:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop'}, 
+                        {n:'Bike Mech', i:'fa-motorcycle', img:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop'}, 
+                        {n:'Auto Elec', i:'fa-car-battery', img:'https://images.unsplash.com/photo-1635843104666-407859c6799d?w=200&fit=crop'}, 
+                        {n:'Tyres', i:'fa-truck-monster', img:'https://images.unsplash.com/photo-1578844251758-2f71da645217?w=200&fit=crop'},
+                        {n:'Diesel', i:'fa-gas-pump', img:'https://images.unsplash.com/photo-1626154673898-1d2f788b7709?w=200&fit=crop'}
+                    ]">
+                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white group-hover:scale-110"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="px-6 animate__animated animate__fadeInUp">
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Industrial</h2>
+                <div class="grid grid-cols-4 gap-3">
+                    <template x-for="s in [
+                        {n:'Machinery', i:'fa-gears', img:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200&fit=crop'}, 
+                        {n:'Generator', i:'fa-industry', img:'https://images.unsplash.com/photo-1565514020176-883a9924e223?w=200&fit=crop'}, 
+                        {n:'Boiler', i:'fa-fire-burner', img:'https://images.unsplash.com/photo-1598965637213-92c2dae72e18?w=200&fit=crop'}, 
+                        {n:'HVAC', i:'fa-fan', img:'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&fit=crop'},
+                        {n:'Solar', i:'fa-solar-panel', img:'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&fit=crop'},
+                        {n:'Fire Safety', i:'fa-fire-extinguisher', img:'https://images.unsplash.com/photo-1615817812975-c0883273e979?w=200&fit=crop'}
+                    ]">
+                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white group-hover:scale-110"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="px-6 animate__animated animate__fadeInUp">
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Other Services</h2>
+                <div class="grid grid-cols-4 gap-3">
+                    <template x-for="s in [
+                        {n:'Pest Ctrl', i:'fa-bug', img:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop'}, 
+                        {n:'Locksmith', i:'fa-key', img:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop'}, 
+                        {n:'Glass Fit', i:'fa-border-none', img:'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&fit=crop'}, 
+                        {n:'False Ceiling', i:'fa-layer-group', img:'https://images.unsplash.com/photo-1628434522967-0c7cb9d9e793?w=200&fit=crop'},
+                        {n:'UPVC Win', i:'fa-window-maximize', img:'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=200&fit=crop'}
+                    ]">
+                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive text-xl relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                                <img :src="s.img" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <i :class="`fa-solid ${s.i}`" class="relative z-10 transition-colors group-hover:text-white group-hover:scale-110"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
         </div>
 
         <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
