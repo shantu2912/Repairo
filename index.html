@@ -8,14 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // YOUR REAL KEYS
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
         
-        // Initialize Client immediately
         if (window.supabase) {
             window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            console.log("Supabase Initialized in Index!");
         }
     </script>
 
@@ -79,15 +76,12 @@
           user: null,
 
           async checkUser() {
-              if (!window.sb) return; // Safety check
-              
+              if (!window.sb) return; 
               const { data: { user } } = await window.sb.auth.getUser();
               if (user) {
-                  // If logged in, get profile
                   const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
                   this.user = profile || { full_name: 'User', phone: user.email };
               }
-              this.loading = false; // Turn off loading screen
           },
           async logout() {
               await window.sb.auth.signOut();
@@ -108,13 +102,15 @@
           }
       }"
       x-init="
-          // This loop ensures Supabase is ready before checking user
+          // 1. Force loading to stop after 4.5 seconds NO MATTER WHAT
+          setTimeout(() => { loading = false; }, 4500);
+
+          // 2. Try to connect to DB in the background
           let attempts = 0;
           let check = setInterval(() => { 
               if(window.sb || attempts > 20) { 
                   clearInterval(check); 
                   checkUser();
-                  setTimeout(() => loading = false, 2000); // Force stop loading after 2s max
               }
               attempts++;
           }, 100);
@@ -127,9 +123,19 @@
             <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
             <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
         </div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-64 h-64 bg-brand-gold rounded-full blur-[100px] animate-forge-flash opacity-0"></div>
+        </div>
         <div class="relative z-10 flex flex-col items-center">
-            <h1 class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text animate-pulse">FIXZEN</h1>
-            <p class="text-brand-beige text-sm uppercase tracking-[0.3em] font-medium mt-4">Premium Home Care</p>
+            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
+            </svg>
+            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
+            <div class="mt-4 flex items-center gap-3 opacity-0 animate-sub-text-slide">
+                <div class="h-px w-12 bg-brand-gold/50"></div>
+                <p class="text-brand-beige text-sm uppercase tracking-[0.3em] font-medium">Premium Home Care</p>
+                <div class="h-px w-12 bg-brand-gold/50"></div>
+            </div>
         </div>
     </div>
 
