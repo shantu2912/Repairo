@@ -143,16 +143,18 @@ class="font-sans antialiased pb-36"
             x-text="job.status.replace('_',' ')"
           ></span>
 
-          <button x-show="job.status === 'assigned'"
- @click="acceptJob(job.id)"
- class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
- Accept
+        <button
+  x-show="job.status === 'pending'"
+  @click="acceptJob(job.id)"
+  class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
+  Accept
 </button>
 
-<button x-show="job.status === 'assigned'"
- @click="rejectJob(job.id)"
- class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
- Reject
+<button
+  x-show="job.status === 'pending'"
+  @click="rejectJob(job.id)"
+  class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
+  Reject
 </button>
 
 
@@ -232,13 +234,23 @@ return {
   /* 🔥 FETCH ONLY ASSIGNED JOBS */
   async fetchJobs(){
     this.loading = true;
+const { data, error } = await window.sb
+  .from("jobs")
+  .select("*")
+  .or(
+    `and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`
+  )
+  .not("rejected_by", "cs", `{${this.tech.id}}`)
+  .order("created_at", { ascending: false });
+this.channel = window.sb
+  .channel("jobs-live")
+  .on(
+    "postgres_changes",
+    { event: "*", schema: "public", table: "jobs" },
+    () => this.fetchJobs()
+  )
+  .subscribe();
 
-    const { data, error } = await window.sb
-      .from("jobs")
-      .select("*")
-      .eq("tech_id", this.tech.id)
-      .in("status", ["assigned", "in_progress"])
-      .order("created_at", { ascending: false });
 
     if(error){
       console.error(error);
@@ -275,66 +287,70 @@ return {
   },
 
   /* ✅ ACCEPT JOB */
-  async acceptJob(jobId){
-  const { error } = await window.sb
+ async acceptJob(jobId) {
+  // 1. Attempt the update without forcing a single-row return
+  const { data, error } = await window.sb
     .from("jobs")
     .update({
+      tech_id: this.tech.id,
       status: "in_progress",
       started_at: new Date().toISOString()
     })
     .eq("id", jobId)
-    .eq("tech_id", this.tech.id);
+    // 2. This ensures only unowned jobs can be taken
+    .or("tech_id.is.null,status.eq.pending") 
+    .select(); 
 
-  if(error){
-    alert("Failed to accept job");
+  // 3. Manually check if any row was actually updated
+  if (error || !data || data.length === 0) {
+    alert("Job already taken or no longer available.");
+    console.error("Update failed:", error);
     return;
   }
 
+  // 4. Success logic
+  alert("Job accepted successfully!");
   this.fetchJobs();
 },
 
   /* ❌ REJECT JOB */
- async rejectJob(jobId) {
-  // 1. Get current rejected list
-  const { data: job } = await window.sb.from("jobs").select("rejected_by").eq("id", jobId).single();
-  const updatedRejections = [...(job.rejected_by || []), this.tech.id];
-
-  // 2. Clear the tech and reset to pending
-  const { error } = await window.sb
+  async rejectJob(jobId){
+  await window.sb
     .from("jobs")
     .update({
-      tech_id: null,
-      status: "pending", 
-      rejected_by: updatedRejections
+      rejected_by: window.sb.sql`
+        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+      `
     })
     .eq("id", jobId);
 
-  if (!error) {
-    // The Database Trigger we created in Step 1 will now 
-    this.fetchJobs();
-  }
+  this.fetchJobs();
 },
+/* ✅ COMPLETE JOB */
   /* ✅ COMPLETE JOB */
-  async completeJob(job){
-    const completedAt = new Date().toISOString();
-    const fee = this.calculateFee(job);
+async completeJob(job) {
+  const completedAt = new Date().toISOString();
+  const fee = this.calculateFee(job); // Uses your predefined fee logic
 
-    const { error } = await window.sb
-      .from("jobs")
-      .update({
-        status: "completed",
-        completed_at: completedAt,
-        technician_fee: fee
-      })
-      .eq("id", job.id);
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "completed",
+      completed_at: completedAt,
+      technician_fee: fee
+    })
+    .eq("id", job.id)
+    .eq("tech_id", this.tech.id); // Security: ensures only the assigned tech can complete it
 
-    if(error){
-      alert("Failed to complete job");
-      return;
-    }
-
-    this.fetchJobs();
-  },
+  if (error) {
+    console.error(error);
+    alert("Failed to complete job: " + error.message);
+    return;
+  }
+  
+  alert("Job marked as completed!");
+  this.fetchJobs(); // Refresh the list
+},
 
   calculateFee(job){
     const BASE = {
