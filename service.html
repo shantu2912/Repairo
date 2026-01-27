@@ -164,6 +164,31 @@
         </div>
 
         <div class="px-6 mt-8 animate-fade-in-up" style="animation-delay: 0.1s">
+
+
+
+
+<div class="mt-8 mb-8" x-show="service?.sub_services && service.sub_services.length > 0">
+    <h3 class="font-bold text-lg text-brand-olive mb-4">Service Rate Card</h3>
+    <div class="bg-white rounded-2xl shadow-sm border border-brand-beige/40 overflow-hidden">
+        <template x-for="(item, index) in service.sub_services">
+            <div class="flex justify-between items-center p-4 border-b border-brand-cream last:border-0 hover:bg-brand-cream/30 transition-colors">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-brand-gold"></div>
+                    <span class="text-sm font-medium text-brand-dark" x-text="item.name"></span>
+                </div>
+                <span class="text-sm font-bold text-brand-olive">₹<span x-text="item.price"></span></span>
+            </div>
+        </template>
+    </div>
+    <p class="text-[10px] text-center text-brand-dark/40 mt-3">*Final price may vary based on spare parts.</p>
+</div>
+
+
+
+
+
+
             
             <div class="flex justify-between items-end mb-8 p-5 bg-white rounded-3xl shadow-sm border border-brand-beige/40 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-brand-gold/5 rounded-bl-full -mr-4 -mt-4"></div>
