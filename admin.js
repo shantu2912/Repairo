@@ -1,46 +1,74 @@
-/* REPLACE THE window.openAssign FUNCTION IN YOUR admin-jobs.html WITH THIS */
+/* ✅ SUPABASE CLIENT INIT */
+const sb = supabase.createClient(
+  'https://kzxdxnxgouthsywbsnvl.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+);
 
-window.openAssign = async (jobId, category, area) => {
-  selectedJobId = jobId;
-  const select = document.getElementById("techSelect");
-  select.innerHTML = "<option>Searching...</option>";
+/* ✅ LOAD DASHBOARD DATA */
+async function loadDashboard() {
+    const { data: techs, error } = await sb
+        .from('technicians')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  console.log(`Searching for all technicians in category: ${category}`);
+    if (error) {
+        console.error("Error loading technicians:", error);
+        return;
+    }
 
-  // 1. Query only by category and status (ignoring area)
-  // 2. Using 'name' to match your SQL schema
-  const { data, error } = await sb
-    .from("technicians")
-    .select("id, name, category, area, experience")
-    .eq("status", "approved") 
-    .eq("category", category); 
+    // Update Stats
+    document.getElementById('pendingCount').innerText = techs.filter(t => t.status === 'pending').length;
+    document.getElementById('approvedCount').innerText = techs.filter(t => t.status === 'approved').length;
+    document.getElementById('rejectedCount').innerText = techs.filter(t => t.status === 'rejected').length;
 
-  if (error) {
-    console.error("Supabase error detail:", error.message);
-    select.innerHTML = `<option>Error: Check Console</option>`;
-    return;
-  }
+    // Render List
+    const list = document.getElementById('techList');
+    list.innerHTML = "";
 
-  select.innerHTML = "";
+    techs.forEach(t => {
+        const statusColors = {
+            pending: 'bg-yellow-100 text-yellow-700',
+            approved: 'bg-green-100 text-green-700',
+            rejected: 'bg-red-100 text-red-700'
+        };
 
-  if (!data || data.length === 0) {
-    // Helpful message if no one is approved in this category yet
-    select.innerHTML = `<option>No approved experts found for "${category}"</option>`;
-  } else {
-    select.innerHTML = `<option value="">Select Technician (${data.length} found)</option>`;
-    
-    data.forEach(t => {
-      // Highlight if they happen to be in the same area as the job
-      const isLocal = t.area.toLowerCase() === area.toLowerCase();
-      const areaLabel = isLocal ? "⭐ (Same Area)" : `(${t.area})`;
-      
-      select.innerHTML += `
-        <option value="${t.id}">
-          ${t.name} | ${t.experience} yrs exp | ${areaLabel}
-        </option>`;
+        list.innerHTML += `
+            <tr class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-8 py-5">
+                    <p class="font-bold text-brand-olive">${t.name}</p>
+                    <p class="text-[10px] text-gray-400 font-mono">${t.phone}</p>
+                </td>
+                <td class="px-8 py-5 text-sm text-brand-dark/70">${t.category}</td>
+                <td class="px-8 py-5 text-center">
+                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${statusColors[t.status] || 'bg-gray-100'}">
+                        ${t.status}
+                    </span>
+                </td>
+                <td class="px-8 py-5 text-center">
+                    <div class="flex justify-center gap-2">
+                        <button onclick="updateStatus('${t.id}', 'approved')" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-all">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                        <button onclick="updateStatus('${t.id}', 'rejected')" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
     });
-  }
+}
 
-  document.getElementById("assignModal").classList.remove("hidden");
-  document.getElementById("assignModal").classList.add("flex");
+/* ✅ UPDATE STATUS FUNCTION */
+window.updateStatus = async (id, status) => {
+    const { error } = await sb
+        .from('technicians')
+        .update({ status: status })
+        .eq('id', id);
+
+    if (error) alert("Action failed");
+    else loadDashboard();
 };
+
+// Initialize
+loadDashboard();
