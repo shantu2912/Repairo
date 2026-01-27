@@ -199,19 +199,6 @@ x-data="{
       }
 
       await supabase.auth.updateUser({ password: this.form.pass });
-// 📍 Convert address to lat/lng
-const location = await this.getLatLngFromAddress(this.form.address);
-
-const { error: profileError } = await supabase.from('profiles').insert({
-  id: user.id,
-  full_name: this.form.name,
-  username: this.form.user,
-  phone,
-  address: this.form.address,
-  latitude: location.lat,
-  longitude: location.lon
-});
-
 
       if (profileError) {
         this.message = 'ACCOUNT ALREADY EXISTS';
@@ -286,53 +273,6 @@ const { error: profileError } = await supabase.from('profiles').insert({
 
 
 
-
-
-
-
-
-
-
-
-
-
-                <!-- Address Field -->
-<div>
-  <label class="input-label">Address</label>
-  <textarea 
-    x-model="form.address"
-    rows="3"
-    class="fixzen-input resize-none"
-    placeholder="House no, Street, Area, City, Pincode">
-  </textarea>
-</div>
-
-<!-- Address Button -->
-<button 
-  type="button"
-  @click="form.address = form.address.trim()"
-  class="btn-primary mt-2 bg-brand-gold">
-  <i class="fa-solid fa-location-dot"></i>
-  Save Address
-</button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg" :disabled="loading">
                     <span x-show="!loading" x-text="isNewUser ? 'Send Verification' : 'Check Account'"></span>
                     <div x-show="loading" class="loader"></div>
@@ -390,4 +330,5 @@ const { error: profileError } = await supabase.from('profiles').insert({
 </script>
 
 </body>
+
 </html>
