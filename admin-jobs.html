@@ -98,7 +98,8 @@ function statusBadge(status) {
 
 /* ---------------- AUTO ASSIGN ---------------- */
 async function autoAssign(job) {
-  if (job.status !== "pending") return;
+  if (!(job.status === "pending" || (job.status === "assigned" && !job.tech_id))) return;
+
 
   const rejected = job.rejected_by?.length
     ? `(${job.rejected_by.join(",")})`
@@ -108,8 +109,8 @@ async function autoAssign(job) {
     .from("technicians")
     .select("id, jobs_done, rating")
     .eq("status", "approved")
-    .eq("category", job.category)
-    .eq("area", job.location)
+    .ilike("category", `%${job.category}%`)
+.ilike("area", `%${job.location}%`)
     .not("id", "in", rejected)
     .order("jobs_done", { ascending: true })
     .order("rating", { ascending: false })
