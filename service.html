@@ -5,21 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Service Details - FixZen</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-        
-        if (window.supabase) {
-            window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -27,103 +20,28 @@
                 extend: {
                     colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3' },
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
-                    boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)' }
                 }
             }
         }
+        
+        // Initialize Supabase immediately
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        const _sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
     </script>
-    <style>
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
-    </style>
 </head>
 
-<body class="bg-brand-cream text-brand-dark antialiased"
-      x-data="{ 
-          loading: true, 
-          serviceId: '',
-          serviceData: {},
-          bookingModalOpen: false,
-          bookingDate: '',
-          bookingTime: '',
-          user: null,
-          bookingLoading: false,
+<body class="bg-brand-cream text-brand-dark antialiased" x-data="servicePage">
 
-          // Preset Images mapping to ensure nice visuals based on ID
-          images: {
-            'Carpenter': 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&fit=crop',
-            'Plumber': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&fit=crop',
-            'Electrician': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&fit=crop',
-            'AC Tech': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&fit=crop',
-            'Cleaning': 'https://images.unsplash.com/photo-1581578731117-104f2a417954?w=800&fit=crop',
-            'Pest Ctrl': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=800&fit=crop',
-            'default': 'https://images.unsplash.com/photo-1581578731117-104f2a417954?w=800&fit=crop'
-          },
+    <noscript>
+        <div style="padding: 20px; text-align: center; color: red;">
+            Please enable JavaScript to view this page.
+        </div>
+    </noscript>
 
-          async initService() {
-              // Get ID from URL
-              const urlParams = new URLSearchParams(window.location.search);
-              this.serviceId = urlParams.get('id') || 'Service';
-              
-              // Set Data (In a real app, you might fetch specific descriptions from Supabase here)
-              this.serviceData = {
-                  name: this.serviceId,
-                  image: this.images[this.serviceId] || this.images['default'],
-                  price: '499', // Mock starting price
-                  rating: '4.8',
-                  reviews: '124'
-              };
-
-              // Check User
-              if (window.sb) {
-                  const { data: { user } } = await window.sb.auth.getUser();
-                  this.user = user;
-              }
-              
-              setTimeout(() => { this.loading = false; }, 800);
-          },
-
-          async submitBooking() {
-              if(!this.user) {
-                  alert('Please log in to book a service.');
-                  window.location.href = 'loginuser.html';
-                  return;
-              }
-              if(!this.bookingDate || !this.bookingTime) {
-                  alert('Please select date and time');
-                  return;
-              }
-
-              this.bookingLoading = true;
-              
-              // Insert into Supabase
-              const { error } = await window.sb
-                  .from('bookings') // Ensure you have this table
-                  .insert({
-                      user_id: this.user.id,
-                      service_name: this.serviceId,
-                      booking_date: this.bookingDate,
-                      booking_time: this.bookingTime,
-                      status: 'pending',
-                      price: this.serviceData.price
-                  });
-
-              this.bookingLoading = false;
-              this.bookingModalOpen = false;
-
-              if (error) {
-                  console.error(error);
-                  alert('Booking failed. Please try again.');
-              } else {
-                  alert('Booking Confirmed! Check "My Bookings" for status.');
-                  window.location.href = 'bookings.html';
-              }
-          }
-      }"
-      x-init="initService()">
-
-    <div x-show="loading" class="fixed inset-0 z-[100] bg-brand-olive flex items-center justify-center">
-        <div class="w-12 h-12 border-4 border-brand-gold border-t-transparent rounded-full animate-spin"></div>
+    <div x-show="loading" class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-12 h-12 border-4 border-brand-gold border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-white text-sm tracking-widest animate-pulse">LOADING DETAILS...</p>
     </div>
 
     <div x-show="bookingModalOpen" class="fixed inset-0 z-[90] flex items-end sm:items-center justify-center" style="display: none;">
@@ -150,7 +68,7 @@
         </div>
     </div>
 
-    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-white pb-32 overflow-hidden" x-show="!loading">
+    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-white pb-32 overflow-hidden" x-show="!loading" style="display: none;">
 
         <div class="relative h-[45vh]">
             <img :src="serviceData.image" class="w-full h-full object-cover">
@@ -213,25 +131,6 @@
                 </div>
 
             </div>
-
-            <div class="mt-6 mb-24 animate__animated animate__fadeInUp animate__delay-1s">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-brand-olive">Recent Reviews</h3>
-                    <a href="#" class="text-xs text-brand-gold font-bold">View All</a>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-brand-beige/30">
-                    <div class="flex gap-3">
-                        <img src="https://i.pravatar.cc/150?img=12" class="w-10 h-10 rounded-full object-cover">
-                        <div>
-                            <div class="flex items-center justify-between w-full gap-12">
-                                <h4 class="font-bold text-sm text-brand-dark">Rahul S.</h4>
-                                <div class="text-yellow-400 text-xs">★★★★★</div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">Excellent work! The technician arrived on time and fixed the issue very quickly. Highly recommended.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-brand-beige/50 p-4 pb-8 z-40 flex items-center justify-between gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
@@ -246,5 +145,107 @@
 
     </div>
 
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('servicePage', () => ({
+                loading: true,
+                serviceId: '',
+                bookingModalOpen: false,
+                bookingDate: '',
+                bookingTime: '',
+                user: null,
+                bookingLoading: false,
+                
+                // Default data to prevent errors if Supabase is empty
+                serviceData: {
+                    name: 'Loading...',
+                    price: '0',
+                    rating: '0.0',
+                    reviews: '0',
+                    image: 'https://images.unsplash.com/photo-1581578731117-104f2a417954?w=800&fit=crop'
+                },
+
+                // Image Mapping
+                images: {
+                    'Carpenter': 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&fit=crop',
+                    'Plumber': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&fit=crop',
+                    'Electrician': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&fit=crop',
+                    'AC Tech': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&fit=crop',
+                    'Cleaning': 'https://images.unsplash.com/photo-1581578731117-104f2a417954?w=800&fit=crop',
+                    'Pest Ctrl': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=800&fit=crop',
+                    'default': 'https://images.unsplash.com/photo-1581578731117-104f2a417954?w=800&fit=crop'
+                },
+
+                async init() {
+                    console.log('Alpine Initialized');
+                    
+                    // 1. Get ID from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.serviceId = urlParams.get('id');
+                    
+                    // If no ID is found, default to 'AC Tech' for testing
+                    if (!this.serviceId) {
+                        console.warn('No Service ID found in URL. Defaulting.');
+                        this.serviceId = 'AC Tech'; 
+                    }
+
+                    // 2. Set basic display data immediately
+                    this.serviceData.name = this.serviceId;
+                    this.serviceData.image = this.images[this.serviceId] || this.images['default'];
+                    this.serviceData.price = '499'; // Default starting price
+                    this.serviceData.rating = '4.8';
+                    this.serviceData.reviews = '120+';
+
+                    // 3. Check for User Session
+                    if (_sb) {
+                        const { data } = await _sb.auth.getUser();
+                        this.user = data.user;
+                    }
+
+                    // 4. Reveal Page
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+
+                async submitBooking() {
+                    if(!this.user) {
+                        alert('Please log in to book a service.');
+                        // window.location.href = 'loginuser.html'; // Uncomment this in production
+                        return;
+                    }
+                    if(!this.bookingDate || !this.bookingTime) {
+                        alert('Please select date and time');
+                        return;
+                    }
+
+                    this.bookingLoading = true;
+                    
+                    // Insert into Supabase
+                    const { error } = await _sb
+                        .from('bookings')
+                        .insert({
+                            user_id: this.user.id,
+                            service_name: this.serviceId,
+                            booking_date: this.bookingDate,
+                            booking_time: this.bookingTime,
+                            status: 'pending',
+                            price: this.serviceData.price
+                        });
+
+                    this.bookingLoading = false;
+                    this.bookingModalOpen = false;
+
+                    if (error) {
+                        console.error(error);
+                        alert('Booking failed: ' + error.message);
+                    } else {
+                        alert('Booking Confirmed!');
+                        window.location.href = 'bookings.html';
+                    }
+                }
+            }))
+        });
+    </script>
 </body>
 </html>
