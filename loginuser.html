@@ -257,11 +257,7 @@ x-data="{
                     </div>
                 </template>
 
-                <!-- Login password field -->
-                <div x-show="showPassword && !isNewUser">
-                    <label class="input-label">Password</label>
-                    <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
-                </div>
+
 
                 <div>
                     <label class="input-label">Mobile Number</label>
@@ -271,7 +267,12 @@ x-data="{
                     </div>
                 </div>
 
-
+                
+                <!-- Login password field -->
+                <div x-show="showPassword && !isNewUser">
+                    <label class="input-label">Password</label>
+                    <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
+                </div>
 
                 <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg" :disabled="loading">
                     <span x-show="!loading" x-text="isNewUser ? 'Send Verification' : 'Check Account'"></span>
@@ -332,3 +333,4 @@ x-data="{
 </body>
 
 </html>
+
