@@ -8,8 +8,8 @@
   <style>
     body {
       margin: 0;
-      font-family: Inter, sans-serif;
-      background: #ecf7f9;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #dff3f7, #f8fbff);
     }
 
     .container {
@@ -20,15 +20,15 @@
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(14px);
       padding: 24px;
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
     }
 
-    h2 { margin-top: 0; color: #0b6fa4; }
-    h3 { margin-bottom: 10px; }
+    h2 { margin-top: 0; color: #0b6fa4; text-align:center; }
+    h3 { margin-bottom: 10px; color:#334155 }
 
     .summary-row {
       display: flex;
@@ -42,42 +42,47 @@
       align-items: center;
       gap: 12px;
       padding: 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      margin-top: 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      margin-top: 12px;
       cursor: pointer;
-      transition: .2s;
+      transition: .25s;
+    }
+
+    .method:hover {
+      transform: scale(1.03);
+    }
+
+    .method.active {
+      border-color: #0284c7;
+      background: linear-gradient(135deg,#e0f2fe,#f0f9ff);
+      box-shadow: 0 8px 20px rgba(2,132,199,0.15);
     }
 
     .method img {
       width: 28px;
     }
 
-    .method.active {
-      border-color: #0284c7;
-      background: #e0f2fe;
-    }
-
     .btn {
       width: 100%;
       padding: 14px;
-      background: #0284c7;
+      background: linear-gradient(135deg,#0284c7,#0369a1);
       color: white;
       font-size: 16px;
       font-weight: 600;
-      border-radius: 12px;
+      border-radius: 14px;
       border: none;
       cursor: pointer;
-      margin-top: 20px;
-      transition: .2s;
+      margin-top: 22px;
+      transition: .25s;
     }
 
-    .btn:hover { opacity: 0.9; }
+    .btn:hover { transform: translateY(-2px); }
 
-    /* QR Modal */
+    /* MODALS */
     .modal {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.55);
       display: none;
       align-items: center;
       justify-content: center;
@@ -85,10 +90,23 @@
 
     .modal-box {
       background: white;
-      padding: 20px;
-      border-radius: 14px;
+      padding: 22px;
+      border-radius: 18px;
       text-align: center;
       width: 300px;
+      animation: pop .3s ease;
+    }
+
+    @keyframes pop {
+      from { transform: scale(.85); opacity:0 }
+      to { transform: scale(1); opacity:1 }
+    }
+
+    .qr-image {
+      width: 200px;
+      margin: 10px auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
 
     .loader {
@@ -100,16 +118,13 @@
       animation: spin 1s linear infinite;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 
 <body>
 
 <div class="container">
-
   <div class="card">
     <h2>Complete Payment</h2>
 
@@ -130,20 +145,19 @@
 
     <button class="btn" id="payBtn">Pay Securely</button>
   </div>
-
 </div>
 
-<!-- MODAL -->
+<!-- QR MODAL -->
 <div class="modal" id="qrModal">
   <div class="modal-box">
-    <h3>Scan to Pay</h3>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=repairo-payment" id="qrImg">
-    <p>UPI ID: <b id="upiID"></b></p>
-    <button class="btn" id="simPay">I have paid</button>
+    <h3>Scan & Pay</h3>
+    <img src="myqr.png" class="qr-image">
+    <p style="font-size:14px;color:#64748b">Use any UPI app to scan</p>
+    <button class="btn" id="simPay">I Have Paid</button>
   </div>
 </div>
 
-<!-- LOADER MODAL -->
+<!-- LOADING MODAL -->
 <div class="modal" id="loadingModal">
   <div class="modal-box">
     <div class="loader"></div>
@@ -180,19 +194,11 @@ document.getElementById("summary").innerHTML = `
 
 document.getElementById("payBtn").onclick = () => {
   if (!selected) return alert("Please select a payment method.");
-
-  if (selected === "upi") {
-    openQR();
-  } else {
-    simulatePayment();
-  }
+  if (selected === "upi") openQR();
+  else simulatePayment();
 };
 
-// Generate UPI ID
 function openQR(){
-  const upi = "repairo" + Math.floor(Math.random()*9000+1000) + "@upi";
-  document.getElementById("upiID").innerText = upi;
-
   document.getElementById("qrModal").style.display = "flex";
 }
 
@@ -207,9 +213,7 @@ function simulatePayment(){
   setTimeout(()=>{
     bk.payment = "Paid";
     bk.status = "assigned";
-
     localStorage.setItem("repairo_bookings", JSON.stringify(all));
-
     location.href = "tracking.html?booking=" + bk.id;
   }, 2000);
 }
