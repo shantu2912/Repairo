@@ -3,188 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <title>FixZen Admin | Booked Jobs</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body class="bg-[#f7f4ef]">
 
-<!-- HEADER -->
 <div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
   <h1 class="text-2xl font-black text-[#4b453a]">
     FIXZEN <span class="font-normal text-sm">Admin · Booked Jobs</span>
   </h1>
-
-  <button onclick="loadJobs()"
-    class="px-4 py-2 rounded-xl bg-[#4b453a] text-white text-sm font-bold">
-    Refresh
-  </button>
+  <button onclick="loadJobs()" class="px-4 py-2 rounded-xl bg-[#4b453a] text-white text-sm font-bold">Refresh Dashboard</button>
 </div>
 
-<!-- TABLE -->
 <div class="max-w-7xl mx-auto bg-white rounded-3xl shadow overflow-hidden">
   <table class="w-full">
     <thead class="bg-gray-50 text-xs text-gray-500">
       <tr>
-        <th class="p-4 text-left">SERVICE</th>
+        <th class="p-4 text-left">SERVICE / PROFESSION</th>
         <th class="p-4 text-left">CUSTOMER</th>
         <th class="p-4">LOCATION</th>
-        <th class="p-4">TECHNICIAN</th>
+        <th class="p-4">ASSIGNED TECH</th>
         <th class="p-4">STATUS</th>
-        <th class="p-4">FEE</th>
         <th class="p-4">ACTION</th>
       </tr>
     </thead>
-
     <tbody id="jobList"></tbody>
   </table>
 </div>
 
 <script>
-/* ---------------- SUPABASE ---------------- */
 const sb = supabase.createClient(
-  'https://kzxdxnxgouthsywbsnvl.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
 );
 
-const jobList = document.getElementById("jobList");
-
-/* ---------------- STATUS BADGE ---------------- */
-function statusBadge(status) {
-  const map = {
-    assigned: "bg-yellow-100 text-yellow-700",
-    in_progress: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700"
-  };
-
-  return `
-    <span class="px-3 py-1 text-[10px] font-black rounded-full ${map[status]}">
-      ${status.toUpperCase()}
-    </span>
-  `;
-}
-
-/* ---------------- AUTO ASSIGN ---------------- */
 async function autoAssign(job) {
-  // Only assign if NOT already assigned
-  if (job.tech_id !== null) return;
-
-  console.log("AUTO-ASSIGN:", job.id);
-
-  const { data: techs, error } = await sb
-    .from("technicians")
-    .select("id, name")
+  // Logic: Match by exact Category, excluded already rejected techs
+  const { data: techs } = await sb.from("technicians")
+    .select("id")
     .eq("status", "approved")
-    .ilike("category", `%${job.category}%`)
-    .ilike("area", `%${job.location}%`)
+    .eq("category", job.category)
+    .not("id", "in", `(${ (job.rejected_by || []).join(',') })`)
+    .order("jobs_done", { ascending: true })
     .limit(1);
 
-  if (error) {
-    console.error("TECH QUERY ERROR:", error);
-    return;
-  }
-
-  if (!techs || techs.length === 0) {
-    console.warn("NO TECH FOUND FOR JOB:", job.id);
-    return;
-  }
-
-  const tech = techs[0];
-
-  const { error: updateError } = await sb
-    .from("jobs")
-    .update({
-      tech_id: tech.id,
+  if (techs && techs.length > 0) {
+    await sb.from("jobs").update({
+      tech_id: techs[0].id,
       status: "assigned",
-      assigned_at: new Date().toISOString(),
-      assignment_round: (job.assignment_round || 0) + 1
-    })
-    .eq("id", job.id);
-
-  if (updateError) {
-    console.error("JOB UPDATE FAILED:", updateError);
-    return;
+      assigned_at: new Date().toISOString()
+    }).eq("id", job.id);
   }
-
-  console.log("ASSIGNED TO:", tech.name);
 }
 
-/* ---------------- LOAD JOBS ---------------- */
 async function loadJobs() {
-  const { data: jobs, error } = await sb
-    .from("jobs")
-   .select(`
-  id,
-  tech_id,
-  category,
-  device,
-  issue,
-  customer_name,
-  phone,
-  location,
-  status,
-  technician_fee,
-  assignment_round
-`).order("created_at", { ascending: false });
-
-  if (error) {
-    alert("Failed to load jobs");
-    console.error(error);
-    return;
-  }
-
-  jobList.innerHTML = "";
-
+  const { data: jobs } = await sb.from("jobs").select(`*, technicians(name)`);
+  
+  // Check for any unassigned pending jobs and trigger auto-assign
   for (const j of jobs) {
-    await autoAssign(j);
-
-    jobList.innerHTML += `
-      <tr class="border-t">
-        <td class="p-4">
-          <p class="font-bold">${j.category}</p>
-          <p class="text-xs text-gray-500">${j.device}</p>
-          <p class="text-xs">${j.issue}</p>
-        </td>
-
-        <td class="p-4">
-          <p class="font-semibold">${j.customer_name}</p>
-          <p class="text-xs text-gray-500">${j.phone}</p>
-        </td>
-
-        <td class="p-4">${j.location}</td>
-
-        <td class="p-4 font-bold text-red-600">
-          ${j.tech_id ? j.technicians?.name : "Unassigned"}
-        </td>
-
-        <td class="p-4 text-center">
-          ${statusBadge(j.status)}
-        </td>
-
-        <td class="p-4 text-center font-bold">
-          ₹${j.technician_fee ?? 0}
-        </td>
-
-        <td class="p-4 text-center">
-          ${!j.tech_id
-            ? `<span class="text-xs text-gray-400">Waiting</span>`
-            : `<button class="px-4 py-2 text-[10px] font-black rounded-xl bg-[#4b453a] text-white">
-                VIEW
-              </button>`
-          }
-        </td>
-      </tr>
-    `;
+    if (j.status === "pending") await autoAssign(j);
   }
+
+  // Refresh view
+  const { data: updatedJobs } = await sb.from("jobs").select(`*, technicians(name)`).order("created_at", { ascending: false });
+  const container = document.getElementById("jobList");
+  container.innerHTML = "";
+
+  updatedJobs.forEach(j => {
+    container.innerHTML += `
+      <tr class="border-t text-sm">
+        <td class="p-4"><b>${j.category}</b><br><span class="text-xs text-gray-400">${j.device}</span></td>
+        <td class="p-4">${j.customer_name}<br><span class="text-xs">${j.phone}</span></td>
+        <td class="p-4 text-center">${j.location}</td>
+        <td class="p-4 text-center font-bold ${j.tech_id ? 'text-blue-600' : 'text-red-400'}">
+          ${j.technicians?.name || 'Searching Pro...'}
+        </td>
+        <td class="p-4 text-center">
+          <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-gray-100">${j.status.toUpperCase()}</span>
+        </td>
+        <td class="p-4 text-center">
+           <button class="bg-[#4b453a] text-white px-3 py-1 rounded-lg text-xs">Manage</button>
+        </td>
+      </tr>`;
+  });
 }
 
-/* ---------------- INIT ---------------- */
+// Initial load and background sync
 loadJobs();
-console.log(`Job ${job.id} sent to tech ${tech.name} at ${new Date().toLocaleString()}`);
-
+setInterval(loadJobs, 10000); 
 </script>
-
 </body>
 </html>

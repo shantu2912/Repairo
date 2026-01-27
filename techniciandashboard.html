@@ -294,29 +294,26 @@ return {
 },
 
   /* ❌ REJECT JOB */
-  async rejectJob(jobId){
-  const ok = confirm("Reject this job?");
-  if(!ok) return;
+ async rejectJob(jobId) {
+  // 1. Get current rejected list
+  const { data: job } = await window.sb.from("jobs").select("rejected_by").eq("id", jobId).single();
+  const updatedRejections = [...(job.rejected_by || []), this.tech.id];
 
+  // 2. Clear the tech and reset to pending
   const { error } = await window.sb
     .from("jobs")
     .update({
       tech_id: null,
-      status: "pending",
-      rejected_by: window.sb.sql`
-        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
-      `
+      status: "pending", 
+      rejected_by: updatedRejections
     })
     .eq("id", jobId);
 
-  if(error){
-    alert("Failed to reject job");
-    return;
+  if (!error) {
+    // The Database Trigger we created in Step 1 will now 
+    this.fetchJobs();
   }
-
-  this.fetchJobs();
 },
-
   /* ✅ COMPLETE JOB */
   async completeJob(job){
     const completedAt = new Date().toISOString();
