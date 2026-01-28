@@ -218,6 +218,7 @@ return {
   stats: { activeJobs: 0, earnings: 0 },
   timer: null,
   channel: null,
+incomingJob: null,
 
   async init(){
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
@@ -242,14 +243,7 @@ const { data, error } = await window.sb
   )
   .not("rejected_by", "cs", `{${this.tech.id}}`)
   .order("created_at", { ascending: false });
-this.channel = window.sb
-  .channel("jobs-live")
-  .on(
-    "postgres_changes",
-    { event: "*", schema: "public", table: "jobs" },
-    () => this.fetchJobs()
-  )
-  .subscribe();
+
 
 
     if(error){
@@ -360,18 +354,93 @@ async completeJob(job) {
     return BASE[job.category] ?? 400;
   },
 
-  subscribeRealtime(){
-    if(this.channel) return;
+subscribeRealtime() {
+  // 🔁 REFRESH JOB LIST
+  this.refreshChannel = window.sb
+    .channel("jobs-refresh")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "jobs" },
+      () => {
+        console.log("🔄 Job change detected");
+        this.fetchJobs();
+      }
+    )
+    .subscribe(status =>
+      console.log("📡 Refresh channel:", status)
+    );
 
-    this.channel = window.sb
-      .channel("tech-jobs")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "jobs" },
-        () => this.fetchJobs()
-      )
-      .subscribe();
-  },
+  // 🔔 INCOMING JOB NOTIFICATION
+  this.notifyChannel = window.sb
+    .channel("jobs-notify")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "jobs" },
+      payload => {
+        const job = payload.new;
+
+        if (
+          job.status === "pending" &&
+          job.tech_id === null &&
+          !job.rejected_by?.includes(this.tech.id)
+        ) {
+          console.log("🔔 Incoming job:", job.id);
+          this.incomingJob = job;
+          this.playAlertSound();
+        }
+      }
+    )
+    .subscribe(status =>
+      console.log("📡 Notify channel:", status)
+    );
+},
+
+
+async acceptIncoming() {
+  const job = this.incomingJob;
+  if (!job) return;
+
+  const { data } = await window.sb
+    .from("jobs")
+    .update({
+      tech_id: this.tech.id,
+      status: "in_progress",
+      started_at: new Date().toISOString()
+    })
+    .eq("id", job.id)
+    .eq("status", "pending")
+    .is("tech_id", null)
+    .select();
+
+  if (!data || data.length === 0) {
+    alert("Too late. Another technician accepted it.");
+  }
+
+  this.incomingJob = null;
+  this.fetchJobs();
+},
+
+
+async rejectIncoming() {
+  const job = this.incomingJob;
+  if (!job) return;
+
+  await window.sb
+    .from("jobs")
+    .update({
+      rejected_by: window.sb.sql`
+        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+      `
+    })
+    .eq("id", job.id);
+
+  this.incomingJob = null;
+},
+playAlertSound() {
+  const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+  audio.play();
+},
+
 
   logout(){
     localStorage.removeItem("active_tech");
@@ -379,6 +448,144 @@ async completeJob(job) {
   }
 }}
 </script>
+<!-- 🔔 JOB ALERT MODAL -->
+<div
+  x-show="incomingJob"
+  x-transition
+  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
+
+    <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
+      New Job Arrived
+    </p>
+
+    <h3 class="text-xl font-extrabold text-brand-olive mt-2"
+        x-text="incomingJob?.category"></h3>
+
+    <p class="text-sm text-gray-600 mt-1"
+       x-text="incomingJob?.location"></p>
+
+    <p class="text-xs text-gray-500 italic mt-2"
+       x-text="incomingJob?.issue"></p>
+
+    <div class="flex gap-3 mt-6">
+      <button
+        @click="acceptIncoming()"
+        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
+        Accept
+      </button>
+
+      <button
+        @click="rejectIncoming()"
+        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
+        Reject
+      </button>
+    </div>
+
+  </div>
+</div>
+<div id="jobPopup" style="display:none; position:fixed; top:20px; right:20px; background:#111; color:#fff; padding:20px; border-radius:12px; z-index:9999;">
+  <h3>New Job Arrived</h3>
+  <p id="jobInfo"></p>
+  <button onclick="acceptJob()">Accept</button>
+  <button onclick="rejectJob()">Reject</button>
+</div>
+
+<script>
+let currentJobId = null;
+
+function showJobPopup(job) {
+  currentJobId = job.id;
+  document.getElementById("jobInfo").innerText =
+    `${job.category} - ${job.device}\n${job.location}`;
+  document.getElementById("jobPopup").style.display = "block";
+}
+
+function acceptJob() {
+  updateJobStatus("assigned");
+}
+
+function rejectJob() {
+  updateJobStatus("rejected");
+}
+
+async function updateJobStatus(status) {
+  await supabase
+    .from("jobs")
+    .update({ status })
+    .eq("id", currentJobId);
+
+  document.getElementById("jobPopup").style.display = "none";
+}
+</script>
+<!-- Your dashboard HTML above -->
+
+<!-- JOB POPUP UI -->
+<div id="jobPopup" style="display:none; position:fixed; top:20px; right:20px; background:#111; color:#fff; padding:20px; border-radius:12px; z-index:9999;">
+  <h3>New Job Arrived</h3>
+  <p id="jobInfo"></p>
+  <button onclick="acceptJob()">Accept</button>
+  <button onclick="rejectJob()">Reject</button>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+ "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+);
+
+ currentJobId = null;
+
+const channel = supabase
+  .channel("new-job-alerts")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "jobs"
+    },
+    (payload) => {
+      console.log("📢 New job arrived:", payload.new);
+      showJobPopup(payload.new);
+    }
+  )
+  .subscribe(status => {
+    console.log("Realtime status:", status);
+  });
+
+function showJobPopup(job) {
+  currentJobId = job.id;
+  document.getElementById("jobInfo").innerText =
+    `${job.category} - ${job.device}\n${job.location}`;
+  document.getElementById("jobPopup").style.display = "block";
+}
+
+async function acceptJob() {
+  await supabase
+    .from("jobs")
+    .update({ status: "assigned" })
+    .eq("id", currentJobId)
+    .eq("status", "pending");
+
+  document.getElementById("jobPopup").style.display = "none";
+}
+
+async function rejectJob() {
+  await supabase
+    .from("jobs")
+    .update({ status: "rejected" })
+    .eq("id", currentJobId);
+
+  document.getElementById("jobPopup").style.display = "none";
+}
+</script>
+
+</body>
+</html>
 
 
 </body>
