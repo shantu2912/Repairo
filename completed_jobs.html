@@ -148,23 +148,28 @@ return{
   },
 
   async fetchCompleted(){
-    this.loading = true;
+  this.loading = true;
 
-    const { data, error } = await window.sb
-      .from("jobs")
-      .select("*")
-      .eq("status","completed")
-      .order("completed_at",{ascending:false});
+  const tech = JSON.parse(localStorage.getItem("active_tech"));
+  if (!tech) return;
 
-    if(error){
-      console.error(error);
-      this.loading = false;
-      return;
-    }
+  const { data, error } = await window.sb
+    .from("jobs")
+    .select("*")
+    .eq("status", "completed")
+    .eq("tech_id", tech.id)   // 🔥 THIS WAS MISSING
+    .order("completed_at", { ascending: false });
 
-    this.jobs = data;
+  if(error){
+    console.error(error);
     this.loading = false;
-  },
+    return;
+  }
+
+  this.jobs = data;
+  this.loading = false;
+}
+,
 
   formatDate(dt){
     if(!dt) return "-";
