@@ -218,6 +218,7 @@ return {
   stats: { activeJobs: 0, earnings: 0 },
   timer: null,
   channel: null,
+incomingJob: null,
 
   async init(){
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
@@ -360,18 +361,77 @@ async completeJob(job) {
     return BASE[job.category] ?? 400;
   },
 
-  subscribeRealtime(){
-    if(this.channel) return;
+  subscribeRealtime() {
+  if (this.channel) return;
 
-    this.channel = window.sb
-      .channel("tech-jobs")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "jobs" },
-        () => this.fetchJobs()
-      )
-      .subscribe();
-  },
+  this.channel = window.sb
+    .channel("job-dispatch")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "jobs"
+      },
+      payload => {
+        const job = payload.new;
+
+        // Only alert if job is available
+        if (
+          job.status === "pending" &&
+          !job.tech_id &&
+          !job.rejected_by?.includes(this.tech.id)
+        ) {
+          this.incomingJob = job;
+          this.playAlertSound();
+        }
+      }
+    )
+    .subscribe();
+},
+async acceptIncoming() {
+  const job = this.incomingJob;
+  if (!job) return;
+
+  const { data, error } = await window.sb
+    .from("jobs")
+    .update({
+      tech_id: this.tech.id,
+      status: "in_progress",
+      started_at: new Date().toISOString()
+    })
+    .eq("id", job.id)
+    .or("tech_id.is.null,status.eq.pending")
+    .select();
+
+  if (!data || data.length === 0) {
+    alert("Too late. Job already taken.");
+  }
+
+  this.incomingJob = null;
+  this.fetchJobs();
+},
+
+async rejectIncoming() {
+  const job = this.incomingJob;
+  if (!job) return;
+
+  await window.sb
+    .from("jobs")
+    .update({
+      rejected_by: window.sb.sql`
+        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+      `
+    })
+    .eq("id", job.id);
+
+  this.incomingJob = null;
+},
+playAlertSound() {
+  const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+  audio.play();
+},
+
 
   logout(){
     localStorage.removeItem("active_tech");
@@ -379,6 +439,43 @@ async completeJob(job) {
   }
 }}
 </script>
+<!-- 🔔 JOB ALERT MODAL -->
+<div
+  x-show="incomingJob"
+  x-transition
+  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
+
+    <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
+      New Job Arrived
+    </p>
+
+    <h3 class="text-xl font-extrabold text-brand-olive mt-2"
+        x-text="incomingJob?.category"></h3>
+
+    <p class="text-sm text-gray-600 mt-1"
+       x-text="incomingJob?.location"></p>
+
+    <p class="text-xs text-gray-500 italic mt-2"
+       x-text="incomingJob?.issue"></p>
+
+    <div class="flex gap-3 mt-6">
+      <button
+        @click="acceptIncoming()"
+        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
+        Accept
+      </button>
+
+      <button
+        @click="rejectIncoming()"
+        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
+        Reject
+      </button>
+    </div>
+
+  </div>
+</div>
 
 
 </body>
