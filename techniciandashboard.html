@@ -13,6 +13,8 @@
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
 
 <!-- Icons / Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -221,6 +223,34 @@ return {
 incomingJob: null,
 
   async init(){
+    if ("Notification" in window && Notification.permission === "default") {
+  Notification.requestPermission();
+}
+const firebaseConfig = {
+  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+  authDomain: "fixzen-73d68.firebaseapp.com",
+  projectId: "fixzen-73d68",
+  storageBucket: "fixzen-73d68.firebasestorage.app",
+  messagingSenderId: "816193738840",
+  appId: "1:816193738840:web:7ba3545e56d3538bf7522d",
+  measurementId: "G-2F19BYJEXD"
+};
+
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();
+
+const token = await messaging.getToken({
+  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc"
+});
+
+// 🔥 SAVE TOKEN
+await window.sb
+  .from("technicians")
+  .update({ fcm_token: token })
+  .eq("id", this.tech.id);
+
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
     if(!this.tech){
       window.location.href = "partnerlogin.html";
@@ -228,6 +258,11 @@ incomingJob: null,
     }
 
     this.techName = this.tech.name;
+    if ("Notification" in window) {
+    if (Notification.permission !== "granted") {
+      await Notification.requestPermission();
+    }
+  }
     await this.fetchJobs();
     this.subscribeRealtime();
   },
@@ -355,52 +390,45 @@ async completeJob(job) {
   },
 
 subscribeRealtime() {
-  // 🔁 REFRESH JOB LIST
-  this.refreshChannel = window.sb
-    .channel("jobs-refresh")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "jobs" },
-      () => {
-        console.log("🔄 Job change detected");
-        this.fetchJobs();
-      }
-    )
-    .subscribe(status =>
-      console.log("📡 Refresh channel:", status)
-    );
+  if (this.channel) return;
 
-  // 🔔 INCOMING JOB NOTIFICATION
-  this.notifyChannel = window.sb
-    .channel("jobs-notify")
+  this.channel = window.sb
+    .channel(`tech-${this.tech.id}-jobs`)
     .on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "jobs" },
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "jobs"
+      },
       payload => {
         const job = payload.new;
 
+        // STRICT FILTER (this is critical)
         if (
-          job.status === "pending" &&
-          job.tech_id === null &&
-          !job.rejected_by?.includes(this.tech.id)
-        ) {
-          console.log("🔔 Incoming job:", job.id);
-          this.incomingJob = job;
-          this.playAlertSound();
-        }
+          job.status !== "pending" ||
+          job.tech_id !== null ||
+          job.rejected_by?.includes(this.tech.id)
+        ) return;
+         this.showBrowserNotification(payload.new); 
+         this.fetchJobs();
+        console.log("🔔 New eligible job:", job.id);
+
+        this.incomingJob = job;
+        this.playAlertSound();
+        this.showBrowserNotification(job);
       }
     )
-    .subscribe(status =>
-      console.log("📡 Notify channel:", status)
-    );
+    .subscribe(status => {
+      console.log("📡 Realtime:", status);
+    });
 },
-
 
 async acceptIncoming() {
   const job = this.incomingJob;
   if (!job) return;
 
-  const { data } = await window.sb
+  const { data, error } = await window.sb
     .from("jobs")
     .update({
       tech_id: this.tech.id,
@@ -413,7 +441,7 @@ async acceptIncoming() {
     .select();
 
   if (!data || data.length === 0) {
-    alert("Too late. Another technician accepted it.");
+    alert("Too late. Another technician accepted this job.");
   }
 
   this.incomingJob = null;
@@ -439,6 +467,16 @@ async rejectIncoming() {
 playAlertSound() {
   const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
   audio.play();
+},
+showBrowserNotification(job) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  new Notification("🔧 New FixZen Job", {
+    body: `${job.category}\n${job.location}`,
+    icon: "https://cdn-icons-png.flaticon.com/512/3050/3050525.png",
+    vibrate: [200, 100, 200]
+  });
 },
 
 
@@ -485,40 +523,9 @@ playAlertSound() {
 
   </div>
 </div>
-<div id="jobPopup" style="display:none; position:fixed; top:20px; right:20px; background:#111; color:#fff; padding:20px; border-radius:12px; z-index:9999;">
-  <h3>New Job Arrived</h3>
-  <p id="jobInfo"></p>
-  <button onclick="acceptJob()">Accept</button>
-  <button onclick="rejectJob()">Reject</button>
-</div>
 
-<script>
-let currentJobId = null;
 
-function showJobPopup(job) {
-  currentJobId = job.id;
-  document.getElementById("jobInfo").innerText =
-    `${job.category} - ${job.device}\n${job.location}`;
-  document.getElementById("jobPopup").style.display = "block";
-}
 
-function acceptJob() {
-  updateJobStatus("assigned");
-}
-
-function rejectJob() {
-  updateJobStatus("rejected");
-}
-
-async function updateJobStatus(status) {
-  await supabase
-    .from("jobs")
-    .update({ status })
-    .eq("id", currentJobId);
-
-  document.getElementById("jobPopup").style.display = "none";
-}
-</script>
 <!-- Your dashboard HTML above -->
 
 <!-- JOB POPUP UI -->
@@ -528,65 +535,5 @@ async function updateJobStatus(status) {
   <button onclick="acceptJob()">Accept</button>
   <button onclick="rejectJob()">Reject</button>
 </div>
-
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-const supabase = createClient(
- "https://kzxdxnxgouthsywbsnvl.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
-);
-
- currentJobId = null;
-
-const channel = supabase
-  .channel("new-job-alerts")
-  .on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "jobs"
-    },
-    (payload) => {
-      console.log("📢 New job arrived:", payload.new);
-      showJobPopup(payload.new);
-    }
-  )
-  .subscribe(status => {
-    console.log("Realtime status:", status);
-  });
-
-function showJobPopup(job) {
-  currentJobId = job.id;
-  document.getElementById("jobInfo").innerText =
-    `${job.category} - ${job.device}\n${job.location}`;
-  document.getElementById("jobPopup").style.display = "block";
-}
-
-async function acceptJob() {
-  await supabase
-    .from("jobs")
-    .update({ status: "assigned" })
-    .eq("id", currentJobId)
-    .eq("status", "pending");
-
-  document.getElementById("jobPopup").style.display = "none";
-}
-
-async function rejectJob() {
-  await supabase
-    .from("jobs")
-    .update({ status: "rejected" })
-    .eq("id", currentJobId);
-
-  document.getElementById("jobPopup").style.display = "none";
-}
-</script>
-
-</body>
-</html>
-
-
 </body>
 </html>
