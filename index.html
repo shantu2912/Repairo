@@ -26,7 +26,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3' },
+                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3', 'brand-red': '#EF4444' },
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
                     boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)', 'neon': '0 0 20px rgba(160, 125, 84, 0.4)' },
                     animation: {
@@ -76,6 +76,21 @@
           detectingLocation: false,
           user: null,
 
+          // --- MASTER SERVICE LIST FOR SEARCH ---
+          masterList: [
+              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'}, {n:'Roofer', cat:'Home', icon:'fa-house-chimney'}, {n:'Tiler', cat:'Home', icon:'fa-border-all'},
+              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'}, {n:'Gas Stove', cat:'Appliance', icon:'fa-fire'}, {n:'Elevator', cat:'Appliance', icon:'fa-elevator'},
+              {n:'Mobile', cat:'Electronics', icon:'fa-mobile-screen'}, {n:'Laptop', cat:'Electronics', icon:'fa-laptop'}, {n:'Printer', cat:'Electronics', icon:'fa-print'}, {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, {n:'CCTV', cat:'Electronics', icon:'fa-video'}, {n:'Network', cat:'Electronics', icon:'fa-wifi'}, {n:'Automation', cat:'Electronics', icon:'fa-robot'},
+              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, {n:'Auto Elec', cat:'Auto', icon:'fa-car-battery'}, {n:'Tyres', cat:'Auto', icon:'fa-truck-monster'}, {n:'Diesel', cat:'Auto', icon:'fa-gas-pump'},
+              {n:'Machinery', cat:'Industrial', icon:'fa-gears'}, {n:'Generator', cat:'Industrial', icon:'fa-industry'}, {n:'Boiler', cat:'Industrial', icon:'fa-fire-burner'}, {n:'HVAC', cat:'Industrial', icon:'fa-fan'}, {n:'Solar', cat:'Industrial', icon:'fa-solar-panel'}, {n:'Fire Safety', cat:'Industrial', icon:'fa-fire-extinguisher'},
+              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, {n:'Locksmith', cat:'Other', icon:'fa-key'}, {n:'Glass Fit', cat:'Other', icon:'fa-border-none'}, {n:'False Ceiling', cat:'Other', icon:'fa-layer-group'}, {n:'UPVC Win', cat:'Other', icon:'fa-window-maximize'}
+          ],
+
+          get filteredServices() {
+              if (this.searchQuery === '') return [];
+              return this.masterList.filter(item => item.n.toLowerCase().includes(this.searchQuery.toLowerCase()));
+          },
+
           async checkUser() {
               if (!window.sb) return; 
               const { data: { user } } = await window.sb.auth.getUser();
@@ -103,13 +118,14 @@
           }
       }"
       x-init="
-          setTimeout(() => { loading = false; }, 4000);
+          if (sessionStorage.getItem('introShown')) {
+              loading = false; 
+          } else {
+              setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000);
+          }
           let attempts = 0;
           let check = setInterval(() => { 
-              if(window.sb || attempts > 20) { 
-                  clearInterval(check); 
-                  checkUser();
-              }
+              if(window.sb || attempts > 20) { clearInterval(check); checkUser(); }
               attempts++;
           }, 100);
           setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
@@ -157,6 +173,7 @@
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">HOME</span>
                 </a>
+                
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">For Experts</p>
                 <a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
@@ -167,6 +184,7 @@
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">TECHNICIAN LOGIN</span>
                 </a>
+                
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
                 <a href="bookings.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
@@ -182,9 +200,15 @@
                     <span class="text-sm font-bold text-brand-dark tracking-wide">CONTACT US</span>
                 </a>
 
-                 <a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">Privacy & Policy</span>
+                <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Legal</p>
+                <a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">PRIVACY POLICY</span>
+                </a>
+                <a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">TERMS & POLICY</span>
                 </a>
             </nav>
 
@@ -240,22 +264,58 @@
         </div>
 
         <div class="px-6 -mt-10 relative z-50">
-            <div class="bg-white rounded-[2rem] p-2 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-white/40 flex items-center gap-2">
-                 <div class="w-12 h-12 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-magnifying-glass"></i></div>
-                 <div class="flex-1 h-12 relative flex items-center">
-                     <div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
-                         <span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span>
-                         <div class="relative h-5 w-32 overflow-hidden">
-                             <div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
-                                 <div class="h-5 flex items-center">AC Repair</div>
-                                 <div class="h-5 flex items-center">Plumbing</div>
-                                 <div class="h-5 flex items-center">Cleaning</div>
+            <div class="relative">
+                <div class="bg-white rounded-[2rem] p-2 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-white/40 flex items-center gap-2 relative z-50">
+                     <div class="w-12 h-12 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-magnifying-glass"></i></div>
+                     <div class="flex-1 h-12 relative flex items-center">
+                         <div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
+                             <span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span>
+                             <div class="relative h-5 w-32 overflow-hidden">
+                                 <div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
+                                     <div class="h-5 flex items-center">AC Repair</div>
+                                     <div class="h-5 flex items-center">Plumbing</div>
+                                     <div class="h-5 flex items-center">Cleaning</div>
+                                 </div>
                              </div>
                          </div>
+                         <input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg z-10 placeholder-transparent" placeholder="">
+                         <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="mr-2 text-brand-dark/40 hover:text-brand-red transition-colors">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                         </button>
                      </div>
-                     <input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg z-10" style="background: transparent;">
-                 </div>
+                </div>
+
+                <div x-show="searchQuery.length > 0" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-[-10px]"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-[-10px]"
+                     @click.outside="searchQuery = ''"
+                     class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-40 max-h-64 overflow-y-auto">
+                    
+                    <template x-for="result in filteredServices">
+                        <div @click="window.location.href='service.html?id=' + result.n" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer border-b border-brand-cream last:border-0 transition-colors group">
+                            <div class="w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-colors">
+                                <i :class="`fa-solid ${result.icon}`"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm text-brand-dark" x-text="result.n"></p>
+                                <p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text="result.cat"></p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold"></i>
+                        </div>
+                    </template>
+
+                    <div x-show="filteredServices.length === 0" class="p-6 text-center">
+                        <i class="fa-solid fa-face-frown-open text-2xl text-brand-dark/20 mb-2"></i>
+                        <p class="text-sm text-brand-dark/50 font-medium">No service found matching "<span x-text="searchQuery"></span>"</p>
+                        <p class="text-[10px] text-brand-dark/30 mt-1">Try "AC", "Clean", or "Repair"</p>
+                    </div>
+                </div>
             </div>
+
             <div class="mt-4 flex gap-2 justify-center">
                 <span onclick="window.location.href='service.html?id=AC Tech'" class="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-[10px] font-bold text-brand-olive cursor-pointer border border-white/50 hover:bg-brand-gold hover:text-white transition-colors">🔥 AC Tech</span>
                 <span onclick="window.location.href='service.html?id=Pest Ctrl'" class="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-[10px] font-bold text-brand-olive cursor-pointer border border-white/50 hover:bg-brand-gold hover:text-white transition-colors">✨ Cleaning</span>
@@ -420,4 +480,3 @@
     </div>
 </body>
 </html>
-
