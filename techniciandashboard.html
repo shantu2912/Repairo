@@ -253,25 +253,30 @@ async init() {
     const messaging = firebase.messaging();
 
     // HANDLE PERMISSIONS GENTLY
-    try {
-      const registration = await navigator.serviceWorker.register('https://shantu2912.github.io/Repairo/firebase-messaging-sw.js');
+   // Inside your init() function in techniciandashboard.html
+try {
+    const registration = await navigator.serviceWorker.register('https://shantu2912.github.io/Repairo/firebase-messaging-sw.js');
     console.log("Service Worker registered for scope:", registration.scope);
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            const token = await messaging.getToken({
-                vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc"
-            });
 
-            // Save token to Supabase
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+        // Fix: Pass the 'registration' object here
+        const token = await messaging.getToken({
+            serviceWorkerRegistration: registration, 
+            vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc" 
+        });
+
+        if (token) {
+            console.log("Token generated:", token);
             await window.sb
                 .from("technicians")
                 .update({ fcm_token: token })
                 .eq("id", this.tech.id);
         }
-    } catch (err) {
-        console.warn("Notification setup failed:", err);
     }
-
+} catch (err) {
+    console.warn("Notification setup failed:", err);
+}
     await this.fetchJobs();
     this.subscribeRealtime();
 },
