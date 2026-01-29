@@ -17,85 +17,84 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F5F2EB', 'brand-dark': '#2D2C2B', 'brand-green': '#10B981' },
+                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F5F2EB', 'brand-dark': '#2D2C2B', 'brand-green': '#10B981', 'brand-red': '#EF4444' },
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
-                    boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 'up': '0 -5px 20px rgba(0,0,0,0.1)' },
-                    animation: { 'slide-up': 'slideUp 0.4s ease-out forwards' },
+                    boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 'up': '0 -5px 20px rgba(0,0,0,0.05)' },
+                    animation: { 'slide-up': 'slideUp 0.4s ease-out forwards', 'pulse-slow': 'pulse 3s infinite' },
                     keyframes: { slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } } }
                 }
             }
         }
 
-        // --- 3. REALISTIC SUB-SERVICE DATABASE ---
-        // Contains EXACT prices from your document + logical additions
+        // --- 3. MASTER SERVICE DATABASE (With "Visit Charge" as Item 1) ---
         const servicesDB = {
             "electrician": { 
-                name: "Expert Electrician", basePrice: 250, image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
+                name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
                 desc: "Certified electricians for wiring, appliance installation, and repairs.",
                 subs: [
-                    {n:"Visit & Inspection", p:250, d:"Diagnosis only"},
-                    {n:"Switch/Socket Repair", p:275, d:"Per unit"},
+                    {n:"Visit & Inspection", p:250, d:"Diagnosis charge (Waived if service taken)"},
+                    {n:"Switch/Socket Repair", p:275, d:"Per switchboard unit"},
                     {n:"Fan Installation", p:385, d:"Ceiling fan assembly & hanging"},
                     {n:"Fan Replacement", p:330, d:"Replace old with new"},
-                    {n:"Tube Light Install", p:220, d:"Wall mounting"},
-                    {n:"MCB Replacement", p:440, d:"Fuse box repair"},
+                    {n:"Tube Light Install", p:220, d:"Wall mounting & connection"},
+                    {n:"MCB Replacement", p:440, d:"Fuse box repair/upgrade"},
                     {n:"New Point Wiring", p:880, d:"Internal wiring per point"},
                     {n:"Inverter Connection", p:330, d:"Battery & Inverter setup"}
                 ]
             },
             "carpenter": { 
-                name: "Expert Carpentry", basePrice: 299, image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
+                name: "Expert Carpentry", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
                 desc: "Furniture assembly, door repairs, and custom woodwork.",
                 subs: [
+                    {n:"Visit & Inspection", p:299, d:"Assessment & measurement"},
                     {n:"Furniture Assembly", p:440, d:"Bed, wardrobe, table"},
                     {n:"Door Hinge Repair", p:275, d:"Fixing creaking/loose doors"},
                     {n:"Drawer Channel Fix", p:330, d:"Smooth sliding repair"},
                     {n:"Lock Installation", p:350, d:"Door/Cupboard lock"},
-                    {n:"Wooden Bed Repair", p:550, d:"Structural fix"},
+                    {n:"Wooden Bed Repair", p:550, d:"Structural fix & tightening"},
                     {n:"Cupboard Alignment", p:385, d:"Door balancing"}
                 ]
             },
             "plumber": { 
-                name: "Professional Plumbing", basePrice: 250, image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
+                name: "Professional Plumbing", image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
                 desc: "Leakage fixing, tap installation, and blockage removal.",
                 subs: [
-                    {n:"Visit & Inspection", p:275, d:"Leak detection"},
-                    {n:"Tap Replacement", p:275, d:"Per tap"},
-                    {n:"Wash Basin Install", p:440, d:"Wall mounting"},
+                    {n:"Visit & Inspection", p:250, d:"Leak detection & quote"},
+                    {n:"Tap Replacement", p:275, d:"Per tap installation"},
+                    {n:"Wash Basin Install", p:440, d:"Wall mounting & sealant"},
                     {n:"Blockage Removal", p:440, d:"Sink/Pipe unclogging"},
                     {n:"Toilet Flush Repair", p:385, d:"Tank mechanism fix"},
                     {n:"Motor Connection", p:550, d:"Water pump setup"}
                 ]
             },
             "ac tech": { 
-                name: "AC Repair & Service", basePrice: 300, image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
+                name: "AC Repair & Service", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
                 desc: "Cooling issues, gas refill, and deep cleaning.",
                 subs: [
                     {n:"AC Inspection", p:330, d:"Diagnosis charge"},
-                    {n:"Split AC Service", p:550, d:"Foam jet cleaning"},
+                    {n:"Split AC Service", p:550, d:"Foam jet cleaning (Indoor+Outdoor)"},
                     {n:"Window AC Service", p:495, d:"Filter & coil cleaning"},
-                    {n:"Gas Refill", p:2500, d:"Complete gas charging"},
-                    {n:"Installation", p:1650, d:"Split AC mounting"},
-                    {n:"Uninstallation", p:770, d:"Safe removal"},
+                    {n:"Gas Refill", p:2500, d:"Complete gas charging (R32/R410)"},
+                    {n:"Installation", p:1650, d:"Split AC wall mounting"},
+                    {n:"Uninstallation", p:770, d:"Safe removal with gas lock"},
                     {n:"Capacitor Change", p:650, d:"Starting problem fix"}
                 ]
             },
             "clean": { 
-                name: "Deep Cleaning", basePrice: 1000, image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
+                name: "Deep Cleaning", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Professional home deep cleaning and sanitization.",
                 subs: [
-                    {n:"1 BHK Deep Clean", p:1100, d:"Full house"},
-                    {n:"2 BHK Deep Clean", p:1430, d:"Full house"},
-                    {n:"Kitchen Deep Clean", p:880, d:"Oil stain removal"},
+                    {n:"1 BHK Deep Clean", p:1100, d:"Full house floor & dusting"},
+                    {n:"2 BHK Deep Clean", p:1430, d:"Full house floor & dusting"},
+                    {n:"Kitchen Deep Clean", p:880, d:"Oil stain & chimney removal"},
                     {n:"Bathroom Cleaning", p:660, d:"Acid wash & sanitization"},
                     {n:"Sofa Cleaning", p:770, d:"Shampoo wash (5 seater)"},
                     {n:"Move-in Cleaning", p:1650, d:"Empty house cleaning"}
                 ]
             },
-            // Add other services (Mobile, Laptop, etc.) similarly if needed. 
-            // Fallback for others to generic pricing
+            // Fallback for any other ID
             "default": {
-                name: "General Service", basePrice: 299, image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
+                name: "General Service", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Standard inspection and repair service.",
                 subs: [
                     {n:"Visit & Inspection", p:299, d:"Standard visit charge"},
@@ -114,7 +113,7 @@
     </script>
 </head>
 
-<body class="bg-brand-cream text-brand-dark antialiased"
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
       x-data="{ 
           service: null, 
           selectedSubs: [],
@@ -130,11 +129,10 @@
               
               let id = rawId.toLowerCase().trim();
               
-              // Load specific service or fallback to default
               this.service = servicesDB[id] || servicesDB['default'];
-              if(!servicesDB[id]) this.service.name = rawId; // Keep original name if fallback
+              if(!servicesDB[id]) this.service.name = rawId; // Keep name if fallback
               
-              setTimeout(() => this.loading = false, 500);
+              setTimeout(() => this.loading = false, 400);
           },
 
           toggleSub(sub) {
@@ -146,12 +144,13 @@
               }
           },
 
+          // LOGIC: Start at 0. Sum of selected items.
           get total() {
-              if (this.selectedSubs.length === 0) return this.service.basePrice;
               return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
           },
 
           openAgreement() {
+              if (this.selectedSubs.length === 0) return; // Prevent empty booking
               this.showAgreement = true;
           },
 
@@ -173,15 +172,14 @@
                   return;
               }
 
-              // 2. Prepare Data for Technicians
-              // We send 'broadcast' status so all techs see it
+              // 2. Prepare Data for Technicians (Broadcast Mode)
               const bookingPayload = {
                   user_id: user.id,
                   service_name: this.service.name,
-                  sub_services: this.selectedSubs, // JSON of what they chose
-                  status: 'broadcast', // KEY: Triggers notification to all techs
+                  sub_services: this.selectedSubs, // Sends the Array of chosen items
+                  status: 'broadcast', // This triggers the Technician Alert system
                   total_amount: this.total,
-                  location_address: 'Current Location (GPS)', // In real app, fetch coords
+                  location_address: 'Current Location (GPS)', 
                   scheduled_date: new Date().toISOString()
               };
 
@@ -197,11 +195,11 @@
                   // Success Animation
                   let btn = document.getElementById('mainBookBtn');
                   btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.remove('bg-brand-olive');
+                  btn.classList.remove('bg-brand-olive', 'grayscale');
                   btn.classList.add('bg-brand-green');
                   
                   setTimeout(() => {
-                      alert('Request broadcasted to nearby technicians! You will be notified when one accepts.');
+                      alert('Request broadcasted to nearby technicians! Allocation is First-Come-First-Serve.');
                       window.location.href = 'bookings.html';
                   }, 1000);
               }
@@ -216,44 +214,48 @@
 
     <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50">
         <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-gold mb-3"></i>
-        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase">Loading Services...</p>
+        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase">Loading...</p>
     </div>
 
-    <div x-show="!loading" class="pb-40 animate__animated animate__fadeIn">
+    <div x-show="!loading" class="pb-44 animate__animated animate__fadeIn">
         
-        <div class="relative h-[45vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900">
-            <img :src="service?.image" class="w-full h-full object-cover opacity-90">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+        <div class="relative h-[40vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
+            <img :src="service?.image" class="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
             <div class="absolute bottom-8 left-6 right-6 text-white">
-                <span class="bg-brand-gold px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg">Premium Service</span>
-                <h1 class="text-4xl font-serif font-bold mt-3" x-text="service?.name"></h1>
-                <p class="text-white/70 text-sm mt-2 font-light leading-relaxed" x-text="service?.desc"></p>
+                <span class="bg-brand-gold/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg border border-white/20">Verified Pro</span>
+                <h1 class="text-3xl font-serif font-bold mt-3 leading-tight" x-text="service?.name"></h1>
+                <p class="text-white/70 text-xs mt-2 font-light leading-relaxed line-clamp-2" x-text="service?.desc"></p>
             </div>
         </div>
 
         <div class="px-5 mt-8">
-            <h3 class="font-bold text-lg text-brand-olive mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-brand-gold"></i> Select Services
-            </h3>
+            <div class="flex justify-between items-end mb-4">
+                <h3 class="font-bold text-lg text-brand-olive flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-brand-gold"></i> Select Services
+                </h3>
+                <span class="text-[10px] text-brand-dark/40 font-medium bg-white px-2 py-1 rounded-lg border border-brand-beige">Tap to add</span>
+            </div>
             
             <div class="space-y-3">
                 <template x-for="sub in service?.subs">
                     <div @click="toggleSub(sub)" 
-                         class="flex justify-between items-center p-4 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm active:scale-95"
-                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold/5 ring-1 ring-brand-gold' : 'border-transparent hover:border-brand-beige'">
+                         class="relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm active:scale-95 group"
+                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-orange-50 ring-1 ring-brand-gold' : 'border-transparent hover:border-brand-beige'">
                         
-                        <div class="flex items-center gap-4">
-                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
-                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white' : 'border-brand-olive/30 text-transparent'">
-                                <i class="fa-solid fa-check text-xs"></i>
+                        <div class="flex items-start gap-4 z-10">
+                            <div class="mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300"
+                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white scale-110' : 'border-brand-olive/30 text-transparent'">
+                                <i class="fa-solid fa-check text-[10px]"></i>
                             </div>
                             <div>
-                                <p class="font-bold text-brand-dark text-sm" x-text="sub.n"></p>
-                                <p class="text-[10px] text-brand-dark/50" x-text="sub.d"></p>
+                                <p class="font-bold text-brand-dark text-sm transition-colors" 
+                                   :class="selectedSubs.includes(sub) ? 'text-brand-olive' : ''" x-text="sub.n"></p>
+                                <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
                             </div>
                         </div>
                         
-                        <span class="font-bold text-brand-olive text-sm">₹<span x-text="sub.p"></span></span>
+                        <span class="font-bold text-brand-olive text-sm z-10">₹<span x-text="sub.p"></span></span>
                     </div>
                 </template>
             </div>
@@ -263,22 +265,26 @@
     <div x-show="!loading" class="fixed bottom-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-brand-beige/50 p-6 rounded-t-[30px] shadow-up animate-slide-up">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <p class="text-xs text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
+                <p class="text-[10px] text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
                 <div class="flex items-baseline gap-1">
                     <span class="text-xl font-bold text-brand-olive">₹</span>
-                    <h2 class="text-4xl font-serif font-bold text-brand-olive" x-text="total"></h2>
+                    <h2 class="text-4xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="total"></h2>
                 </div>
             </div>
             <div class="text-right">
-                <p class="text-[10px] text-brand-dark/40" x-show="selectedSubs.length > 0" x-text="selectedSubs.length + ' services selected'"></p>
-                <p class="text-[10px] text-brand-dark/40" x-show="selectedSubs.length === 0">Base visit charge</p>
+                <div x-show="selectedSubs.length > 0" class="animate__animated animate__fadeIn">
+                    <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded-lg" x-text="selectedSubs.length + ' Item(s)'"></span>
+                </div>
+                <p class="text-[10px] text-brand-dark/40 mt-1" x-show="selectedSubs.length === 0">Select items to enable booking</p>
             </div>
         </div>
         
         <button id="mainBookBtn" @click="openAgreement()" 
-                class="w-full bg-brand-olive text-white rounded-2xl font-bold text-lg hover:bg-brand-gold transition-colors shadow-lg shadow-brand-olive/30 py-4 flex items-center justify-center gap-2 active:scale-95">
-            <span>Book Now</span>
-            <i class="fa-solid fa-arrow-right text-sm"></i>
+                :disabled="selectedSubs.length === 0"
+                class="w-full rounded-2xl font-bold text-lg py-4 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 shadow-lg"
+                :class="selectedSubs.length > 0 ? 'bg-brand-olive text-white hover:bg-brand-gold shadow-brand-olive/30' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+            <span x-text="selectedSubs.length > 0 ? 'Book Now' : 'Select a Service'"></span>
+            <i class="fa-solid fa-arrow-right text-sm" x-show="selectedSubs.length > 0"></i>
         </button>
     </div>
 
@@ -289,29 +295,36 @@
         <div class="bg-white w-full max-w-md rounded-[30px] p-6 shadow-2xl animate__animated animate__slideInUp">
             <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
             
-            <h3 class="text-xl font-serif font-bold text-brand-olive mb-4">Confirm Booking</h3>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-serif font-bold text-brand-olive">Confirm Booking</h3>
+                <span class="text-sm font-bold text-brand-gold">₹<span x-text="total"></span></span>
+            </div>
             
-            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed">
-                <p class="font-bold mb-2">Terms & Conditions:</p>
-                <ul class="list-disc pl-4 space-y-1">
-                    <li>The final price may vary slightly based on inspection and spare parts required.</li>
-                    <li>A minimum visiting charge of ₹<span x-text="service?.basePrice"></span> applies if no service is taken after inspection.</li>
-                    <li>Technicians are allocated on a first-come, first-serve basis.</li>
+            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
+                <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
+                <ul class="list-disc pl-4 space-y-1.5">
+                    <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
+                    <li>Technicians are allocated on a <strong>First-Come, First-Serve</strong> basis.</li>
+                    <li>A minimum visiting charge applies if no service is taken after diagnosis.</li>
                     <li>Cancellations within 30 mins of arrival may incur a fee.</li>
+                    <li>You authorize FixZen to share your location with the nearest available expert.</li>
                 </ul>
             </div>
 
-            <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6">
-                <input type="checkbox" x-model="agreed" class="mt-1 w-5 h-5 accent-brand-gold rounded border-gray-300">
-                <span class="text-sm font-medium text-brand-dark">I agree to the Terms & Conditions and authorize FixZen to broadcast this request to nearby experts.</span>
+            <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6 border border-transparent hover:border-gray-100">
+                <div class="relative flex items-center">
+                    <input type="checkbox" x-model="agreed" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-brand-gold checked:bg-brand-gold transition-all">
+                    <i class="fa-solid fa-check text-white absolute left-1 top-1 text-xs opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                </div>
+                <span class="text-xs font-medium text-brand-dark/80 leading-snug select-none">I agree to the Terms & Conditions and authorize the job broadcast.</span>
             </label>
 
             <div class="flex gap-3">
-                <button @click="showAgreement = false" class="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors">Cancel</button>
+                <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
                 <button @click="confirmBooking()" 
                         :disabled="!agreed || bookingLoading"
-                        class="flex-1 py-3 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    <span x-show="!bookingLoading">Confirm</span>
+                        class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                    <span x-show="!bookingLoading">Confirm Job</span>
                     <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
