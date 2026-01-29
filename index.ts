@@ -1,38 +1,19 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import admin from "npm:firebase-admin";
-
-const serviceAccount = JSON.parse(
-  Deno.env.get("FCM_SERVICE_ACCOUNT")!
-);
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
+import { serve } from "https://deno.land/std/http/server.ts";
 
 serve(async (req) => {
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
-  }
+  const { token, title, body } = await req.json();
 
-  const { token, title, body, data } = await req.json();
-
-  if (!token || !title || !body) {
-    return new Response(
-      JSON.stringify({ error: "Missing fields" }),
-      { status: 400 }
-    );
-  }
-
-  await admin.messaging().send({
-    token,
-    notification: { title, body },
-    data: data || {},
+  await fetch("https://fcm.googleapis.com/fcm/send", {
+    method: "POST",
+    headers: {
+      Authorization: "5f93e965e80495c18780728e0792286ea6213d53",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      to: token,
+      notification: { title, body }
+    })
   });
 
-  return new Response(
-    JSON.stringify({ success: true }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  return new Response("ok");
 });
