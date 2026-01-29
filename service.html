@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Service Details - FixZen</title>
+    <title>Service Booking - FixZen</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -17,72 +17,97 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3' },
+                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F5F2EB', 'brand-dark': '#2D2C2B', 'brand-green': '#10B981' },
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
-                    boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)', 'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)' },
-                    animation: { 'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' }
+                    boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 'up': '0 -5px 20px rgba(0,0,0,0.1)' },
+                    animation: { 'slide-up': 'slideUp 0.4s ease-out forwards' },
+                    keyframes: { slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } } }
                 }
             }
         }
 
-        // --- 3. THE MASTER STATIC DATABASE ---
-        // This acts as your "Instant Database". No loading times.
+        // --- 3. REALISTIC SUB-SERVICE DATABASE ---
+        // Contains EXACT prices from your document + logical additions
         const servicesDB = {
-            // CONSTRUCTION
-            "carpenter": { name: "Expert Carpentry", price: 299, rating: 4.8, reviews: "2.1k", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800", desc: "Furniture repair, assembly, and custom woodwork by skilled carpenters.", features: ["Furniture Repair", "Door & Window Fix", "New Furniture Making"], rates: [{n:"Furniture Assembly",p:440}, {n:"Door Hinge Repair",p:275}, {n:"Drawer Channel Repair",p:330}, {n:"Wooden Bed Repair",p:550}] },
-            "plumber": { name: "Professional Plumbing", price: 199, rating: 4.7, reviews: "3.5k", image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800", desc: "Leakage fixing, installation, and blockage removal specialists.", features: ["Leakage Fix", "Tap Installation", "Blockage Removal"], rates: [{n:"Tap Repair",p:275}, {n:"Leakage Detection",p:385}, {n:"Wash Basin Install",p:440}, {n:"Toilet Repair",p:440}] },
-            "electrician": { name: "Expert Electrician", price: 149, rating: 4.9, reviews: "4k+", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800", desc: "Safe and certified electricians for all your wiring needs.", features: ["Wiring & Fuse", "Fan & Light Install", "Inverter Fix"], rates: [{n:"Switch/Socket Repair",p:275}, {n:"Fan Installation",p:385}, {n:"MCB Replacement",p:440}, {n:"New Point Wiring",p:880}] },
-            "painter": { name: "House Painting", price: 999, rating: 4.6, reviews: "1.2k", image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800", desc: "Transform your home with professional painting services.", features: ["Wall Painting", "Texture Design", "Waterproofing"], rates: [{n:"Wall Painting (sq ft)",p:12}, {n:"Single Wall Accent",p:1500}, {n:"Full Room (10x10)",p:3500}, {n:"Touch-up Work",p:800}] },
-            "mason": { name: "Masonry Work", price: 499, rating: 4.5, reviews: "850", image: "https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?auto=format&fit=crop&w=800", desc: "Brickwork, plastering, and renovation experts.", features: ["Tile Fixing", "Plastering", "Renovation"], rates: [{n:"Plastering (sq ft)",p:25}, {n:"Brick Work",p:450}, {n:"Kitchen Slab Fix",p:1200}] },
-            "welder": { name: "Welding Services", price: 399, rating: 4.6, reviews: "500+", image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=800", desc: "Gate, grill, and metal furniture welding repairs.", features: ["Gate Repair", "Grill Welding", "Metal Furniture"], rates: [{n:"Small Weld Job",p:400}, {n:"Gate Repair",p:800}, {n:"Grill Fabrication",p:1500}] },
-            "roofer": { name: "Roofing Solutions", price: 599, rating: 4.7, reviews: "300+", image: "https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=800", desc: "Leakage proofing and roof tile installation.", features: ["Waterproofing", "Tile Replacement", "Shed Installation"], rates: [{n:"Leak Inspection",p:500}, {n:"Tile Replacement",p:800}, {n:"Waterproofing (sq ft)",p:45}] },
-            "tiler": { name: "Tile & Flooring", price: 299, rating: 4.6, reviews: "900+", image: "https://images.unsplash.com/photo-1623935833075-f3747d079946?auto=format&fit=crop&w=800", desc: "Professional tile laying for floors, walls, and bathrooms.", features: ["Floor Tiling", "Wall Tiling", "Grouting"], rates: [{n:"Tile Laying (sq ft)",p:35}, {n:"Bathroom Tiling",p:2500}, {n:"Grouting",p:400}] },
-
-            // APPLIANCE
-            "ac tech": { name: "AC Repair & Service", price: 399, rating: 4.8, reviews: "5k+", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800", desc: "Complete AC cooling solutions, gas refill, and servicing.", features: ["Jet Cleaning", "Gas Refill", "Installation"], rates: [{n:"AC Service",p:550}, {n:"Gas Refill",p:2500}, {n:"Installation",p:1500}, {n:"Uninstallation",p:700}] },
-            "fridge": { name: "Refrigerator Repair", price: 299, rating: 4.7, reviews: "3k+", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800", desc: "Expert repair for single door, double door, and side-by-side fridges.", features: ["Cooling Fix", "Gas Refill", "Compressor Check"], rates: [{n:"Inspection",p:299}, {n:"Gas Charging",p:1800}, {n:"Thermostat Change",p:650}] },
-            "washing m.": { name: "Washing Machine", price: 349, rating: 4.7, reviews: "2.8k", image: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&w=800", desc: "Repair for top load, front load, and semi-automatic machines.", features: ["Drum Cleaning", "Motor Repair", "PCB Fix"], rates: [{n:"Visit & Inspect",p:349}, {n:"Drum Descaling",p:599}, {n:"PCB Repair",p:1200}] },
-            "microwave": { name: "Microwave Repair", price: 299, rating: 4.6, reviews: "1.5k", image: "https://images.unsplash.com/photo-1585659722983-3a67528e5764?auto=format&fit=crop&w=800", desc: "Fixing heating issues, plate rotation, and electrical faults.", features: ["Heating Fix", "Panel Repair", "Magnetron Change"], rates: [{n:"Inspection",p:299}, {n:"Panel Repair",p:850}, {n:"Magnetron Change",p:1800}] },
-            "ro filter": { name: "RO Water Purifier", price: 199, rating: 4.8, reviews: "3.2k", image: "https://images.unsplash.com/photo-1542013936693-884638332954?auto=format&fit=crop&w=800", desc: "Filter change, servicing, and installation for all RO brands.", features: ["Filter Change", "Membrane Wash", "Installation"], rates: [{n:"General Service",p:350}, {n:"Filter Kit Change",p:1500}, {n:"Installation",p:500}] },
-            "gas stove": { name: "Gas Stove Repair", price: 149, rating: 4.5, reviews: "900+", image: "https://images.unsplash.com/photo-1585237672814-8f85a83ccb95?auto=format&fit=crop&w=800", desc: "Burner cleaning, leakage fixing, and knob repair.", features: ["Burner Clean", "Leakage Fix", "Hob Repair"], rates: [{n:"Visit Charge",p:149}, {n:"Burner Cleaning",p:250}, {n:"Valve Change",p:450}] },
-            "elevator": { name: "Elevator AMC", price: 999, rating: 4.9, reviews: "200+", image: "https://images.unsplash.com/photo-1541336032412-2048956132b8?auto=format&fit=crop&w=800", desc: "Commercial and residential elevator maintenance.", features: ["Monthly Check", "Emergency Rescue", "Oil & Grease"], rates: [{n:"One Time Check",p:1500}, {n:"Annual AMC",p:12000}] },
-
-            // ELECTRONICS
-            "mobile": { name: "Mobile Repair", price: 199, rating: 4.7, reviews: "5k+", image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=800", desc: "Screen replacement, battery change, and software issues.", features: ["Screen Replace", "Battery Change", "Jack Fix"], rates: [{n:"Diagnosis",p:199}, {n:"Screen Replacement",p:1500}, {n:"Battery Change",p:800}] },
-            "laptop": { name: "Laptop Repair", price: 299, rating: 4.8, reviews: "4.2k", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800", desc: "OS installation, hardware upgrade, and chip-level repair.", features: ["OS Install", "SSD Upgrade", "Screen Fix"], rates: [{n:"OS Installation",p:499}, {n:"General Service",p:599}, {n:"Keyboard Change",p:1200}] },
-            "printer": { name: "Printer Service", price: 399, rating: 4.5, reviews: "1k+", image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=800", desc: "Cartridge refilling, paper jam fix, and head cleaning.", features: ["Refill", "Paper Jam", "Head Clean"], rates: [{n:"Cartridge Refill",p:450}, {n:"Service",p:399}, {n:"Head Cleaning",p:600}] },
-            "tv / led": { name: "TV / LED Repair", price: 349, rating: 4.6, reviews: "2k+", image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800", desc: "Display issue, sound problem, and motherboard repair.", features: ["Screen Fix", "Audio Repair", "Wall Mount"], rates: [{n:"Visit",p:349}, {n:"Wall Mounting",p:450}, {n:"Backlight Fix",p:1800}] },
-            "cctv": { name: "CCTV Installation", price: 499, rating: 4.7, reviews: "800+", image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=800", desc: "Security camera installation and DVR configuration.", features: ["Install", "Configuration", "Maintenance"], rates: [{n:"Camera Install",p:500}, {n:"DVR Setup",p:800}, {n:"Cable Laying (ft)",p:15}] },
-            "network": { name: "Network/WiFi", price: 399, rating: 4.6, reviews: "600+", image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800", desc: "Router setup, LAN cabling, and signal boosting.", features: ["Router Setup", "Cabling", "Range Boost"], rates: [{n:"Router Config",p:400}, {n:"LAN Crimping",p:150}, {n:"Cable Laying",p:10}] },
-            "automation": { name: "Home Automation", price: 999, rating: 4.8, reviews: "300+", image: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800", desc: "Smart home setup, Alexa/Google Home integration.", features: ["Smart Light", "Voice Control", "Sensors"], rates: [{n:"Device Setup",p:500}, {n:"Full Room Auto",p:5000}] },
-
-            // AUTOMOBILE
-            "car mech": { name: "Car Mechanic", price: 499, rating: 4.8, reviews: "1.5k", image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=800", desc: "On-spot car breakdown assistance and servicing.", features: ["Jumpstart", "Oil Change", "Brake Pad"], rates: [{n:"Jumpstart",p:500}, {n:"General Service",p:1500}, {n:"Oil Change",p:300}] },
-            "bike mech": { name: "Bike Mechanic", price: 199, rating: 4.7, reviews: "2k+", image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800", desc: "Two-wheeler servicing and puncture repair.", features: ["Servicing", "Puncture", "Chain Lube"], rates: [{n:"General Service",p:350}, {n:"Puncture",p:150}, {n:"Oil Change",p:100}] },
-            "auto elec": { name: "Auto Electrician", price: 350, rating: 4.6, reviews: "500+", image: "https://images.unsplash.com/photo-1635843104666-407859c6799d?auto=format&fit=crop&w=800", desc: "Car/Bike battery, horn, and wiring issues.", features: ["Battery Check", "Wiring Fix", "Horn/Light"], rates: [{n:"Inspection",p:350}, {n:"Wiring Fix",p:600}, {n:"Alternator Check",p:500}] },
-            "tyres": { name: "Tyre Services", price: 150, rating: 4.5, reviews: "1k+", image: "https://images.unsplash.com/photo-1578844251758-2f71da645217?auto=format&fit=crop&w=800", desc: "Puncture repair, tyre change, and air filling.", features: ["Puncture", "Stepney Change", "Air Fill"], rates: [{n:"Tubeless Puncture",p:150}, {n:"Tyre Change",p:200}] },
-            "diesel": { name: "Diesel Mechanic", price: 599, rating: 4.7, reviews: "300+", image: "https://images.unsplash.com/photo-1626154673898-1d2f788b7709?auto=format&fit=crop&w=800", desc: "Heavy vehicle and diesel engine repair.", features: ["Engine Check", "Injector Fix", "Pump Repair"], rates: [{n:"Visit",p:600}, {n:"Pump Calibration",p:1500}] },
-
-            // INDUSTRIAL
-            "machinery": { name: "Industrial Machinery", price: 1500, rating: 4.9, reviews: "100+", image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800", desc: "Maintenance of heavy industrial equipment.", features: ["Hydraulics", "Conveyors", "Motors"], rates: [{n:"Inspection",p:1500}, {n:"Service Day",p:3000}] },
-            "generator": { name: "Generator Repair", price: 799, rating: 4.6, reviews: "400+", image: "https://images.unsplash.com/photo-1565514020176-883a9924e223?auto=format&fit=crop&w=800", desc: "Service for DG sets and backup generators.", features: ["Oil Filter", "Engine Check", "ATS Panel"], rates: [{n:"Service (5kVA)",p:800}, {n:"Service (15kVA+)",p:1500}] },
-            "boiler": { name: "Boiler Service", price: 2000, rating: 4.8, reviews: "50+", image: "https://images.unsplash.com/photo-1598965637213-92c2dae72e18?auto=format&fit=crop&w=800", desc: "Industrial boiler maintenance and descaling.", features: ["Descaling", "Valve Check", "Leakage"], rates: [{n:"Inspection",p:2000}, {n:"Tube Cleaning",p:5000}] },
-            "hvac": { name: "HVAC Systems", price: 1200, rating: 4.7, reviews: "200+", image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800", desc: "Centralized AC and ducting maintenance.", features: ["Duct Clean", "Chiller Fix", "AHU Service"], rates: [{n:"Visit",p:1200}, {n:"Duct Cleaning",p:15}] },
-            "solar": { name: "Solar Panel", price: 699, rating: 4.8, reviews: "500+", image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800", desc: "Cleaning and maintenance of solar plants.", features: ["Panel Cleaning", "Inverter Check", "Wiring"], rates: [{n:"Cleaning (per kW)",p:300}, {n:"Inverter Check",p:700}] },
-            "fire safety": { name: "Fire Safety", price: 499, rating: 4.9, reviews: "300+", image: "https://images.unsplash.com/photo-1615817812975-c0883273e979?auto=format&fit=crop&w=800", desc: "Extinguisher refill and alarm system check.", features: ["Refill", "Alarm Test", "Sprinklers"], rates: [{n:"Extinguisher Refill",p:500}, {n:"System Audit",p:1500}] },
-
-            // OTHER
-            "pest ctrl": { name: "Pest Control", price: 799, rating: 4.7, reviews: "2.5k", image: "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=800", desc: "Cockroach, termite, and bed bug treatment.", features: ["Cockroach", "Termite", "Bed Bug"], rates: [{n:"1 BHK General",p:799}, {n:"2 BHK General",p:999}, {n:"Termite/Room",p:1500}] },
-            "locksmith": { name: "Key & Lock", price: 299, rating: 4.8, reviews: "800+", image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=800", desc: "Door unlock, key making, and lock installation.", features: ["Unlock", "Key Making", "New Lock"], rates: [{n:"Unlock Service",p:350}, {n:"New Lock Install",p:250}] },
-            "glass fit": { name: "Glass Fitting", price: 399, rating: 4.6, reviews: "400+", image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800", desc: "Window glass replacement and mirror fixing.", features: ["Window Glass", "Mirrors", "Table Top"], rates: [{n:"Visit",p:400}, {n:"Installation",p:300}] },
-            "false ceiling": { name: "False Ceiling", price: 0, rating: 4.7, reviews: "600+", image: "https://images.unsplash.com/photo-1628434522967-0c7cb9d9e793?auto=format&fit=crop&w=800", desc: "POP and Gypsum ceiling design and repair.", features: ["POP Design", "Gypsum Board", "Lighting"], rates: [{n:"POP (per sq ft)",p:95}, {n:"Gypsum (per sq ft)",p:85}] },
-            "upvc win": { name: "UPVC Windows", price: 499, rating: 4.8, reviews: "300+", image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=800", desc: "Installation and repair of UPVC windows/doors.", features: ["Handle Fix", "Alignment", "Net Mesh"], rates: [{n:"Service Visit",p:500}, {n:"Handle Replace",p:350}] }
+            "electrician": { 
+                name: "Expert Electrician", basePrice: 250, image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
+                desc: "Certified electricians for wiring, appliance installation, and repairs.",
+                subs: [
+                    {n:"Visit & Inspection", p:250, d:"Diagnosis only"},
+                    {n:"Switch/Socket Repair", p:275, d:"Per unit"},
+                    {n:"Fan Installation", p:385, d:"Ceiling fan assembly & hanging"},
+                    {n:"Fan Replacement", p:330, d:"Replace old with new"},
+                    {n:"Tube Light Install", p:220, d:"Wall mounting"},
+                    {n:"MCB Replacement", p:440, d:"Fuse box repair"},
+                    {n:"New Point Wiring", p:880, d:"Internal wiring per point"},
+                    {n:"Inverter Connection", p:330, d:"Battery & Inverter setup"}
+                ]
+            },
+            "carpenter": { 
+                name: "Expert Carpentry", basePrice: 299, image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
+                desc: "Furniture assembly, door repairs, and custom woodwork.",
+                subs: [
+                    {n:"Furniture Assembly", p:440, d:"Bed, wardrobe, table"},
+                    {n:"Door Hinge Repair", p:275, d:"Fixing creaking/loose doors"},
+                    {n:"Drawer Channel Fix", p:330, d:"Smooth sliding repair"},
+                    {n:"Lock Installation", p:350, d:"Door/Cupboard lock"},
+                    {n:"Wooden Bed Repair", p:550, d:"Structural fix"},
+                    {n:"Cupboard Alignment", p:385, d:"Door balancing"}
+                ]
+            },
+            "plumber": { 
+                name: "Professional Plumbing", basePrice: 250, image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
+                desc: "Leakage fixing, tap installation, and blockage removal.",
+                subs: [
+                    {n:"Visit & Inspection", p:275, d:"Leak detection"},
+                    {n:"Tap Replacement", p:275, d:"Per tap"},
+                    {n:"Wash Basin Install", p:440, d:"Wall mounting"},
+                    {n:"Blockage Removal", p:440, d:"Sink/Pipe unclogging"},
+                    {n:"Toilet Flush Repair", p:385, d:"Tank mechanism fix"},
+                    {n:"Motor Connection", p:550, d:"Water pump setup"}
+                ]
+            },
+            "ac tech": { 
+                name: "AC Repair & Service", basePrice: 300, image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
+                desc: "Cooling issues, gas refill, and deep cleaning.",
+                subs: [
+                    {n:"AC Inspection", p:330, d:"Diagnosis charge"},
+                    {n:"Split AC Service", p:550, d:"Foam jet cleaning"},
+                    {n:"Window AC Service", p:495, d:"Filter & coil cleaning"},
+                    {n:"Gas Refill", p:2500, d:"Complete gas charging"},
+                    {n:"Installation", p:1650, d:"Split AC mounting"},
+                    {n:"Uninstallation", p:770, d:"Safe removal"},
+                    {n:"Capacitor Change", p:650, d:"Starting problem fix"}
+                ]
+            },
+            "clean": { 
+                name: "Deep Cleaning", basePrice: 1000, image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
+                desc: "Professional home deep cleaning and sanitization.",
+                subs: [
+                    {n:"1 BHK Deep Clean", p:1100, d:"Full house"},
+                    {n:"2 BHK Deep Clean", p:1430, d:"Full house"},
+                    {n:"Kitchen Deep Clean", p:880, d:"Oil stain removal"},
+                    {n:"Bathroom Cleaning", p:660, d:"Acid wash & sanitization"},
+                    {n:"Sofa Cleaning", p:770, d:"Shampoo wash (5 seater)"},
+                    {n:"Move-in Cleaning", p:1650, d:"Empty house cleaning"}
+                ]
+            },
+            // Add other services (Mobile, Laptop, etc.) similarly if needed. 
+            // Fallback for others to generic pricing
+            "default": {
+                name: "General Service", basePrice: 299, image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
+                desc: "Standard inspection and repair service.",
+                subs: [
+                    {n:"Visit & Inspection", p:299, d:"Standard visit charge"},
+                    {n:"Minor Repair", p:450, d:"Up to 1 hour work"},
+                    {n:"Major Repair", p:850, d:"Complex technical work"}
+                ]
+            }
         };
 
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
         
-        // Initialize Supabase ONLY for Booking
         if (window.supabase) {
             window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
@@ -92,184 +117,201 @@
 <body class="bg-brand-cream text-brand-dark antialiased"
       x-data="{ 
           service: null, 
+          selectedSubs: [],
+          showAgreement: false,
+          agreed: false,
           loading: true, 
           bookingLoading: false,
-          error: false,
-          errorMsg: '',
           
           init() {
               const params = new URLSearchParams(window.location.search);
               let rawId = params.get('id');
-              
               if (!rawId) { window.location.href = 'index.html'; return; }
-
-              // SMART MATCHING: Convert 'Carpenter' -> 'carpenter'
+              
               let id = rawId.toLowerCase().trim();
+              
+              // Load specific service or fallback to default
+              this.service = servicesDB[id] || servicesDB['default'];
+              if(!servicesDB[id]) this.service.name = rawId; // Keep original name if fallback
+              
+              setTimeout(() => this.loading = false, 500);
+          },
 
-              if (servicesDB[id]) {
-                  this.service = servicesDB[id];
-                  this.service.id = id; 
-                  setTimeout(() => this.loading = false, 500); // Small delay for animation
+          toggleSub(sub) {
+              const index = this.selectedSubs.findIndex(s => s.n === sub.n);
+              if (index > -1) {
+                  this.selectedSubs.splice(index, 1);
               } else {
-                  this.error = true;
-                  this.errorMsg = `Service ID '${rawId}' not found in database.`;
-                  this.loading = false;
+                  this.selectedSubs.push(sub);
               }
           },
 
-          async bookService() {
+          get total() {
+              if (this.selectedSubs.length === 0) return this.service.basePrice;
+              return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
+          },
+
+          openAgreement() {
+              this.showAgreement = true;
+          },
+
+          async confirmBooking() {
+              if (!this.agreed) {
+                  alert('Please accept the terms to proceed.');
+                  return;
+              }
+              
               this.bookingLoading = true;
               
-              if (!window.sb) {
-                  alert('Booking System Offline. Check Internet.');
-                  this.bookingLoading = false;
-                  return;
-              }
+              if (!window.sb) { alert('System Offline'); return; }
 
-              // Check Login
+              // 1. Get User
               const { data: { user } } = await window.sb.auth.getUser();
-              
               if (!user) {
-                  alert('Please Log In to book a service!');
-                  window.location.href = 'loginuser.html'; 
+                  alert('Please Log In to book!');
+                  window.location.href = 'loginuser.html';
                   return;
               }
 
-              // Create Booking
-              const { error } = await window.sb
-                  .from('bookings')
-                  .insert([{ 
-                          user_id: user.id,
-                          service_name: this.service.name, 
-                          status: 'pending',
-                          total_amount: this.service.price,
-                          location_address: 'Current Location (GPS)', 
-                          scheduled_date: new Date().toISOString()
-                  }]);
+              // 2. Prepare Data for Technicians
+              // We send 'broadcast' status so all techs see it
+              const bookingPayload = {
+                  user_id: user.id,
+                  service_name: this.service.name,
+                  sub_services: this.selectedSubs, // JSON of what they chose
+                  status: 'broadcast', // KEY: Triggers notification to all techs
+                  total_amount: this.total,
+                  location_address: 'Current Location (GPS)', // In real app, fetch coords
+                  scheduled_date: new Date().toISOString()
+              };
+
+              // 3. Insert into Supabase
+              const { error } = await window.sb.from('bookings').insert([bookingPayload]);
 
               this.bookingLoading = false;
+              this.showAgreement = false;
 
               if (error) {
-                  alert('Booking Failed: ' + error.message);
+                  alert('Error: ' + error.message);
               } else {
-                  // Success Animation Trigger
-                  let btn = document.getElementById('bookBtn');
-                  btn.innerHTML = '<i class=\'fa-solid fa-check\'></i> Confirmed!';
-                  btn.classList.add('bg-green-600');
-                  setTimeout(() => window.location.href = 'bookings.html', 1500);
+                  // Success Animation
+                  let btn = document.getElementById('mainBookBtn');
+                  btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
+                  btn.classList.remove('bg-brand-olive');
+                  btn.classList.add('bg-brand-green');
+                  
+                  setTimeout(() => {
+                      alert('Request broadcasted to nearby technicians! You will be notified when one accepts.');
+                      window.location.href = 'bookings.html';
+                  }, 1000);
               }
           }
       }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
-            <i class="fa-solid fa-arrow-left text-lg"></i>
+            <i class="fa-solid fa-arrow-left"></i>
         </a>
-        <button class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-gold hover:scale-110 transition-transform border border-white/50">
-            <i class="fa-solid fa-share-nodes text-lg"></i>
+    </div>
+
+    <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-gold mb-3"></i>
+        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase">Loading Services...</p>
+    </div>
+
+    <div x-show="!loading" class="pb-40 animate__animated animate__fadeIn">
+        
+        <div class="relative h-[45vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900">
+            <img :src="service?.image" class="w-full h-full object-cover opacity-90">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+            <div class="absolute bottom-8 left-6 right-6 text-white">
+                <span class="bg-brand-gold px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg">Premium Service</span>
+                <h1 class="text-4xl font-serif font-bold mt-3" x-text="service?.name"></h1>
+                <p class="text-white/70 text-sm mt-2 font-light leading-relaxed" x-text="service?.desc"></p>
+            </div>
+        </div>
+
+        <div class="px-5 mt-8">
+            <h3 class="font-bold text-lg text-brand-olive mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-brand-gold"></i> Select Services
+            </h3>
+            
+            <div class="space-y-3">
+                <template x-for="sub in service?.subs">
+                    <div @click="toggleSub(sub)" 
+                         class="flex justify-between items-center p-4 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm active:scale-95"
+                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold/5 ring-1 ring-brand-gold' : 'border-transparent hover:border-brand-beige'">
+                        
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
+                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white' : 'border-brand-olive/30 text-transparent'">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-brand-dark text-sm" x-text="sub.n"></p>
+                                <p class="text-[10px] text-brand-dark/50" x-text="sub.d"></p>
+                            </div>
+                        </div>
+                        
+                        <span class="font-bold text-brand-olive text-sm">₹<span x-text="sub.p"></span></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="!loading" class="fixed bottom-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-brand-beige/50 p-6 rounded-t-[30px] shadow-up animate-slide-up">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <p class="text-xs text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-xl font-bold text-brand-olive">₹</span>
+                    <h2 class="text-4xl font-serif font-bold text-brand-olive" x-text="total"></h2>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] text-brand-dark/40" x-show="selectedSubs.length > 0" x-text="selectedSubs.length + ' services selected'"></p>
+                <p class="text-[10px] text-brand-dark/40" x-show="selectedSubs.length === 0">Base visit charge</p>
+            </div>
+        </div>
+        
+        <button id="mainBookBtn" @click="openAgreement()" 
+                class="w-full bg-brand-olive text-white rounded-2xl font-bold text-lg hover:bg-brand-gold transition-colors shadow-lg shadow-brand-olive/30 py-4 flex items-center justify-center gap-2 active:scale-95">
+            <span>Book Now</span>
+            <i class="fa-solid fa-arrow-right text-sm"></i>
         </button>
     </div>
 
-    <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50 transition-opacity duration-500">
-        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-brand-gold mb-4"></i>
-        <p class="text-brand-olive font-bold tracking-widest uppercase text-xs animate-pulse">Loading Details...</p>
-    </div>
-
-    <div x-show="error && !loading" class="h-screen flex flex-col items-center justify-center text-center p-6 bg-brand-cream" style="display: none;">
-        <div class="w-24 h-24 bg-brand-cream rounded-full flex items-center justify-center mb-6 shadow-[inset_0_4px_10px_rgba(0,0,0,0.1)]">
-            <i class="fa-solid fa-triangle-exclamation text-4xl text-brand-gold/80"></i>
-        </div>
-        <h2 class="text-2xl font-serif font-bold text-brand-olive">Service Not Found</h2>
-        <p class="text-sm opacity-60 mt-2 max-w-xs mx-auto font-mono text-red-400" x-text="errorMsg"></p>
-        <a href="index.html" class="mt-8 px-8 py-3 bg-brand-olive text-white rounded-full font-bold hover:bg-brand-gold transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1">Go Back Home</a>
-    </div>
-
-    <div x-show="!loading && service" class="pb-32 animate__animated animate__fadeIn" style="display: none;">
+    <div x-show="showAgreement" 
+         class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+         x-transition.opacity style="display: none;">
         
-        <div class="relative h-[55vh] w-full rounded-b-[50px] overflow-hidden shadow-2xl bg-gray-900">
-            <img :src="service?.image" class="w-full h-full object-cover opacity-90 scale-105">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+        <div class="bg-white w-full max-w-md rounded-[30px] p-6 shadow-2xl animate__animated animate__slideInUp">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
             
-            <div class="absolute bottom-12 left-8 right-8 text-white animate-fade-in-up">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="bg-brand-gold/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg border border-white/20">Verified</span>
-                    <div class="flex items-center gap-1 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                        <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
-                        <span class="font-bold text-sm" x-text="service?.rating"></span>
-                        <span class="text-[10px] opacity-70 ml-1" x-text="'(' + service?.reviews + ')'"></span>
-                    </div>
-                </div>
-                <h1 class="text-4xl font-serif font-bold leading-tight drop-shadow-lg" x-text="service?.name"></h1>
-                <p class="text-white/70 text-sm mt-3 font-light leading-relaxed max-w-sm" x-text="service?.desc"></p>
-            </div>
-        </div>
-
-        <div class="px-6 mt-8 animate-fade-in-up" style="animation-delay: 0.15s">
+            <h3 class="text-xl font-serif font-bold text-brand-olive mb-4">Confirm Booking</h3>
             
-            <div class="flex justify-between items-end mb-10 p-6 bg-white rounded-[30px] shadow-lg shadow-brand-olive/5 border border-white relative overflow-hidden group">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110"></div>
-                <div class="relative z-10">
-                    <p class="text-brand-dark/40 font-bold text-[10px] uppercase tracking-widest mb-1">Starting From</p>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-2xl font-bold text-brand-olive">₹</span>
-                        <h2 class="text-6xl font-serif font-bold text-brand-olive tracking-tighter" x-text="service?.price"></h2>
-                    </div>
-                </div>
-                <div class="text-right relative z-10 flex flex-col items-end">
-                    <div class="bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-bold border border-green-100 inline-flex items-center gap-1 mb-2 shadow-sm">
-                        <i class="fa-solid fa-tag"></i> Best Price
-                    </div>
-                    <p class="text-xs text-brand-dark/30 line-through font-medium">₹<span x-text="service?.price + 250"></span></p>
-                </div>
+            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed">
+                <p class="font-bold mb-2">Terms & Conditions:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>The final price may vary slightly based on inspection and spare parts required.</li>
+                    <li>A minimum visiting charge of ₹<span x-text="service?.basePrice"></span> applies if no service is taken after inspection.</li>
+                    <li>Technicians are allocated on a first-come, first-serve basis.</li>
+                    <li>Cancellations within 30 mins of arrival may incur a fee.</li>
+                </ul>
             </div>
 
-            <div class="mb-10" x-show="service?.rates">
-                <h3 class="font-bold text-xl text-brand-olive mb-5 flex items-center gap-2 font-serif">
-                    <span class="w-8 h-8 rounded-full bg-brand-olive text-white flex items-center justify-center text-xs"><i class="fa-solid fa-list-check"></i></span>
-                    Rate Card
-                </h3>
-                <div class="bg-white rounded-3xl shadow-sm border border-brand-beige/30 overflow-hidden">
-                    <template x-for="(item, index) in service?.rates">
-                        <div class="flex justify-between items-center p-5 border-b border-brand-cream/50 last:border-0 hover:bg-brand-cream/30 transition-colors">
-                            <div class="flex items-center gap-4">
-                                <div class="w-2 h-2 rounded-full bg-brand-gold shrink-0 shadow-sm"></div>
-                                <span class="text-sm font-semibold text-brand-dark" x-text="item.n"></span>
-                            </div>
-                            <span class="text-sm font-bold text-brand-olive whitespace-nowrap bg-brand-cream/50 px-3 py-1 rounded-lg">₹ <span x-text="item.p"></span></span>
-                        </div>
-                    </template>
-                </div>
-                <div class="flex items-start gap-2 mt-4 px-2">
-                    <i class="fa-solid fa-circle-info text-brand-gold text-xs mt-0.5"></i>
-                    <p class="text-[10px] text-brand-dark/50 leading-tight">Prices listed are for labor charges only. Spare parts or material costs (if any) will be extra as per actuals.</p>
-                </div>
-            </div>
+            <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6">
+                <input type="checkbox" x-model="agreed" class="mt-1 w-5 h-5 accent-brand-gold rounded border-gray-300">
+                <span class="text-sm font-medium text-brand-dark">I agree to the Terms & Conditions and authorize FixZen to broadcast this request to nearby experts.</span>
+            </label>
 
-            <h3 class="font-bold text-xl text-brand-olive mb-5 font-serif">Service Scope</h3>
-            <ul class="space-y-3 mb-12">
-                <template x-for="feature in service?.features">
-                    <li class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-brand-beige/20 shadow-sm hover:shadow-md transition-all hover:border-brand-gold/30">
-                        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 text-sm shrink-0 border border-green-100">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <span class="text-sm font-medium text-brand-dark" x-text="feature"></span>
-                    </li>
-                </template>
-            </ul>
-        </div>
-    </div>
-
-    <div x-show="!loading && !error" class="fixed bottom-0 w-full z-40" style="display: none;">
-        <div class="bg-white/90 backdrop-blur-xl border-t border-brand-beige/50 p-6 pt-4 pb-8 rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] animate-fade-in-up" style="animation-delay: 0.3s">
-            <div class="flex gap-4 max-w-md mx-auto">
-                <a href="tel:+919876543210" class="w-16 h-16 rounded-2xl bg-brand-cream/50 flex items-center justify-center text-brand-olive text-xl border border-brand-beige/50 cursor-pointer hover:bg-brand-gold hover:text-white transition-all active:scale-95 shadow-sm hover:shadow-md">
-                    <i class="fa-solid fa-phone"></i>
-                </a>
-                <button id="bookBtn" @click="bookService()" 
-                        :disabled="bookingLoading"
-                        class="flex-1 bg-brand-olive text-white rounded-2xl font-bold text-lg hover:bg-brand-gold transition-all shadow-lg shadow-brand-olive/30 active:scale-95 transform flex items-center justify-center gap-3">
-                    <span x-show="!bookingLoading">Book Service</span>
-                    <i x-show="!bookingLoading" class="fa-solid fa-arrow-right text-sm opacity-70"></i>
+            <div class="flex gap-3">
+                <button @click="showAgreement = false" class="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors">Cancel</button>
+                <button @click="confirmBooking()" 
+                        :disabled="!agreed || bookingLoading"
+                        class="flex-1 py-3 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <span x-show="!bookingLoading">Confirm</span>
                     <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
