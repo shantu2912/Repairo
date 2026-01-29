@@ -210,6 +210,9 @@ class="font-sans antialiased pb-36"
   </div>
 </nav>
 
+</script>
+<button id="enableNotif">Enable Job Notifications</button>
+
 <script>
 function dashboardHandler(){
 return {
@@ -222,50 +225,54 @@ return {
   channel: null,
 incomingJob: null,
 
-  async init(){
-    if ("Notification" in window && Notification.permission === "default") {
-  Notification.requestPermission();
-}
-const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  storageBucket: "fixzen-73d68.firebasestorage.app",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d",
-  measurementId: "G-2F19BYJEXD"
-};
+  // 1. REMOVE the <script type="module"> block entirely.
 
-
-firebase.initializeApp(firebaseConfig);
-
-const messaging = firebase.messaging();
-
-const token = await messaging.getToken({
-  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc"
-});
-
-// 🔥 SAVE TOKEN
-await window.sb
-  .from("technicians")
-  .update({ fcm_token: token })
-  .eq("id", this.tech.id);
-
+// 2. UPDATE your dashboardHandler() init function:
+async init() {
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
-    if(!this.tech){
-      window.location.href = "partnerlogin.html";
-      return;
+    if (!this.tech) {
+        window.location.href = "partnerlogin.html";
+        return;
     }
 
     this.techName = this.tech.name;
-    if ("Notification" in window) {
-    if (Notification.permission !== "granted") {
-      await Notification.requestPermission();
+
+    // INITIALIZE FIREBASE FIRST
+    const firebaseConfig = {
+        apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+        authDomain: "fixzen-73d68.firebaseapp.com",
+        projectId: "fixzen-73d68",
+        messagingSenderId: "816193738840",
+        appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
-  }
+    
+    const messaging = firebase.messaging();
+
+    // HANDLE PERMISSIONS GENTLY
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            const token = await messaging.getToken({
+                vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc"
+            });
+
+            // Save token to Supabase
+            await window.sb
+                .from("technicians")
+                .update({ fcm_token: token })
+                .eq("id", this.tech.id);
+        }
+    } catch (err) {
+        console.warn("Notification setup failed:", err);
+    }
+
     await this.fetchJobs();
     this.subscribeRealtime();
-  },
+},
 
   /* 🔥 FETCH ONLY ASSIGNED JOBS */
   async fetchJobs(){
