@@ -276,20 +276,19 @@ document
         vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
         serviceWorkerRegistration: registration
       });
+// ... after getting the token
+console.log("✅ FCM TOKEN:", token);
 
-      console.log("✅ FCM TOKEN:", token);
+// 1. Define techId FIRST
+const techId = this.tech ? this.tech.id : localStorage.getItem("tech_id");
 
-      // Change this:
- techId = localStorage.getItem("tech_id");
-
-// To this:
-const techId = this.tech.id; 
-
+// 2. Now you can safely check it
 if (!techId) {
-    alert("Error: Technician ID not found.");
+    console.error("❌ No Technician ID found");
     return;
 }
 
+// 3. Perform the update
 await sb
   .from("technicians")
   .update({ fcm_token: token })
