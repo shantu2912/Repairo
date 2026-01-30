@@ -286,27 +286,28 @@ document
       if (permission !== "granted") {
         alert("Notifications denied. Enable them from browser settings.");
         return;
-      }
+      }// ... existing code ...
+const token = await messaging.getToken({
+  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
+  serviceWorkerRegistration: registration
+});
 
-      const token = await messaging.getToken({
-        vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
-        serviceWorkerRegistration: registration
-      });
+console.log("✅ FCM TOKEN:", token);
 
-      console.log("✅ FCM TOKEN:", token);
+// MOVE THIS LINE UP
+const techId = localStorage.getItem("tech_id"); 
 
-    if (!techId) {
-      alert("Technician not identified. Please reload or log in again.");
-      return;
-    }
-
-      const techId = localStorage.getItem("tech_id");
+// NOW THIS CHECK WILL WORK
+if (!techId) {
+  alert("Technician not identified. Please reload or log in again.");
+  return;
+}
 
 await sb
   .from("technicians")
   .update({ fcm_token: token })
   .eq("id", techId);
-
+// ... existing code ...
       alert("Notifications enabled successfully");
 
     } catch (err) {
