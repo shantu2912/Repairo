@@ -279,13 +279,21 @@ document
 
       console.log("✅ FCM TOKEN:", token);
 
-      const techId = localStorage.getItem("tech_id");
+      // Change this:
+ techId = localStorage.getItem("tech_id");
+
+// To this:
+const techId = this.tech.id; 
+
+if (!techId) {
+    alert("Error: Technician ID not found.");
+    return;
+}
 
 await sb
   .from("technicians")
   .update({ fcm_token: token })
   .eq("id", techId);
-
       alert("Notifications enabled successfully");
 
     } catch (err) {
