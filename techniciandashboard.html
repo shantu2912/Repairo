@@ -279,10 +279,12 @@ document
 
       console.log("✅ FCM TOKEN:", token);
 
-      await window.sb
-        .from("technicians")
-        .update({ fcm_token: token })
-        .eq("id", tech.id);
+      const techId = localStorage.getItem("tech_id");
+
+await sb
+  .from("technicians")
+  .update({ fcm_token: token })
+  .eq("id", techId);
 
       alert("Notifications enabled successfully");
 
