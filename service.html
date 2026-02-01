@@ -6,7 +6,6 @@
     <title>Service Booking - FixZen</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -122,6 +121,10 @@
           loading: true, 
           bookingLoading: false,
           
+          // --- NEW: Added variables for Address and Date ---
+          address: '',
+          date: '',
+          
           init() {
               const params = new URLSearchParams(window.location.search);
               let rawId = params.get('id');
@@ -131,6 +134,11 @@
               
               this.service = servicesDB[id] || servicesDB['default'];
               if(!servicesDB[id]) this.service.name = rawId; // Keep name if fallback
+
+              // Set default date to tomorrow
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              this.date = tomorrow.toISOString().split('T')[0];
               
               setTimeout(() => this.loading = false, 400);
           },
@@ -159,6 +167,16 @@
                   alert('Please accept the terms to proceed.');
                   return;
               }
+
+              // --- NEW: Simple Validation ---
+              if (!this.address.trim()) {
+                  alert('Please enter your address.');
+                  return;
+              }
+              if (!this.date) {
+                  alert('Please select a date.');
+                  return;
+              }
               
               this.bookingLoading = true;
               
@@ -172,15 +190,19 @@
                   return;
               }
 
-              // 2. Prepare Data for Technicians (Broadcast Mode)
+              // 2. Prepare Data (UPDATED STRUCTURE)
               const bookingPayload = {
+                  // Standard Fields
                   user_id: user.id,
-                  service_name: this.service.name,
-                  sub_services: this.selectedSubs, // Sends the Array of chosen items
-                  status: 'broadcast', // This triggers the Technician Alert system
                   total_amount: this.total,
-                  location_address: 'Current Location (GPS)', 
-                  scheduled_date: new Date().toISOString()
+                  status: 'pending',
+                  
+                  // NEW FIELDS YOU REQUESTED
+                  location_address: this.address, 
+                  scheduled_date: this.date,
+                  
+                  // Saving the Array of services as JSONB
+                  service_details: this.selectedSubs 
               };
 
               // 3. Insert into Supabase
@@ -190,6 +212,7 @@
               this.showAgreement = false;
 
               if (error) {
+                  console.error(error);
                   alert('Error: ' + error.message);
               } else {
                   // Success Animation
@@ -199,7 +222,7 @@
                   btn.classList.add('bg-brand-green');
                   
                   setTimeout(() => {
-                      alert('Request broadcasted to nearby technicians! Allocation is First-Come-First-Serve.');
+                      alert('Booking Confirmed Successfully!');
                       window.location.href = 'bookings.html';
                   }, 1000);
               }
@@ -298,6 +321,20 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-serif font-bold text-brand-olive">Confirm Booking</h3>
                 <span class="text-sm font-bold text-brand-gold">₹<span x-text="total"></span></span>
+            </div>
+            
+            <div class="space-y-3 mb-4">
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-location-dot text-brand-gold"></i>
+                    <input type="text" x-model="address" placeholder="Enter Full Address" 
+                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                </div>
+                
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-calendar text-brand-gold"></i>
+                    <input type="date" x-model="date" 
+                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                </div>
             </div>
             
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
