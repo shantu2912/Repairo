@@ -91,25 +91,15 @@
               return this.masterList.filter(item => item.n.toLowerCase().includes(this.searchQuery.toLowerCase()));
           },
 
+          // --- USER LOGIC ---
           async checkUser() {
               if (!window.sb) return; 
+              // 1. Get Auth User
               const { data: { user } } = await window.sb.auth.getUser();
               if (user) {
+                  // 2. Get Profile Name
                   const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
-                  this.user = profile || { full_name: 'User', phone: user.email };
-              }
-          },
-
-          // --- SMART NAVIGATION GUARD ---
-          navigate(url) {
-              if (this.user) {
-                  // User is logged in -> Go to page
-                  window.location.href = url;
-              } else {
-                  // User is NOT logged in -> Save destination & Redirect to Login
-                  // Note: Your login page should ideally check 'redirect_to' from storage
-                  sessionStorage.setItem('redirect_to', url);
-                  window.location.href = 'loginuser.html';
+                  this.user = profile || { full_name: 'Valued Customer', phone: user.phone };
               }
           },
 
@@ -117,6 +107,18 @@
               await window.sb.auth.signOut();
               window.location.reload();
           },
+
+          // --- SMART NAVIGATION GUARD ---
+          // This function checks if user is logged in before going to protected pages
+          navigate(url) {
+              if (this.user) {
+                  window.location.href = url;
+              } else {
+                  sessionStorage.setItem('redirect_to', url);
+                  window.location.href = 'loginuser.html';
+              }
+          },
+
           setLocation(city) {
               this.userLocation = city;
               this.locationModalOpen = false;
@@ -171,8 +173,11 @@
                     <h2 class="font-sans font-extrabold text-2xl text-brand-olive tracking-widest">FIXZEN</h2>
                     <button @click="sidebarOpen = false" class="w-8 h-8 rounded-full bg-white border border-brand-beige flex items-center justify-center text-brand-dark hover:rotate-90 transition-transform"><i class="fa-solid fa-xmark"></i></button>
                 </div>
+                
                 <div class="bg-brand-olive rounded-2xl p-4 flex items-center gap-3 shadow-lg relative overflow-hidden group">
-                    <div class="w-12 h-12 rounded-full border-2 border-brand-gold p-0.5 relative z-10"><img :src="user ? 'https://ui-avatars.com/api/?background=A07D54&color=fff&name=' + user.full_name : 'https://i.pravatar.cc/150?img=3'" class="w-full h-full rounded-full object-cover"></div>
+                    <div class="w-12 h-12 rounded-full border-2 border-brand-gold p-0.5 relative z-10">
+                        <img :src="user ? 'https://ui-avatars.com/api/?background=A07D54&color=fff&name=' + user.full_name : 'https://i.pravatar.cc/150?img=3'" class="w-full h-full rounded-full object-cover">
+                    </div>
                     <div class="relative z-10">
                         <p class="text-white font-bold text-sm" x-text="user ? user.full_name : 'Guest User'"></p>
                         <p class="text-brand-beige text-xs" x-text="user ? user.phone : 'Please log in'"></p>
@@ -199,10 +204,12 @@
                 
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
+                
                 <a href="#" @click.prevent="navigate('bookings.html')" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">MY BOOKINGS</span>
                 </a>
+                
                 <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">ADMIN DASHBOARD</span>
