@@ -7,15 +7,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>
-        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-        
-        if (window.supabase) {
-            window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -23,6 +14,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
     <script>
+        // --- LOGIC: INITIALIZE DATABASE ---
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        
+        if (window.supabase) {
+            window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+
+        // --- DESIGN CONFIG (Unchanged) ---
         tailwind.config = {
             theme: {
                 extend: {
@@ -76,7 +76,7 @@
           detectingLocation: false,
           user: null,
 
-          // --- MASTER SERVICE LIST ---
+          // --- LOGIC: MASTER LIST FOR SEARCH ---
           masterList: [
               {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'}, {n:'Roofer', cat:'Home', icon:'fa-house-chimney'}, {n:'Tiler', cat:'Home', icon:'fa-border-all'},
               {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'}, {n:'Gas Stove', cat:'Appliance', icon:'fa-fire'}, {n:'Elevator', cat:'Appliance', icon:'fa-elevator'},
@@ -91,14 +91,15 @@
               return this.masterList.filter(item => item.n.toLowerCase().includes(this.searchQuery.toLowerCase()));
           },
 
-          // --- USER LOGIC ---
+          // --- LOGIC: USER AUTH CHECK ---
           async checkUser() {
               if (!window.sb) return; 
               // 1. Get Auth User
               const { data: { user } } = await window.sb.auth.getUser();
               if (user) {
-                  // 2. Get Profile Name
+                  // 2. Get Profile Details (Name, Role)
                   const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
+                  // Set user data so UI updates
                   this.user = profile || { full_name: 'Valued Customer', phone: user.phone };
               }
           },
@@ -108,12 +109,14 @@
               window.location.reload();
           },
 
-          // --- SMART NAVIGATION GUARD ---
-          // This function checks if user is logged in before going to protected pages
+          // --- LOGIC: PROTECTED NAVIGATION ---
+          // This ensures only logged-in users can book services
           navigate(url) {
               if (this.user) {
+                  // If logged in, go to the page
                   window.location.href = url;
               } else {
+                  // If NOT logged in, save where they wanted to go, then go to login
                   sessionStorage.setItem('redirect_to', url);
                   window.location.href = 'loginuser.html';
               }
@@ -137,11 +140,13 @@
           if (sessionStorage.getItem('introShown')) { loading = false; } 
           else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
           
+          // Continuously check until Supabase connects, then check user status
           let attempts = 0;
           let check = setInterval(() => { 
               if(window.sb || attempts > 20) { clearInterval(check); checkUser(); }
               attempts++;
           }, 100);
+          
           setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
       ">
 
@@ -180,7 +185,7 @@
                     </div>
                     <div class="relative z-10">
                         <p class="text-white font-bold text-sm" x-text="user ? user.full_name : 'Guest User'"></p>
-                        <p class="text-brand-beige text-xs" x-text="user ? user.phone : 'Please log in'"></p>
+                        <p class="text-brand-beige text-xs" x-text="user ? user.phone : 'Please Log In'"></p>
                     </div>
                 </div>
             </div>
@@ -209,7 +214,6 @@
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">MY BOOKINGS</span>
                 </a>
-                
                 <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">ADMIN DASHBOARD</span>
