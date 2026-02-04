@@ -13,8 +13,7 @@
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+
 
 <!-- Icons / Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -209,10 +208,6 @@ class="font-sans antialiased pb-36"
 
   </div>
 </nav>
-<button id="enableNotifications"
-  style="padding:12px 18px;border-radius:10px;background:#16a34a;color:#fff">
-  Enable Job Notifications
-</button>
 
 </script>
 
@@ -241,64 +236,6 @@ async init() {
 
     this.techName = this.tech.name;
 
-    // INITIALIZE FIREBASE FIRST
-    const firebaseConfig = {
-        apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-        authDomain: "fixzen-73d68.firebaseapp.com",
-        projectId: "fixzen-73d68",
-        messagingSenderId: "816193738840",
-        appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-    };
-
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    
-    const messaging = firebase.messaging();
-document
-  .getElementById("enableNotifications")
-  .addEventListener("click", async () => {
-
-    try {
-      const registration = await navigator.serviceWorker.register(
-        "/Repairo/firebase-messaging-sw.js"
-      );
-
-      await navigator.serviceWorker.ready;
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        alert("Notifications denied. Enable them from browser settings.");
-        return;
-      }
-
-      const token = await messaging.getToken({
-        vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
-        serviceWorkerRegistration: registration
-      });
-// ... after getting the token
-console.log("✅ FCM TOKEN:", token);
-
-// 1. Define techId FIRST
-const techId = this.tech ? this.tech.id : localStorage.getItem("tech_id");
-
-// 2. Now you can safely check it
-if (!techId) {
-    console.error("❌ No Technician ID found");
-    return;
-}
-
-// 3. Perform the update
-await sb
-  .from("technicians")
-  .update({ fcm_token: token })
-  .eq("id", techId);
-      alert("Notifications enabled successfully");
-
-    } catch (err) {
-      console.error("❌ Notification setup failed", err);
-    }
-  });
 
 
     await this.fetchJobs();
@@ -453,8 +390,7 @@ subscribeRealtime() {
         console.log("🔔 New eligible job:", job.id);
 
         this.incomingJob = job;
-        this.playAlertSound();
-        this.showBrowserNotification(job);
+       
       }
     )
     .subscribe(status => {
@@ -502,22 +438,6 @@ async rejectIncoming() {
 
   this.incomingJob = null;
 },
-playAlertSound() {
-  const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-  audio.play();
-},
-showBrowserNotification(job) {
-  if (!("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
-
-  new Notification("🔧 New FixZen Job", {
-    body: `${job.category}\n${job.location}`,
-    icon: "https://cdn-icons-png.flaticon.com/512/3050/3050525.png",
-    vibrate: [200, 100, 200]
-  });
-},
-
-
   logout(){
     localStorage.removeItem("active_tech");
     window.location.href = "partnerlogin.html";
