@@ -2,225 +2,293 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Repairo — OTP Auth</title>
+<title>FixZen — Secure Auth</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Tailwind CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-.fade { animation: fadeIn .35s ease-out; }
-@keyframes fadeIn { from {opacity:0} to {opacity:1} }
-@keyframes slowRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .fade { animation: fadeIn .35s ease-out; }
+    @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+    @keyframes slowRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* Loading Spinner */
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #0d9488; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 
-<body class="relative min-h-screen bg-slate-100 dark:bg-slate-900 transition-all duration-300">
+<body class="relative min-h-screen bg-slate-100 dark:bg-slate-900 transition-all duration-300 font-sans">
 
-<!-- Background Blur Logo -->
-<div class="pointer-events-none fixed inset-0 flex justify-center items-center opacity-10">
-  <img src="C:\Users\user\OneDrive\Desktop\Repairo\repairologo.png"
-       class="w-[550px] h-[550px] blur-2xl select-none animate-[slowRotate_45s_linear_infinite]">
+<div class="pointer-events-none fixed inset-0 flex justify-center items-center opacity-5">
+  <img src="https://cdn-icons-png.flaticon.com/512/10309/10309221.png"
+       class="w-[500px] h-[500px] blur-2xl select-none animate-[slowRotate_60s_linear_infinite]">
 </div>
 
-<!-- Main container -->
-<div class="min-h-screen flex flex-col justify-center items-center px-4">
+<div class="min-h-screen flex flex-col justify-center items-center px-4 relative z-10">
 
-  <!-- Logo -->
   <div class="mb-6 text-center">
-    <img src="fixzen.png" class="w-24 h-24 mx-auto">
+    <div class="w-20 h-20 bg-teal-600 rounded-full flex items-center justify-center mx-auto shadow-xl text-white text-3xl mb-2">
+        <i class="fa-solid fa-wrench"></i> 🔧
+    </div>
+    <h1 class="text-3xl font-bold text-teal-700 dark:text-teal-400 tracking-widest uppercase">FIXZEN</h1>
   </div>
 
-  <!-- Card -->
-  <div class="w-full max-w-md bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl fade">
+  <div class="w-full max-w-md bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl fade border border-slate-200 dark:border-slate-700">
 
-    <h2 id="title" class="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-4 text-center">
+    <h2 id="title" class="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-6 text-center">
       Login with OTP
     </h2>
 
-    <!-- Name (Signup + Tech) -->
-    <div id="nameBox" class="hidden">
-      <label class="text-sm text-gray-500 dark:text-gray-300">Full Name</label>
-      <input id="name" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="Your Name">
+    <div id="nameBox" class="hidden animate-fade-in-up">
+      <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Full Name</label>
+      <input id="name" class="w-full p-3 mt-1 mb-4 rounded-xl border bg-gray-50 focus:ring-2 focus:ring-teal-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="Enter your name">
     </div>
 
-    <!-- Technician Extra Fields -->
-    <div id="techFields" class="hidden">
+    <div id="techFields" class="hidden animate-fade-in-up">
+      
+      <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Aadhar Number</label>
+      <input id="aadhar" class="w-full p-3 mt-1 mb-4 rounded-xl border bg-gray-50 focus:ring-2 focus:ring-teal-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="1234 5678 9012">
 
-      <label class="text-sm text-gray-500 dark:text-gray-300">Aadhar Number</label>
-      <input id="aadhar" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="1234 5678 9012">
+      <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Bank Account</label>
+            <input id="bankAcc" class="w-full p-3 mt-1 mb-4 rounded-xl border bg-gray-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="Acc No.">
+          </div>
+          <div>
+            <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">IFSC Code</label>
+            <input id="ifsc" class="w-full p-3 mt-1 mb-4 rounded-xl border bg-gray-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="IFSC">
+          </div>
+      </div>
 
-      <label class="text-sm text-gray-500 dark:text-gray-300">Bank Account Number</label>
-      <input id="bankAcc" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="Account Number">
-
-      <label class="text-sm text-gray-500 dark:text-gray-300">Bank IFSC Code</label>
-      <input id="ifsc" class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="IFSC Code (e.g., HDFC0001234)">
-
-      <!-- Photo Upload -->
-      <label class="text-sm text-gray-500 dark:text-gray-300">Upload Photo</label>
+      <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Profile Photo</label>
       <input id="techPhoto" type="file" accept="image/*"
-             class="w-full p-2 mt-1 mb-3 rounded-lg border dark:bg-slate-700 dark:border-slate-600 cursor-pointer">
-
-      <img id="previewImg" class="hidden w-24 h-24 rounded-full object-cover mt-2 border">
+             class="w-full p-2 mt-1 mb-4 rounded-xl border bg-gray-50 dark:bg-slate-700 dark:border-slate-600 text-sm">
+      <img id="previewImg" class="hidden w-20 h-20 rounded-full object-cover mb-4 border-2 border-teal-500 mx-auto">
     </div>
 
-    <!-- Phone -->
-    <label class="text-sm text-gray-500 dark:text-gray-300">Phone (+91)</label>
-    <input id="phone" class="w-full p-2 mt-1 rounded-lg border dark:bg-slate-700 dark:border-slate-600" placeholder="+91 9876543210">
+    <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Phone Number</label>
+    <div class="relative">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">+91</span>
+        <input id="phone" type="tel" class="w-full p-3 pl-12 mt-1 rounded-xl border bg-gray-50 focus:ring-2 focus:ring-teal-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white font-bold tracking-widest" placeholder="9876543210" maxlength="10">
+    </div>
 
-    <!-- OTP -->
-    <input id="otp" class="w-full p-2 rounded-lg border mt-4 dark:bg-slate-700 dark:border-slate-600" placeholder="Enter 6-digit OTP">
+    <div id="otpSection" class="hidden mt-4 animate-fade-in-up">
+        <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">One Time Password</label>
+        <input id="otp" type="text" maxlength="6" class="w-full p-3 mt-1 rounded-xl border bg-teal-50 border-teal-200 text-center text-xl font-bold tracking-[0.5em] focus:ring-2 focus:ring-teal-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="000000">
+    </div>
 
-    <!-- Buttons -->
-    <button id="sendOtpBtn" class="w-full bg-teal-600 text-white p-2 rounded-lg mt-4">Send OTP</button>
-    <button id="verifyOtpBtn" class="w-full bg-teal-700 text-white p-2 rounded-lg mt-3">Verify OTP</button>
-
-    <!-- Message -->
-    <p id="msg" class="text-center mt-3 text-sm"></p>
-
-    <!-- Toggle -->
-    <p class="text-center text-sm mt-4 text-gray-600 dark:text-gray-300">
-      <span id="toggleText">
-        New user? <b class="text-teal-600 cursor-pointer" onclick="switchToSignup()">Create account</b>
-      </span>
-    </p>
-
-    <!-- Forgot password -->
-    <p class="text-center text-sm mt-3">
-      <b onclick="openForgot()" class="text-blue-600 cursor-pointer">Forgot Password?</b>
-    </p>
-
-    <!-- Technician Signup -->
-    <p class="text-center text-sm mt-4">
-      <b onclick="openTechSignup()" class="text-purple-600 cursor-pointer">Technician Signup</b>
-    </p>
-
-    <!-- Dark mode -->
-    <button onclick="toggleDarkMode()"
-            class="w-full mt-4 border p-2 rounded-lg text-sm dark:text-white">
-      Toggle Dark Mode
+    <button id="sendOtpBtn" class="w-full bg-teal-600 hover:bg-teal-700 transition-colors text-white font-bold p-3.5 rounded-xl mt-6 shadow-lg shadow-teal-500/30">
+        Send OTP
+    </button>
+    
+    <button id="verifyOtpBtn" class="hidden w-full bg-teal-800 hover:bg-teal-900 transition-colors text-white font-bold p-3.5 rounded-xl mt-6 shadow-lg">
+        Verify & Login
     </button>
 
+    <p id="msg" class="text-center mt-4 text-xs font-bold uppercase tracking-widest min-h-[20px]"></p>
+
+    <div class="mt-6 pt-6 border-t border-gray-100 dark:border-slate-700">
+        <p class="text-center text-sm text-gray-600 dark:text-gray-300">
+          <span id="toggleText">
+            New user? <b class="text-teal-600 cursor-pointer hover:underline" onclick="switchToSignup()">Create account</b>
+          </span>
+        </p>
+
+        <p class="text-center text-sm mt-3">
+          <b id="techToggle" onclick="openTechSignup()" class="text-purple-600 cursor-pointer hover:underline">Join as Technician</b>
+        </p>
+    </div>
+
   </div>
+  
+  <p class="text-center text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-8">Secured by FixZen</p>
 </div>
 
-<!-- JS -->
 <script>
-let isSignup=false, isTech=false;
+    // 1. SUPABASE CONFIGURATION
+    const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function switchToSignup(){
-  isSignup=true; isTech=false;
+    // STATE
+    let isSignup = false;
+    let isTech = false;
 
-  document.getElementById("title").innerText="Create your Account";
-  document.getElementById("nameBox").classList.remove("hidden");
-  document.getElementById("techFields").classList.add("hidden");
+    // DOM ELEMENTS
+    const els = {
+        title: document.getElementById("title"),
+        nameBox: document.getElementById("nameBox"),
+        techFields: document.getElementById("techFields"),
+        toggleText: document.getElementById("toggleText"),
+        techToggle: document.getElementById("techToggle"),
+        otpSection: document.getElementById("otpSection"),
+        sendBtn: document.getElementById("sendOtpBtn"),
+        verifyBtn: document.getElementById("verifyOtpBtn"),
+        phone: document.getElementById("phone"),
+        otp: document.getElementById("otp"),
+        msg: document.getElementById("msg"),
+        name: document.getElementById("name")
+    };
 
-  document.getElementById("toggleText").innerHTML =
-    `Already have an account? <b class="text-teal-600 cursor-pointer" onclick="switchToLogin()">Login</b>`;
-}
-
-function switchToLogin(){
-  isSignup=false; isTech=false;
-
-  document.getElementById("title").innerText="Login with OTP";
-  document.getElementById("nameBox").classList.add("hidden");
-  document.getElementById("techFields").classList.add("hidden");
-
-  document.getElementById("toggleText").innerHTML =
-    `New user? <b class="text-teal-600 cursor-pointer" onclick="switchToSignup()">Create account</b>`;
-}
-
-function openTechSignup(){
-  isTech=true; isSignup=false;
-
-  document.getElementById("title").innerText="Technician Signup";
-  document.getElementById("nameBox").classList.remove("hidden");
-  document.getElementById("techFields").classList.remove("hidden");
-
-  document.getElementById("toggleText").innerHTML =
-    `<b class='text-blue-600 cursor-pointer' onclick="switchToLogin()">Back to Login</b>`;
-}
-
-function openForgot(){
-  alert("Forgot password works only for email-based login.");
-}
-
-function toggleDarkMode(){
-  document.documentElement.classList.toggle("dark");
-  localStorage.setItem("theme",
-    document.documentElement.classList.contains("dark") ? "dark" : "light"
-  );
-}
-
-/* Photo Preview */
-const techPhoto=document.getElementById("techPhoto");
-const previewImg=document.getElementById("previewImg");
-
-if(techPhoto){
-  techPhoto.addEventListener("change", e=>{
-    const file=e.target.files[0];
-    if(file){
-      previewImg.src=URL.createObjectURL(file);
-      previewImg.classList.remove("hidden");
+    // --- UI FUNCTIONS ---
+    
+    function showMsg(text, type = 'error') {
+        els.msg.innerText = text;
+        els.msg.className = `text-center mt-4 text-xs font-bold uppercase tracking-widest ${type === 'success' ? 'text-green-500' : 'text-red-500'}`;
     }
-  });
-}
 
-/* OTP System */
-const phoneInput=document.getElementById("phone");
-const otpInput=document.getElementById("otp");
-const msg=document.getElementById("msg");
-
-function show(m,color="red"){ msg.innerText=m; msg.style.color=color; }
-
-document.getElementById("sendOtpBtn").onclick=async()=>{
-  const phone=phoneInput.value.trim();
-  if(!phone.startsWith("+")) return show("Use full number with country code");
-
-  try{
-    const res=await fetch("https://repairo-3.onrender.com/send-otp",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone})
-    });
-
-    const data=await res.json();
-    if(data.success) show("OTP sent!","green");
-    else show("Failed to send OTP");
-  }
-  catch(err){ show("Error: "+err.message); }
-};
-
-document.getElementById("verifyOtpBtn").onclick=async()=>{
-  const phone=phoneInput.value.trim();
-  const otp=otpInput.value.trim();
-
-  try{
-    const res=await fetch("https://repairo-3.onrender.com/verify-otp",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone,otp})
-    });
-
-    const data=await res.json();
-
-    if(data.success){
-    const user = {
-    name: document.getElementById("name").value || "User",
-    phone: phone,
-    isTech: isTech
-  };
-
-  localStorage.setItem("repairo_user", JSON.stringify(user));
-
-      show("OTP verified! Redirecting...","green");
-      setTimeout(()=>{ window.location.href="index.html"; },800);
-    } else {
-      show("Invalid OTP");
+    function setLoading(btn, isLoading) {
+        if(isLoading) {
+            btn.innerHTML = '<span class="loader"></span> Processing...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+        } else {
+            btn.innerHTML = btn.id === 'sendOtpBtn' ? 'Send OTP' : 'Verify & Login';
+            btn.disabled = false;
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
     }
-  }
-  catch(err){ show("Error: "+err.message); }
-};
+
+    function switchToSignup() {
+        isSignup = true; isTech = false;
+        els.title.innerText = "Create Account";
+        els.nameBox.classList.remove("hidden");
+        els.techFields.classList.add("hidden");
+        els.toggleText.innerHTML = `Already have an account? <b class="text-teal-600 cursor-pointer hover:underline" onclick="switchToLogin()">Login</b>`;
+        els.techToggle.classList.remove("hidden");
+    }
+
+    function switchToLogin() {
+        isSignup = false; isTech = false;
+        els.title.innerText = "Login with OTP";
+        els.nameBox.classList.add("hidden");
+        els.techFields.classList.add("hidden");
+        els.toggleText.innerHTML = `New user? <b class="text-teal-600 cursor-pointer hover:underline" onclick="switchToSignup()">Create account</b>`;
+        els.techToggle.classList.remove("hidden");
+    }
+
+    function openTechSignup() {
+        isTech = true; isSignup = true;
+        els.title.innerText = "Technician Registration";
+        els.nameBox.classList.remove("hidden");
+        els.techFields.classList.remove("hidden");
+        els.toggleText.innerHTML = `<b class='text-blue-600 cursor-pointer hover:underline' onclick="switchToLogin()">Back to Login</b>`;
+        els.techToggle.classList.add("hidden");
+    }
+
+    // --- AUTH LOGIC (REAL SUPABASE) ---
+
+    // 1. SEND OTP
+    els.sendBtn.onclick = async () => {
+        const phone = els.phone.value.trim();
+        if(phone.length !== 10) return showMsg("Enter valid 10-digit number");
+        
+        setLoading(els.sendBtn, true);
+        
+        try {
+            // Sign in with OTP
+            const { error } = await supabase.auth.signInWithOtp({
+                phone: '+91' + phone
+            });
+
+            if (error) throw error;
+
+            showMsg("OTP Sent Successfully!", "success");
+            els.otpSection.classList.remove("hidden");
+            els.sendBtn.classList.add("hidden");
+            els.verifyBtn.classList.remove("hidden");
+            
+        } catch (err) {
+            showMsg(err.message);
+        } finally {
+            setLoading(els.sendBtn, false);
+        }
+    };
+
+    // 2. VERIFY OTP & REGISTER
+    els.verifyBtn.onclick = async () => {
+        const phone = els.phone.value.trim();
+        const otp = els.otp.value.trim();
+        
+        if(otp.length !== 6) return showMsg("Enter 6-digit OTP");
+
+        setLoading(els.verifyBtn, true);
+
+        try {
+            // Verify OTP
+            const { data, error } = await supabase.auth.verifyOtp({
+                phone: '+91' + phone,
+                token: otp,
+                type: 'sms'
+            });
+
+            if (error) throw error;
+
+            const user = data.user;
+            
+            // CHECK OR CREATE PROFILE
+            if (isSignup) {
+                const fullName = els.name.value;
+                if(!fullName) throw new Error("Name is required");
+
+                const profileData = {
+                    id: user.id,
+                    phone: '+91' + phone,
+                    full_name: fullName,
+                    role: isTech ? 'technician' : 'customer',
+                    status: isTech ? 'active' : 'active',
+                    // Save extra tech details if needed (in a real app you'd upload the photo too)
+                    details: isTech ? {
+                        aadhar: document.getElementById('aadhar').value,
+                        bank: document.getElementById('bankAcc').value,
+                        ifsc: document.getElementById('ifsc').value
+                    } : null
+                };
+
+                // Upsert Profile
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert(profileData);
+
+                if (profileError) console.error(profileError);
+            }
+
+            // REDIRECT LOGIC
+            showMsg("Success! Redirecting...", "success");
+            
+            // Check where to go
+            const redirectTo = sessionStorage.getItem('redirect_to');
+            sessionStorage.removeItem('redirect_to'); // Clear it
+
+            setTimeout(() => {
+                if (isTech) {
+                    window.location.href = "techniciandashboard.html";
+                } else if (redirectTo) {
+                    window.location.href = redirectTo; // Go back to where they clicked "Book"
+                } else {
+                    window.location.href = "index.html";
+                }
+            }, 1000);
+
+        } catch (err) {
+            showMsg("Invalid Code or Error: " + err.message);
+            setLoading(els.verifyBtn, false);
+        }
+    };
+
+    // Photo Preview Logic (Visual)
+    const techPhoto = document.getElementById("techPhoto");
+    const previewImg = document.getElementById("previewImg");
+    if(techPhoto){
+        techPhoto.addEventListener("change", e => {
+            const file = e.target.files[0];
+            if(file){
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.classList.remove("hidden");
+            }
+        });
+    }
 </script>
 
 </body>
