@@ -482,8 +482,6 @@ async rejectIncoming() {
   </div>
 </div>
 
-
-
 <!-- Your dashboard HTML above -->
 
 <!-- JOB POPUP UI -->
@@ -493,5 +491,53 @@ async rejectIncoming() {
   <button onclick="acceptJob()">Accept</button>
   <button onclick="rejectJob()">Reject</button>
 </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+  authDomain: "fixzen-73d68.firebaseapp.com",
+  projectId: "fixzen-73d68",
+  messagingSenderId: "816193738840",
+  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+
+// Register service worker
+const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
+// Ask permission
+const permission = await Notification.requestPermission();
+if (permission !== "granted") {
+  alert("Notification permission required!");
+  throw new Error("Permission denied");
+}
+
+// Get token
+const token = await getToken(messaging, {
+  vapidKey: " BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
+  serviceWorkerRegistration: registration
+});
+
+console.log("FCM TOKEN:", token);
+
+// SAVE TOKEN TO SUPABASE
+await window.sb.from("technician_devices").upsert({
+  technician_id: JSON.parse(localStorage.getItem("active_tech")).id,
+  fcm_token: token,
+  platform: "web"
+});
+
+// Foreground notifications
+onMessage(messaging, payload => {
+  new Notification(payload.notification.title, {
+    body: payload.notification.body
+  });
+});
+</script>
+
 </body>
 </html>
