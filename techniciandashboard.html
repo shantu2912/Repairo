@@ -438,12 +438,28 @@ async rejectIncoming() {
 
   this.incomingJob = null;
 },
+
   logout(){
     localStorage.removeItem("active_tech");
     window.location.href = "partnerlogin.html";
   }
 }}
 </script>
+<script>
+navigator.serviceWorker.ready.then(reg => {
+  if (!reg.active) {
+    console.error("Service Worker not active");
+    return;
+  }
+
+  reg.active.postMessage({
+    type: "SHOW_NOTIFICATION",
+    title: "Job Assigned",
+    body: "New job has been assigned to you"
+  });
+});
+</script>
+
 <!-- 🔔 JOB ALERT MODAL -->
 <div
   x-show="incomingJob"
