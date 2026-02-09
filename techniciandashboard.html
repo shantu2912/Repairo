@@ -212,84 +212,79 @@ class="font-sans antialiased pb-36"
 </script>
 
 
-<script>
-function dashboardHandler(){
+<script>function dashboardHandler(){
 return {
   tech: null,
   techName: '',
   loading: true,
   jobs: [],
   stats: { activeJobs: 0, earnings: 0 },
-  timer: null,
-  channel: null,
-incomingJob: null,
+  incomingJob: null,
 
-  // 1. REMOVE the <script type="module"> block entirely.
-
-// 2. UPDATE your dashboardHandler() init function:
-async init() {
+  async init() {
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
     if (!this.tech) {
         window.location.href = "partnerlogin.html";
         return;
     }
-
     this.techName = this.tech.name;
-
-
-
     await this.fetchJobs();
     this.subscribeRealtime();
-},
+  },
 
-  /* 🔥 FETCH ONLY ASSIGNED JOBS */
+  // NEW: Helper to call the WhatsApp Edge Function
+  async sendWhatsAppNotification(phoneNumber, message) {
+    try {
+      await window.sb.functions.invoke('whatsapp-notify', {
+        body: { to: phoneNumber, message: message }
+      });
+    } catch (err) {
+      console.error("WhatsApp trigger failed:", err);
+    }
+  },
+
   async fetchJobs(){
     this.loading = true;
-const { data, error } = await window.sb
-  .from("jobs")
-  .select("*")
-  .or(
-    `and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`
-  )
-  .not("rejected_by", "cs", `{${this.tech.id}}`)
-  .order("created_at", { ascending: false });
-
-
-
-    if(error){
-      console.error(error);
-      this.loading = false;
-      return;
-    }
-
-    this.jobs = data;
-    this.jobs = data.map(j => {
-  if (j.status === "assigned" && j.assigned_at) {
-    const remaining =
-      300 - Math.floor(
-        (Date.now() - new Date(j.assigned_at)) / 1000
-      );
-    j.slaRemaining = remaining > 0 ? `${remaining}s` : "Expired";
-  }
-  return j;
-});
-
-    this.stats.activeJobs = data.length;
-
-    // Earnings (only this tech)
-    const { data: completed } = await window.sb
+    const { data, error } = await window.sb
       .from("jobs")
-      .select("technician_fee")
-      .eq("tech_id", this.tech.id)
-      .eq("status", "completed");
+      .select("*")
+      .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
+      .not("rejected_by", "cs", `{${this.tech.id}}`)
+      .order("created_at", { ascending: false });
 
-    this.stats.earnings = completed
-      ? completed.reduce((s,j)=>s+(j.technician_fee||0),0)
-      : 0;
-
+    if(!error) {
+      this.jobs = data;
+      this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
+    }
     this.loading = false;
   },
 
+  subscribeRealtime() {
+    window.sb
+      .channel(`public-jobs`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "jobs" }, 
+      async (payload) => {
+        // ... inside subscribeRealtime() payload => {
+const job = payload.new;
+
+if (
+  job.status !== "pending" ||
+  job.tech_id !== null ||
+  job.rejected_by?.includes(this.tech.id)
+) return;
+
+// TRIGGER WHATSAPP NOTIFICATION
+if (this.tech.phone) {
+  const whatsappMsg = `FixZen Pro: New ${job.category} job available in ${job.location}! Log in to accept.`;
+  this.sendWhatsAppNotification(this.tech.phone, whatsappMsg);
+}
+
+this.fetchJobs();
+this.incomingJob = job;
+
+      })
+      .subscribe();
+  },
   /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
   // 1. Attempt the update without forcing a single-row return
@@ -364,40 +359,6 @@ async completeJob(job) {
     return BASE[job.category] ?? 400;
   },
 
-subscribeRealtime() {
-  if (this.channel) return;
-
-  this.channel = window.sb
-    .channel(`tech-${this.tech.id}-jobs`)
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "jobs"
-      },
-      payload => {
-        const job = payload.new;
-
-        // STRICT FILTER (this is critical)
-        if (
-          job.status !== "pending" ||
-          job.tech_id !== null ||
-          job.rejected_by?.includes(this.tech.id)
-        ) return;
-         this.showBrowserNotification(payload.new); 
-         this.fetchJobs();
-        console.log("🔔 New eligible job:", job.id);
-
-        this.incomingJob = job;
-       
-      }
-    )
-    .subscribe(status => {
-      console.log("📡 Realtime:", status);
-    });
-},
-
 async acceptIncoming() {
   const job = this.incomingJob;
   if (!job) return;
@@ -445,20 +406,7 @@ async rejectIncoming() {
   }
 }}
 </script>
-<script>
-navigator.serviceWorker.ready.then(reg => {
-  if (!reg.active) {
-    console.error("Service Worker not active");
-    return;
-  }
 
-  reg.active.postMessage({
-    type: "SHOW_NOTIFICATION",
-    title: "Job Assigned",
-    body: "New job has been assigned to you"
-  });
-});
-</script>
 
 <!-- 🔔 JOB ALERT MODAL -->
 <div
@@ -506,50 +454,7 @@ navigator.serviceWorker.ready.then(reg => {
   <p id="jobInfo"></p>
   <button onclick="acceptJob()">Accept</button>
   <button onclick="rejectJob()">Reject</button>
-</div><script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
-
-const firebaseConfig = {
-   apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  storageBucket: "fixzen-73d68.firebasestorage.app",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d",
-  measurementId: "G-2F19BYJEXD"
-};
-
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
-
-async function initNotifications() {
-  const permission = await Notification.requestPermission();
-  console.log("Notification permission:", permission);
-
-  if (permission !== "granted") {
-    console.warn("Notifications NOT allowed");
-    return;
-  }
-
-  const registration = await navigator.serviceWorker.register(
-    "/Repairo/firebase-messaging-sw.js"
-  );
-
-  const token = await getToken(messaging, {
-    vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
-    serviceWorkerRegistration: registration
-  });
-
-  console.log("FCM TOKEN:", token);
-
-  // TODO: save token to Supabase here
-}
-
-// 🚨 THIS LINE IS CRITICAL
-initNotifications();
-</script>
-
+</div>
 
 </body>
 </html>
