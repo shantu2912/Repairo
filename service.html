@@ -163,70 +163,62 @@
           },
 
           async confirmBooking() {
-              if (!this.agreed) {
-                  alert('Please accept the terms to proceed.');
-                  return;
-              }
+    if (!this.user) {
+        alert('Please login to book a service');
+        window.location.href = 'loginuser.html';
+        return;
+    }
 
-              // --- NEW: Simple Validation ---
-              if (!this.address.trim()) {
-                  alert('Please enter your address.');
-                  return;
-              }
-              if (!this.date) {
-                  alert('Please select a date.');
-                  return;
-              }
-              
-              this.bookingLoading = true;
-              
-              if (!window.sb) { alert('System Offline'); return; }
+    this.bookingLoading = true;
 
-              // 1. Get User
-              const { data: { user } } = await window.sb.auth.getUser();
-              if (!user) {
-                  alert('Please Log In to book!');
-                  window.location.href = 'loginuser.html';
-                  return;
-              }
+    try {
+        // 1. Prepare data for the 'bookings' table
+        const bookingData = {
+            user_id: this.user.id,
+            service_id: this.serviceId,
+            address: this.address,
+            booking_date: this.bookingDate,
+            booking_time: this.bookingTime,
+            status: 'pending'
+        };
 
-              // 2. Prepare Data (UPDATED STRUCTURE)
-              const bookingPayload = {
-                  // Standard Fields
-                  user_id: user.id,
-                  total_amount: this.total,
-                  status: 'pending',
-                  
-                  // NEW FIELDS YOU REQUESTED
-                  location_address: this.address, 
-                  scheduled_date: this.date,
-                  
-                  // Saving the Array of services as JSONB
-                  service_details: this.selectedSubs 
-              };
+        // 2. Prepare data for the 'jobs' table based on your schema
+        const jobData = {
+            category: this.serviceId, // e.g., 'Carpenter' or 'AC Tech'
+            device: 'General',        // Placeholder; you can add a field to the UI for this
+            issue: this.address,      // Maps the user's notes/address to the issue
+            customer_name: this.user.full_name || 'Guest',
+            location: this.userLocation, // From the global Alpine state
+            phone: this.user.phone || 'N/A',
+            status: 'pending',
+            urgent: false,
+            assignment_round: 0
+        };
 
-              // 3. Insert into Supabase
-              const { error } = await window.sb.from('bookings').insert([bookingPayload]);
+        // 3. Insert into both tables simultaneously
+        const [bookingResponse, jobResponse] = await Promise.all([
+            window.sb.from('bookings').insert([bookingData]),
+            window.sb.from('jobs').insert([jobData])
+        ]);
 
-              this.bookingLoading = false;
-              this.showAgreement = false;
+        // 4. Check for errors in either insert
+        if (bookingResponse.error) throw bookingResponse.error;
+        if (jobResponse.error) throw jobResponse.error;
 
-              if (error) {
-                  console.error(error);
-                  alert('Error: ' + error.message);
-              } else {
-                  // Success Animation
-                  let btn = document.getElementById('mainBookBtn');
-                  btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.remove('bg-brand-olive', 'grayscale');
-                  btn.classList.add('bg-brand-green');
-                  
-                  setTimeout(() => {
-                      alert('Booking Confirmed Successfully!');
-                      window.location.href = 'bookings.html';
-                  }, 1000);
-              }
-          }
+        // Success UI
+        this.bookingSuccess = true;
+        setTimeout(() => {
+            window.location.href = 'bookings.html';
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error during booking:', error.message);
+        alert('Booking failed: ' + error.message);
+    } finally {
+        this.bookingLoading = false;
+    }
+}
+          
       }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
