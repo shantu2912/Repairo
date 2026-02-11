@@ -254,9 +254,13 @@ return {
 
     await Notification.requestPermission();
 
-    const token = await messaging.getToken({
-      vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc"
-    });
+   
+const registration = await navigator.serviceWorker.register('/Repairo/firebase-messaging-sw.js');
+
+const token = await messaging.getToken({
+  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
+  serviceWorkerRegistration: registration
+});
 
     if (!token) return;
 
