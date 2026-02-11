@@ -243,28 +243,54 @@ async initNotifications() {
     appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
   };
   
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const messaging = firebase.messaging();
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
 
+async function initNotifications() {
   try {
     const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const token = await messaging.getToken({
-  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc", // IMPORTANT
-  serviceWorkerRegistration: await navigator.serviceWorker.register('./firebase-messaging-sw.js')
-});
 
-      if (token) {
-        // This saves the token so your Edge Function can find it
-        await window.sb
-          .from("technicians") 
-          .update({ fcm_token: token })
-          .eq("id", this.tech.id);
-      }
+    if (permission !== "granted") {
+      alert("Notifications not allowed");
+      return;
     }
+
+    const token = await messaging.getToken({
+      vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc"
+    });
+
+    console.log("FCM TOKEN:", token);
+
+    // 🔥 SAVE TOKEN TO SUPABASE
+    const { data: tech } = await supabase
+      .from("technicians")
+      .select("id")
+      .eq("phone", localStorage.getItem("techPhone"))
+      .single();
+
+    if (!tech) {
+      alert("Technician not found");
+      return;
+    }
+
+    await supabase
+      .from("technicians")
+      .update({ fcm_token: token })
+      .eq("id", tech.id);
+
+    console.log("Token saved successfully");
+
   } catch (err) {
-    console.error("Notification setup error:", err);
+    console.error("Notification setup failed", err);
   }
+}
+
+initNotifications();
+
+// FOREGROUND MESSAGE
+messaging.onMessage((payload) => {
+  console.log("Message received:", payload);
+});
 },
 
   async fetchJobs(){
