@@ -251,7 +251,7 @@ async initNotifications() {
     if (permission === 'granted') {
       const token = await messaging.getToken({
   vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc", // IMPORTANT
-  serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+  serviceWorkerRegistration: await navigator.serviceWorker.register('./firebase-messaging-sw.js')
 });
 
       if (token) {
