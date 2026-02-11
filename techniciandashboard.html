@@ -13,7 +13,8 @@
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
 <!-- Icons / Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -228,20 +229,43 @@ return {
         return;
     }
     this.techName = this.tech.name;
+    // --- ADD THIS LINE HERE ---
+    await this.initNotifications();
     await this.fetchJobs();
     this.subscribeRealtime();
   },
+async initNotifications() {
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+    authDomain: "fixzen-73d68.firebaseapp.com",
+    projectId: "fixzen-73d68",
+    messagingSenderId: "816193738840",
+    appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+  };
+  
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const messaging = firebase.messaging();
 
-  // NEW: Helper to call the WhatsApp Edge Function
-  async sendWhatsAppNotification(phoneNumber, message) {
-    try {
-      await window.sb.functions.invoke('whatsapp-notify', {
-        body: { to: phoneNumber, message: message }
-      });
-    } catch (err) {
-      console.error("WhatsApp trigger failed:", err);
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await messaging.getToken({
+  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc", // IMPORTANT
+  serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+});
+
+      if (token) {
+        // This saves the token so your Edge Function can find it
+        await window.sb
+          .from("technicians") 
+          .update({ fcm_token: token })
+          .eq("id", this.tech.id);
+      }
     }
-  },
+  } catch (err) {
+    console.error("Notification setup error:", err);
+  }
+},
 
   async fetchJobs(){
     this.loading = true;
