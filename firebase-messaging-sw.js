@@ -1,5 +1,8 @@
+// Give the service worker access to Firebase Messaging.
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-
+// Initialize the Firebase app in the service worker
 firebase.initializeApp({
   apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
   authDomain: "fixzen-73d68.firebaseapp.com",
