@@ -247,35 +247,19 @@ return {
     await this.fetchJobs();
     this.subscribeRealtime();
   },
+// Inside dashboardHandler() init
+async setupNotifications() {
+  const registration = await navigator.serviceWorker.register('/Repairo/firebase-messaging-sw.js'); // Simplified path
+  
+  const token = await messaging.getToken({
+    vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc", // Get from Firebase Settings > Cloud Messaging > Web Push
+    serviceWorkerRegistration: registration
+  });
 
-  async setupNotifications() {
-
-  try {
-
-    await Notification.requestPermission();
-
-   
-const registration = await navigator.serviceWorker.register('/Repairo/firebase-messaging-sw.js');
-
-const token = await messaging.getToken({
-  vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc",
-  serviceWorkerRegistration: registration
-});
-
-    if (!token) return;
-
-    // Save token in DB
-    await window.sb
-      .from("technicians")
-      .update({ fcm_token: token })
-      .eq("id", this.tech.id);
-
-    console.log("FCM Token saved");
-
-  } catch (err) {
-    console.error("Notification setup failed", err);
+  if (token) {
+    await window.sb.from("technicians").update({ fcm_token: token }).eq("id", this.tech.id);
+    console.log("Token Updated:", token);
   }
-
 },
 
   async fetchJobs(){
