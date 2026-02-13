@@ -246,6 +246,12 @@ return {
 
     await this.fetchJobs();
     this.subscribeRealtime();
+
+    // Add this inside your init() or setupNotifications()
+messaging.onMessage((payload) => {
+  console.log('Message received. ', payload);
+  alert(`New Job: ${payload.notification.title}\n${payload.notification.body}`);
+});
   },
 // Inside dashboardHandler() init
 async setupNotifications() {
