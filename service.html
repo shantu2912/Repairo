@@ -161,65 +161,79 @@
               if (this.selectedSubs.length === 0) return; // Prevent empty booking
               this.showAgreement = true;
           },
+async confirmBooking() {
+    if (!this.agreed) {
+        alert('Please accept the terms to proceed.');
+        return;
+    }
 
-          async confirmBooking() {
-    // Safety check to ensure we have user data
-    if (!this.user) {
+    if (!this.address.trim()) {
+        alert('Please enter your address.');
+        return;
+    }
+    
+    this.bookingLoading = true;
+    
+    try {
+        if (!window.sb) throw new Error('System Offline');
+
+        // 1. Get Logged-in User
         const { data: { user } } = await window.sb.auth.getUser();
         if (!user) {
-            alert('Please login to book a service');
+            alert('Please Log In to book!');
             window.location.href = 'loginuser.html';
             return;
         }
-        this.user = user;
-    }
 
-    this.bookingLoading = true;
+        // 2. Insert into 'bookings' table
+        const bookingPayload = {
+            user_id: user.id,
+            total_amount: this.total,
+            status: 'pending',
+            location_address: this.address, 
+            scheduled_date: this.date,
+            service_details: this.selectedSubs 
+        };
 
-    try {
-        // 1. Insert into 'bookings' table
-        const { data: booking, error: bError } = await window.sb
-            .from('bookings')
-            .insert([{
-                user_id: this.user.id,
-                service_id: this.serviceId,
-                address: this.address,
-                booking_date: this.bookingDate,
-                booking_time: this.bookingTime,
-                status: 'pending'
-            }]);
-
+        const { error: bError } = await window.sb.from('bookings').insert([bookingPayload]);
         if (bError) throw bError;
 
-        // 2. Insert the SAME data into 'jobs' table for technicians
-        const { error: jError } = await window.sb
-            .from('jobs')
-            .insert([{
-                category: this.serviceId, // Maps your service (e.g., 'Carpenter')
-                device: 'General',        // Required field in your schema
-                issue: this.address,      // Maps your notes/address to 'issue'
-                customer_name: this.user.user_metadata?.full_name || 'Valued Customer',
-                location: this.userLocation || 'Not Specified',
-                phone: this.user.user_metadata?.phone || '0000000000', // Required field
-                status: 'pending',
-                urgent: false
-            }]);
+        // 3. Insert into 'jobs' table using your specific field names
+        const jobPayload = {
+            // tech_id remains null initially as per your schema (DEFAULT NULL)
+            category: this.service?.name || 'General',
+            device: this.selectedSubs[0]?.n || 'General', // Using first service name as device
+            issue: this.address,                          // Mapping address/notes to issue
+            customer_name: user.user_metadata?.full_name || 'Valued Customer',
+            location: this.address,
+            phone: user.user_metadata?.phone || '0000000000',
+            status: 'pending',                            // Matches your CHECK constraint
+            urgent: false,                                // Default boolean
+            assignment_round: 0,
+            technician_fee: this.total * 0.7              // Optional: calculate tech share
+        };
 
+        const { error: jError } = await window.sb.from('jobs').insert([jobPayload]);
         if (jError) throw jError;
 
-        this.bookingSuccess = true;
+        // 4. Success UI Handling
+        this.showAgreement = false;
+        let btn = document.getElementById('mainBookBtn');
+        btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Request Sent!';
+        btn.className = 'w-full rounded-2xl font-bold text-lg py-4 flex items-center justify-center gap-2 bg-brand-green text-white shadow-lg';
+        
         setTimeout(() => {
+            alert('Booking confirmed and job created successfully!');
             window.location.href = 'bookings.html';
-        }, 2000);
+        }, 1000);
 
     } catch (error) {
-        console.error('Error:', error.message);
+        console.error('Database Error:', error.message);
         alert('Booking failed: ' + error.message);
     } finally {
         this.bookingLoading = false;
     }
 }
-          
       }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
