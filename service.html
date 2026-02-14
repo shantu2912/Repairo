@@ -25,7 +25,7 @@
             }
         }
 
-        // --- 3. MASTER SERVICE DATABASE (With "Visit Charge" as Item 1) ---
+        // --- MASTER SERVICE DATABASE ---
         const servicesDB = {
             "electrician": { 
                 name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
@@ -121,11 +121,12 @@
           loading: true, 
           bookingLoading: false,
           
-          // --- NEW: Added variables for Address and Date ---
+          // --- USER DATA ---
+          user: null,
           address: '',
           date: '',
           
-          init() {
+          async init() {
               const params = new URLSearchParams(window.location.search);
               let rawId = params.get('id');
               if (!rawId) { window.location.href = 'index.html'; return; }
@@ -140,6 +141,18 @@
               tomorrow.setDate(tomorrow.getDate() + 1);
               this.date = tomorrow.toISOString().split('T')[0];
               
+              // --- AUTH CHECK ---
+              if (window.sb) {
+                  const { data: { user } } = await window.sb.auth.getUser();
+                  if (user) {
+                      // Fetch Profile to pre-fill address
+                      const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
+                      this.user = { ...user, ...profile };
+                      // Pre-fill address if available
+                      if(this.user.service_area) this.address = this.user.service_area;
+                  }
+              }
+
               setTimeout(() => this.loading = false, 400);
           },
 
@@ -152,79 +165,90 @@
               }
           },
 
-          // LOGIC: Start at 0. Sum of selected items.
           get total() {
               return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
           },
 
+          // --- LOGIC: LOGIN GUARD ---
           openAgreement() {
-              if (this.selectedSubs.length === 0) return; // Prevent empty booking
-              this.showAgreement = true;
-          },
-
-          async confirmBooking() {
-              if (!this.agreed) {
-                  alert('Please accept the terms to proceed.');
-                  return;
-              }
-
-              // --- NEW: Simple Validation ---
-              if (!this.address.trim()) {
-                  alert('Please enter your address.');
-                  return;
-              }
-              if (!this.date) {
-                  alert('Please select a date.');
-                  return;
-              }
+              if (this.selectedSubs.length === 0) return; 
               
-              this.bookingLoading = true;
-              
-              if (!window.sb) { alert('System Offline'); return; }
-
-              // 1. Get User
-              const { data: { user } } = await window.sb.auth.getUser();
-              if (!user) {
-                  alert('Please Log In to book!');
+              if (!this.user) {
+                  // User not logged in -> Redirect to Login
+                  alert('Please Login to Book a Service');
+                  sessionStorage.setItem('redirect_to', window.location.href);
                   window.location.href = 'loginuser.html';
                   return;
               }
+              
+              this.showAgreement = true;
+          },
 
-              // 2. Prepare Data (UPDATED STRUCTURE)
-              const bookingPayload = {
-                  // Standard Fields
-                  user_id: user.id,
-                  total_amount: this.total,
-                  status: 'pending',
-                  
-                  // NEW FIELDS YOU REQUESTED
-                  location_address: this.address, 
-                  scheduled_date: this.date,
-                  
-                  // Saving the Array of services as JSONB
-                  service_details: this.selectedSubs 
-              };
+          // --- LOGIC: DOUBLE DATABASE INSERT ---
+          async confirmBooking() {
+              if (!this.agreed) { alert('Please accept the terms.'); return; }
+              if (!this.address.trim()) { alert('Please enter your address.'); return; }
+              if (!this.date) { alert('Please select a date.'); return; }
+              
+              this.bookingLoading = true;
+              
+              try {
+                  // 1. Insert into BOOKINGS table (Customer Record)
+                  const { data: bookingData, error: bookingError } = await window.sb
+                      .from('bookings')
+                      .insert([{
+                          user_id: this.user.id,
+                          service_name: this.service.name,
+                          variant_name: this.selectedSubs.map(s => s.n).join(', '), // List of sub-services
+                          total_amount: this.total,
+                          price: this.total, // Keeping consistent with your schema
+                          status: 'pending',
+                          location_address: this.address, 
+                          address: this.address, // Double save for safety
+                          scheduled_date: this.date,
+                          date: this.date,
+                          phone: this.user.phone,
+                          service_details: this.selectedSubs // Full JSON details
+                      }])
+                      .select()
+                      .single();
 
-              // 3. Insert into Supabase
-              const { error } = await window.sb.from('bookings').insert([bookingPayload]);
+                  if (bookingError) throw bookingError;
 
-              this.bookingLoading = false;
-              this.showAgreement = false;
+                  // 2. Insert into JOBS table (Technician Record)
+                  // This links to the booking we just created
+                  const { error: jobError } = await window.sb
+                      .from('jobs')
+                      .insert([{
+                          booking_id: bookingData.id,
+                          customer_name: this.user.full_name || 'Valued Customer',
+                          category: this.service.name,
+                          issue: 'New Service Request',
+                          location: this.address,
+                          phone: this.user.phone,
+                          status: 'pending',
+                          urgent: false,
+                          tech_id: null // Unassigned initially
+                      }]);
 
-              if (error) {
-                  console.error(error);
-                  alert('Error: ' + error.message);
-              } else {
-                  // Success Animation
+                  if (jobError) throw jobError;
+
+                  // Success
+                  this.showAgreement = false;
                   let btn = document.getElementById('mainBookBtn');
                   btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.remove('bg-brand-olive', 'grayscale');
-                  btn.classList.add('bg-brand-green');
+                  btn.classList.replace('bg-brand-olive', 'bg-brand-green');
                   
                   setTimeout(() => {
                       alert('Booking Confirmed Successfully!');
                       window.location.href = 'bookings.html';
                   }, 1000);
+
+              } catch (error) {
+                  console.error(error);
+                  alert('Error: ' + error.message);
+              } finally {
+                  this.bookingLoading = false;
               }
           }
       }">
