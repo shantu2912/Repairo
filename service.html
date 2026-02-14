@@ -204,7 +204,22 @@
                   // Saving the Array of services as JSONB
                   service_details: this.selectedSubs 
               };
+              
+        // --- NEW: ADDING INSERT TO JOBS TABLE ---
+        const jobPayload = {
+            category: this.service?.name || 'General Service',
+            device: this.selectedSubs.length > 0 ? this.selectedSubs[0].n : 'General',
+            issue: this.address, // Mapping user notes/address to issue
+            customer_name: user.user_metadata?.full_name || 'Customer',
+            location: this.address,
+            phone: user.user_metadata?.phone || '0000000000', // Required field
+            status: 'pending',
+            urgent: false,
+            assignment_round: 0
+        };
 
+        const { error: jobError } = await window.sb.from('jobs').insert([jobPayload]);
+        if (jobError) throw jobError;
               // 3. Insert into Supabase
               const { error } = await window.sb.from('bookings').insert([bookingPayload]);
 
