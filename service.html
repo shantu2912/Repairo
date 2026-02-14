@@ -25,7 +25,7 @@
             }
         }
 
-        // --- MASTER SERVICE DATABASE ---
+        // --- 3. MASTER SERVICE DATABASE (With "Visit Charge" as Item 1) ---
         const servicesDB = {
             "electrician": { 
                 name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
@@ -121,7 +121,7 @@
           loading: true, 
           bookingLoading: false,
           
-          // --- USER DATA ---
+          // --- NEW: Added variables for Address and Date ---
           user: null,
           address: '',
           date: '',
@@ -141,7 +141,7 @@
               tomorrow.setDate(tomorrow.getDate() + 1);
               this.date = tomorrow.toISOString().split('T')[0];
               
-              // --- AUTH CHECK ---
+              // --- LOGIC: AUTH CHECK & PROFILE FETCH ---
               if (window.sb) {
                   const { data: { user } } = await window.sb.auth.getUser();
                   if (user) {
@@ -165,17 +165,17 @@
               }
           },
 
+          // LOGIC: Start at 0. Sum of selected items.
           get total() {
               return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
           },
 
-          // --- LOGIC: LOGIN GUARD ---
+          // --- LOGIC: LOGIN CHECKER ---
           openAgreement() {
-              if (this.selectedSubs.length === 0) return; 
+              if (this.selectedSubs.length === 0) return; // Prevent empty booking
               
               if (!this.user) {
-                  // User not logged in -> Redirect to Login
-                  alert('Please Login to Book a Service');
+                  // LOGIC: Save current page URL and Redirect to Login
                   sessionStorage.setItem('redirect_to', window.location.href);
                   window.location.href = 'loginuser.html';
                   return;
@@ -184,60 +184,82 @@
               this.showAgreement = true;
           },
 
-          // --- LOGIC: DOUBLE DATABASE INSERT ---
           async confirmBooking() {
-              if (!this.agreed) { alert('Please accept the terms.'); return; }
-              if (!this.address.trim()) { alert('Please enter your address.'); return; }
-              if (!this.date) { alert('Please select a date.'); return; }
+              if (!this.agreed) {
+                  alert('Please accept the terms to proceed.');
+                  return;
+              }
+
+              // --- NEW: Simple Validation ---
+              if (!this.address.trim()) {
+                  alert('Please enter your address.');
+                  return;
+              }
+              if (!this.date) {
+                  alert('Please select a date.');
+                  return;
+              }
               
               this.bookingLoading = true;
               
+              if (!window.sb) { alert('System Offline'); return; }
+
+              // Double check user just in case
+              if (!this.user) {
+                  alert('Please Log In to book!');
+                  window.location.href = 'loginuser.html';
+                  return;
+              }
+
               try {
-                  // 1. Insert into BOOKINGS table (Customer Record)
+                  // --- LOGIC: 1. INSERT INTO BOOKINGS TABLE ---
                   const { data: bookingData, error: bookingError } = await window.sb
                       .from('bookings')
                       .insert([{
                           user_id: this.user.id,
                           service_name: this.service.name,
-                          variant_name: this.selectedSubs.map(s => s.n).join(', '), // List of sub-services
+                          variant_name: this.selectedSubs.map(s => s.n).join(', '),
                           total_amount: this.total,
-                          price: this.total, // Keeping consistent with your schema
+                          price: this.total, // Ensure price column is filled
                           status: 'pending',
                           location_address: this.address, 
-                          address: this.address, // Double save for safety
+                          address: this.address,
                           scheduled_date: this.date,
                           date: this.date,
                           phone: this.user.phone,
-                          service_details: this.selectedSubs // Full JSON details
+                          service_details: this.selectedSubs // Full details
                       }])
                       .select()
                       .single();
 
                   if (bookingError) throw bookingError;
 
-                  // 2. Insert into JOBS table (Technician Record)
-                  // This links to the booking we just created
+                  // --- LOGIC: 2. INSERT INTO JOBS TABLE ---
+                  // This is crucial for the Technician App to see the request
                   const { error: jobError } = await window.sb
                       .from('jobs')
                       .insert([{
-                          booking_id: bookingData.id,
+                          booking_id: bookingData.id, 
                           customer_name: this.user.full_name || 'Valued Customer',
                           category: this.service.name,
-                          issue: 'New Service Request',
+                          issue: 'New Booking Request',
                           location: this.address,
                           phone: this.user.phone,
                           status: 'pending',
                           urgent: false,
-                          tech_id: null // Unassigned initially
+                          tech_id: null // No technician assigned yet
                       }]);
 
                   if (jobError) throw jobError;
 
-                  // Success
+                  // Success Actions
+                  this.bookingLoading = false;
                   this.showAgreement = false;
+
                   let btn = document.getElementById('mainBookBtn');
                   btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.replace('bg-brand-olive', 'bg-brand-green');
+                  btn.classList.remove('bg-brand-olive', 'grayscale');
+                  btn.classList.add('bg-brand-green');
                   
                   setTimeout(() => {
                       alert('Booking Confirmed Successfully!');
@@ -245,10 +267,9 @@
                   }, 1000);
 
               } catch (error) {
+                  this.bookingLoading = false;
                   console.error(error);
                   alert('Error: ' + error.message);
-              } finally {
-                  this.bookingLoading = false;
               }
           }
       }">
