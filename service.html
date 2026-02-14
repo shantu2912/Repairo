@@ -161,87 +161,65 @@
               if (this.selectedSubs.length === 0) return; // Prevent empty booking
               this.showAgreement = true;
           },
+async confirmBooking() {
+    if (!this.agreed) {
+        alert('Please accept the terms to proceed.');
+        return;
+    }
+    if (!this.address.trim()) {
+        alert('Please enter your address.');
+        return;
+    }
+    
+    this.bookingLoading = true;
+    
+    try {
+        const { data: { user } } = await window.sb.auth.getUser();
+        if (!user) {
+            alert('Please Log In!');
+            window.location.href = 'loginuser.html';
+            return;
+        }
 
-          async confirmBooking() {
-              if (!this.agreed) {
-                  alert('Please accept the terms to proceed.');
-                  return;
-              }
+        // --- YOUR ORIGINAL BOOKING INSERT (UNCHANGED) ---
+        const bookingPayload = {
+            user_id: user.id,
+            total_amount: this.total,
+            status: 'pending',
+            location_address: this.address, 
+            scheduled_date: this.date,
+            service_details: this.selectedSubs 
+        };
+        const { error: bError } = await window.sb.from('bookings').insert([bookingPayload]);
+        if (bError) throw bError;
 
-              // --- NEW: Simple Validation ---
-              if (!this.address.trim()) {
-                  alert('Please enter your address.');
-                  return;
-              }
-              if (!this.date) {
-                  alert('Please select a date.');
-                  return;
-              }
-              
-              this.bookingLoading = true;
-              
-              if (!window.sb) { alert('System Offline'); return; }
-
-              // 1. Get User
-              const { data: { user } } = await window.sb.auth.getUser();
-              if (!user) {
-                  alert('Please Log In to book!');
-                  window.location.href = 'loginuser.html';
-                  return;
-              }
-
-              // 2. Prepare Data (UPDATED STRUCTURE)
-              const bookingPayload = {
-                  // Standard Fields
-                  user_id: user.id,
-                  total_amount: this.total,
-                  status: 'pending',
-                  
-                  // NEW FIELDS YOU REQUESTED
-                  location_address: this.address, 
-                  scheduled_date: this.date,
-                  
-                  // Saving the Array of services as JSONB
-                  service_details: this.selectedSubs 
-              };
-              
-        // --- NEW: ADDING INSERT TO JOBS TABLE ---
+        // --- NEW JOBS INSERT (MAPPED TO YOUR TABLE FIELDS) ---
         const jobPayload = {
-            category: this.service?.name || 'General Service',
-            device: this.selectedSubs.length > 0 ? this.selectedSubs[0].n : 'General',
-            issue: this.address, // Mapping user notes/address to issue
+            category: this.service?.name || 'General',
+            device: this.selectedSubs[0]?.n || 'General',
+            issue: this.address, 
             customer_name: user.user_metadata?.full_name || 'Customer',
             location: this.address,
-            phone: user.user_metadata?.phone || '0000000000', // Required field
+            phone: user.user_metadata?.phone || '0000000000',
             status: 'pending',
             urgent: false,
             assignment_round: 0
         };
+        const { error: jError } = await window.sb.from('jobs').insert([jobPayload]);
+        if (jError) throw jError;
 
-        const { error: jobError } = await window.sb.from('jobs').insert([jobPayload]);
-        if (jobError) throw jobError;
-              // 3. Insert into Supabase
-              const { error } = await window.sb.from('bookings').insert([bookingPayload]);
+        // Success UI
+        this.showAgreement = false;
+        alert('Booking and Job created successfully!');
+        window.location.href = 'bookings.html';
 
-              this.bookingLoading = false;
-              this.showAgreement = false;
-
-              if (error) {
-                  console.error(error);
-                  alert('Error: ' + error.message);
-              } else {
-                  // Success Animation
-                  let btn = document.getElementById('mainBookBtn');
-                  btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.remove('bg-brand-olive', 'grayscale');
-                  btn.classList.add('bg-brand-green');
-                  
-                  setTimeout(() => {
-                      alert('Booking Confirmed Successfully!');
-                      window.location.href = 'bookings.html';
-                  }, 1000);
-              }
-          }
+    } catch (error) {
+        console.error('Error:', error.message);
+        alert('Database Error: ' + error.message);
+    } finally {
+        this.bookingLoading = false;
+    }
+}
       }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
