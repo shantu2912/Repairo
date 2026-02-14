@@ -25,7 +25,7 @@
             }
         }
 
-        // --- 3. MASTER SERVICE DATABASE (With "Visit Charge" as Item 1) ---
+        // --- MASTER SERVICE DATABASE ---
         const servicesDB = {
             "electrician": { 
                 name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
@@ -91,7 +91,6 @@
                     {n:"Move-in Cleaning", p:1650, d:"Empty house cleaning"}
                 ]
             },
-            // Fallback for any other ID
             "default": {
                 name: "General Service", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Standard inspection and repair service.",
@@ -120,8 +119,6 @@
           agreed: false,
           loading: true, 
           bookingLoading: false,
-          
-          // --- NEW: Added variables for Address and Date ---
           user: null,
           address: '',
           date: '',
@@ -132,27 +129,21 @@
               if (!rawId) { window.location.href = 'index.html'; return; }
               
               let id = rawId.toLowerCase().trim();
-              
               this.service = servicesDB[id] || servicesDB['default'];
-              if(!servicesDB[id]) this.service.name = rawId; // Keep name if fallback
+              if(!servicesDB[id]) this.service.name = rawId; 
 
-              // Set default date to tomorrow
               const tomorrow = new Date();
               tomorrow.setDate(tomorrow.getDate() + 1);
               this.date = tomorrow.toISOString().split('T')[0];
               
-              // --- LOGIC: AUTH CHECK & PROFILE FETCH ---
               if (window.sb) {
                   const { data: { user } } = await window.sb.auth.getUser();
                   if (user) {
-                      // Fetch Profile to pre-fill address
                       const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
                       this.user = { ...user, ...profile };
-                      // Pre-fill address if available
                       if(this.user.service_area) this.address = this.user.service_area;
                   }
               }
-
               setTimeout(() => this.loading = false, 400);
           },
 
@@ -165,101 +156,71 @@
               }
           },
 
-          // LOGIC: Start at 0. Sum of selected items.
           get total() {
               return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
           },
 
-          // --- LOGIC: LOGIN CHECKER ---
           openAgreement() {
-              if (this.selectedSubs.length === 0) return; // Prevent empty booking
-              
+              if (this.selectedSubs.length === 0) return; 
               if (!this.user) {
-                  // LOGIC: Save current page URL and Redirect to Login
+                  alert('Please Login to Book a Service');
                   sessionStorage.setItem('redirect_to', window.location.href);
                   window.location.href = 'loginuser.html';
                   return;
               }
-              
               this.showAgreement = true;
           },
 
           async confirmBooking() {
-              if (!this.agreed) {
-                  alert('Please accept the terms to proceed.');
-                  return;
-              }
-
-              // --- NEW: Simple Validation ---
-              if (!this.address.trim()) {
-                  alert('Please enter your address.');
-                  return;
-              }
-              if (!this.date) {
-                  alert('Please select a date.');
-                  return;
-              }
+              if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+              if (!this.address.trim()) { alert('Please enter your address.'); return; }
+              if (!this.date) { alert('Please select a date.'); return; }
               
               this.bookingLoading = true;
-              
               if (!window.sb) { alert('System Offline'); return; }
 
-              // Double check user just in case
-              if (!this.user) {
-                  alert('Please Log In to book!');
-                  window.location.href = 'loginuser.html';
-                  return;
-              }
-
               try {
-                  // --- LOGIC: 1. INSERT INTO BOOKINGS TABLE ---
+                  // --- 1. INSERT INTO 'BOOKINGS' TABLE ---
+                  // MAPPED STRICTLY TO YOUR SCREENSHOT SCHEMA
                   const { data: bookingData, error: bookingError } = await window.sb
                       .from('bookings')
                       .insert([{
                           user_id: this.user.id,
                           service_name: this.service.name,
-                          variant_name: this.selectedSubs.map(s => s.n).join(', '),
-                          total_amount: this.total,
-                          price: this.total, // Ensure price column is filled
-                          status: 'pending',
-                          location_address: this.address, 
+                          variant_name: this.selectedSubs.map(s => s.n).join(', '), // Stores sub-services
+                          price: this.total, // Using 'price' column from schema
+                          date: this.date,   // Fixed: Using 'date' instead of 'scheduled_date'
                           address: this.address,
-                          scheduled_date: this.date,
-                          date: this.date,
-                          phone: this.user.phone,
-                          service_details: this.selectedSubs // Full details
+                          location_address: this.address,
+                          phone: this.user.phone
                       }])
                       .select()
                       .single();
 
                   if (bookingError) throw bookingError;
 
-                  // --- LOGIC: 2. INSERT INTO JOBS TABLE ---
-                  // This is crucial for the Technician App to see the request
+                  // --- 2. INSERT INTO 'JOBS' TABLE ---
+                  // MAPPED STRICTLY TO YOUR SCREENSHOT SCHEMA
                   const { error: jobError } = await window.sb
                       .from('jobs')
                       .insert([{
                           booking_id: bookingData.id, 
                           customer_name: this.user.full_name || 'Valued Customer',
                           category: this.service.name,
-                          issue: 'New Booking Request',
+                          issue: 'New Service Request',
                           location: this.address,
                           phone: this.user.phone,
                           status: 'pending',
                           urgent: false,
-                          tech_id: null // No technician assigned yet
+                          tech_id: null
                       }]);
 
                   if (jobError) throw jobError;
 
-                  // Success Actions
-                  this.bookingLoading = false;
                   this.showAgreement = false;
-
                   let btn = document.getElementById('mainBookBtn');
                   btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.remove('bg-brand-olive', 'grayscale');
-                  btn.classList.add('bg-brand-green');
+                  btn.classList.replace('bg-brand-olive', 'bg-brand-green');
                   
                   setTimeout(() => {
                       alert('Booking Confirmed Successfully!');
