@@ -163,39 +163,53 @@
           },
 
           async confirmBooking() {
-    if (!this.agreed || !this.address.trim()) {
-        alert('Please fill in address and agree to terms.');
-        return;
-    }
-    
-    this.bookingLoading = true;
-    
-    try {
-        const { data: { user } } = await window.sb.auth.getUser();
-        if (!user) throw new Error('User not found. Please login again.');
+              if (!this.agreed) {
+                  alert('Please accept the terms to proceed.');
+                  return;
+              }
 
-        // Insert into 'bookings' (Standard customer record)
-        const { error: bError } = await window.sb.from('bookings').insert([{
-            user_id: user.id,
-            total_amount: this.total,
-            status: 'pending',
-            location_address: this.address,
-            scheduled_date: this.date,
-            service_details: this.selectedSubs 
-        }]);
-        if (bError) throw bError;
+              // --- NEW: Simple Validation ---
+              if (!this.address.trim()) {
+                  alert('Please enter your address.');
+                  return;
+              }
+              if (!this.date) {
+                  alert('Please select a date.');
+                  return;
+              }
+              
+              this.bookingLoading = true;
+              
+              if (!window.sb) { alert('System Offline'); return; }
 
-        // Insert into 'jobs' (The technician workflow)
-        const { error: jError } = await window.sb.from('jobs').insert([{
-            category: this.service?.name || 'General',
-            device: this.selectedSubs[0]?.n || 'Appliance',
-            issue: this.address, 
-            customer_name: user.user_metadata?.full_name || user.email || 'Customer',
-            location: this.address,
-            phone: user.user_metadata?.phone || 'Not Provided', // Prevents NOT NULL error
-            status: 'pending',
-            urgent: false
-        }]);
+              // 1. Get User
+              const { data: { user } } = await window.sb.auth.getUser();
+              if (!user) {
+                  alert('Please Log In to book!');
+                  window.location.href = 'loginuser.html';
+                  return;
+              }
+
+              // 2. Prepare Data (UPDATED STRUCTURE)
+              const bookingPayload = {
+                  // Standard Fields
+                  user_id: user.id,
+                  total_amount: this.total,
+                  status: 'pending',
+                  
+                  // NEW FIELDS YOU REQUESTED
+                  location_address: this.address, 
+                  scheduled_date: this.date,
+                  
+                  // Saving the Array of services as JSONB
+                  service_details: this.selectedSubs 
+              };
+
+              // 3. Insert into Supabase
+              const { error } = await window.sb.from('bookings').insert([bookingPayload]);
+
+              this.bookingLoading = false;
+              this.showAgreement = false;
 
               if (error) {
                   console.error(error);
