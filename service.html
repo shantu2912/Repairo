@@ -161,72 +161,84 @@
               if (this.selectedSubs.length === 0) return; // Prevent empty booking
               this.showAgreement = true;
           },
+        async confirmBooking() {
+            if (!this.agreed) {
+                alert('Please accept the terms to proceed.');
+                return;
+            }
+            if (!this.customerName.trim()) {
+                alert('Please enter your name.');
+                return;
+            }
 
-          async confirmBooking() {
-              if (!this.agreed) {
-                  alert('Please accept the terms to proceed.');
-                  return;
-              }
+            if (!this.phone.trim()) {
+                alert('Please enter your phone number.');
+                return;
+            }
 
-              // --- NEW: Simple Validation ---
-              if (!this.address.trim()) {
-                  alert('Please enter your address.');
-                  return;
-              }
-              if (!this.date) {
-                  alert('Please select a date.');
-                  return;
-              }
-              
-              this.bookingLoading = true;
-              
-              if (!window.sb) { alert('System Offline'); return; }
+            if (!this.address.trim()) {
+                alert('Please enter your address.');
+                return;
+            }
+            if (!this.date) {
+                alert('Please select a date.');
+                return;
+            }
 
-              // 1. Get User
-              const { data: { user } } = await window.sb.auth.getUser();
-              if (!user) {
-                  alert('Please Log In to book!');
-                  window.location.href = 'loginuser.html';
-                  return;
-              }
+            this.bookingLoading = true;
 
-              // 2. Prepare Data (UPDATED STRUCTURE)
-              const bookingPayload = {
-                  // Standard Fields
-                  user_id: user.id,
-                  total_amount: this.total,
-                  status: 'pending',
-                  
-                  // NEW FIELDS YOU REQUESTED
-                  location_address: this.address, 
-                  scheduled_date: this.date,
-                  
-                  // Saving the Array of services as JSONB
-                  service_details: this.selectedSubs 
-              };
+            if (!window.sb) { 
+                alert('System Offline'); 
+                return; 
+            }
 
-              // 3. Insert into Supabase
-              const { error } = await window.sb.from('bookings').insert([bookingPayload]);
+            // Get logged in user
+            const { data: { user } } = await window.sb.auth.getUser();
+            if (!user) {
+                alert('Please Log In to book!');
+                window.location.href = 'loginuser.html';
+                return;
+            }
 
-              this.bookingLoading = false;
-              this.showAgreement = false;
+            // Get first selected service (for job fields)
+            const firstService = this.selectedSubs[0];
 
-              if (error) {
-                  console.error(error);
-                  alert('Error: ' + error.message);
-              } else {
-                  // Success Animation
-                  let btn = document.getElementById('mainBookBtn');
-                  btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.remove('bg-brand-olive', 'grayscale');
-                  btn.classList.add('bg-brand-green');
-                  
-                  setTimeout(() => {
-                      alert('Booking Confirmed Successfully!');
-                      window.location.href = 'bookings.html';
-                  }, 1000);
-              }
-          }
+        const jobPayload = {
+            category: this.service?.name || 'General Service',
+            device: firstService?.n || 'General Service',
+            issue: firstService?.d || 'Service requested via app',
+            customer_name: this.customerName,
+            location: this.address,
+            phone: this.phone,
+            status: 'pending',
+            urgent: false
+        };
+
+
+            // INSERT INTO JOBS TABLE (NOT BOOKINGS)
+            const { error } = await window.sb.from('jobs').insert([jobPayload]);
+
+            this.bookingLoading = false;
+            this.showAgreement = false;
+
+            if (error) {
+                console.error(error);
+                alert('Error: ' + error.message);
+                return;
+            }
+
+            // Success UI
+            let btn = document.getElementById('mainBookBtn');
+            btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Booking Sent!';
+            btn.classList.remove('bg-brand-olive', 'grayscale');
+            btn.classList.add('bg-brand-green');
+
+            setTimeout(() => {
+                alert('Job Created Successfully!');
+                window.location.href = 'bookings.html';
+            }, 1000);
+        }
+
       }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
