@@ -112,18 +112,21 @@
     </script>
 </head>
 
-<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
-      x-data="{ 
-          service: null, 
+<body <body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
+      x-data="{
+          service: null,
           selectedSubs: [],
           showAgreement: false,
           agreed: false,
-          loading: true, 
+          loading: true,
           bookingLoading: false,
-          
-          // --- NEW: Added variables for Address and Date ---
+
+          // REQUIRED FORM FIELDS (YOU FORGOT THESE)
+          customerName: '',
+          phone: '',
           address: '',
           date: '',
+
           
           init() {
               const params = new URLSearchParams(window.location.search);
@@ -162,46 +165,48 @@
               this.showAgreement = true;
           },
         async confirmBooking() {
-            if (!this.agreed) {
-                alert('Please accept the terms to proceed.');
-                return;
-            }
-            if (!this.customerName.trim()) {
-                alert('Please enter your name.');
-                return;
-            }
+    try {
+        if (!this.agreed) {
+            alert('Please accept the terms to proceed.');
+            return;
+        }
 
-            if (!this.phone.trim()) {
-                alert('Please enter your phone number.');
-                return;
-            }
+        if (!this.customerName || !this.customerName.trim()) {
+            alert('Please enter your name.');
+            return;
+        }
 
-            if (!this.address.trim()) {
-                alert('Please enter your address.');
-                return;
-            }
-            if (!this.date) {
-                alert('Please select a date.');
-                return;
-            }
+        if (!this.phone || !this.phone.trim()) {
+            alert('Please enter your phone number.');
+            return;
+        }
 
-            this.bookingLoading = true;
+        if (!this.address || !this.address.trim()) {
+            alert('Please enter your address.');
+            return;
+        }
 
-            if (!window.sb) { 
-                alert('System Offline'); 
-                return; 
-            }
+        if (!this.date) {
+            alert('Please select a date.');
+            return;
+        }
 
-            // Get logged in user
-            const { data: { user } } = await window.sb.auth.getUser();
-            if (!user) {
-                alert('Please Log In to book!');
-                window.location.href = 'loginuser.html';
-                return;
-            }
+        this.bookingLoading = true;
 
-            // Get first selected service (for job fields)
-            const firstService = this.selectedSubs[0];
+        if (!window.sb) {
+            alert('System Offline');
+            this.bookingLoading = false;
+            return;
+        }
+
+        const { data: { user } } = await window.sb.auth.getUser();
+        if (!user) {
+            alert('Please Log In to book!');
+            window.location.href = 'loginuser.html';
+            return;
+        }
+
+        const firstService = this.selectedSubs[0];
 
         const jobPayload = {
             category: this.service?.name || 'General Service',
@@ -214,43 +219,48 @@
             urgent: false
         };
 
-// 1. Insert into JOBS table
-const { data: jobData, error: jobError } = await window.sb
-    .from('jobs')
-    .insert([jobPayload])
-    .select()
-    .single();
+        // Insert into jobs
+        const { error: jobError } = await window.sb
+            .from('jobs')
+            .insert([jobPayload]);
 
-if (jobError) {
-    this.bookingLoading = false;
-    alert('Job Insert Error: ' + jobError.message);
-    return;
+        if (jobError) {
+            alert('Job Insert Error: ' + jobError.message);
+            this.bookingLoading = false;
+            return;
+        }
+
+        // Insert into bookings (IMPORTANT: use date NOT scheduled_date)
+        const bookingPayload = {
+            user_id: user.id,
+            service_name: this.service?.name || 'General Service',
+            variant_name: firstService?.n || 'Service',
+            price: this.total,
+            date: this.date,
+            address: this.address,
+            phone: this.phone
+        };
+
+        const { error: bookingError } = await window.sb
+            .from('bookings')
+            .insert([bookingPayload]);
+
+        if (bookingError) {
+            alert('Booking Insert Error: ' + bookingError.message);
+            this.bookingLoading = false;
+            return;
+        }
+
+        this.bookingLoading = false;
+        this.showAgreement = false;
+        alert('Job Created Successfully!');
+
+    } catch (err) {
+        console.error(err);
+        alert('Unexpected Error: ' + err.message);
+        this.bookingLoading = false;
+    }
 }
-
-// 2. Prepare bookings payload (THIS is what your DB expects)
-const bookingPayload = {
-    user_id: user.id,
-    service_name: this.service?.name || 'General Service',
-    variant_name: firstService?.n || 'Service',
-    price: this.total,
-    date: this.date,          
-    address: this.address,
-    phone: this.phone
-};
-
-// 3. Insert into BOOKINGS table
-const { error: bookingError } = await window.sb
-    .from('bookings')
-    .insert([bookingPayload]);
-
-this.bookingLoading = false;
-this.showAgreement = false;
-
-if (bookingError) {
-    alert('Booking Insert Error: ' + bookingError.message);
-    return;
-}
-        
 
       }">
 
