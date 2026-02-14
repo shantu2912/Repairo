@@ -1,376 +1,153 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Service Booking - FixZen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Booking - FixZen</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F5F2EB', 'brand-dark': '#2D2C2B', 'brand-green': '#10B981', 'brand-red': '#EF4444' },
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
-                    boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 'up': '0 -5px 20px rgba(0,0,0,0.05)' },
-                    animation: { 'slide-up': 'slideUp 0.4s ease-out forwards', 'pulse-slow': 'pulse 3s infinite' },
-                    keyframes: { slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } } }
-                }
-            }
-        }
-
-        // --- MASTER SERVICE DATABASE ---
-        const servicesDB = {
-            "electrician": { 
-                name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
-                desc: "Certified electricians for wiring, appliance installation, and repairs.",
-                subs: [
-                    {n:"Visit & Inspection", p:250, d:"Diagnosis charge (Waived if service taken)"},
-                    {n:"Switch/Socket Repair", p:275, d:"Per switchboard unit"},
-                    {n:"Fan Installation", p:385, d:"Ceiling fan assembly & hanging"},
-                    {n:"Fan Replacement", p:330, d:"Replace old with new"},
-                    {n:"Tube Light Install", p:220, d:"Wall mounting & connection"},
-                    {n:"MCB Replacement", p:440, d:"Fuse box repair/upgrade"},
-                    {n:"New Point Wiring", p:880, d:"Internal wiring per point"},
-                    {n:"Inverter Connection", p:330, d:"Battery & Inverter setup"}
-                ]
-            },
-            "carpenter": { 
-                name: "Expert Carpentry", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
-                desc: "Furniture assembly, door repairs, and custom woodwork.",
-                subs: [
-                    {n:"Visit & Inspection", p:299, d:"Assessment & measurement"},
-                    {n:"Furniture Assembly", p:440, d:"Bed, wardrobe, table"},
-                    {n:"Door Hinge Repair", p:275, d:"Fixing creaking/loose doors"},
-                    {n:"Drawer Channel Fix", p:330, d:"Smooth sliding repair"},
-                    {n:"Lock Installation", p:350, d:"Door/Cupboard lock"},
-                    {n:"Wooden Bed Repair", p:550, d:"Structural fix & tightening"},
-                    {n:"Cupboard Alignment", p:385, d:"Door balancing"}
-                ]
-            },
-            "plumber": { 
-                name: "Professional Plumbing", image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
-                desc: "Leakage fixing, tap installation, and blockage removal.",
-                subs: [
-                    {n:"Visit & Inspection", p:250, d:"Leak detection & quote"},
-                    {n:"Tap Replacement", p:275, d:"Per tap installation"},
-                    {n:"Wash Basin Install", p:440, d:"Wall mounting & sealant"},
-                    {n:"Blockage Removal", p:440, d:"Sink/Pipe unclogging"},
-                    {n:"Toilet Flush Repair", p:385, d:"Tank mechanism fix"},
-                    {n:"Motor Connection", p:550, d:"Water pump setup"}
-                ]
-            },
-            "ac tech": { 
-                name: "AC Repair & Service", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
-                desc: "Cooling issues, gas refill, and deep cleaning.",
-                subs: [
-                    {n:"AC Inspection", p:330, d:"Diagnosis charge"},
-                    {n:"Split AC Service", p:550, d:"Foam jet cleaning (Indoor+Outdoor)"},
-                    {n:"Window AC Service", p:495, d:"Filter & coil cleaning"},
-                    {n:"Gas Refill", p:2500, d:"Complete gas charging (R32/R410)"},
-                    {n:"Installation", p:1650, d:"Split AC wall mounting"},
-                    {n:"Uninstallation", p:770, d:"Safe removal with gas lock"},
-                    {n:"Capacitor Change", p:650, d:"Starting problem fix"}
-                ]
-            },
-            "clean": { 
-                name: "Deep Cleaning", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
-                desc: "Professional home deep cleaning and sanitization.",
-                subs: [
-                    {n:"1 BHK Deep Clean", p:1100, d:"Full house floor & dusting"},
-                    {n:"2 BHK Deep Clean", p:1430, d:"Full house floor & dusting"},
-                    {n:"Kitchen Deep Clean", p:880, d:"Oil stain & chimney removal"},
-                    {n:"Bathroom Cleaning", p:660, d:"Acid wash & sanitization"},
-                    {n:"Sofa Cleaning", p:770, d:"Shampoo wash (5 seater)"},
-                    {n:"Move-in Cleaning", p:1650, d:"Empty house cleaning"}
-                ]
-            },
-            "default": {
-                name: "General Service", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
-                desc: "Standard inspection and repair service.",
-                subs: [
-                    {n:"Visit & Inspection", p:299, d:"Standard visit charge"},
-                    {n:"Minor Repair", p:450, d:"Up to 1 hour work"},
-                    {n:"Major Repair", p:850, d:"Complex technical work"}
-                ]
-            }
-        };
-
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-        
-        if (window.supabase) {
-            window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
+        if (window.supabase) window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 </head>
+<body class="bg-[#F5F2EB] min-h-screen flex items-center justify-center p-4 font-sans"
+      x-data="{
+          data: null,
+          loading: false,
+          success: false,
 
-<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
-      x-data="{ 
-          service: null, 
-          selectedSubs: [],
-          showAgreement: false,
-          agreed: false,
-          loading: true, 
-          bookingLoading: false,
-          user: null,
-          address: '',
-          date: '',
-          
-          async init() {
-              const params = new URLSearchParams(window.location.search);
-              let rawId = params.get('id');
-              if (!rawId) { window.location.href = 'index.html'; return; }
+          init() {
+              const raw = sessionStorage.getItem('temp_booking');
+              if (!raw) { window.location.href = 'index.html'; return; }
+              this.data = JSON.parse(raw);
+          },
+
+          async confirmAndBook() {
+              this.loading = true;
               
-              let id = rawId.toLowerCase().trim();
-              this.service = servicesDB[id] || servicesDB['default'];
-              if(!servicesDB[id]) this.service.name = rawId; 
-
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              this.date = tomorrow.toISOString().split('T')[0];
-              
-              if (window.sb) {
-                  const { data: { user } } = await window.sb.auth.getUser();
-                  if (user) {
-                      const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
-                      this.user = { ...user, ...profile };
-                      if(this.user.service_area) this.address = this.user.service_area;
-                  }
-              }
-              setTimeout(() => this.loading = false, 400);
-          },
-
-          toggleSub(sub) {
-              const index = this.selectedSubs.findIndex(s => s.n === sub.n);
-              if (index > -1) {
-                  this.selectedSubs.splice(index, 1);
-              } else {
-                  this.selectedSubs.push(sub);
-              }
-          },
-
-          get total() {
-              return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
-          },
-
-          openAgreement() {
-              if (this.selectedSubs.length === 0) return; 
-              if (!this.user) {
-                  alert('Please Login to Book a Service');
-                  sessionStorage.setItem('redirect_to', window.location.href);
-                  window.location.href = 'loginuser.html';
-                  return;
-              }
-              this.showAgreement = true;
-          },
-
-          async confirmBooking() {
-              if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-              if (!this.address.trim()) { alert('Please enter your address.'); return; }
-              if (!this.date) { alert('Please select a date.'); return; }
-              
-              this.bookingLoading = true;
-              if (!window.sb) { alert('System Offline'); return; }
-
               try {
-                  // --- 1. INSERT INTO 'BOOKINGS' TABLE ---
-                  // MAPPED STRICTLY TO YOUR SCREENSHOT SCHEMA
-                  const { data: bookingData, error: bookingError } = await window.sb
+                  // 1. Insert into BOOKINGS
+                  const { data: booking, error: err1 } = await window.sb
                       .from('bookings')
                       .insert([{
-                          user_id: this.user.id,
-                          service_name: this.service.name,
-                          variant_name: this.selectedSubs.map(s => s.n).join(', '), // Stores sub-services
-                          price: this.total, // Using 'price' column from schema
-                          date: this.date,   // Fixed: Using 'date' instead of 'scheduled_date'
-                          address: this.address,
-                          location_address: this.address,
-                          phone: this.user.phone
+                          user_id: this.data.user_id,
+                          service_name: this.data.service_name,
+                          variant_name: this.data.sub_services.map(s => s.n).join(', '),
+                          price: this.data.total,
+                          date: this.data.date,
+                          address: this.data.address,
+                          location_address: this.data.address,
+                          phone: this.data.user_phone
                       }])
                       .select()
                       .single();
 
-                  if (bookingError) throw bookingError;
+                  if (err1) throw err1;
 
-                  // --- 2. INSERT INTO 'JOBS' TABLE ---
-                  // MAPPED STRICTLY TO YOUR SCREENSHOT SCHEMA
-                  const { error: jobError } = await window.sb
+                  // 2. Insert into JOBS
+                  const { error: err2 } = await window.sb
                       .from('jobs')
                       .insert([{
-                          booking_id: bookingData.id, 
-                          customer_name: this.user.full_name || 'Valued Customer',
-                          category: this.service.name,
-                          issue: 'New Service Request',
-                          location: this.address,
-                          phone: this.user.phone,
+                          booking_id: booking.id,
+                          customer_name: this.data.user_name,
+                          category: this.data.service_name,
+                          issue: 'Selected: ' + this.data.sub_services.map(s => s.n).join(', '),
+                          location: this.data.address,
+                          phone: this.data.user_phone,
                           status: 'pending',
                           urgent: false,
+                          device: 'Web App',
                           tech_id: null
                       }]);
 
-                  if (jobError) throw jobError;
+                  if (err2) throw err2;
 
-                  this.showAgreement = false;
-                  let btn = document.getElementById('mainBookBtn');
-                  btn.innerHTML = '<i class=\'fa-solid fa-check-circle\'></i> Request Sent!';
-                  btn.classList.replace('bg-brand-olive', 'bg-brand-green');
+                  // Success State
+                  this.success = true;
+                  sessionStorage.removeItem('temp_booking'); // Cleanup
                   
-                  setTimeout(() => {
-                      alert('Booking Confirmed Successfully!');
-                      window.location.href = 'bookings.html';
-                  }, 1000);
+                  setTimeout(() => { window.location.href = 'bookings.html'; }, 2000);
 
-              } catch (error) {
-                  this.bookingLoading = false;
-                  console.error(error);
-                  alert('Error: ' + error.message);
+              } catch (e) {
+                  alert('Error: ' + e.message);
+                  this.loading = false;
               }
           }
       }">
 
-    <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
-        <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
-            <i class="fa-solid fa-arrow-left"></i>
-        </a>
-    </div>
-
-    <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50">
-        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-gold mb-3"></i>
-        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase">Loading...</p>
-    </div>
-
-    <div x-show="!loading" class="pb-44 animate__animated animate__fadeIn">
+    <div class="w-full max-w-md bg-white rounded-[2rem] shadow-xl overflow-hidden relative">
         
-        <div class="relative h-[40vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
-            <img :src="service?.image" class="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-            <div class="absolute bottom-8 left-6 right-6 text-white">
-                <span class="bg-brand-gold/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg border border-white/20">Verified Pro</span>
-                <h1 class="text-3xl font-serif font-bold mt-3 leading-tight" x-text="service?.name"></h1>
-                <p class="text-white/70 text-xs mt-2 font-light leading-relaxed line-clamp-2" x-text="service?.desc"></p>
+        <div x-show="success" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center text-center p-8 animate__animated animate__fadeIn" style="display: none;">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-check text-4xl text-green-600 animate__animated animate__rubberBand"></i>
             </div>
+            <h2 class="text-2xl font-bold text-[#2D2C2B]">Booking Confirmed!</h2>
+            <p class="text-gray-500 mt-2">Your request has been broadcasted to nearby experts.</p>
         </div>
 
-        <div class="px-5 mt-8">
-            <div class="flex justify-between items-end mb-4">
-                <h3 class="font-bold text-lg text-brand-olive flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-brand-gold"></i> Select Services
-                </h3>
-                <span class="text-[10px] text-brand-dark/40 font-medium bg-white px-2 py-1 rounded-lg border border-brand-beige">Tap to add</span>
-            </div>
+        <div class="bg-[#5D5646] p-6 text-center text-white relative">
+            <a href="service.html" class="absolute left-6 top-6 opacity-80 hover:opacity-100"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2 class="text-xl font-bold">Review Details</h2>
+            <p class="text-xs opacity-70 mt-1">Please check before confirming</p>
+        </div>
+
+        <div class="p-8 space-y-6">
             
-            <div class="space-y-3">
-                <template x-for="sub in service?.subs">
-                    <div @click="toggleSub(sub)" 
-                         class="relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm active:scale-95 group"
-                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-orange-50 ring-1 ring-brand-gold' : 'border-transparent hover:border-brand-beige'">
-                        
-                        <div class="flex items-start gap-4 z-10">
-                            <div class="mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300"
-                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white scale-110' : 'border-brand-olive/30 text-transparent'">
-                                <i class="fa-solid fa-check text-[10px]"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-brand-dark text-sm transition-colors" 
-                                   :class="selectedSubs.includes(sub) ? 'text-brand-olive' : ''" x-text="sub.n"></p>
-                                <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
-                            </div>
-                        </div>
-                        
-                        <span class="font-bold text-brand-olive text-sm z-10">₹<span x-text="sub.p"></span></span>
+            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div class="w-10 h-10 rounded-full bg-[#A07D54] flex items-center justify-center text-white shrink-0">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Customer</p>
+                    <p class="font-bold text-[#2D2C2B]" x-text="data?.user_name"></p>
+                    <p class="text-sm text-gray-500" x-text="data?.user_phone"></p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-500">Service</span>
+                    <span class="font-bold text-[#5D5646]" x-text="data?.service_name"></span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-500">Date</span>
+                    <span class="font-bold text-[#5D5646]" x-text="data?.date"></span>
+                </div>
+                <div>
+                    <span class="text-sm text-gray-500 block mb-1">Address</span>
+                    <p class="text-sm font-medium text-[#2D2C2B] bg-gray-50 p-3 rounded-lg leading-relaxed" x-text="data?.address"></p>
+                </div>
+            </div>
+
+            <div class="bg-[#F5F2EB] p-4 rounded-xl">
+                <p class="text-xs text-[#A07D54] font-bold uppercase mb-2">Order Summary</p>
+                <template x-for="item in data?.sub_services">
+                    <div class="flex justify-between text-sm mb-1 text-[#5D5646]">
+                        <span x-text="item.n"></span>
+                        <span class="font-bold">₹<span x-text="item.p"></span></span>
                     </div>
                 </template>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="!loading" class="fixed bottom-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-brand-beige/50 p-6 rounded-t-[30px] shadow-up animate-slide-up">
-        <div class="flex justify-between items-center mb-4">
-            <div>
-                <p class="text-[10px] text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
-                <div class="flex items-baseline gap-1">
-                    <span class="text-xl font-bold text-brand-olive">₹</span>
-                    <h2 class="text-4xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="total"></h2>
+                <div class="border-t border-[#D6CFC0] mt-3 pt-2 flex justify-between items-center">
+                    <span class="font-bold text-lg text-[#5D5646]">Total</span>
+                    <span class="font-bold text-2xl text-[#5D5646]">₹<span x-text="data?.total"></span></span>
                 </div>
-            </div>
-            <div class="text-right">
-                <div x-show="selectedSubs.length > 0" class="animate__animated animate__fadeIn">
-                    <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded-lg" x-text="selectedSubs.length + ' Item(s)'"></span>
-                </div>
-                <p class="text-[10px] text-brand-dark/40 mt-1" x-show="selectedSubs.length === 0">Select items to enable booking</p>
-            </div>
-        </div>
-        
-        <button id="mainBookBtn" @click="openAgreement()" 
-                :disabled="selectedSubs.length === 0"
-                class="w-full rounded-2xl font-bold text-lg py-4 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 shadow-lg"
-                :class="selectedSubs.length > 0 ? 'bg-brand-olive text-white hover:bg-brand-gold shadow-brand-olive/30' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
-            <span x-text="selectedSubs.length > 0 ? 'Book Now' : 'Select a Service'"></span>
-            <i class="fa-solid fa-arrow-right text-sm" x-show="selectedSubs.length > 0"></i>
-        </button>
-    </div>
-
-    <div x-show="showAgreement" 
-         class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-         x-transition.opacity style="display: none;">
-        
-        <div class="bg-white w-full max-w-md rounded-[30px] p-6 shadow-2xl animate__animated animate__slideInUp">
-            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
-            
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-serif font-bold text-brand-olive">Confirm Booking</h3>
-                <span class="text-sm font-bold text-brand-gold">₹<span x-text="total"></span></span>
-            </div>
-            
-            <div class="space-y-3 mb-4">
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-                    <i class="fa-solid fa-location-dot text-brand-gold"></i>
-                    <input type="text" x-model="address" placeholder="Enter Full Address" 
-                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
-                </div>
-                
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-                    <i class="fa-solid fa-calendar text-brand-gold"></i>
-                    <input type="date" x-model="date" 
-                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
-                </div>
-            </div>
-            
-            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
-                <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
-                <ul class="list-disc pl-4 space-y-1.5">
-                    <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
-                    <li>Technicians are allocated on a <strong>First-Come, First-Serve</strong> basis.</li>
-                    <li>A minimum visiting charge applies if no service is taken after diagnosis.</li>
-                    <li>Cancellations within 30 mins of arrival may incur a fee.</li>
-                    <li>You authorize FixZen to share your location with the nearest available expert.</li>
-                </ul>
             </div>
 
-            <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6 border border-transparent hover:border-gray-100">
-                <div class="relative flex items-center">
-                    <input type="checkbox" x-model="agreed" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-brand-gold checked:bg-brand-gold transition-all">
-                    <i class="fa-solid fa-check text-white absolute left-1 top-1 text-xs opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
-                </div>
-                <span class="text-xs font-medium text-brand-dark/80 leading-snug select-none">I agree to the Terms & Conditions and authorize the job broadcast.</span>
-            </label>
+            <button @click="confirmAndBook()" :disabled="loading" 
+                    class="w-full py-4 bg-[#A07D54] text-white font-bold rounded-xl shadow-xl hover:bg-[#5D5646] transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                <span x-show="!loading">Confirm & Book Service</span>
+                <i x-show="!loading" class="fa-solid fa-check-circle"></i>
+                <div x-show="loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            </button>
 
-            <div class="flex gap-3">
-                <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
-                <button @click="confirmBooking()" 
-                        :disabled="!agreed || bookingLoading"
-                        class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                    <span x-show="!bookingLoading">Confirm Job</span>
-                    <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
-                </button>
-            </div>
         </div>
     </div>
 
