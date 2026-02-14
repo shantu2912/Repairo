@@ -214,30 +214,43 @@
             urgent: false
         };
 
+// 1. Insert into JOBS table
+const { data: jobData, error: jobError } = await window.sb
+    .from('jobs')
+    .insert([jobPayload])
+    .select()
+    .single();
 
-            // INSERT INTO JOBS TABLE (NOT BOOKINGS)
-            const { error } = await window.sb.from('jobs').insert([jobPayload]);
+if (jobError) {
+    this.bookingLoading = false;
+    alert('Job Insert Error: ' + jobError.message);
+    return;
+}
 
-            this.bookingLoading = false;
-            this.showAgreement = false;
+// 2. Prepare bookings payload (THIS is what your DB expects)
+const bookingPayload = {
+    user_id: user.id,
+    service_name: this.service?.name || 'General Service',
+    variant_name: firstService?.n || 'Service',
+    price: this.total,
+    date: this.date,          
+    address: this.address,
+    phone: this.phone
+};
 
-            if (error) {
-                console.error(error);
-                alert('Error: ' + error.message);
-                return;
-            }
+// 3. Insert into BOOKINGS table
+const { error: bookingError } = await window.sb
+    .from('bookings')
+    .insert([bookingPayload]);
 
-            // Success UI
-            let btn = document.getElementById('mainBookBtn');
-            btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Booking Sent!';
-            btn.classList.remove('bg-brand-olive', 'grayscale');
-            btn.classList.add('bg-brand-green');
+this.bookingLoading = false;
+this.showAgreement = false;
 
-            setTimeout(() => {
-                alert('Job Created Successfully!');
-                window.location.href = 'bookings.html';
-            }, 1000);
-        }
+if (bookingError) {
+    alert('Booking Insert Error: ' + bookingError.message);
+    return;
+}
+        
 
       }">
 
