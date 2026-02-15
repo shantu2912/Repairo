@@ -1,482 +1,342 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FixZen - Premium Home Services</title>
+    <title>My Bookings - FixZen Pro</title>
     
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-        
-        if (window.supabase) {
-            window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-    </script>
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
-
-    <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3', 'brand-red': '#EF4444' },
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
-                    boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)', 'neon': '0 0 20px rgba(160, 125, 84, 0.4)' },
-                    animation: {
-                        'chaos-spin': 'chaosSpin 2s linear infinite',
-                        'forge-flash': 'forgeFlash 1.5s ease-out forwards 1s',
-                        'draw-text': 'drawText 2s ease-out forwards 1.2s',
-                        'fill-text': 'fillText 1s ease-out forwards 2.5s',
-                        'logo-shine': 'logoShine 2s ease-in-out forwards 2.8s',
-                        'sub-text-slide': 'subTextSlide 1s ease-out forwards 3s',
-                        'text-scroll': 'textScroll 6s infinite',
-                        'float-icon': 'floatIcon 3s ease-in-out infinite',
-                        'float-fast': 'floatIcon 2s ease-in-out infinite',
-                        'shine-pass': 'shinePass 0.8s ease-in-out',
-                    },
-                    keyframes: {
-                        textScroll: { '0%, 20%': { transform: 'translateY(0%)' }, '25%, 45%': { transform: 'translateY(-25%)' }, '50%, 70%': { transform: 'translateY(-50%)' }, '75%, 95%': { transform: 'translateY(-75%)' }, '100%': { transform: 'translateY(-0%)' } },
-                        chaosSpin: { '0%': { transform: 'rotate(0deg) scale(1)', opacity: '0.5' }, '50%': { transform: 'rotate(180deg) scale(1.2)', opacity: '1' }, '100%': { transform: 'rotate(360deg) scale(1)', opacity: '0.5' } },
-                        forgeFlash: { '0%': { opacity: '0', transform: 'scale(0)' }, '50%': { opacity: '1', transform: 'scale(1.5)' }, '100%': { opacity: '0', transform: 'scale(2)' } },
-                        drawText: { 'to': { strokeDashoffset: '0' } },
-                        fillText: { 'from': { fillOpacity: '0' }, 'to': { fillOpacity: '1' } },
-                        logoShine: { '0%': { backgroundPosition: '-200%' }, '100%': { backgroundPosition: '200%' } },
-                        subTextSlide: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
-                        floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
-                        shinePass: { '0%': { transform: 'translateX(-100%) skewX(-15deg)' }, '100%': { transform: 'translateX(200%) skewX(-15deg)' } }
-                    }
+                    colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-bg': '#f4f4f5' },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    animation: { 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
                 }
             }
         }
     </script>
     <style>
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
-        .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .step-line { position: absolute; top: 14px; left: 0; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
+        .step-active .step-line { background: #10B981; } 
     </style>
 </head>
 
-<body class="bg-brand-cream text-brand-dark antialiased"
-      x-data="{ 
-          loading: true, 
-          searchOpen: false, 
-          sidebarOpen: false, 
-          locationModalOpen: false, 
-          slideIndex: 0,
-          searchQuery: '',
-          userLocation: 'Nagpur, MH',
-          detectingLocation: false,
-          user: null,
+<body class="bg-brand-bg text-gray-800 min-h-screen pb-32"
+      x-data="bookingsApp()">
 
-          // --- MASTER SERVICE LIST FOR SEARCH ---
-          masterList: [
-              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'}, {n:'Roofer', cat:'Home', icon:'fa-house-chimney'}, {n:'Tiler', cat:'Home', icon:'fa-border-all'},
-              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'}, {n:'Gas Stove', cat:'Appliance', icon:'fa-fire'}, {n:'Elevator', cat:'Appliance', icon:'fa-elevator'},
-              {n:'Mobile', cat:'Electronics', icon:'fa-mobile-screen'}, {n:'Laptop', cat:'Electronics', icon:'fa-laptop'}, {n:'Printer', cat:'Electronics', icon:'fa-print'}, {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, {n:'CCTV', cat:'Electronics', icon:'fa-video'}, {n:'Network', cat:'Electronics', icon:'fa-wifi'}, {n:'Automation', cat:'Electronics', icon:'fa-robot'},
-              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, {n:'Auto Elec', cat:'Auto', icon:'fa-car-battery'}, {n:'Tyres', cat:'Auto', icon:'fa-truck-monster'}, {n:'Diesel', cat:'Auto', icon:'fa-gas-pump'},
-              {n:'Machinery', cat:'Industrial', icon:'fa-gears'}, {n:'Generator', cat:'Industrial', icon:'fa-industry'}, {n:'Boiler', cat:'Industrial', icon:'fa-fire-burner'}, {n:'HVAC', cat:'Industrial', icon:'fa-fan'}, {n:'Solar', cat:'Industrial', icon:'fa-solar-panel'}, {n:'Fire Safety', cat:'Industrial', icon:'fa-fire-extinguisher'},
-              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, {n:'Locksmith', cat:'Other', icon:'fa-key'}, {n:'Glass Fit', cat:'Other', icon:'fa-border-none'}, {n:'False Ceiling', cat:'Other', icon:'fa-layer-group'}, {n:'UPVC Win', cat:'Other', icon:'fa-window-maximize'}
-          ],
-
-          get filteredServices() {
-              if (this.searchQuery === '') return [];
-              return this.masterList.filter(item => item.n.toLowerCase().includes(this.searchQuery.toLowerCase()));
-          },
-
-          async checkUser() {
-              if (!window.sb) return; 
-              const { data: { user } } = await window.sb.auth.getUser();
-              if (user) {
-                  const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
-                  this.user = profile || { full_name: 'User', phone: user.email };
-              }
-          },
-          async logout() {
-              await window.sb.auth.signOut();
-              window.location.reload();
-          },
-          setLocation(city) {
-              this.userLocation = city;
-              this.locationModalOpen = false;
-          },
-          async detectGPS() {
-              this.detectingLocation = true;
-              if (!navigator.geolocation) { alert('Geolocation not supported'); this.detectingLocation = false; return; }
-              navigator.geolocation.getCurrentPosition(async (position) => {
-                  this.userLocation = 'Current Location'; 
-                  this.locationModalOpen = false;
-                  this.detectingLocation = false;
-              });
-          }
-      }"
-      x-init="
-          if (sessionStorage.getItem('introShown')) {
-              loading = false; 
-          } else {
-              setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000);
-          }
-          let attempts = 0;
-          let check = setInterval(() => { 
-              if(window.sb || attempts > 20) { clearInterval(check); checkUser(); }
-              attempts++;
-          }, 100);
-          setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
-      ">
-
-    <div x-show="loading" x-transition:leave="transition ease-in-out duration-1000" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-110" class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 flex items-center justify-center opacity-20">
-            <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
-            <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
-        </div>
-        <div class="relative z-10 flex flex-col items-center">
-            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
-            </svg>
-            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
-            <div class="mt-4 flex items-center gap-3 opacity-0 animate-sub-text-slide">
-                <div class="h-px w-12 bg-brand-gold/50"></div>
-                <p class="text-brand-beige text-sm uppercase tracking-[0.3em] font-medium">Premium Home Care</p>
-                <div class="h-px w-12 bg-brand-gold/50"></div>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
-        <div class="absolute inset-0 bg-brand-olive/40 backdrop-blur-md transition-opacity" @click="sidebarOpen = false"></div>
-        <aside class="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col border-r border-white/50"
-               x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0">
-            
-            <div class="p-6 border-b border-brand-beige/50 bg-gradient-to-r from-brand-cream to-white">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="font-sans font-extrabold text-2xl text-brand-olive tracking-widest">FIXZEN</h2>
-                    <button @click="sidebarOpen = false" class="w-8 h-8 rounded-full bg-white border border-brand-beige flex items-center justify-center text-brand-dark hover:rotate-90 transition-transform"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="bg-brand-olive rounded-2xl p-4 flex items-center gap-3 shadow-lg relative overflow-hidden group">
-                    <div class="w-12 h-12 rounded-full border-2 border-brand-gold p-0.5 relative z-10"><img :src="user ? 'https://ui-avatars.com/api/?background=A07D54&color=fff&name=' + user.full_name : 'https://i.pravatar.cc/150?img=3'" class="w-full h-full rounded-full object-cover"></div>
-                    <div class="relative z-10">
-                        <p class="text-white font-bold text-sm" x-text="user ? user.full_name : 'Guest User'"></p>
-                        <p class="text-brand-beige text-xs" x-text="user ? user.phone : 'Please log in'"></p>
-                    </div>
-                </div>
-            </div>
-
-            <nav class="flex-1 overflow-y-auto py-2 hide-scroll">
-                <a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">HOME</span>
+    <div class="fixed top-0 w-full z-40 glass-panel shadow-sm transition-all duration-300">
+        <div class="px-5 pt-12 pb-4">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-extrabold text-brand-dark tracking-tight">My Activity</h1>
+                <a href="index.html" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all">
+                    <i class="fa-solid fa-house"></i>
                 </a>
-                
-                <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">For Experts</p>
-                <a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">REGISTER AS TECHNICIAN</span>
-                </a>
-                <a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">TECHNICIAN LOGIN</span>
-                </a>
-                
-                <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
-                <a href="bookings.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">MY BOOKINGS</span>
-                </a>
-                <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">ADMIN DASHBOARD</span>
-                </a>
-                <a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">CONTACT US</span>
-                </a>
-
-                <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Legal</p>
-                <a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">PRIVACY POLICY</span>
-                </a>
-                <a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">TERMS & POLICY</span>
-                </a>
-            </nav>
-
-            <div class="p-6 bg-brand-cream/30">
-                <template x-if="user">
-                    <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center">Log Out</button>
-                </template>
-                <template x-if="!user">
-                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
-                </template>
-            </div>
-        </aside>
-    </div>
-
-    <div x-show="locationModalOpen" class="fixed inset-0 z-[100]" style="display: none;">
-        <div class="absolute inset-0 bg-brand-olive/60 backdrop-blur-sm transition-opacity" @click="locationModalOpen = false"></div>
-        <div class="absolute bottom-0 left-0 w-full bg-white rounded-t-[30px] p-6 pb-12 shadow-2xl transition-transform duration-300"
-             x-transition:enter="translate-y-full" x-transition:enter-end="translate-y-0">
-            <h3 class="font-bold text-lg text-brand-olive mb-4">Select Location</h3>
-            <button @click="detectGPS()" class="w-full flex items-center gap-3 p-4 bg-brand-cream/50 rounded-xl mb-6 border border-brand-beige/50 text-left">
-                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-brand-gold shadow-sm"><i class="fa-solid fa-crosshairs" :class="detectingLocation ? 'animate-spin' : ''"></i></div>
-                <div><p class="font-bold text-brand-olive text-sm">Use Current Location</p></div>
-            </button>
-            <div class="space-y-2">
-                <button @click="setLocation('Nagpur, MH')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-brand-cream transition-colors"><span class="font-medium text-sm text-brand-dark">Nagpur, MH</span></button>
-                <button @click="setLocation('Mumbai, MH')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-brand-cream transition-colors"><span class="font-medium text-sm text-brand-dark">Mumbai, MH</span></button>
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-brand-cream pb-32 overflow-hidden" x-show="!loading">
-
-        <header class="absolute top-0 w-full z-40 px-6 py-4 flex justify-between items-center text-white">
-            <button @click="sidebarOpen = true" class="bg-black/20 backdrop-blur-md p-2 rounded-full"><i class="fa-solid fa-bars text-lg px-1"></i></button>
-            <div @click="locationModalOpen = true" class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 cursor-pointer">
-                <i class="fa-solid fa-location-dot text-brand-gold text-xs"></i>
-                <span class="text-xs font-bold" x-text="userLocation"></span>
-            </div>
-            <div class="relative bg-brand-gold/90 backdrop-blur-md p-2 rounded-full cursor-pointer" onclick="window.location.href='bookings.html'">
-                <i class="fa-solid fa-cart-shopping text-lg px-1 text-white"></i>
-            </div>
-        </header>
-
-        <div class="relative h-[380px] rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
-            <div class="absolute inset-0" x-show="slideIndex === 0"><img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
-            <div class="absolute inset-0" x-show="slideIndex === 1"><img src="https://images.unsplash.com/photo-1581578731117-104f2a417954?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
-            <div class="absolute inset-0" x-show="slideIndex === 2"><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div>
-            <div class="absolute bottom-24 left-6 right-6">
-                <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Top Rated</span>
-                <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="slideIndex===0 ? 'Expert Electricians' : (slideIndex===1 ? 'Summer Sale' : 'Deep Cleaning')"></h2>
-            </div>
-        </div>
-
-        <div class="px-6 -mt-10 relative z-50">
-            <div class="relative">
-                <div class="bg-white rounded-[2rem] p-2 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-white/40 flex items-center gap-2 relative z-50">
-                     <div class="w-12 h-12 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-magnifying-glass"></i></div>
-                     <div class="flex-1 h-12 relative flex items-center">
-                         <div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
-                             <span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span>
-                             <div class="relative h-5 w-32 overflow-hidden">
-                                 <div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
-                                     <div class="h-5 flex items-center">AC Repair</div>
-                                     <div class="h-5 flex items-center">Plumbing</div>
-                                     <div class="h-5 flex items-center">Cleaning</div>
-                                 </div>
-                             </div>
-                         </div>
-                         <input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg z-10 placeholder-transparent" placeholder="">
-                         <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="mr-2 text-brand-dark/40 hover:text-brand-red transition-colors">
-                            <i class="fa-solid fa-circle-xmark"></i>
-                         </button>
-                     </div>
-                </div>
-
-                <div x-show="searchQuery.length > 0" 
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 translate-y-[-10px]"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 translate-y-0"
-                     x-transition:leave-end="opacity-0 translate-y-[-10px]"
-                     @click.outside="searchQuery = ''"
-                     class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-40 max-h-64 overflow-y-auto">
-                    
-                    <template x-for="result in filteredServices">
-                        <div @click="window.location.href='service.html?id=' + result.n" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer border-b border-brand-cream last:border-0 transition-colors group">
-                            <div class="w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-colors">
-                                <i :class="`fa-solid ${result.icon}`"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-sm text-brand-dark" x-text="result.n"></p>
-                                <p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text="result.cat"></p>
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold"></i>
-                        </div>
-                    </template>
-
-                    <div x-show="filteredServices.length === 0" class="p-6 text-center">
-                        <i class="fa-solid fa-face-frown-open text-2xl text-brand-dark/20 mb-2"></i>
-                        <p class="text-sm text-brand-dark/50 font-medium">No service found matching "<span x-text="searchQuery"></span>"</p>
-                        <p class="text-[10px] text-brand-dark/30 mt-1">Try "AC", "Clean", or "Repair"</p>
-                    </div>
-                </div>
             </div>
 
-            <div class="mt-4 flex gap-2 justify-center">
-                <span onclick="window.location.href='service.html?id=AC Tech'" class="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-[10px] font-bold text-brand-olive cursor-pointer border border-white/50 hover:bg-brand-gold hover:text-white transition-colors">🔥 AC Tech</span>
-                <span onclick="window.location.href='service.html?id=Pest Ctrl'" class="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-[10px] font-bold text-brand-olive cursor-pointer border border-white/50 hover:bg-brand-gold hover:text-white transition-colors">✨ Cleaning</span>
-            </div>
-        </div>
-
-        <div class="pb-12 space-y-8 mt-6">
-            
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Construction & Home</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Carpenter', img:'https://cdn-icons-png.flaticon.com/512/2991/2991138.png', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop'}, 
-                        {n:'Plumber', img:'https://cdn-icons-png.flaticon.com/512/1045/1045163.png', bg:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&fit=crop'}, 
-                        {n:'Electrician', img:'https://cdn-icons-png.flaticon.com/512/2933/2933190.png', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop'}, 
-                        {n:'Painter', img:'https://cdn-icons-png.flaticon.com/512/2972/2972106.png', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop'}, 
-                        {n:'Mason', img:'https://cdn-icons-png.flaticon.com/512/1839/1839274.png', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop'}, 
-                        {n:'Welder', img:'https://cdn-icons-png.flaticon.com/512/3233/3233302.png', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop'}, 
-                        {n:'Roofer', img:'https://cdn-icons-png.flaticon.com/512/2312/2312686.png', bg:'https://images.unsplash.com/photo-1632759145351-1d592919f522?w=200&fit=crop'}, 
-                        {n:'Tiler', img:'https://cdn-icons-png.flaticon.com/512/3055/3055375.png', bg:'https://images.unsplash.com/photo-1623935833075-f3747d079946?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
+            <div class="relative group">
+                <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400 group-focus-within:text-brand-gold transition-colors"></i>
+                <input type="text" x-model="searchQuery" placeholder="Search by service or ID..." 
+                       class="w-full bg-gray-100 rounded-xl py-3 pl-11 pr-4 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:bg-white transition-all">
             </div>
 
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Appliance Repair</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'AC Tech', img:'https://cdn-icons-png.flaticon.com/512/2366/2366050.png', bg:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&fit=crop'}, 
-                        {n:'Fridge', img:'https://cdn-icons-png.flaticon.com/512/2402/2402248.png', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop'}, 
-                        {n:'Washing M.', img:'https://cdn-icons-png.flaticon.com/512/2251/2251998.png', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop'}, 
-                        {n:'Microwave', img:'https://cdn-icons-png.flaticon.com/512/2928/2928827.png', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop'},
-                        {n:'RO Filter', img:'https://cdn-icons-png.flaticon.com/512/3143/3143643.png', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop'},
-                        {n:'Gas Stove', img:'https://cdn-icons-png.flaticon.com/512/3256/3256020.png', bg:'https://images.unsplash.com/photo-1585237672814-8f85a83ccb95?w=200&fit=crop'},
-                        {n:'Elevator', img:'https://cdn-icons-png.flaticon.com/512/3063/3063229.png', bg:'https://images.unsplash.com/photo-1541336032412-2048956132b8?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Mobile', img:'https://cdn-icons-png.flaticon.com/512/2920/2920349.png', bg:'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&fit=crop'}, 
-                        {n:'Laptop', img:'https://cdn-icons-png.flaticon.com/512/2933/2933246.png', bg:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&fit=crop'}, 
-                        {n:'Printer', img:'https://cdn-icons-png.flaticon.com/512/3022/3022234.png', bg:'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200&fit=crop'}, 
-                        {n:'TV / LED', img:'https://cdn-icons-png.flaticon.com/512/3273/3273444.png', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop'},
-                        {n:'CCTV', img:'https://cdn-icons-png.flaticon.com/512/3125/3125638.png', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop'},
-                        {n:'Network', img:'https://cdn-icons-png.flaticon.com/512/3288/3288330.png', bg:'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=200&fit=crop'},
-                        {n:'Automation', img:'https://cdn-icons-png.flaticon.com/512/2082/2082691.png', bg:'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Automobile</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Car Mech', img:'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop'}, 
-                        {n:'Bike Mech', img:'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop'}, 
-                        {n:'Auto Elec', img:'https://cdn-icons-png.flaticon.com/512/2061/2061956.png', bg:'https://images.unsplash.com/photo-1635843104666-407859c6799d?w=200&fit=crop'}, 
-                        {n:'Tyres', img:'https://cdn-icons-png.flaticon.com/512/3195/3195689.png', bg:'https://images.unsplash.com/photo-1578844251758-2f71da645217?w=200&fit=crop'},
-                        {n:'Diesel', img:'https://cdn-icons-png.flaticon.com/512/3069/3069176.png', bg:'https://images.unsplash.com/photo-1626154673898-1d2f788b7709?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Industrial</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Machinery', img:'https://cdn-icons-png.flaticon.com/512/3063/3063823.png', bg:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200&fit=crop'}, 
-                        {n:'Generator', img:'https://cdn-icons-png.flaticon.com/512/3256/3256215.png', bg:'https://images.unsplash.com/photo-1565514020176-883a9924e223?w=200&fit=crop'}, 
-                        {n:'Boiler', img:'https://cdn-icons-png.flaticon.com/512/3135/3135728.png', bg:'https://images.unsplash.com/photo-1598965637213-92c2dae72e18?w=200&fit=crop'}, 
-                        {n:'HVAC', img:'https://cdn-icons-png.flaticon.com/512/1792/1792198.png', bg:'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&fit=crop'},
-                        {n:'Solar', img:'https://cdn-icons-png.flaticon.com/512/3159/3159310.png', bg:'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&fit=crop'},
-                        {n:'Fire Safety', img:'https://cdn-icons-png.flaticon.com/512/2897/2897408.png', bg:'https://images.unsplash.com/photo-1615817812975-c0883273e979?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Other Services</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Pest Ctrl', img:'https://cdn-icons-png.flaticon.com/512/2364/2364539.png', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop'}, 
-                        {n:'Locksmith', img:'https://cdn-icons-png.flaticon.com/512/3065/3065961.png', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop'}, 
-                        {n:'Glass Fit', img:'https://cdn-icons-png.flaticon.com/512/3132/3132763.png', bg:'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&fit=crop'}, 
-                        {n:'False Ceiling', img:'https://cdn-icons-png.flaticon.com/512/3354/3354121.png', bg:'https://images.unsplash.com/photo-1628434522967-0c7cb9d9e793?w=200&fit=crop'},
-                        {n:'UPVC Win', img:'https://cdn-icons-png.flaticon.com/512/2942/2942055.png', bg:'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="window.location.href='service.html?id='+s.n">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
-            <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-between items-center shadow-super-float">
-                <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
-                <a href="bookings.html" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-calendar-check text-xl"></i></a>
-                <a href="cart.html" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-wallet text-xl"></i></a>
-                <button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors outline-none">
-                    <i :class="user ? 'fa-solid fa-user text-brand-olive' : 'fa-regular fa-user'" class="text-xl"></i>
+            <div class="flex p-1.5 bg-gray-100 rounded-xl mt-4">
+                <button @click="activeTab = 'active'" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+                        :class="activeTab === 'active' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-gray-600'">
+                    Ongoing
+                    <span x-show="activeCount > 0" class="ml-1 px-1.5 py-0.5 rounded-full bg-brand-gold text-white text-[9px]" x-text="activeCount"></span>
+                </button>
+                <button @click="activeTab = 'history'" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+                        :class="activeTab === 'history' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-gray-600'">
+                    History
                 </button>
             </div>
         </div>
-
     </div>
+
+    <div class="pt-56 px-5 space-y-5">
+
+        <template x-if="loading">
+            <div class="space-y-4">
+                <div class="bg-white p-5 rounded-3xl shadow-sm h-48 animate-pulse"></div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm h-48 animate-pulse"></div>
+            </div>
+        </template>
+
+        <template x-if="!loading && filteredJobs.length === 0">
+            <div class="text-center py-12 animate__animated animate__fadeIn">
+                <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 grayscale opacity-50">
+                    <i class="fa-solid fa-folder-open text-3xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">No bookings found.</p>
+                <a href="index.html" class="mt-4 inline-block px-6 py-2 bg-black text-white rounded-lg text-sm font-bold">Book New Service</a>
+            </div>
+        </template>
+
+        <template x-for="job in filteredJobs" :key="job.id">
+            <div class="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative overflow-hidden group transition-all hover:shadow-lg">
+                
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex gap-3">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
+                             :class="getCategoryColor(job.category)">
+                            <i class="fa-solid" :class="getCategoryIcon(job.category)"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900" x-text="job.category"></h3>
+                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">ID: <span x-text="job.id.slice(0,8)"></span></p>
+                        </div>
+                    </div>
+                    <div class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                         :class="getStatusBadge(job.status)">
+                        <span x-text="job.status"></span>
+                    </div>
+                </div>
+
+                <div class="mb-6 relative px-2" x-show="activeTab === 'active'">
+                    <div class="h-1 bg-gray-100 absolute top-1.5 left-2 right-2 rounded-full -z-0"></div>
+                    <div class="h-1 bg-green-500 absolute top-1.5 left-2 rounded-full -z-0 transition-all duration-1000"
+                         :style="`width: ${getProgressWidth(job.status)}%`"></div>
+                    
+                    <div class="flex justify-between relative z-10">
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="getProgressStep(job.status, 1)"></div>
+                            <span class="text-[9px] font-bold text-gray-400">Booked</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="getProgressStep(job.status, 2)"></div>
+                            <span class="text-[9px] font-bold text-gray-400">Assigned</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="getProgressStep(job.status, 3)"></div>
+                            <span class="text-[9px] font-bold text-gray-400">Started</span>
+                        </div>
+                    </div>
+                </div>
+
+                <template x-if="job.tech_id && job.technician">
+                    <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-between border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <img :src="job.technician.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
+                            <div>
+                                <p class="text-xs font-bold text-gray-900" x-text="job.technician.name"></p>
+                                <div class="flex items-center gap-1 text-[10px] text-gray-500">
+                                    <i class="fa-solid fa-star text-yellow-400"></i>
+                                    <span x-text="job.technician.rating || '4.8'"></span> • <span x-text="job.technician.jobs_done || '12'"></span> Jobs
+                                </div>
+                            </div>
+                        </div>
+                        <a :href="'tel:' + job.technician.phone" class="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center text-green-600 shadow-sm hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-phone"></i>
+                        </a>
+                    </div>
+                </template>
+
+                <template x-if="!job.tech_id && job.status === 'pending'">
+                    <div class="bg-brand-gold/5 rounded-xl p-3 flex items-center gap-3 border border-brand-gold/10">
+                        <div class="relative w-8 h-8 flex items-center justify-center">
+                            <span class="absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-20 animate-ping"></span>
+                            <i class="fa-solid fa-radar text-brand-gold"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-brand-gold">Finding Expert nearby...</p>
+                            <p class="text-[10px] text-gray-400">Usually takes 2-5 mins</p>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="mt-5 flex gap-3 pt-4 border-t border-dashed border-gray-200" x-show="job.status === 'pending'">
+                    <button @click="openCancelModal(job.id)" class="flex-1 py-2.5 rounded-lg border border-red-100 text-red-500 text-xs font-bold hover:bg-red-50 transition-colors">
+                        Cancel Request
+                    </button>
+                    <button class="flex-1 py-2.5 rounded-lg bg-gray-900 text-white text-xs font-bold hover:bg-gray-800 transition-colors">
+                        View Details
+                    </button>
+                </div>
+
+            </div>
+        </template>
+    </div>
+
+    <div x-show="showCancelModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm animate__animated animate__zoomIn">
+            <h3 class="text-lg font-bold text-gray-900">Cancel Booking?</h3>
+            <p class="text-sm text-gray-500 mt-2">Are you sure you want to cancel? This action cannot be undone.</p>
+            
+            <div class="flex gap-3 mt-6">
+                <button @click="showCancelModal = false" class="flex-1 py-3 font-bold text-gray-500 bg-gray-100 rounded-xl">Keep it</button>
+                <button @click="confirmCancel()" class="flex-1 py-3 font-bold text-white bg-red-500 rounded-xl shadow-lg shadow-red-200">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('bookingsApp', () => ({
+                jobs: [],
+                loading: true,
+                activeTab: 'active',
+                searchQuery: '',
+                user: null, // Changed from userPhone to full user object
+                showCancelModal: false,
+                jobToCancel: null,
+
+                async init() {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) return window.location.href = 'loginuser.html';
+                    
+                    this.user = user;
+                    await this.fetchData();
+                    
+                    // Realtime Subscription (Subscribing to ALL jobs changes for now to ensure updates)
+                    supabase.channel('my-jobs')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
+                            this.fetchData(); 
+                        })
+                        .subscribe();
+                },
+
+                async fetchData() {
+                    console.log("Fetching bookings for User ID:", this.user.id);
+
+                    // 1. Get BOOKINGS for this User ID
+                    const { data: bookings, error: bookingError } = await supabase
+                        .from('bookings')
+                        .select('id')
+                        .eq('user_id', this.user.id); // Matches UUID
+
+                    if (bookingError) {
+                        console.error("Error fetching bookings:", bookingError);
+                        this.loading = false;
+                        return;
+                    }
+
+                    if (!bookings || bookings.length === 0) {
+                        console.log("No bookings found for user.");
+                        this.loading = false;
+                        this.jobs = [];
+                        return;
+                    }
+
+                    // Extract IDs: ['uuid-1', 'uuid-2']
+                    const bookingIds = bookings.map(b => b.id);
+
+                    // 2. Get JOBS linked to these Booking IDs
+                    const { data: jobs, error: jobError } = await supabase
+                        .from('jobs')
+                        .select('*')
+                        .in('booking_id', bookingIds) // Uses the array of IDs
+                        .order('created_at', { ascending: false });
+
+                    if (jobError) {
+                        console.error("Error fetching jobs:", jobError);
+                        this.loading = false;
+                        return;
+                    }
+                    
+                    console.log("Found jobs:", jobs);
+
+                    // 3. Manually fetch tech details for assigned jobs
+                    const jobsWithTech = await Promise.all(jobs.map(async (job) => {
+                        if (job.tech_id) {
+                            const { data: tech } = await supabase.from('technicians').select('*').eq('id', job.tech_id).single();
+                            job.technician = tech;
+                        }
+                        return job;
+                    }));
+
+                    this.jobs = jobsWithTech;
+                    this.loading = false;
+                },
+
+                // Computed Properties Logic
+                get filteredJobs() {
+                    let list = this.activeTab === 'active' 
+                        ? this.jobs.filter(j => ['pending', 'assigned', 'started'].includes(j.status.toLowerCase()))
+                        : this.jobs.filter(j => ['completed', 'cancelled', 'rejected'].includes(j.status.toLowerCase()));
+                    
+                    if(this.searchQuery) {
+                        const q = this.searchQuery.toLowerCase();
+                        list = list.filter(j => j.category.toLowerCase().includes(q) || j.id.includes(q));
+                    }
+                    return list;
+                },
+
+                get activeCount() {
+                    return this.jobs.filter(j => ['pending', 'assigned', 'started'].includes(j.status.toLowerCase())).length;
+                },
+
+                // UI Helpers
+                getCategoryIcon(cat) {
+                    if(cat.includes('Electric')) return 'fa-bolt';
+                    if(cat.includes('Plumb')) return 'fa-faucet-drip';
+                    if(cat.includes('AC')) return 'fa-snowflake';
+                    return 'fa-toolbox';
+                },
+                getCategoryColor(cat) {
+                    if(cat.includes('Electric')) return 'bg-yellow-100 text-yellow-600';
+                    if(cat.includes('Plumb')) return 'bg-blue-100 text-blue-600';
+                    if(cat.includes('AC')) return 'bg-cyan-100 text-cyan-600';
+                    return 'bg-gray-100 text-gray-600';
+                },
+                getStatusBadge(status) {
+                    const s = status.toLowerCase();
+                    if(s==='pending') return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+                    if(s==='assigned') return 'bg-blue-50 text-blue-600 border-blue-100';
+                    if(s==='completed') return 'bg-green-50 text-green-600 border-green-100';
+                    if(s==='cancelled') return 'bg-red-50 text-red-600 border-red-100';
+                    return 'bg-gray-50 text-gray-600';
+                },
+                
+                // Progress Bar Logic
+                getProgressWidth(status) {
+                    const s = status.toLowerCase();
+                    if(s === 'pending') return 10;
+                    if(s === 'assigned') return 50;
+                    if(s === 'started') return 100;
+                    return 0;
+                },
+                getProgressStep(status, step) {
+                    const s = status.toLowerCase();
+                    let level = 0;
+                    if(s === 'pending') level = 1;
+                    if(s === 'assigned') level = 2;
+                    if(s === 'started') level = 3;
+                    
+                    return step <= level ? 'bg-green-500 border-green-500' : 'bg-gray-200 border-gray-200';
+                },
+
+                // Actions
+                openCancelModal(id) {
+                    this.jobToCancel = id;
+                    this.showCancelModal = true;
+                },
+                async confirmCancel() {
+                    if(!this.jobToCancel) return;
+                    
+                    // Optimistic update (remove from UI immediately)
+                    const id = this.jobToCancel;
+                    
+                    await supabase.from('jobs').update({ status: 'cancelled' }).eq('id', id);
+                    // Also update linked booking if possible, or just the job is enough for display
+                    
+                    this.showCancelModal = false;
+                    this.fetchData(); // Refresh to be safe
+                }
+            }));
+        });
+    </script>
 </body>
 </html>
