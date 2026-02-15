@@ -244,40 +244,67 @@ return {
     }
     this.techName = this.tech.name;
     await this.setupNotifications();
+    
+// ADD THIS BLOCK HERE
+messaging.onMessage((payload) => {
+  console.log("Foreground message:", payload);
+
+  const title = payload.notification?.title || "New Job";
+  const body = payload.notification?.body || "You have a new job";
+
+  new Notification(title, {
+    body: body,
+    icon: "/icon-192.png"
+  });
+});
 
     await this.fetchJobs();
     this.subscribeRealtime();
 
-    // Add this inside your init() or setupNotifications()
-messaging.onMessage((payload) => {
-  console.log('Message received. ', payload);
-  alert(`New Job: ${payload.notification.title}\n${payload.notification.body}`);
-});
-// Add this inside your script where you initialized messaging
-messaging.onMessage((payload) => {
-  console.log('Message received in foreground: ', payload);
-  
-  // Show a standard browser alert or a custom toast
-  alert(`New Job: ${payload.notification.title}\n${payload.notification.body}`);
-  
-  // Or trigger your existing Alpine.js popup
-  if (window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('new-job', { detail: payload.notification }));
-  }
-});
+    
   },
 // Inside dashboardHandler() init
 async setupNotifications() {
-  const registration = await navigator.serviceWorker.register('/Repairo/firebase-messaging-sw.js'); // Simplified path
-  
-  const token = await messaging.getToken({
-    vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk", // Get from Firebase Settings > Cloud Messaging > Web Push
-    serviceWorkerRegistration: registration
-  });
+  try {
+    if (!('serviceWorker' in navigator)) {
+      console.error("Service Worker not supported");
+      return;
+    }
 
-  if (token) {
-    await window.sb.from("technicians").update({ fcm_token: token }).eq("id", this.tech.id);
-    console.log("Token Updated:", token);
+    // ✅ Correct path (same folder as HTML)
+    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    console.log("SW Registered:", registration);
+
+    // Ask permission
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      console.error("Notification permission denied");
+      return;
+    }
+
+    // Get FCM token
+    const token = await messaging.getToken({
+      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
+      serviceWorkerRegistration: registration
+    });
+
+    if (!token) {
+      console.error("No FCM token received");
+      return;
+    }
+
+    console.log("FCM Token:", token);
+
+    // Save token to DB
+    await window.sb
+      .from("technicians")
+      .update({ fcm_token: token })
+      .eq("id", this.tech.id);
+
+    console.log("Token saved to Supabase");
+
+  } catch (err) {
+    console.error("Notification setup failed:", err);
   }
 },
 
@@ -495,14 +522,5 @@ async rejectIncoming() {
   <button onclick="acceptJob()">Accept</button>
   <button onclick="rejectJob()">Reject</button>
 </div>
-<script>
-if ('serviceWorker' in navigator) {
- navigator.serviceWorker.register('/Repairo/firebase-messaging-sw.js')
-
-    .then(() => console.log("Service Worker Registered"))
-    .catch(err => console.error("Service Worker Failed:", err));
-}
-</script>
-
 </body>
 </html>
