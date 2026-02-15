@@ -224,6 +224,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
+
 </script>
 
 <script>function dashboardHandler(){
@@ -251,6 +252,18 @@ return {
 messaging.onMessage((payload) => {
   console.log('Message received. ', payload);
   alert(`New Job: ${payload.notification.title}\n${payload.notification.body}`);
+});
+// Add this inside your script where you initialized messaging
+messaging.onMessage((payload) => {
+  console.log('Message received in foreground: ', payload);
+  
+  // Show a standard browser alert or a custom toast
+  alert(`New Job: ${payload.notification.title}\n${payload.notification.body}`);
+  
+  // Or trigger your existing Alpine.js popup
+  if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('new-job', { detail: payload.notification }));
+  }
 });
   },
 // Inside dashboardHandler() init
@@ -430,7 +443,8 @@ async rejectIncoming() {
     localStorage.removeItem("active_tech");
     window.location.href = "partnerlogin.html";
   }
-}}
+}
+}
 </script>
 
 
