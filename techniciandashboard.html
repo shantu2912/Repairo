@@ -258,7 +258,7 @@ async setupNotifications() {
   const registration = await navigator.serviceWorker.register('/Repairo/firebase-messaging-sw.js'); // Simplified path
   
   const token = await messaging.getToken({
-    vapidKey: "BNPGxxxAlw33YrnTJv2fmSZ4cyMOoZ9uR5KuhbKm0AK-SaEC0961TAFS92SRSTeEbA6OsOVKWc99QNad6BIXBtc", // Get from Firebase Settings > Cloud Messaging > Web Push
+    vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk", // Get from Firebase Settings > Cloud Messaging > Web Push
     serviceWorkerRegistration: registration
   });
 
