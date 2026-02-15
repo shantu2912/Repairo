@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Bookings - FixZen Pro</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-bg': '#f4f4f5' },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    animation: { 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .step-line { position: absolute; top: 14px; left: 0; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
+        .step-active .step-line { background: #10B981; } 
+    </style>
+</head>
+
+<body class="bg-brand-bg text-gray-800 min-h-screen pb-32"
+      x-data="bookingsApp()">
+
+    <div class="fixed top-0 w-full z-40 glass-panel shadow-sm transition-all duration-300">
+        <div class="px-5 pt-12 pb-4">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-extrabold text-brand-dark tracking-tight">My Activity</h1>
+                <a href="index.html" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+
+            <div class="relative group">
+                <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400 group-focus-within:text-brand-gold transition-colors"></i>
+                <input type="text" x-model="searchQuery" placeholder="Search by service or ID..." 
+                       class="w-full bg-gray-100 rounded-xl py-3 pl-11 pr-4 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:bg-white transition-all">
+            </div>
+
+            <div class="flex p-1.5 bg-gray-100 rounded-xl mt-4">
+                <button @click="activeTab = 'active'" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+                        :class="activeTab === 'active' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-gray-600'">
+                    Ongoing
+                    <span x-show="activeCount > 0" class="ml-1 px-1.5 py-0.5 rounded-full bg-brand-gold text-white text-[9px]" x-text="activeCount"></span>
+                </button>
+                <button @click="activeTab = 'history'" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+                        :class="activeTab === 'history' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-gray-600'">
+                    History
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-56 px-5 space-y-5">
+
+        <template x-if="loading">
+            <div class="space-y-4">
+                <div class="bg-white p-5 rounded-3xl shadow-sm h-48 animate-pulse"></div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm h-48 animate-pulse"></div>
+            </div>
+        </template>
+
+        <template x-if="!loading && filteredJobs.length === 0">
+            <div class="text-center py-12 animate__animated animate__fadeIn">
+                <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 grayscale opacity-50">
+                    <i class="fa-solid fa-folder-open text-3xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">No bookings found.</p>
+                <a href="index.html" class="mt-4 inline-block px-6 py-2 bg-black text-white rounded-lg text-sm font-bold">Book New Service</a>
+            </div>
+        </template>
+
+        <template x-for="job in filteredJobs" :key="job.id">
+            <div class="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 relative overflow-hidden group transition-all hover:shadow-lg">
+                
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex gap-3">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
+                             :class="getCategoryColor(job.category)">
+                            <i class="fa-solid" :class="getCategoryIcon(job.category)"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900" x-text="job.category"></h3>
+                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">ID: <span x-text="job.id.slice(0,8)"></span></p>
+                        </div>
+                    </div>
+                    <div class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                         :class="getStatusBadge(job.status)">
+                        <span x-text="job.status"></span>
+                    </div>
+                </div>
+
+                <div class="mb-6 relative px-2" x-show="activeTab === 'active'">
+                    <div class="h-1 bg-gray-100 absolute top-1.5 left-2 right-2 rounded-full -z-0"></div>
+                    <div class="h-1 bg-green-500 absolute top-1.5 left-2 rounded-full -z-0 transition-all duration-1000"
+                         :style="`width: ${getProgressWidth(job.status)}%`"></div>
+                    
+                    <div class="flex justify-between relative z-10">
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="getProgressStep(job.status, 1)"></div>
+                            <span class="text-[9px] font-bold text-gray-400">Booked</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="getProgressStep(job.status, 2)"></div>
+                            <span class="text-[9px] font-bold text-gray-400">Assigned</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-4 h-4 rounded-full border-2 border-white shadow-sm" :class="getProgressStep(job.status, 3)"></div>
+                            <span class="text-[9px] font-bold text-gray-400">Started</span>
+                        </div>
+                    </div>
+                </div>
+
+                <template x-if="job.tech_id && job.technician">
+                    <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-between border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <img :src="job.technician.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
+                            <div>
+                                <p class="text-xs font-bold text-gray-900" x-text="job.technician.name"></p>
+                                <div class="flex items-center gap-1 text-[10px] text-gray-500">
+                                    <i class="fa-solid fa-star text-yellow-400"></i>
+                                    <span x-text="job.technician.rating || '4.8'"></span> • <span x-text="job.technician.jobs_done || '12'"></span> Jobs
+                                </div>
+                            </div>
+                        </div>
+                        <a :href="'tel:' + job.technician.phone" class="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center text-green-600 shadow-sm hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-phone"></i>
+                        </a>
+                    </div>
+                </template>
+
+                <template x-if="!job.tech_id && job.status === 'pending'">
+                    <div class="bg-brand-gold/5 rounded-xl p-3 flex items-center gap-3 border border-brand-gold/10">
+                        <div class="relative w-8 h-8 flex items-center justify-center">
+                            <span class="absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-20 animate-ping"></span>
+                            <i class="fa-solid fa-radar text-brand-gold"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-brand-gold">Finding Expert nearby...</p>
+                            <p class="text-[10px] text-gray-400">Usually takes 2-5 mins</p>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="mt-5 flex gap-3 pt-4 border-t border-dashed border-gray-200" x-show="job.status === 'pending'">
+                    <button @click="openCancelModal(job.id)" class="flex-1 py-2.5 rounded-lg border border-red-100 text-red-500 text-xs font-bold hover:bg-red-50 transition-colors">
+                        Cancel Request
+                    </button>
+                    <button class="flex-1 py-2.5 rounded-lg bg-gray-900 text-white text-xs font-bold hover:bg-gray-800 transition-colors">
+                        View Details
+                    </button>
+                </div>
+
+            </div>
+        </template>
+    </div>
+
+    <div x-show="showCancelModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm animate__animated animate__zoomIn">
+            <h3 class="text-lg font-bold text-gray-900">Cancel Booking?</h3>
+            <p class="text-sm text-gray-500 mt-2">Are you sure you want to cancel? This action cannot be undone.</p>
+            
+            <div class="flex gap-3 mt-6">
+                <button @click="showCancelModal = false" class="flex-1 py-3 font-bold text-gray-500 bg-gray-100 rounded-xl">Keep it</button>
+                <button @click="confirmCancel()" class="flex-1 py-3 font-bold text-white bg-red-500 rounded-xl shadow-lg shadow-red-200">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('bookingsApp', () => ({
+                jobs: [],
+                loading: true,
+                activeTab: 'active',
+                searchQuery: '',
+                userPhone: null,
+                showCancelModal: false,
+                jobToCancel: null,
+
+                async init() {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) return window.location.href = 'loginuser.html';
+                    
+                    const { data: profile } = await supabase.from('profiles').select('phone').eq('id', user.id).single();
+                    this.userPhone = profile.phone;
+                    
+                    this.fetchData();
+                    
+                    // Realtime Subscription
+                    supabase.channel('my-jobs')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `phone=eq.${this.userPhone}` }, () => {
+                            this.fetchData(); 
+                        })
+                        .subscribe();
+                },
+
+                async fetchData() {
+                    // Fetch Jobs AND related Technician info
+                    // Note: Supabase JS select needs relation setup, but manual join is safer for now
+                    const { data: jobs, error } = await supabase
+                        .from('jobs')
+                        .select('*')
+                        .eq('phone', this.userPhone)
+                        .order('created_at', { ascending: false });
+
+                    if (error) console.error(error);
+
+                    // Manually fetch tech details for assigned jobs
+                    const jobsWithTech = await Promise.all(jobs.map(async (job) => {
+                        if (job.tech_id) {
+                            const { data: tech } = await supabase.from('technicians').select('*').eq('id', job.tech_id).single();
+                            job.technician = tech;
+                        }
+                        return job;
+                    }));
+
+                    this.jobs = jobsWithTech;
+                    this.loading = false;
+                },
+
+                // Computed Properties Logic
+                get filteredJobs() {
+                    let list = this.activeTab === 'active' 
+                        ? this.jobs.filter(j => ['pending', 'assigned', 'started'].includes(j.status.toLowerCase()))
+                        : this.jobs.filter(j => ['completed', 'cancelled', 'rejected'].includes(j.status.toLowerCase()));
+                    
+                    if(this.searchQuery) {
+                        const q = this.searchQuery.toLowerCase();
+                        list = list.filter(j => j.category.toLowerCase().includes(q) || j.id.includes(q));
+                    }
+                    return list;
+                },
+
+                get activeCount() {
+                    return this.jobs.filter(j => ['pending', 'assigned', 'started'].includes(j.status.toLowerCase())).length;
+                },
+
+                // UI Helpers
+                getCategoryIcon(cat) {
+                    if(cat.includes('Electric')) return 'fa-bolt';
+                    if(cat.includes('Plumb')) return 'fa-faucet-drip';
+                    if(cat.includes('AC')) return 'fa-snowflake';
+                    return 'fa-toolbox';
+                },
+                getCategoryColor(cat) {
+                    if(cat.includes('Electric')) return 'bg-yellow-100 text-yellow-600';
+                    if(cat.includes('Plumb')) return 'bg-blue-100 text-blue-600';
+                    if(cat.includes('AC')) return 'bg-cyan-100 text-cyan-600';
+                    return 'bg-gray-100 text-gray-600';
+                },
+                getStatusBadge(status) {
+                    const s = status.toLowerCase();
+                    if(s==='pending') return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+                    if(s==='assigned') return 'bg-blue-50 text-blue-600 border-blue-100';
+                    if(s==='completed') return 'bg-green-50 text-green-600 border-green-100';
+                    if(s==='cancelled') return 'bg-red-50 text-red-600 border-red-100';
+                    return 'bg-gray-50 text-gray-600';
+                },
+                
+                // Progress Bar Logic
+                getProgressWidth(status) {
+                    const s = status.toLowerCase();
+                    if(s === 'pending') return 10;
+                    if(s === 'assigned') return 50;
+                    if(s === 'started') return 100;
+                    return 0;
+                },
+                getProgressStep(status, step) {
+                    const s = status.toLowerCase();
+                    let level = 0;
+                    if(s === 'pending') level = 1;
+                    if(s === 'assigned') level = 2;
+                    if(s === 'started') level = 3;
+                    
+                    return step <= level ? 'bg-green-500 border-green-500' : 'bg-gray-200 border-gray-200';
+                },
+
+                // Actions
+                openCancelModal(id) {
+                    this.jobToCancel = id;
+                    this.showCancelModal = true;
+                },
+                async confirmCancel() {
+                    if(!this.jobToCancel) return;
+                    
+                    // Optimistic update (remove from UI immediately)
+                    const id = this.jobToCancel;
+                    
+                    await supabase.from('jobs').update({ status: 'cancelled' }).eq('id', id);
+                    await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id); // If linked
+                    
+                    this.showCancelModal = false;
+                    this.fetchData(); // Refresh to be safe
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
