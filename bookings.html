@@ -56,6 +56,11 @@
     </div>
 
     <div class="pt-40 px-5 space-y-4">
+
+        <div x-show="errorMessage" class="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-xs font-mono break-all" style="display: none;">
+            <p class="font-bold mb-1"><i class="fa-solid fa-bug"></i> Error Detected:</p>
+            <span x-text="errorMessage"></span>
+        </div>
         
         <template x-if="loading">
             <div class="space-y-4">
@@ -85,29 +90,25 @@
                             <i class="fa-solid" :class="getIcon(item.category)"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-gray-900 leading-tight" x-text="item.category"></h3>
-                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">Job ID: <span x-text="item.id.slice(0,8)"></span></p>
+                            <h3 class="font-bold text-gray-900 leading-tight" x-text="item.category || 'Service'"></h3>
+                            <p class="text-[10px] text-gray-400 font-mono mt-0.5">Job ID: <span x-text="(item.id || '').slice(0,8)"></span></p>
                         </div>
                     </div>
                     
                     <div class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
                          :class="getStatusClasses(item.status)">
-                        <span x-text="item.status"></span>
+                        <span x-text="item.status || 'Pending'"></span>
                     </div>
                 </div>
 
                 <div class="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-100 space-y-2">
                     <div class="flex justify-between">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">Issue</span>
-                        <span class="text-xs font-bold text-gray-700 text-right" x-text="item.issue"></span>
+                        <span class="text-xs font-bold text-gray-700 text-right" x-text="item.issue || 'General Request'"></span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase">Scheduled</span>
-                        <span class="text-xs font-bold text-gray-700 text-right" x-text="item.booking_date || new Date(item.created_at).toLocaleDateString()"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase">Est. Cost</span>
-                        <span class="text-xs font-bold text-gray-700 text-right">₹<span x-text="item.price || 'On Inspection'"></span></span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Date</span>
+                        <span class="text-xs font-bold text-gray-700 text-right" x-text="formatDate(item.created_at)"></span>
                     </div>
                 </div>
 
@@ -118,7 +119,7 @@
                                 <img :src="item.technician.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <p class="text-xs font-bold text-gray-900" x-text="item.technician.name"></p>
+                                <p class="text-xs font-bold text-gray-900" x-text="item.technician.name || 'Technician'"></p>
                                 <div class="flex items-center gap-1 text-[10px] text-yellow-500">
                                     <i class="fa-solid fa-star"></i>
                                     <span class="text-gray-500 font-medium" x-text="item.technician.rating || '4.8'"></span>
@@ -131,7 +132,7 @@
                     </div>
                 </template>
 
-                <template x-if="!item.tech_id && item.status === 'pending'">
+                <template x-if="!item.tech_id && (!item.status || item.status.toLowerCase() === 'pending')">
                     <div class="flex items-center gap-2 pt-3 border-t border-gray-100 text-brand-gold animate-pulse">
                         <i class="fa-solid fa-radar text-sm"></i>
                         <span class="text-xs font-bold">Broadcasting to nearby experts...</span>
@@ -150,79 +151,79 @@
                 items: [],
                 loading: true,
                 filter: 'active',
+                errorMessage: '',
                 user: null,
 
                 async init() {
-                    // 1. Auth Check
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (!user) { window.location.href = 'loginuser.html'; return; }
-                    this.user = user;
-                    console.log("Logged in User ID:", user.id);
+                    try {
+                        // 1. Auth Check
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) { window.location.href = 'loginuser.html'; return; }
+                        this.user = user;
+                        
+                        // 2. Fetch Profile for Phone Number
+                        const { data: profile, error: profileError } = await supabase
+                            .from('profiles')
+                            .select('phone')
+                            .eq('id', user.id)
+                            .single();
+                            
+                        if (profileError) console.warn("Profile fetch warning:", profileError);
+                        const userPhone = profile ? profile.phone : null;
 
-                    await this.fetchData();
+                        await this.fetchData(user.id, userPhone);
 
-                    // 2. Realtime Updates
-                    supabase.channel('jobs-update')
-                        .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-                            this.fetchData(); // Refresh on any change
-                        })
-                        .subscribe();
+                        // 3. Realtime Updates
+                        supabase.channel('jobs-update')
+                            .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
+                                this.fetchData(user.id, userPhone);
+                            })
+                            .subscribe();
+
+                    } catch (e) {
+                        this.errorMessage = e.message;
+                        this.loading = false;
+                    }
                 },
 
-                async fetchData() {
+                async fetchData(userId, userPhone) {
                     try {
-                        // STEP A: Find BOOKINGS for this User
-                        const { data: bookings, error: bError } = await supabase
-                            .from('bookings')
-                            .select('*')
-                            .eq('user_id', this.user.id); // Secure Link
+                        let allJobs = [];
 
-                        if (bError) throw bError;
-                        
-                        if (!bookings || bookings.length === 0) {
-                            console.log("No bookings found.");
-                            this.loading = false;
-                            return;
+                        // STRATEGY 1: Fetch by Booking ID (Best for new system)
+                        const { data: bookings } = await supabase.from('bookings').select('id').eq('user_id', userId);
+                        if (bookings && bookings.length > 0) {
+                            const bookingIds = bookings.map(b => b.id);
+                            const { data: jobsByBooking } = await supabase.from('jobs').select('*').in('booking_id', bookingIds);
+                            if (jobsByBooking) allJobs = [...allJobs, ...jobsByBooking];
                         }
 
-                        // Extract Booking IDs to find matching Jobs
-                        const bookingIds = bookings.map(b => b.id);
+                        // STRATEGY 2: Fetch by Phone (Backup for old data)
+                        if (userPhone) {
+                            // Simple cleaner: remove spaces/dashes if any
+                            const { data: jobsByPhone } = await supabase.from('jobs').select('*').eq('phone', userPhone);
+                            if (jobsByPhone) allJobs = [...allJobs, ...jobsByPhone];
+                        }
+
+                        // Remove duplicates (by ID)
+                        const uniqueJobs = Array.from(new Map(allJobs.map(item => [item.id, item])).values());
                         
-                        // STEP B: Find JOBS linked to these Bookings
-                        const { data: jobs, error: jError } = await supabase
-                            .from('jobs')
-                            .select('*')
-                            .in('booking_id', bookingIds)
-                            .order('created_at', { ascending: false });
+                        // Sort by date (newest first)
+                        uniqueJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                        if (jError) throw jError;
-
-                        // STEP C: Merge Data
-                        // We attach 'price' and 'date' from Booking to the Job object
-                        this.items = await Promise.all(jobs.map(async (job) => {
-                            const linkedBooking = bookings.find(b => b.id === job.booking_id);
-                            
-                            // Fetch Technician if assigned
+                        // Fetch Technician Details for any assigned jobs
+                        this.items = await Promise.all(uniqueJobs.map(async (job) => {
                             let technician = null;
                             if (job.tech_id) {
-                                const { data: tech } = await supabase
-                                    .from('technicians')
-                                    .select('*')
-                                    .eq('id', job.tech_id)
-                                    .single();
+                                const { data: tech } = await supabase.from('technicians').select('*').eq('id', job.tech_id).single();
                                 technician = tech;
                             }
-
-                            return {
-                                ...job,
-                                price: linkedBooking ? linkedBooking.price : null,
-                                booking_date: linkedBooking ? linkedBooking.date : null,
-                                technician: technician
-                            };
+                            return { ...job, technician };
                         }));
 
                     } catch (err) {
-                        console.error("Error fetching history:", err);
+                        console.error("Fetch Error:", err);
+                        this.errorMessage = "Failed to load data: " + err.message;
                     } finally {
                         this.loading = false;
                     }
@@ -230,14 +231,19 @@
 
                 // Filters
                 get filteredItems() {
+                    const activeStatuses = ['pending', 'assigned', 'started', 'accepted'];
                     if (this.filter === 'active') {
-                        return this.items.filter(i => ['pending', 'assigned', 'started'].includes(i.status.toLowerCase()));
+                        return this.items.filter(i => activeStatuses.includes((i.status || '').toLowerCase()));
                     } else {
-                        return this.items.filter(i => ['completed', 'cancelled', 'rejected'].includes(i.status.toLowerCase()));
+                        return this.items.filter(i => !activeStatuses.includes((i.status || '').toLowerCase()));
                     }
                 },
 
                 // UI Helpers
+                formatDate(dateStr) {
+                    if (!dateStr) return 'Date Pending';
+                    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                },
                 getIcon(cat) {
                     const c = (cat || '').toLowerCase();
                     if(c.includes('electric')) return 'fa-bolt';
@@ -256,7 +262,7 @@
                 getStatusClasses(status) {
                     const s = (status || 'pending').toLowerCase();
                     if(s === 'pending') return 'bg-yellow-50 text-yellow-600 border-yellow-200';
-                    if(s === 'assigned') return 'bg-blue-50 text-blue-600 border-blue-200';
+                    if(s === 'assigned' || s === 'accepted') return 'bg-blue-50 text-blue-600 border-blue-200';
                     if(s === 'completed') return 'bg-green-50 text-green-600 border-green-200';
                     if(s === 'cancelled') return 'bg-red-50 text-red-600 border-red-200';
                     return 'bg-gray-50 text-gray-600';
