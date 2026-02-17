@@ -401,7 +401,7 @@
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
                 <ul class="list-disc pl-4 space-y-1.5">
                     <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
-                    <li>Technicians are allocated on a <strong>First-Come, First-Serve</strong> basis.</li>
+    
                     <li>A minimum visiting charge applies if no service is taken after diagnosis.</li>
                     <li>Cancellations within 30 mins of arrival may incur a fee.</li>
                     <li>You authorize FixZen to share your location with the nearest available expert.</li>
@@ -421,7 +421,7 @@
                 <button @click="confirmBooking()" 
                         :disabled="!agreed || bookingLoading"
                         class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                    <span x-show="!bookingLoading">Confirm Job</span>
+                    <span x-show="!bookingLoading">Confirm Booking</span>
                     <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
