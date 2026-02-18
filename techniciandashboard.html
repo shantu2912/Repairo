@@ -357,7 +357,7 @@ subscribeRealtime() {
 
   /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
-  // 1. Attempt the update without forcing a single-row return
+  // Strict atomic update: only accept if truly free
   const { data, error } = await window.sb
     .from("jobs")
     .update({
@@ -366,20 +366,30 @@ subscribeRealtime() {
       started_at: new Date().toISOString()
     })
     .eq("id", jobId)
-    // 2. This ensures only unowned jobs can be taken
-    .or("tech_id.is.null,status.eq.pending") 
-    .select(); 
+    .is("tech_id", null)        // must be unassigned
+    .eq("status", "pending")    // must be pending
+    .select();
 
-  // 3. Manually check if any row was actually updated
-  if (error || !data || data.length === 0) {
-    alert("Job already taken or no longer available.");
-    console.error("Update failed:", error);
+  if (error) {
+    console.error("Accept error:", error);
+    alert("Database error while accepting job");
     return;
   }
 
-  // 4. Success logic
-  alert("Job accepted successfully!");
-  this.fetchJobs();
+  // THIS was your wrong assumption earlier
+  if (!data || data.length === 0) {
+    alert("Too late. Another technician already took this job.");
+    return;
+  }
+
+  // Immediate UI update (no refresh needed)
+  const index = this.jobs.findIndex(j => j.id === jobId);
+  if (index !== -1) {
+    this.jobs[index].status = "in_progress";
+    this.jobs[index].tech_id = this.tech.id;
+  }
+
+  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
 
   /* ❌ REJECT JOB */
