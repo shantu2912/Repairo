@@ -528,24 +528,24 @@ async completeJob(job) {
   alert("Job marked as completed!");
   this.fetchJobs(); // Refresh the list
 },
-async markArrived(job) {
-  const { error } = await window.sb
-    .from("jobs")
-    .update({
-      status: "arrived",
-      arrived_at: new Date().toISOString()
-    })
-    .eq("id", job.id)
-    .eq("tech_id", this.tech.id);
+async markArrived(job){
+  try {
+    const { error } = await supabase
+      .from('jobs')
+      .update({
+        arrived_at: new Date().toISOString()
+      })
+      .eq('id', job.id);
 
-  if (error) {
-    console.error(error);
+    if (error) throw error;
+
+    job.arrived_at = new Date().toISOString();
+
+    alert("Arrival marked successfully");
+  } catch (err) {
+    console.error("ARRIVAL ERROR:", err);
     alert("Failed to mark arrival");
-    return;
   }
-
-  // Instant UI update (no refresh needed)
-  job.status = "arrived";
 },
 formatTime(dt){
   if(!dt) return "-";
