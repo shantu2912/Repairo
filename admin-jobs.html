@@ -181,35 +181,46 @@ function renderJobs(jobs) {
 
 /* ---------------- LOAD JOBS ---------------- */
 async function loadJobs() {
-  // Fetch all jobs
-  const { data: jobs, error } = await sb
+  console.log("Loading jobs...");
+
+  const { data, error } = await sb
     .from("jobs")
     .select(`
-      id, tech_id, category, device, issue,
-      customer_name, phone, location, status, technician_fee,
-      technicians(name), rejected_by, assignment_round
-    `)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    alert("Failed to load jobs");
-    return;
-  }
-
-  
-
-  // Fetch fresh jobs after auto-assign
-  const { data: freshJobs } = await sb
-    .from("jobs")
-    .select(`
-      id, tech_id, category, device, issue,
-      customer_name, phone, location, status, technician_fee,
+      id,
+      tech_id,
+      category,
+      device,
+      issue,
+      customer_name,
+      phone,
+      location,
+      status,
+      technician_fee,
+      created_at,
       technicians(name)
     `)
     .order("created_at", { ascending: false });
 
-  renderJobs(freshJobs);
+  if (error) {
+    console.error("JOB LOAD ERROR:", error);
+    alert("Database Error: " + error.message);
+    return;
+  }
+
+  console.log("Jobs received:", data);
+
+  if (!data || data.length === 0) {
+    jobList.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-center p-6 text-gray-500 font-bold">
+          No jobs found in database
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  renderJobs(data);
 }
 
 /* ---------------- ASSIGN MODAL ---------------- */
