@@ -183,23 +183,23 @@ function renderJobs(jobs) {
 async function loadJobs() {
   console.log("Loading jobs...");
 
-  const { data, error } = await sb
-    .from("jobs")
-    .select(`
-      id,
-      tech_id,
-      category,
-      device,
-      issue,
-      customer_name,
-      phone,
-      location,
-      status,
-      technician_fee,
-      created_at,
-      technicians(name)
-    `)
-    .order("created_at", { ascending: false });
+ const { data, error } = await sb
+  .from("jobs")
+  .select(`
+    id,
+    tech_id,
+    category,
+    device,
+    issue,
+    customer_name,
+    phone,
+    location,
+    status,
+    technician_fee,
+    created_at,
+    technicians!jobs_tech_id_fkey(name)
+  `)
+  .order("created_at", { ascending: false });
 
   if (error) {
     console.error("JOB LOAD ERROR:", error);
