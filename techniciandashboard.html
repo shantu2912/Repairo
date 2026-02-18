@@ -532,22 +532,23 @@ async markArrived(job){
   try {
     console.log("Marking arrival for job:", job.id);
 
-    const { data, error } = await supabase
+    const { data, error } = await window.sb   // 🔥 FIXED HERE
       .from('jobs')
       .update({
         arrived_at: new Date().toISOString()
       })
       .eq('id', job.id)
-      .select();
+      .eq('tech_id', this.tech.id); // extra safety
 
     if (error) {
       console.error("SUPABASE ERROR:", error);
-      throw error;
+      alert("DB Error: " + error.message);
+      return;
     }
 
-    console.log("Arrival update success:", data);
-
+    // Update UI instantly (no refresh)
     job.arrived_at = new Date().toISOString();
+    job.status = "arrived"; // UI-only state (NOT saved to DB)
 
     alert("Arrival marked successfully");
 
@@ -556,6 +557,7 @@ async markArrived(job){
     alert("Failed to mark arrival: " + (err.message || "Unknown error"));
   }
 },
+
 
 formatTime(dt){
   if(!dt) return "-";
