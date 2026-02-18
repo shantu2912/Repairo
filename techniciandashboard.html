@@ -167,7 +167,7 @@ class="font-sans antialiased pb-36"
                     class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
                     Complete
                     </button>
-            </button>
+            
         </div>
       </div>
     </div>
@@ -323,33 +323,38 @@ async setupNotifications() {
     }
     this.loading = false;
   },
+subscribeRealtime() {
+  window.sb
+    .channel(`public-jobs`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "jobs" }, // listen to INSERT + UPDATE
+      (payload) => {
+        const job = payload.new;
 
-  subscribeRealtime() {
-    window.sb
-      .channel(`public-jobs`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "jobs" }, 
-      async (payload) => {
-        // ... inside subscribeRealtime() payload => {
-const job = payload.new;
+        // Remove rejected jobs
+        if (job.rejected_by?.includes(this.tech.id)) {
+          this.jobs = this.jobs.filter(j => j.id !== job.id);
+          return;
+        }
 
-if (
-  job.status !== "pending" ||
-  job.tech_id !== null ||
-  job.rejected_by?.includes(this.tech.id)
-) return;
+        // Update job if exists
+        const index = this.jobs.findIndex(j => j.id === job.id);
+        if (index !== -1) {
+          this.jobs[index] = job;
+        } else {
+          // Add new pending jobs
+          if (job.status === "pending" && !job.tech_id) {
+            this.jobs.unshift(job);
+          }
+        }
 
-// TRIGGER WHATSAPP NOTIFICATION
-if (this.tech.phone) {
-  const whatsappMsg = `FixZen Pro: New ${job.category} job available in ${job.location}! Log in to accept.`;
-  this.sendWhatsAppNotification(this.tech.phone, whatsappMsg);
-}
+        this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+      }
+    )
+    .subscribe();
+},
 
-this.fetchJobs();
-this.incomingJob = job;
-
-      })
-      .subscribe();
-  },
   /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
   // 1. Attempt the update without forcing a single-row return
