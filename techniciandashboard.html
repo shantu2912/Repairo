@@ -530,23 +530,33 @@ async completeJob(job) {
 },
 async markArrived(job){
   try {
-    const { error } = await supabase
+    console.log("Marking arrival for job:", job.id);
+
+    const { data, error } = await supabase
       .from('jobs')
       .update({
         arrived_at: new Date().toISOString()
       })
-      .eq('id', job.id);
+      .eq('id', job.id)
+      .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error("SUPABASE ERROR:", error);
+      throw error;
+    }
+
+    console.log("Arrival update success:", data);
 
     job.arrived_at = new Date().toISOString();
 
     alert("Arrival marked successfully");
+
   } catch (err) {
-    console.error("ARRIVAL ERROR:", err);
-    alert("Failed to mark arrival");
+    console.error("ARRIVAL FULL ERROR:", err);
+    alert("Failed to mark arrival: " + (err.message || "Unknown error"));
   }
 },
+
 formatTime(dt){
   if(!dt) return "-";
 
