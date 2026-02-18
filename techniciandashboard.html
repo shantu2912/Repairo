@@ -393,27 +393,29 @@ subscribeRealtime() {
 },
 
   /* ❌ REJECT JOB */
-  async rejectJob(jobId){
+  async rejectJob(jobId) {
+  const job = this.jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  const currentRejected = job.rejected_by || [];
+
   const { error } = await window.sb
     .from("jobs")
     .update({
-      rejected_by: window.sb.sql`
-        array_append(coalesce(rejected_by, '{}'), ${this.tech.id})
-      `
+      rejected_by: [...currentRejected, this.tech.id]
     })
     .eq("id", jobId);
 
   if (error) {
     console.error("Reject failed:", error);
-    alert("Failed to reject job");
+    alert("Reject failed");
     return;
   }
 
-  // Instantly remove from UI (no refresh needed)
+  // Remove instantly from UI (no refresh)
   this.jobs = this.jobs.filter(j => j.id !== jobId);
   this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-}
-,
+},
 /* ✅ COMPLETE JOB */
   /* ✅ COMPLETE JOB */
 async completeJob(job) {
