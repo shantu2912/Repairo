@@ -444,8 +444,15 @@ async completeJob(job) {
 
   calculateFee(job){
     const BASE = {
-      "AC Repair": 800,
-      "Washing Machine Repair": 600
+      "Carpenter": 800,
+      "Plumber": 600,
+      "Electrician": 600,
+      "Painter": 600,
+      "Mason": 600,
+      "Welder": 600,
+      "Roofer": 600,
+      "AC Tech": 600
+
     };
     return BASE[job.category] ?? 400;
   },
