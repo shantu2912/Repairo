@@ -394,17 +394,26 @@ subscribeRealtime() {
 
   /* ❌ REJECT JOB */
   async rejectJob(jobId){
-  await window.sb
+  const { error } = await window.sb
     .from("jobs")
     .update({
       rejected_by: window.sb.sql`
-        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+        array_append(coalesce(rejected_by, '{}'), ${this.tech.id})
       `
     })
     .eq("id", jobId);
 
-  this.fetchJobs();
-},
+  if (error) {
+    console.error("Reject failed:", error);
+    alert("Failed to reject job");
+    return;
+  }
+
+  // Instantly remove from UI (no refresh needed)
+  this.jobs = this.jobs.filter(j => j.id !== jobId);
+  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+}
+,
 /* ✅ COMPLETE JOB */
   /* ✅ COMPLETE JOB */
 async completeJob(job) {
