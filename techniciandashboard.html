@@ -317,10 +317,22 @@ async setupNotifications() {
       .not("rejected_by", "cs", `{${this.tech.id}}`)
       .order("created_at", { ascending: false });
 
-    if(!error) {
-      this.jobs = data;
-      this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
-    }
+    if (!error) {
+  this.jobs = data;
+
+  // Active jobs
+  this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
+
+  // 🔥 REAL EARNINGS CALCULATION (you were missing this)
+  const completedJobs = data.filter(
+    j => j.status === 'completed' && j.tech_id === this.tech.id
+  );
+
+  this.stats.earnings = completedJobs.reduce((total, job) => {
+    return total + (job.technician_fee || 0);
+  }, 0);
+}
+
     this.loading = false;
   },
 subscribeRealtime() {
@@ -350,7 +362,17 @@ subscribeRealtime() {
         }
 
         this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+        // Recalculate earnings live
+const completedJobs = this.jobs.filter(
+  j => j.status === 'completed' && j.tech_id === this.tech.id
+);
+
+this.stats.earnings = completedJobs.reduce((total, job) => {
+  return total + (job.technician_fee || 0);
+}, 0);
+
       }
+      
     )
     .subscribe();
 },
