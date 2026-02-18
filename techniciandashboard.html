@@ -96,6 +96,27 @@ class="font-sans antialiased pb-36"
         ₹<span x-text="stats.earnings"></span>
       </h3>
     </div>
+    <div class="glass-card p-5 rounded-[2rem]">
+  <p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
+  <h3 class="text-3xl font-extrabold text-purple-700">
+    ₹<span x-text="stats.todayEarnings"></span>
+  </h3>
+</div>
+<div class="flex items-center gap-4">
+  
+  <!-- Existing stats / buttons -->
+
+  <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
+    <input 
+      type="checkbox" 
+      class="accent-green-600"
+      @change="toggleAvailability($event)"
+    >
+    <span class="font-semibold">Available for Jobs</span>
+  </label>
+
+</div>
+
   </div>
 </section>
 
@@ -119,6 +140,10 @@ class="font-sans antialiased pb-36"
       <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
       <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
       <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
+      <p class="text-xs text-gray-500 mt-1">
+        Started: <span x-text="formatTime(job.started_at)"></span>
+      </p>
+
 
       <!-- FOOTER -->
       <div class="flex justify-between items-center border-t mt-4 pt-4">
@@ -126,7 +151,19 @@ class="font-sans antialiased pb-36"
         <!-- CUSTOMER -->
         <div>
           <p class="text-sm font-bold" x-text="job.customer_name"></p>
+          <a
+            :href="'tel:' + job.phone"
+            class="text-xs text-green-600 font-bold mt-1 block">
+            📞 Call Customer
+          </a>
+
           <p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
+          <button
+            @click="openMaps(job.location)"
+            class="text-xs text-blue-600 font-bold mt-1">
+            Open in Maps →
+          </button>
+
           <p class="text-[9px] font-mono text-red-600 mt-1"
              x-show="job.slaRemaining">
              SLA: <span x-text="job.slaRemaining"></span>
@@ -137,16 +174,15 @@ class="font-sans antialiased pb-36"
         <div class="flex flex-col items-end gap-2">
 
           <span
-            class="text-[9px] font-black uppercase px-2 py-1 rounded-full"
-            :class="
-              job.status === 'assigned' ? 'bg-yellow-100 text-yellow-700' :
-              job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-              'bg-green-100 text-green-700'
-            "
+           :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
+                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                    job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
+                    'bg-green-100 text-green-700'
+                  "
             x-text="job.status.replace('_',' ')"
           ></span>
-
-        <button
+                    <!-- ACCEPT / REJECT (only when job is free) -->
+<button
   x-show="job.status === 'pending'"
   @click="acceptJob(job.id)"
   class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
@@ -160,13 +196,22 @@ class="font-sans antialiased pb-36"
   Reject
 </button>
 
+<!-- MARK ARRIVED (after accepting job) -->
+<button
+  x-show="job.status === 'in_progress'"
+  @click="markArrived(job)"
+  class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
+  Mark Arrived
+</button>
 
-                    <button
-                    x-show="job.status === 'in_progress'"
-                    @click="completeJob(job)"
-                    class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
-                    Complete
-                    </button>
+<!-- COMPLETE (ONLY after arrival) -->
+<button
+  x-show="job.status === 'arrived'"
+  @click="completeJob(job)"
+  class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
+  Complete Job
+</button>
+
             
         </div>
       </div>
@@ -235,6 +280,8 @@ return {
   jobs: [],
   stats: { activeJobs: 0, earnings: 0 },
   incomingJob: null,
+  available: true,
+  
 
   async init() {
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
@@ -263,6 +310,14 @@ messaging.onMessage((payload) => {
 
     
   },
+  openMaps(location){
+  const encoded = encodeURIComponent(location);
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
+},
+toggleAvailability(e){
+  this.available = e.target.checked;
+  console.log("Technician availability:", this.available);
+},
 // Inside dashboardHandler() init
 async setupNotifications() {
   try {
@@ -331,6 +386,16 @@ async setupNotifications() {
   this.stats.earnings = completedJobs.reduce((total, job) => {
     return total + (job.technician_fee || 0);
   }, 0);
+  const today = new Date().toISOString().split('T')[0];
+
+this.stats.todayEarnings = data
+  .filter(j =>
+    j.status === 'completed' &&
+    j.tech_id === this.tech.id &&
+    j.completed_at?.startsWith(today)
+  )
+  .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
+
 }
 
     this.loading = false;
@@ -363,13 +428,13 @@ subscribeRealtime() {
 
         this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
         // Recalculate earnings live
-const completedJobs = this.jobs.filter(
-  j => j.status === 'completed' && j.tech_id === this.tech.id
-);
+        const completedJobs = this.jobs.filter(
+          j => j.status === 'completed' && j.tech_id === this.tech.id
+        );
 
-this.stats.earnings = completedJobs.reduce((total, job) => {
-  return total + (job.technician_fee || 0);
-}, 0);
+        this.stats.earnings = completedJobs.reduce((total, job) => {
+          return total + (job.technician_fee || 0);
+        }, 0);
 
       }
       
@@ -463,6 +528,39 @@ async completeJob(job) {
   alert("Job marked as completed!");
   this.fetchJobs(); // Refresh the list
 },
+async markArrived(job) {
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "arrived",
+      arrived_at: new Date().toISOString()
+    })
+    .eq("id", job.id)
+    .eq("tech_id", this.tech.id);
+
+  if (error) {
+    console.error(error);
+    alert("Failed to mark arrival");
+    return;
+  }
+
+  // Instant UI update (no refresh needed)
+  job.status = "arrived";
+},
+formatTime(dt){
+  if(!dt) return "-";
+
+  const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
+
+  if(diff < 1) return "just now";
+  if(diff < 60) return diff + " mins ago";
+
+  const hours = Math.floor(diff / 60);
+  if(hours < 24) return hours + " hrs ago";
+
+  const days = Math.floor(hours / 24);
+  return days + " days ago";
+},
 
   calculateFee(job){
     const BASE = {
@@ -519,8 +617,6 @@ async rejectIncoming() {
 
   this.incomingJob = null;
 },
-
-
   logout(){
     localStorage.removeItem("active_tech");
     window.location.href = "partnerlogin.html";
