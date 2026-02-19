@@ -112,7 +112,7 @@ function badge(status){
 
 /* LOAD JOBS */
 async function loadJobs(){
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('jobs')
     .select(`
       id,
@@ -173,7 +173,7 @@ async function loadJobs(){
             ${j.tech_id ? "REASSIGN":"ASSIGN"}
           </button>
 
-          <button onclick="openEdit('${j.id}', ${encodeURIComponent(JSON.stringify(j))})"
+          <button onclick='openEdit(${JSON.stringify(j)})'
             class="px-3 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg">
             EDIT
           </button>
@@ -195,15 +195,15 @@ async function loadJobs(){
 
 
 /* EDIT JOB */
-window.openEdit=(id,jobRaw)=>{
-  const job=JSON.parse(decodeURIComponent(jobRaw));
-  editingJobId=id;
-  document.getElementById("editName").value=job.customer_name||"";
-  document.getElementById("editPhone").value=job.phone||"";
-  document.getElementById("editLocation").value=job.location||"";
-  document.getElementById("editFee").value=job.technician_fee||0;
-  document.getElementById("editIssue").value=job.issue||"";
-  document.getElementById("editNotes").value=job.admin_notes||"";
+window.openEdit = (job) => {
+  editingJobId = job.id;
+  document.getElementById("editName").value = job.customer_name || "";
+  document.getElementById("editPhone").value = job.phone || "";
+  document.getElementById("editLocation").value = job.location || "";
+  document.getElementById("editFee").value = job.technician_fee || 0;
+  document.getElementById("editIssue").value = job.issue || "";
+  document.getElementById("editNotes").value = job.admin_notes || "";
+
   document.getElementById("editModal").classList.remove("hidden");
   document.getElementById("editModal").classList.add("flex");
 };
