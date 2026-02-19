@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixZen Admin | Advanced Dashboard</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Chart.js (for analytics) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-[#f7f4ef] text-[#4b453a]">
+
+<!-- HEADER -->
+<div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+  <h1 class="text-3xl font-black">
+    FIXZEN <span class="text-sm font-normal">Admin · Analytics Dashboard</span>
+  </h1>
+
+  <button onclick="loadDashboard()" 
+    class="px-4 py-2 bg-[#4b453a] text-white rounded-xl font-bold text-sm">
+    Refresh Data
+  </button>
+  <p id="lastUpdated" class="text-sm text-gray-500 font-semibold">
+  Last updated: --
+</p>
+
+</div>
+
+<!-- KPI CARDS -->
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 px-6">
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">TOTAL JOBS</p>
+    <h2 id="totalJobs" class="text-3xl font-black mt-2">0</h2>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">PENDING JOBS</p>
+    <h2 id="pendingJobs" class="text-3xl font-black mt-2 text-yellow-600">0</h2>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">COMPLETED JOBS</p>
+    <h2 id="completedJobs" class="text-3xl font-black mt-2 text-green-600">0</h2>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">TOTAL REVENUE</p>
+    <h2 id="totalRevenue" class="text-3xl font-black mt-2 text-green-700">₹0</h2>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">ACTIVE TECHNICIANS</p>
+    <h2 id="activeTechs" class="text-3xl font-black mt-2 text-blue-600">0</h2>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">JOBS TODAY</p>
+    <h2 id="jobsToday" class="text-3xl font-black mt-2 text-purple-600">0</h2>
+  </div>
+
+</div>
+
+<!-- CHARTS SECTION -->
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 px-6 mt-10">
+
+  <!-- Revenue Chart -->
+  <div class="bg-white p-6 rounded-3xl shadow">
+    <h2 class="text-xl font-black mb-4">Daily Revenue (Last 7 Days)</h2>
+    <canvas id="revenueChart"></canvas>
+  </div>
+
+  <!-- Category Chart -->
+  <div class="bg-white p-6 rounded-3xl shadow">
+    <h2 class="text-xl font-black mb-4">Service Category Demand</h2>
+    <canvas id="categoryChart"></canvas>
+  </div>
+
+</div>
+
+<!-- LEADERBOARD + RECENT JOBS -->
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 px-6 mt-10">
+
+  <!-- Technician Leaderboard -->
+  <div class="bg-white rounded-3xl shadow p-6">
+    <h2 class="text-xl font-black mb-4">Technician Leaderboard (Completed Jobs)</h2>
+    <div id="leaderboard" class="space-y-3"></div>
+  </div>
+
+  <!-- Recent Jobs -->
+  <div class="bg-white rounded-3xl shadow overflow-hidden">
+    <div class="p-6 border-b">
+      <h2 class="text-xl font-black">Recent Jobs (Live Feed)</h2>
+    </div>
+    <table class="w-full">
+      <thead class="bg-gray-50 text-xs text-gray-500">
+        <tr>
+          <th class="p-4 text-left">SERVICE</th>
+          <th class="p-4">STATUS</th>
+          <th class="p-4">FEE</th>
+          <th class="p-4">DATE</th>
+        </tr>
+      </thead>
+      <tbody id="recentJobs"></tbody>
+    </table>
+  </div>
+
+</div>
+
+
+<script>
+window.sb = supabase.createClient(
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+);
+</script>
+<script>
+let revenueChart = null;
+let categoryChart = null;
+let isLoading = false; // prevents duplicate refresh spam
+
+async function loadDashboard() {
+  if (isLoading) return; // stop overlapping calls
+  isLoading = true;
+
+  console.log("Auto loading dashboard...");
+
+  try {
+    /* ===== SINGLE OPTIMIZED QUERY ===== */
+    const { data: jobs, error } = await sb
+      .from("jobs")
+      .select("id, status, category, technician_fee, created_at, tech_id");
+
+    if (error) {
+      console.error("Jobs Error:", error);
+      isLoading = false;
+      return;
+    }
+
+    const { data: techs, error: techError } = await sb
+      .from("technicians")
+      .select("id, name, status");
+
+    if (techError) {
+      console.error("Tech Error:", techError);
+      isLoading = false;
+      return;
+    }
+
+    /* ===== KPI CALCULATIONS ===== */
+    const totalJobs = jobs.length;
+    const completedJobs = jobs.filter(j => j.status === "completed").length;
+    const pendingJobs = jobs.filter(j =>
+      j.status === "pending" || j.status === "assigned" || j.status === "in_progress"
+    ).length;
+
+    const totalRevenue = jobs
+      .filter(j => j.status === "completed")
+      .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
+
+    const activeTechs = techs.filter(t => t.status === "approved").length;
+
+    const today = new Date().toISOString().split("T")[0];
+    const jobsToday = jobs.filter(j =>
+      j.created_at && j.created_at.startsWith(today)
+    ).length;
+
+    /* ===== UPDATE KPI UI ===== */
+    document.getElementById("totalJobs").innerText = totalJobs;
+    document.getElementById("completedJobs").innerText = completedJobs;
+    document.getElementById("pendingJobs").innerText = pendingJobs;
+    document.getElementById("totalRevenue").innerText = "₹" + totalRevenue;
+    document.getElementById("activeTechs").innerText = activeTechs;
+    document.getElementById("jobsToday").innerText = jobsToday;
+
+    /* ===== DAILY REVENUE CHART (MEMORY SAFE) ===== */
+    const revenueMap = {};
+    jobs.forEach(j => {
+      if (j.status === "completed" && j.created_at) {
+        const date = j.created_at.split("T")[0];
+        revenueMap[date] = (revenueMap[date] || 0) + (j.technician_fee || 0);
+      }
+    });
+
+    const revenueLabels = Object.keys(revenueMap).slice(-7);
+    const revenueData = revenueLabels.map(d => revenueMap[d]);
+
+    if (revenueChart) {
+      revenueChart.destroy(); // critical to avoid memory leak
+    }
+
+    revenueChart = new Chart(document.getElementById("revenueChart"), {
+      type: "line",
+      data: {
+        labels: revenueLabels,
+        datasets: [{
+          label: "Revenue (₹)",
+          data: revenueData,
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    /* ===== CATEGORY DEMAND CHART ===== */
+    const categoryMap = {};
+    jobs.forEach(j => {
+      if (!j.category) return;
+      categoryMap[j.category] = (categoryMap[j.category] || 0) + 1;
+    });
+
+    if (categoryChart) {
+      categoryChart.destroy();
+    }
+
+    categoryChart = new Chart(document.getElementById("categoryChart"), {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(categoryMap),
+        datasets: [{
+          data: Object.values(categoryMap)
+        }]
+      },
+      options: {
+        responsive: true
+      }
+    });
+
+    /* ===== TECHNICIAN LEADERBOARD ===== */
+    const leaderboardMap = {};
+    jobs.forEach(j => {
+      if (j.status === "completed" && j.tech_id) {
+        leaderboardMap[j.tech_id] = (leaderboardMap[j.tech_id] || 0) + 1;
+      }
+    });
+
+    const sorted = Object.entries(leaderboardMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const leaderboardDiv = document.getElementById("leaderboard");
+    leaderboardDiv.innerHTML = "";
+
+    if (sorted.length === 0) {
+      leaderboardDiv.innerHTML =
+        `<p class="text-gray-500 font-bold">No completed jobs yet</p>`;
+    } else {
+      sorted.forEach(([techId, count], index) => {
+        const tech = techs.find(t => t.id === techId);
+        leaderboardDiv.innerHTML += `
+          <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+            <span class="font-bold">#${index + 1} ${tech?.name || "Unknown"}</span>
+            <span class="font-black text-green-700">${count} Jobs</span>
+          </div>
+        `;
+      });
+    }
+
+    /* ===== RECENT JOBS FEED ===== */
+    const recent = jobs
+      .filter(j => j.created_at)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 8);
+
+    const tbody = document.getElementById("recentJobs");
+    tbody.innerHTML = "";
+
+    recent.forEach(job => {
+      tbody.innerHTML += `
+        <tr class="border-t">
+          <td class="p-4 font-bold">${job.category || "N/A"}</td>
+          <td class="p-4 text-center">${job.status}</td>
+          <td class="p-4 text-center font-bold">₹${job.technician_fee || 0}</td>
+          <td class="p-4 text-center text-sm">
+            ${new Date(job.created_at).toLocaleDateString()}
+          </td>
+        </tr>
+      `;
+    });
+
+    /* ===== LAST UPDATED TIME ===== */
+    document.getElementById("lastUpdated").innerText =
+      "Last updated: " + new Date().toLocaleTimeString();
+
+  } catch (err) {
+    console.error("Dashboard Crash:", err);
+  }
+
+  isLoading = false;
+}
+
+/* INITIAL LOAD */
+loadDashboard();
+
+/* AUTO REFRESH EVERY 30 SECONDS (PRODUCTION SAFE) */
+setInterval(() => {
+  console.log("Auto refresh triggered");
+  loadDashboard();
+}, 30000);
+</script>
+
+</body>
+</html>
