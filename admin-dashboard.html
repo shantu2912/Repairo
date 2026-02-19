@@ -115,13 +115,17 @@
 </div>
 
 
+
 <script>
-window.sb = supabase.createClient(
-  "https://kzxdxnxgouthsywbsnvl.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+    const SUPABASE_URL = "https://kzxdxnxgouthsywbsnvl.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag" ;
+
+const sb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
 );
-</script>
-<script>
+
 let revenueChart = null;
 let categoryChart = null;
 let isLoading = false; // prevents duplicate refresh spam
