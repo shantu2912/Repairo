@@ -2,57 +2,73 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>FixZen Admin | Job Control Panel</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+button {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+button:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+</style>
 </head>
 
-<body class="bg-[#f7f4ef]">
+<body class="bg-[#f7f4ef] text-[#4b453a]">
 
-<!-- HEADER -->
-<div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-  <h1 class="text-2xl font-black text-[#4b453a]">
-    FIXZEN <span class="font-normal text-sm">Admin · Job Control Panel</span>
+<!-- RESPONSIVE HEADER -->
+<div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+  <h1 class="text-xl sm:text-2xl font-black">
+    FIXZEN 
+    <span class="block sm:inline font-normal text-xs sm:text-sm">
+      Admin · Job Control Panel
+    </span>
   </h1>
 
   <button onclick="loadJobs()"
-    class="px-4 py-2 rounded-xl bg-[#4b453a] text-white text-sm font-bold">
+    class="px-4 py-2 rounded-xl bg-[#4b453a] text-white text-sm font-bold w-full sm:w-auto">
     Refresh
   </button>
 </div>
 
-<!-- TABLE -->
-<div class="max-w-7xl mx-auto bg-white rounded-3xl shadow overflow-hidden">
-  <table class="w-full">
-    <thead class="bg-gray-50 text-xs text-gray-500">
-      <tr>
-        <th class="p-4 text-left">SERVICE</th>
-        <th class="p-4 text-left">CUSTOMER</th>
-        <th class="p-4">LOCATION</th>
-        <th class="p-4">TECHNICIAN</th>
-        <th class="p-4">STATUS</th>
-        <th class="p-4">FEE</th>
-        <th class="p-4">ACTIONS</th>
-      </tr>
-    </thead>
-    <tbody id="jobList"></tbody>
-  </table>
+<!-- MOBILE SAFE TABLE (SCROLLABLE) -->
+<div class="max-w-7xl mx-auto px-4">
+  <div class="bg-white rounded-3xl shadow overflow-x-auto">
+    <table class="w-full min-w-[900px]">
+      <thead class="bg-gray-50 text-[10px] sm:text-xs text-gray-500">
+        <tr>
+          <th class="p-3 sm:p-4 text-left">SERVICE</th>
+          <th class="p-3 sm:p-4 text-left">CUSTOMER</th>
+          <th class="p-3 sm:p-4 text-center">LOCATION</th>
+          <th class="p-3 sm:p-4 text-center">TECHNICIAN</th>
+          <th class="p-3 sm:p-4 text-center">STATUS</th>
+          <th class="p-3 sm:p-4 text-center">FEE</th>
+          <th class="p-3 sm:p-4 text-center">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="jobList"></tbody>
+    </table>
+  </div>
 </div>
 
-<!-- EDIT MODAL -->
-<div id="editModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
-  <div class="bg-white p-8 rounded-3xl w-[500px] shadow-2xl">
-    <h2 class="text-xl font-black mb-6">Edit Job Details</h2>
+<!-- EDIT MODAL (FULLY RESPONSIVE) -->
+<div id="editModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50 p-4">
+  <div class="bg-white p-5 sm:p-8 rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+    <h2 class="text-lg sm:text-xl font-black mb-6">Edit Job Details</h2>
 
-    <input id="editName" class="w-full border p-3 rounded-lg mb-3" placeholder="Customer Name"/>
-    <input id="editPhone" class="w-full border p-3 rounded-lg mb-3" placeholder="Phone"/>
-    <input id="editLocation" class="w-full border p-3 rounded-lg mb-3" placeholder="Location"/>
-    <input id="editFee" type="number" class="w-full border p-3 rounded-lg mb-3" placeholder="Technician Fee (₹)"/>
-    <textarea id="editIssue" class="w-full border p-3 rounded-lg mb-3" placeholder="Issue"></textarea>
-    <textarea id="editNotes" class="w-full border p-3 rounded-lg mb-4" placeholder="Admin Internal Notes"></textarea>
+    <input id="editName" class="w-full border p-3 rounded-lg mb-3 text-sm" placeholder="Customer Name"/>
+    <input id="editPhone" class="w-full border p-3 rounded-lg mb-3 text-sm" placeholder="Phone"/>
+    <input id="editLocation" class="w-full border p-3 rounded-lg mb-3 text-sm" placeholder="Location"/>
+    <input id="editFee" type="number" class="w-full border p-3 rounded-lg mb-3 text-sm" placeholder="Technician Fee (₹)"/>
+    <textarea id="editIssue" class="w-full border p-3 rounded-lg mb-3 text-sm" placeholder="Issue"></textarea>
+    <textarea id="editNotes" class="w-full border p-3 rounded-lg mb-4 text-sm" placeholder="Admin Internal Notes"></textarea>
 
-    <div class="flex gap-3">
+    <div class="flex flex-col sm:flex-row gap-3">
       <button onclick="saveEdits()"
         class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
         Save Changes
@@ -65,38 +81,35 @@
   </div>
 </div>
 
-<!-- ASSIGN MODAL -->
-<div id="assignModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
-  <div class="bg-white p-6 rounded-2xl w-[350px]">
-    <h2 class="font-black mb-4">Assign / Reassign Technician</h2>
-    <select id="techSelect" class="w-full border rounded-lg p-2 mb-4"></select>
-    <div class="flex gap-2">
+<!-- ASSIGN MODAL (MOBILE FRIENDLY) -->
+<div id="assignModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50 p-4">
+  <div class="bg-white p-6 rounded-2xl w-full max-w-sm shadow-xl">
+    <h2 class="font-black mb-4 text-lg">Assign / Reassign Technician</h2>
+    <select id="techSelect" class="w-full border rounded-lg p-3 mb-4 text-sm"></select>
+
+    <div class="flex flex-col sm:flex-row gap-2">
       <button onclick="confirmAssign()"
-        class="flex-1 bg-[#b18b5e] text-white py-2 rounded-lg font-bold">
+        class="flex-1 bg-[#b18b5e] text-white py-3 rounded-lg font-bold">
         Assign
       </button>
       <button onclick="closeAssign()"
-        class="flex-1 border py-2 rounded-lg">
+        class="flex-1 border py-3 rounded-lg font-bold">
         Cancel
       </button>
     </div>
   </div>
 </div>
 
-
 <script>
-window.sb = supabase.createClient(
+const sb = supabase.createClient(
   "https://kzxdxnxgouthsywbsnvl.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
 );
-</script>
-<script>
 
 const jobList = document.getElementById("jobList");
 let selectedJobId = null;
 let editingJobId = null;
 
-/* STATUS BADGE */
 function badge(status){
   const map={
     pending:"bg-gray-100 text-gray-700",
@@ -105,12 +118,11 @@ function badge(status){
     completed:"bg-green-100 text-green-700",
     cancelled:"bg-red-100 text-red-700"
   };
-  return `<span class="px-3 py-1 text-[10px] font-black rounded-full ${map[status]}">
-    ${status.replace("_"," ").toUpperCase()}
+  return `<span class="px-2 py-1 text-[10px] font-black rounded-full ${map[status] || 'bg-gray-100'}">
+    ${(status || "unknown").replace("_"," ").toUpperCase()}
   </span>`;
 }
 
-/* LOAD JOBS */
 async function loadJobs(){
   const { data, error } = await sb
     .from('jobs')
@@ -128,8 +140,7 @@ async function loadJobs(){
       created_at,
       technicians:technicians!jobs_tech_id_fkey (
         id,
-        name,
-        phone
+        name
       )
     `)
     .order('created_at', { ascending: false });
@@ -144,47 +155,47 @@ async function loadJobs(){
 
   data.forEach(j=>{
     jobList.innerHTML+=`
-    <tr class="border-t">
-      <td class="p-4">
-        <p class="font-bold">${j.category}</p>
-        <p class="text-xs text-gray-500">${j.device}</p>
-        <p class="text-xs">${j.issue}</p>
+    <tr class="border-t align-top">
+      <td class="p-3 sm:p-4">
+        <p class="font-bold text-sm">${j.category || "-"}</p>
+        <p class="text-xs text-gray-500">${j.device || ""}</p>
+        <p class="text-xs">${j.issue || ""}</p>
       </td>
 
-      <td class="p-4">
-        <p class="font-semibold">${j.customer_name}</p>
-        <p class="text-xs text-gray-500">${j.phone ?? "-"}</p>
+      <td class="p-3 sm:p-4">
+        <p class="font-semibold text-sm">${j.customer_name || "-"}</p>
+        <p class="text-xs text-gray-500">${j.phone || "-"}</p>
       </td>
 
-      <td class="p-4">${j.location ?? "-"}</td>
+      <td class="p-3 sm:p-4 text-center text-sm">${j.location || "-"}</td>
 
-      <td class="p-4 font-bold ${j.tech_id ? 'text-green-700':'text-red-600'}">
-        ${j.tech_id ? (j.technicians?.name ?? "Assigned") : "Unassigned"}
+      <td class="p-3 sm:p-4 text-center font-bold text-sm ${j.tech_id ? 'text-green-700':'text-red-600'}">
+        ${j.tech_id ? (j.technicians?.name || "Assigned") : "Unassigned"}
       </td>
 
-      <td class="p-4 text-center">${badge(j.status)}</td>
+      <td class="p-3 sm:p-4 text-center">${badge(j.status)}</td>
 
-      <td class="p-4 text-center font-bold">₹${j.technician_fee ?? 0}</td>
+      <td class="p-3 sm:p-4 text-center font-bold text-sm">₹${j.technician_fee ?? 0}</td>
 
-      <td class="p-4">
-        <div class="flex flex-wrap gap-2">
-          <button onclick="openAssign('${j.id}','${j.category}')"
-            class="px-3 py-2 text-xs font-bold bg-yellow-500 text-white rounded-lg">
+      <td class="p-3 sm:p-4">
+        <div class="flex flex-col gap-2">
+          <button onclick="openAssign('${j.id}','${j.category || ""}')"
+            class="w-full px-3 py-2 text-xs font-bold bg-yellow-500 text-white rounded-lg">
             ${j.tech_id ? "REASSIGN":"ASSIGN"}
           </button>
 
           <button onclick='openEdit(${JSON.stringify(j)})'
-            class="px-3 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg">
+            class="w-full px-3 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg">
             EDIT
           </button>
 
           <button onclick="forceComplete('${j.id}')"
-            class="px-3 py-2 text-xs font-bold bg-green-600 text-white rounded-lg">
+            class="w-full px-3 py-2 text-xs font-bold bg-green-600 text-white rounded-lg">
             COMPLETE
           </button>
 
           <button onclick="cancelJob('${j.id}')"
-            class="px-3 py-2 text-xs font-bold bg-red-600 text-white rounded-lg">
+            class="w-full px-3 py-2 text-xs font-bold bg-red-600 text-white rounded-lg">
             CANCEL
           </button>
         </div>
@@ -193,67 +204,71 @@ async function loadJobs(){
   });
 }
 
-
-/* EDIT JOB */
 window.openEdit = (job) => {
   editingJobId = job.id;
-  document.getElementById("editName").value = job.customer_name || "";
-  document.getElementById("editPhone").value = job.phone || "";
-  document.getElementById("editLocation").value = job.location || "";
-  document.getElementById("editFee").value = job.technician_fee || 0;
-  document.getElementById("editIssue").value = job.issue || "";
-  document.getElementById("editNotes").value = job.admin_notes || "";
-
-  document.getElementById("editModal").classList.remove("hidden");
-  document.getElementById("editModal").classList.add("flex");
+  editName.value = job.customer_name || "";
+  editPhone.value = job.phone || "";
+  editLocation.value = job.location || "";
+  editFee.value = job.technician_fee || 0;
+  editIssue.value = job.issue || "";
+  editNotes.value = job.admin_notes || "";
+  editModal.classList.remove("hidden");
+  editModal.classList.add("flex");
 };
 
-window.closeEdit=()=>{
-  document.getElementById("editModal").classList.add("hidden");
-  editingJobId=null;
-};
+function closeEdit(){
+  editModal.classList.add("hidden");
+}
 
-window.saveEdits=async()=>{
+async function saveEdits(){
   const updates={
-    customer_name:document.getElementById("editName").value,
-    phone:document.getElementById("editPhone").value,
-    location:document.getElementById("editLocation").value,
-    technician_fee:Number(document.getElementById("editFee").value),
-    issue:document.getElementById("editIssue").value,
-    admin_notes:document.getElementById("editNotes").value
+    customer_name:editName.value,
+    phone:editPhone.value,
+    location:editLocation.value,
+    technician_fee:Number(editFee.value),
+    issue:editIssue.value,
+    admin_notes:editNotes.value
   };
 
   const {error}=await sb.from("jobs").update(updates).eq("id",editingJobId);
   if(error){alert(error.message);return;}
   closeEdit();
   loadJobs();
-};
+}
 
-/* ASSIGN TECH */
 window.openAssign=async(jobId,category)=>{
   selectedJobId=jobId;
-  const select=document.getElementById("techSelect");
-  select.innerHTML="Loading...";
+  techSelect.innerHTML="Loading technicians...";
 
-  const {data}=await sb
+  const {data,error}=await sb
     .from("technicians")
     .select("id,name,category,experience")
-    .eq("status","approved")
-    .ilike("category",category);
+    .eq("status","approved");
 
-  select.innerHTML="";
-  data.forEach(t=>{
-    select.innerHTML+=`<option value="${t.id}">
-      ${t.name} | ${t.experience} yrs
-    </option>`;
-  });
+  if(error){
+    techSelect.innerHTML="Error loading technicians";
+    return;
+  }
 
-  document.getElementById("assignModal").classList.remove("hidden");
-  document.getElementById("assignModal").classList.add("flex");
+  if(!data || data.length===0){
+    techSelect.innerHTML="<option>No approved technicians</option>";
+  } else {
+    techSelect.innerHTML="";
+    data.forEach(t=>{
+      techSelect.innerHTML+=`<option value="${t.id}">
+        ${t.name} (${t.experience || 0} yrs)
+      </option>`;
+    });
+  }
+
+  assignModal.classList.remove("hidden");
+  assignModal.classList.add("flex");
 };
 
-window.confirmAssign=async()=>{
-  const techId=document.getElementById("techSelect").value;
+async function confirmAssign(){
+  const techId=techSelect.value;
+  if(!techId) return alert("Select technician");
+
   await sb.from("jobs").update({
     tech_id:techId,
     status:"assigned"
@@ -261,31 +276,28 @@ window.confirmAssign=async()=>{
 
   closeAssign();
   loadJobs();
-};
+}
 
-window.closeAssign=()=>{
-  document.getElementById("assignModal").classList.add("hidden");
-};
+function closeAssign(){
+  assignModal.classList.add("hidden");
+}
 
-/* FORCE COMPLETE */
-window.forceComplete=async(id)=>{
+async function forceComplete(id){
   if(!confirm("Force mark as completed?")) return;
   await sb.from("jobs").update({status:"completed"}).eq("id",id);
   loadJobs();
-};
+}
 
-/* CANCEL JOB */
-window.cancelJob=async(id)=>{
+async function cancelJob(id){
   if(!confirm("Cancel this job?")) return;
   await sb.from("jobs").update({
     status:"cancelled",
     tech_id:null
   }).eq("id",id);
   loadJobs();
-};
+}
 
 loadJobs();
 </script>
-
 </body>
 </html>
