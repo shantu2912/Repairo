@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixZen Admin – Analytics</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Fonts (MATCH YOUR ADMIN PANEL) -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+body{
+  background:#EEEAE2; /* brand-cream */
+  color:#000; /* pure black text as requested */
+  font-family:"Plus Jakarta Sans", sans-serif;
+}
+
+/* Premium Glass Card (same vibe as your admin console) */
+.glass-card{
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(93,86,70,0.08);
+  box-shadow:0 25px 50px -12px rgba(93,86,70,0.15);
+  border-radius:28px;
+}
+
+/* Brand Text Styles */
+.brand-title{
+  color:#5D5646; /* brand-olive */
+}
+
+.kpi-label{
+  color:#4D4C4B;
+  opacity:0.6;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+}
+
+.kpi-value{
+  color:#000;
+  font-weight:800;
+  letter-spacing:-0.02em;
+}
+
+.gold-value{
+  color:#A07D54; /* brand-gold */
+  font-weight:800;
+}
+
+.section-title{
+  color:#5D5646;
+  font-weight:700;
+  font-size:20px;
+}
+</style>
+</head>
+
+<body class="p-6 md:p-10">
+
+<!-- HEADER -->
+<div class="mb-10">
+  <h1 class="text-4xl font-extrabold brand-title">
+    FIX <span class="text-[#A07D54]">ZEN</span> Analytics
+  </h1>
+  <p class="text-sm text-black/60 mt-2">
+    Financial insights, job performance & platform efficiency
+  </p>
+</div>
+
+<!-- KPI CARDS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+
+  <!-- Total Revenue -->
+  <div class="glass-card p-7">
+    <p class="kpi-label">Total Revenue</p>
+    <h2 id="totalRevenue" class="text-4xl kpi-value mt-2">₹0</h2>
+  </div>
+
+  <!-- Profit -->
+  <div class="glass-card p-7">
+    <p class="kpi-label">Platform Profit</p>
+    <h2 id="totalProfit" class="text-4xl gold-value mt-2">₹0</h2>
+  </div>
+
+  <!-- Total Jobs -->
+  <div class="glass-card p-7">
+    <p class="kpi-label">Total Jobs</p>
+    <h2 id="totalJobs" class="text-4xl kpi-value mt-2">0</h2>
+  </div>
+
+  <!-- Avg Completion Time -->
+  <div class="glass-card p-7">
+    <p class="kpi-label">Avg Completion Time</p>
+    <h2 id="avgTime" class="text-4xl kpi-value mt-2">--</h2>
+  </div>
+
+</div>
+
+<!-- CHARTS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+  <!-- Job Status Pie -->
+  <div class="glass-card p-8">
+    <h2 class="section-title mb-6">Job Status Distribution</h2>
+    <canvas id="statusChart"></canvas>
+  </div>
+
+  <!-- Peak Booking Hours -->
+  <div class="glass-card p-8">
+    <h2 class="section-title mb-6">Peak Booking Hours</h2>
+    <canvas id="hourChart"></canvas>
+  </div>
+
+</div>
+
+<script>
+const sb = supabase.createClient(
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+);
+
+let statusChart = null;
+let hourChart = null;
+
+async function loadAnalytics() {
+  const { data: jobs, error } = await sb
+    .from("jobs")
+    .select("*");
+  if (error) {
+    console.error(error);
+    alert(error.message);
+    return;
+  }
+
+  if (!jobs || jobs.length === 0) return;
+
+  let totalRevenue = 0;
+  let totalProfit = 0;
+  let completedTimes = [];
+
+  const statusCount = {
+    pending: 0,
+    assigned: 0,
+    in_progress: 0,
+    completed: 0,
+    cancelled: 0
+  };
+
+  const hourMap = new Array(24).fill(0);
+
+  jobs.forEach(job => {
+    // Status count
+    if (statusCount[job.status] !== undefined) {
+      statusCount[job.status]++;
+    }
+
+    // Revenue & Profit (only completed jobs)
+    if (job.status === "completed") {
+      const fee = Number(job.fee || 0);
+      const techFee = Number(job.technician_fee || 0);
+
+      totalRevenue += fee;
+      totalProfit += (fee - techFee);
+
+      // Avg completion time (hours)
+      if (job.completed_at && job.created_at) {
+        const start = new Date(job.created_at);
+        const end = new Date(job.completed_at);
+        const diffHours = (end - start) / (1000 * 60 * 60);
+        if (diffHours > 0) completedTimes.push(diffHours);
+      }
+    }
+
+    // Peak booking hours
+    if (job.created_at) {
+      const hour = new Date(job.created_at).getHours();
+      hourMap[hour]++;
+    }
+  });
+
+  // Average completion time
+  let avgTime = "--";
+  if (completedTimes.length > 0) {
+    const avg = completedTimes.reduce((a, b) => a + b, 0) / completedTimes.length;
+    avgTime = avg.toFixed(1) + " hrs";
+  }
+
+  // Update UI
+  document.getElementById("totalRevenue").textContent = "₹" + totalRevenue;
+  document.getElementById("totalProfit").textContent = "₹" + totalProfit;
+  document.getElementById("totalJobs").textContent = jobs.length;
+  document.getElementById("avgTime").textContent = avgTime;
+
+  // Chart theme (brand consistent)
+  Chart.defaults.color = "#5D5646";
+  Chart.defaults.font.family = "Plus Jakarta Sans";
+
+  // Destroy old charts (prevents memory leaks)
+  if (statusChart) statusChart.destroy();
+  if (hourChart) hourChart.destroy();
+
+  // Status Pie Chart
+  statusChart = new Chart(document.getElementById("statusChart"), {
+    type: "pie",
+    data: {
+      labels: Object.keys(statusCount),
+      datasets: [{
+        data: Object.values(statusCount),
+        backgroundColor: [
+          "#A07D54",  // gold
+          "#5D5646",  // olive
+          "#D6CFC3",  // soft cream
+          "#6B7280",  // neutral
+          "#E5E1D8"   // light cream
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: "bottom"
+        }
+      }
+    }
+  });
+
+  // Peak Booking Hours Chart
+  hourChart = new Chart(document.getElementById("hourChart"), {
+    type: "bar",
+    data: {
+      labels: [
+        "12AM","1AM","2AM","3AM","4AM","5AM",
+        "6AM","7AM","8AM","9AM","10AM","11AM",
+        "12PM","1PM","2PM","3PM","4PM","5PM",
+        "6PM","7PM","8PM","9PM","10PM","11PM"
+      ],
+      datasets: [{
+        label: "Bookings",
+        data: hourMap,
+        backgroundColor: "#A07D54",
+        borderRadius: 8
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { display: false }
+        },
+        y: {
+          grid: { color: "rgba(93,86,70,0.1)" },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+loadAnalytics();
+</script>
+
+</body>
+</html>

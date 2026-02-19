@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FixZen Admin | User Management</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-[#f7f4ef] text-[#4b453a]">
+
+<!-- HEADER -->
+<div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:justify-between gap-3">
+  <h1 class="text-2xl sm:text-3xl font-black">
+    FIXZEN 
+    <span class="text-sm font-normal block sm:inline">
+      Admin · Customer Management
+    </span>
+  </h1>
+
+  <input 
+    id="searchInput"
+    placeholder="Search customer name or phone..."
+    class="border p-3 rounded-xl w-full sm:w-80 text-sm"
+    oninput="filterUsers()"
+  />
+</div>
+
+<!-- STATS -->
+<div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">TOTAL CUSTOMERS</p>
+    <h2 id="totalUsers" class="text-2xl font-black mt-1">0</h2>
+  </div>
+
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <p class="text-xs text-gray-500 font-bold">TOTAL BOOKINGS</p>
+    <h2 id="totalBookings" class="text-2xl font-black mt-1">0</h2>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="max-w-7xl mx-auto px-4">
+  <div class="bg-white rounded-3xl shadow overflow-x-auto">
+    <table class="w-full min-w-[700px]">
+      <thead class="bg-gray-50 text-xs text-gray-500">
+        <tr>
+          <th class="p-4 text-left">CUSTOMER</th>
+          <th class="p-4 text-center">PHONE</th>
+          <th class="p-4 text-center">TOTAL JOBS</th>
+          <th class="p-4 text-center">LAST BOOKING</th>
+          <th class="p-4 text-center">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient(
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+);
+
+let allUsers = [];
+
+/* LOAD USERS FROM JOBS TABLE (REALISTIC APPROACH) */
+async function loadUsers(){
+  const { data, error } = await sb
+    .from("jobs")
+    .select("customer_name, phone, created_at");
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  // Group by customer
+  const userMap = {};
+  data.forEach(j=>{
+    const key = (j.customer_name || "Unknown") + "_" + (j.phone || "NA");
+
+    if(!userMap[key]){
+      userMap[key] = {
+        name: j.customer_name || "Unknown",
+        phone: j.phone || "-",
+        count: 0,
+        last: j.created_at
+      };
+    }
+
+    userMap[key].count++;
+    if(new Date(j.created_at) > new Date(userMap[key].last)){
+      userMap[key].last = j.created_at;
+    }
+  });
+
+  allUsers = Object.values(userMap);
+
+  document.getElementById("totalUsers").innerText = allUsers.length;
+  document.getElementById("totalBookings").innerText = data.length;
+
+  renderUsers(allUsers);
+}
+
+function renderUsers(users){
+  const table = document.getElementById("userTable");
+  table.innerHTML = "";
+
+  if(users.length === 0){
+    table.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500 font-bold">
+      No customers found
+    </td></tr>`;
+    return;
+  }
+
+  users.forEach(u=>{
+    table.innerHTML += `
+      <tr class="border-t">
+        <td class="p-4 font-bold">${u.name}</td>
+        <td class="p-4 text-center">${u.phone}</td>
+        <td class="p-4 text-center font-black">${u.count}</td>
+        <td class="p-4 text-center text-sm">
+          ${new Date(u.last).toLocaleDateString()}
+        </td>
+        <td class="p-4 text-center">
+          <button onclick="viewHistory('${u.phone}')"
+            class="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold">
+            VIEW HISTORY
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function filterUsers(){
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    u.name.toLowerCase().includes(q) ||
+    u.phone.toLowerCase().includes(q)
+  );
+  renderUsers(filtered);
+}
+
+function viewHistory(phone){
+  alert("Show booking history for: " + phone + " (can link to bookings page)");
+}
+
+loadUsers();
+</script>
+</body>
+</html>
