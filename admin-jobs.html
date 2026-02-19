@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>FixZen Admin | Booked Jobs</title>
+<meta charset="UTF-8" />
+<title>FixZen Admin | Job Control Panel</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="bg-[#f7f4ef]">
@@ -13,7 +13,7 @@
 <!-- HEADER -->
 <div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
   <h1 class="text-2xl font-black text-[#4b453a]">
-    FIXZEN <span class="font-normal text-sm">Admin · Booked Jobs</span>
+    FIXZEN <span class="font-normal text-sm">Admin · Job Control Panel</span>
   </h1>
 
   <button onclick="loadJobs()"
@@ -33,31 +33,48 @@
         <th class="p-4">TECHNICIAN</th>
         <th class="p-4">STATUS</th>
         <th class="p-4">FEE</th>
-        <th class="p-4">ACTION</th>
+        <th class="p-4">ACTIONS</th>
       </tr>
     </thead>
-
     <tbody id="jobList"></tbody>
   </table>
 </div>
 
+<!-- EDIT MODAL -->
+<div id="editModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
+  <div class="bg-white p-8 rounded-3xl w-[500px] shadow-2xl">
+    <h2 class="text-xl font-black mb-6">Edit Job Details</h2>
+
+    <input id="editName" class="w-full border p-3 rounded-lg mb-3" placeholder="Customer Name"/>
+    <input id="editPhone" class="w-full border p-3 rounded-lg mb-3" placeholder="Phone"/>
+    <input id="editLocation" class="w-full border p-3 rounded-lg mb-3" placeholder="Location"/>
+    <input id="editFee" type="number" class="w-full border p-3 rounded-lg mb-3" placeholder="Technician Fee (₹)"/>
+    <textarea id="editIssue" class="w-full border p-3 rounded-lg mb-3" placeholder="Issue"></textarea>
+    <textarea id="editNotes" class="w-full border p-3 rounded-lg mb-4" placeholder="Admin Internal Notes"></textarea>
+
+    <div class="flex gap-3">
+      <button onclick="saveEdits()"
+        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
+        Save Changes
+      </button>
+      <button onclick="closeEdit()"
+        class="flex-1 border py-3 rounded-xl font-bold">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ASSIGN MODAL -->
-<div id="assignModal"
-  class="hidden fixed inset-0 bg-black/50 items-center justify-center">
-
+<div id="assignModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
   <div class="bg-white p-6 rounded-2xl w-[350px]">
-    <h2 class="font-black mb-4">Assign Technician</h2>
-
-    <select id="techSelect"
-      class="w-full border rounded-lg p-2 mb-4">
-    </select>
-
+    <h2 class="font-black mb-4">Assign / Reassign Technician</h2>
+    <select id="techSelect" class="w-full border rounded-lg p-2 mb-4"></select>
     <div class="flex gap-2">
       <button onclick="confirmAssign()"
         class="flex-1 bg-[#b18b5e] text-white py-2 rounded-lg font-bold">
         Assign
       </button>
-
       <button onclick="closeAssign()"
         class="flex-1 border py-2 rounded-lg">
         Cancel
@@ -65,246 +82,210 @@
     </div>
   </div>
 </div>
-<div id="viewModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
-  <div class="bg-white p-8 rounded-3xl w-[400px] shadow-2xl">
-    <h2 class="text-xl font-black text-[#4b453a] mb-6 border-b pb-2">Assignment Details</h2>
-    
-    <div class="space-y-4 text-sm">
-      <div>
-        <p class="text-gray-500 font-bold uppercase text-[10px]">Technician Assigned</p>
-        <p id="viewTechName" class="text-lg font-black text-green-700"></p>
-      </div>
-      <div>
-        <p class="text-gray-500 font-bold uppercase text-[10px]">Service Category</p>
-        <p id="viewCategory" class="font-bold"></p>
-      </div>
-      <div>
-        <p class="text-gray-500 font-bold uppercase text-[10px]">Customer Contact</p>
-        <p id="viewCustomer" class="font-bold"></p>
-      </div>
-    </div>
 
-    <button onclick="document.getElementById('viewModal').classList.add('hidden')"
-      class="w-full mt-8 bg-[#4b453a] text-white py-3 rounded-xl font-bold hover:bg-black transition-all">
-      Close
-    </button>
-  </div>
-</div>
 
 <script>
-/* ---------------- SUPABASE ---------------- */
-const sb = supabase.createClient(
-  'https://kzxdxnxgouthsywbsnvl.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
-
+window.sb = supabase.createClient(
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
 );
-
-window.viewJobDetails = (jobDataRaw) => {
-  // Decode and parse the job object
-  const job = JSON.parse(decodeURIComponent(jobDataRaw));
-  
-  // Fill the modal with data retrieved from the database
-  document.getElementById("viewTechName").innerText = job.technicians?.name || "Unassigned";
-  document.getElementById("viewCategory").innerText = job.category;
-  document.getElementById("viewCustomer").innerText = `${job.customer_name} (${job.phone})`;
-  
-  // Display the modal
-  const modal = document.getElementById("viewModal");
-  modal.classList.remove("hidden");
-  modal.classList.add("flex");
-};
+</script>
+<script>
 
 const jobList = document.getElementById("jobList");
 let selectedJobId = null;
+let editingJobId = null;
 
-/* ---------------- STATUS BADGE ---------------- */
-function statusBadge(status) {
-  const map = {
-    pending: "bg-gray-100 text-gray-700",
-    assigned: "bg-yellow-100 text-yellow-700",
-    in_progress: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700"
+/* STATUS BADGE */
+function badge(status){
+  const map={
+    pending:"bg-gray-100 text-gray-700",
+    assigned:"bg-yellow-100 text-yellow-700",
+    in_progress:"bg-blue-100 text-blue-700",
+    completed:"bg-green-100 text-green-700",
+    cancelled:"bg-red-100 text-red-700"
+  };
+  return `<span class="px-3 py-1 text-[10px] font-black rounded-full ${map[status]}">
+    ${status.replace("_"," ").toUpperCase()}
+  </span>`;
+}
+
+/* LOAD JOBS */
+async function loadJobs(){
+  const { data, error } = await supabase
+    .from('jobs')
+    .select(`
+      id,
+      category,
+      device,
+      issue,
+      customer_name,
+      phone,
+      location,
+      tech_id,
+      technician_fee,
+      status,
+      created_at,
+      technicians:technicians!jobs_tech_id_fkey (
+        id,
+        name,
+        phone
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    console.error(error);
+    alert(error.message);
+    return;
+  }
+
+  jobList.innerHTML="";
+
+  data.forEach(j=>{
+    jobList.innerHTML+=`
+    <tr class="border-t">
+      <td class="p-4">
+        <p class="font-bold">${j.category}</p>
+        <p class="text-xs text-gray-500">${j.device}</p>
+        <p class="text-xs">${j.issue}</p>
+      </td>
+
+      <td class="p-4">
+        <p class="font-semibold">${j.customer_name}</p>
+        <p class="text-xs text-gray-500">${j.phone ?? "-"}</p>
+      </td>
+
+      <td class="p-4">${j.location ?? "-"}</td>
+
+      <td class="p-4 font-bold ${j.tech_id ? 'text-green-700':'text-red-600'}">
+        ${j.tech_id ? (j.technicians?.name ?? "Assigned") : "Unassigned"}
+      </td>
+
+      <td class="p-4 text-center">${badge(j.status)}</td>
+
+      <td class="p-4 text-center font-bold">₹${j.technician_fee ?? 0}</td>
+
+      <td class="p-4">
+        <div class="flex flex-wrap gap-2">
+          <button onclick="openAssign('${j.id}','${j.category}')"
+            class="px-3 py-2 text-xs font-bold bg-yellow-500 text-white rounded-lg">
+            ${j.tech_id ? "REASSIGN":"ASSIGN"}
+          </button>
+
+          <button onclick="openEdit('${j.id}', ${encodeURIComponent(JSON.stringify(j))})"
+            class="px-3 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg">
+            EDIT
+          </button>
+
+          <button onclick="forceComplete('${j.id}')"
+            class="px-3 py-2 text-xs font-bold bg-green-600 text-white rounded-lg">
+            COMPLETE
+          </button>
+
+          <button onclick="cancelJob('${j.id}')"
+            class="px-3 py-2 text-xs font-bold bg-red-600 text-white rounded-lg">
+            CANCEL
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  });
+}
+
+
+/* EDIT JOB */
+window.openEdit=(id,jobRaw)=>{
+  const job=JSON.parse(decodeURIComponent(jobRaw));
+  editingJobId=id;
+  document.getElementById("editName").value=job.customer_name||"";
+  document.getElementById("editPhone").value=job.phone||"";
+  document.getElementById("editLocation").value=job.location||"";
+  document.getElementById("editFee").value=job.technician_fee||0;
+  document.getElementById("editIssue").value=job.issue||"";
+  document.getElementById("editNotes").value=job.admin_notes||"";
+  document.getElementById("editModal").classList.remove("hidden");
+  document.getElementById("editModal").classList.add("flex");
+};
+
+window.closeEdit=()=>{
+  document.getElementById("editModal").classList.add("hidden");
+  editingJobId=null;
+};
+
+window.saveEdits=async()=>{
+  const updates={
+    customer_name:document.getElementById("editName").value,
+    phone:document.getElementById("editPhone").value,
+    location:document.getElementById("editLocation").value,
+    technician_fee:Number(document.getElementById("editFee").value),
+    issue:document.getElementById("editIssue").value,
+    admin_notes:document.getElementById("editNotes").value
   };
 
-  return `
-    <span class="px-3 py-1 text-[10px] font-black rounded-full ${map[status]}">
-      ${status.replace("_", " ").toUpperCase()}
-    </span>
-  `;
-}
+  const {error}=await sb.from("jobs").update(updates).eq("id",editingJobId);
+  if(error){alert(error.message);return;}
+  closeEdit();
+  loadJobs();
+};
 
+/* ASSIGN TECH */
+window.openAssign=async(jobId,category)=>{
+  selectedJobId=jobId;
+  const select=document.getElementById("techSelect");
+  select.innerHTML="Loading...";
 
-
-/* ---------------- RENDER JOBS ---------------- */
-function renderJobs(jobs) {
-  jobList.innerHTML = "";
-
-  for (const j of jobs) {
-    jobList.innerHTML += `
-      <tr class="border-t">
-        <td class="p-4">
-          <p class="font-bold">${j.category}</p>
-          <p class="text-xs text-gray-500">${j.device}</p>
-          <p class="text-xs">${j.issue}</p>
-        </td>
-        <td class="p-4">
-          <p class="font-semibold">${j.customer_name}</p>
-          <p class="text-xs text-gray-500">${j.phone}</p>
-        </td>
-        <td class="p-4">${j.location}</td>
-        <td class="p-4 font-bold text-red-600">
-          ${j.tech_id ? j.technicians?.name : "Unassigned"}
-        </td>
-        <td class="p-4 text-center">
-          ${statusBadge(j.status)}
-        </td>
-        <td class="p-4 text-center font-bold">
-          ₹${j.technician_fee ?? 0}
-        </td>
-        <td class="p-4 text-center">
-         ${
-  j.tech_id
-    ? `<button onclick="viewJobDetails('${encodeURIComponent(JSON.stringify(j))}')" 
-  class="px-4 py-2 text-[10px] font-black rounded-xl bg-[#4b453a] text-white">
-  VIEW
-</button>`
-    : `<span class="text-xs text-gray-400 italic">
-         Waiting for technician
-       </span>`
-}
-        </td>
-      </tr>
-    `;
-  }
-}
-
-/* ---------------- LOAD JOBS ---------------- */
-async function loadJobs() {
-  console.log("Loading jobs...");
-
- const { data, error } = await sb
-  .from("jobs")
-  .select(`
-    id,
-    tech_id,
-    category,
-    device,
-    issue,
-    customer_name,
-    phone,
-    location,
-    status,
-    technician_fee,
-    created_at,
-    technicians!jobs_tech_id_fkey(name)
-  `)
-  .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("JOB LOAD ERROR:", error);
-    alert("Database Error: " + error.message);
-    return;
-  }
-
-  console.log("Jobs received:", data);
-
-  if (!data || data.length === 0) {
-    jobList.innerHTML = `
-      <tr>
-        <td colspan="7" class="text-center p-6 text-gray-500 font-bold">
-          No jobs found in database
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  renderJobs(data);
-}
-
-/* ---------------- ASSIGN MODAL ---------------- */
-window.openAssign = async (jobId, category, area) => {
-  selectedJobId = jobId;
-  const select = document.getElementById("techSelect");
-  select.innerHTML = "<option>Searching...</option>";
-
-  const { data, error } = await sb
+  const {data}=await sb
     .from("technicians")
-    .select("id, name, category, area, experience")
-    .eq("status", "approved")
-    .ilike("category", category);
+    .select("id,name,category,experience")
+    .eq("status","approved")
+    .ilike("category",category);
 
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  select.innerHTML = "";
-  if (!data || data.length === 0) {
-    select.innerHTML = `<option>No experts found for "${category}"</option>`;
-  } else {
-    select.innerHTML = `<option value="">Select Technician (${data.length} found)</option>`;
-    data.forEach(t => {
-      select.innerHTML += `<option value="${t.id}">${t.name} | ${t.area} | ${t.experience} yrs</option>`;
-    });
-  }
+  select.innerHTML="";
+  data.forEach(t=>{
+    select.innerHTML+=`<option value="${t.id}">
+      ${t.name} | ${t.experience} yrs
+    </option>`;
+  });
 
   document.getElementById("assignModal").classList.remove("hidden");
   document.getElementById("assignModal").classList.add("flex");
 };
 
-window.confirmAssign = async () => {
-  const techId = document.getElementById("techSelect").value;
-  if (!techId) return;
-
+window.confirmAssign=async()=>{
+  const techId=document.getElementById("techSelect").value;
   await sb.from("jobs").update({
-    tech_id: techId,
-    status: "assigned"
-  }).eq("id", selectedJobId);
+    tech_id:techId,
+    status:"assigned"
+  }).eq("id",selectedJobId);
 
   closeAssign();
   loadJobs();
 };
 
-window.closeAssign = () => {
+window.closeAssign=()=>{
   document.getElementById("assignModal").classList.add("hidden");
-  selectedJobId = null;
 };
 
-/* ---------------- INIT ---------------- */
+/* FORCE COMPLETE */
+window.forceComplete=async(id)=>{
+  if(!confirm("Force mark as completed?")) return;
+  await sb.from("jobs").update({status:"completed"}).eq("id",id);
+  loadJobs();
+};
+
+/* CANCEL JOB */
+window.cancelJob=async(id)=>{
+  if(!confirm("Cancel this job?")) return;
+  await sb.from("jobs").update({
+    status:"cancelled",
+    tech_id:null
+  }).eq("id",id);
+  loadJobs();
+};
+
 loadJobs();
-
-// ⏱️ AUTO TIMEOUT CHECK (every 30 seconds)
-setInterval(async () => {
-  const { data: jobs } = await sb
-    .from("jobs")
-    .select("*")
-    .eq("status", "assigned");
-
-  if (!jobs) return;
-
-  for (const job of jobs) {
-    if (!job.assigned_at || !job.tech_id) continue;
-
-    const elapsed =
-      (Date.now() - new Date(job.assigned_at).getTime()) / 1000;
-
-    if (elapsed > 300) {
-      await sb.from("jobs").update({
-        tech_id: null,
-        status: "pending",
-        rejected_by: sb.sql`
-          array_append(coalesce(rejected_by,'{}'), ${job.tech_id})
-        `
-      }).eq("id", job.id);
-    }
-  }
-
-  loadJobs(); // refresh
-}, 30000);
 </script>
 
-
 </body>
-</html> 
+</html>
