@@ -3,70 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Booking Confirmed - FixZen</title>
+    <title>Tracking Booking - FixZen</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
-        // Supabase Setup
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-green': '#10B981' },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    animation: {
+                        'ripple': 'ripple 2s linear infinite',
+                        'slide-up-fade': 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                    },
+                    keyframes: {
+                        ripple: {
+                            '0%': { transform: 'scale(0.8)', opacity: '1' },
+                            '100%': { transform: 'scale(2.5)', opacity: '0' }
+                        },
+                        slideUpFade: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
     </script>
-    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f4f5; }
+        /* Subtle Grid Pattern for "Map" feel */
+        .bg-grid {
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); }
+    </style>
 </head>
 
-<body class="bg-green-50 min-h-screen flex flex-col items-center justify-center p-6" x-data="successApp()">
+<body class="bg-grid min-h-screen flex flex-col items-center justify-center p-4 relative" x-data="trackingApp()">
 
-    <div class="w-full max-w-md bg-white rounded-[2rem] shadow-2xl p-8 text-center relative overflow-hidden">
+    <a href="bookings.html" class="absolute top-6 left-6 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-black hover:scale-105 transition">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
+
+    <div class="w-full max-w-md glass-card rounded-[2.5rem] shadow-2xl border border-white p-6 relative overflow-hidden">
         
-        <div class="animate__animated animate__bounceIn">
-            <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-200">
-                <i class="fa-solid fa-check text-5xl text-white"></i>
-            </div>
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Confirmed!</h1>
-            <p class="text-gray-500 font-medium">Your service request has been received.</p>
-        </div>
-
-        <div class="w-full h-px bg-gray-100 my-8"></div>
-
-        <div x-show="!technicianFound" class="animate__animated animate__fadeIn">
-            <div class="relative w-16 h-16 mx-auto flex items-center justify-center mb-4">
-                <span class="absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-20 animate-ping" style="background-color: #A07D54;"></span>
-                <i class="fa-solid fa-radar text-3xl" style="color: #A07D54;"></i>
-            </div>
-            <h3 class="text-lg font-bold text-gray-800">Finding your expert...</h3>
-            <p class="text-sm text-gray-400 mt-1">Notifying nearby professionals. Please wait.</p>
-        </div>
-
-        <div x-show="technicianFound" style="display: none;" class="animate__animated animate__fadeInUp">
-            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
-                Expert Assigned
+        <div class="text-center mb-6">
+            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-widest rounded-full mb-3 shadow-sm border border-green-200">
+                <i class="fa-solid fa-shield-check mr-1"></i> Secure Booking
             </span>
+            <h1 class="text-2xl font-extrabold text-brand-dark">Request Received</h1>
+            <p class="text-xs text-gray-500 font-mono mt-1">ID: <span x-text="jobId ? jobId.slice(0,8) : 'Loading...'"></span></p>
+        </div>
+
+        <div class="relative flex justify-between items-center mb-10 px-2">
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-brand-green rounded-full -z-10 transition-all duration-1000 ease-out"
+                 :style="`width: ${technicianFound ? '100%' : '50%'}`"></div>
+
+            <div class="flex flex-col items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center shadow-md border-2 border-white">
+                    <i class="fa-solid fa-check text-xs"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-800">Requested</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-2">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
+                     :class="technicianFound ? 'bg-brand-green text-white' : 'bg-brand-gold text-white animate-pulse'">
+                    <i class="fa-solid" :class="technicianFound ? 'fa-check' : 'fa-radar'"></i>
+                </div>
+                <span class="text-[10px] font-bold transition-colors" :class="technicianFound ? 'text-gray-800' : 'text-brand-gold'">Searching</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-2">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
+                     :class="technicianFound ? 'bg-brand-green text-white' : 'bg-gray-100 text-gray-400'">
+                    <i class="fa-solid fa-user-astronaut text-xs"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-400" :class="{'text-gray-800': technicianFound}">Assigned</span>
+            </div>
+        </div>
+
+        <div x-show="!technicianFound" class="text-center py-6">
             
-            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-center gap-4 text-left">
-                <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm">
-                <div class="flex-1">
-                    <h4 class="text-lg font-bold text-gray-900" x-text="techData?.name"></h4>
-                    <div class="flex items-center gap-1 text-sm text-yellow-500 mb-1">
-                        <i class="fa-solid fa-star"></i>
-                        <span class="text-gray-600 font-medium" x-text="techData?.rating || '4.8'"></span>
-                    </div>
-                    <p class="text-xs text-gray-400" x-text="(techData?.experience || '5') + ' yrs experience'"></p>
+            <div class="relative w-32 h-32 mx-auto flex items-center justify-center mb-6">
+                <div class="absolute w-full h-full rounded-full bg-brand-gold opacity-50 animate-ripple"></div>
+                <div class="absolute w-full h-full rounded-full bg-brand-gold opacity-30 animate-ripple" style="animation-delay: 0.6s"></div>
+                <div class="absolute w-full h-full rounded-full bg-brand-gold opacity-10 animate-ripple" style="animation-delay: 1.2s"></div>
+                
+                <div class="relative w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border border-gray-100">
+                    <i class="fa-solid fa-location-crosshairs text-3xl text-brand-gold animate-pulse"></i>
                 </div>
             </div>
 
-            <div class="flex gap-3 mt-6">
-                <a :href="'tel:' + techData?.phone" class="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-600 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-phone"></i> Call Expert
-                </a>
-                <a href="bookings.html" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition">
-                    View Job
+            <h3 class="text-lg font-bold text-gray-900" x-text="searchMessage"></h3>
+            <div class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-full mt-3 border border-gray-200">
+                <i class="fa-regular fa-clock text-brand-gold animate-spin-slow"></i>
+                <span class="text-sm font-mono font-bold text-gray-700" x-text="formattedTime"></span>
+            </div>
+
+            <button @click="cancelJob()" class="mt-8 text-xs font-bold text-red-500 hover:text-red-700 underline decoration-red-200 underline-offset-4 transition">
+                Cancel Request
+            </button>
+        </div>
+
+        <div x-show="technicianFound" style="display: none;" class="animate-slide-up-fade">
+            
+            <div class="bg-gradient-to-b from-green-50 to-white rounded-2xl p-5 border border-green-100 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-brand-green text-white text-[9px] font-bold px-3 py-1 rounded-bl-xl shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-certificate"></i> Verified
+                </div>
+
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="relative">
+                        <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
+                        <div class="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h4 class="text-xl font-extrabold text-gray-900" x-text="techData?.name || 'Expert'"></h4>
+                        <p class="text-xs text-gray-500 font-medium mb-2" x-text="(techData?.experience || '5') + ' Years Experience'"></p>
+                        
+                        <div class="flex gap-2">
+                            <div class="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded text-xs font-bold text-yellow-700 border border-yellow-100">
+                                <i class="fa-solid fa-star text-yellow-500"></i> <span x-text="techData?.rating || '4.9'"></span>
+                            </div>
+                            <div class="flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded text-xs font-bold text-blue-700 border border-blue-100">
+                                <i class="fa-solid fa-briefcase text-blue-500"></i> <span x-text="(techData?.jobs_done || '120') + ' Jobs'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <a :href="'tel:' + techData?.phone" class="py-3.5 bg-gray-900 text-white rounded-xl font-bold shadow-lg hover:bg-black transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-phone"></i> Call
+                    </a>
+                    <a :href="'https://wa.me/91' + techData?.phone + '?text=Hi,%20I%20booked%20you%20on%20FixZen.'" target="_blank" class="py-3.5 bg-green-500 text-white rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-600 transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Message
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="bookings.html" class="w-full block text-center py-4 bg-gray-100 text-gray-800 rounded-xl font-bold hover:bg-gray-200 transition text-sm">
+                    Go to Dashboard <i class="fa-solid fa-arrow-right ml-1"></i>
                 </a>
             </div>
         </div>
@@ -75,53 +168,108 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('successApp', () => ({
+            Alpine.data('trackingApp', () => ({
                 jobId: null,
                 technicianFound: false,
                 techData: null,
+                
+                // Timer Logic
+                secondsElapsed: 0,
+                timerInterval: null,
 
                 async init() {
-                    // 1. Get Job ID from the URL (e.g., success.html?job_id=123)
+                    // 1. Get Job ID from URL
                     const params = new URLSearchParams(window.location.search);
                     this.jobId = params.get('job_id');
 
                     if (!this.jobId) {
-                        alert("No job ID found.");
+                        alert("Invalid tracking link.");
                         window.location.href = 'index.html';
                         return;
                     }
 
-                    // 2. Check current status immediately
+                    // 2. Start Timer
+                    this.startTimer();
+
+                    // 3. Check current status immediately
                     await this.checkJobStatus();
 
-                    // 3. Listen for Live Updates!
+                    // 4. Listen for Live Updates!
                     sb.channel('waiting-room')
                       .on('postgres_changes', { 
-                          event: 'UPDATE', 
+                          event: '*', 
                           schema: 'public', 
                           table: 'jobs',
                           filter: `id=eq.${this.jobId}` 
                       }, (payload) => {
-                          console.log("Job Updated!", payload);
-                          if (payload.new.tech_id) {
+                          console.log("Live Update Received!", payload);
+                          if (payload.new && payload.new.tech_id) {
                               this.fetchTechnician(payload.new.tech_id);
                           }
                       })
                       .subscribe();
                 },
 
+                // Starts the stopwatch
+                startTimer() {
+                    this.timerInterval = setInterval(() => {
+                        this.secondsElapsed++;
+                    }, 1000);
+                },
+
+                // Formats MM:SS
+                get formattedTime() {
+                    const m = Math.floor(this.secondsElapsed / 60).toString().padStart(2, '0');
+                    const s = (this.secondsElapsed % 60).toString().padStart(2, '0');
+                    return `${m}:${s}`;
+                },
+
+                // Smart messaging based on time elapsed
+                get searchMessage() {
+                    if (this.secondsElapsed < 15) return "Alerting nearby experts...";
+                    if (this.secondsElapsed < 45) return "Connecting with top-rated pros...";
+                    return "High demand. Still searching...";
+                },
+
                 async checkJobStatus() {
-                    const { data: job } = await sb.from('jobs').select('tech_id').eq('id', this.jobId).single();
-                    if (job && job.tech_id) {
-                        this.fetchTechnician(job.tech_id);
+                    try {
+                        const { data: job, error } = await sb.from('jobs').select('tech_id').eq('id', this.jobId).single();
+                        if (error) throw error;
+                        
+                        if (job && job.tech_id) {
+                            this.fetchTechnician(job.tech_id);
+                        }
+                    } catch (err) {
+                        console.error("Error checking job:", err);
                     }
                 },
 
                 async fetchTechnician(techId) {
-                    const { data: tech } = await sb.from('technicians').select('*').eq('id', techId).single();
-                    if (tech) {
-                        this.techData = tech;
-                        this.technicianFound = true; // Flips the UI instantly!
+                    try {
+                        const { data: tech, error } = await sb.from('technicians').select('*').eq('id', techId).single();
+                        if (error) throw error;
+                        
+                        if (tech) {
+                            this.techData = tech;
+                            this.technicianFound = true; // Triggers UI change
+                            clearInterval(this.timerInterval); // Stop timer
+                        }
+                    } catch (err) {
+                        console.error("Error fetching tech details:", err);
+                    }
+                },
+
+                async cancelJob() {
+                    if(!confirm("Are you sure you want to cancel your search?")) return;
+                    
+                    try {
+                        await sb.from('jobs').update({ status: 'cancelled' }).eq('id', this.jobId);
+                        await sb.from('bookings').update({ status: 'cancelled' }).eq('id', this.jobId);
+                        
+                        alert("Job Cancelled successfully.");
+                        window.location.href = 'index.html';
+                    } catch (err) {
+                        alert("Could not cancel job. Try again.");
                     }
                 }
             }));
