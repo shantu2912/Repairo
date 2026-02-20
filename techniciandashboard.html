@@ -364,42 +364,38 @@ async setupNotifications() {
 },
 
   async fetchJobs(){
-    this.loading = true;
-    const { data, error } = await window.sb
-      .from("jobs")
-      .select("*")
-      .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
-      .not("rejected_by", "cs", `{${this.tech.id}}`)
-      .order("created_at", { ascending: false });
+  this.loading = true;
 
-    if (!error) {
-  this.jobs = data;
+  // First check if tech has unpaid active job
+  const { data: activeUnpaid } = await window.sb
+    .from("jobs")
+    .select("*")
+    .eq("tech_id", this.tech.id)
+    .in("status", ["in_progress", "arrived"])
+    .eq("payment_status", "unpaid")
+    .limit(1);
 
-  // Active jobs
-  this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
-
-  // 🔥 REAL EARNINGS CALCULATION (you were missing this)
-  const completedJobs = data.filter(
-    j => j.status === 'completed' && j.tech_id === this.tech.id
-  );
-
-  this.stats.earnings = completedJobs.reduce((total, job) => {
-    return total + (job.technician_fee || 0);
-  }, 0);
-  const today = new Date().toISOString().split('T')[0];
-
-this.stats.todayEarnings = data
-  .filter(j =>
-    j.status === 'completed' &&
-    j.tech_id === this.tech.id &&
-    j.completed_at?.startsWith(today)
-  )
-  .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
-
-}
-
+  // 🚨 HARD LOCK: If unpaid job exists → ONLY show that job
+  if (activeUnpaid && activeUnpaid.length > 0) {
+    this.jobs = activeUnpaid;
     this.loading = false;
-  },
+    return;
+  }
+
+  // Otherwise show available jobs + own jobs
+  const { data, error } = await window.sb
+    .from("jobs")
+    .select("*")
+    .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
+    .not("rejected_by", "cs", `{${this.tech.id}}`)
+    .order("created_at", { ascending: false });
+
+  if (!error) {
+    this.jobs = data;
+  }
+
+  this.loading = false;
+},
 subscribeRealtime() {
   window.sb
     .channel(`public-jobs`)
@@ -469,14 +465,15 @@ subscribeRealtime() {
     return;
   }
 
-  // Immediate UI update (no refresh needed)
-  const index = this.jobs.findIndex(j => j.id === jobId);
-  if (index !== -1) {
-    this.jobs[index].status = "in_progress";
-    this.jobs[index].tech_id = this.tech.id;
-  }
+ // Immediate UI update
+const index = this.jobs.findIndex(j => j.id === jobId);
+if (index !== -1) {
+  this.jobs[index].status = "in_progress";
+  this.jobs[index].tech_id = this.tech.id;
+}
 
-  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+// 🔥 REDIRECT TO JOB PAYMENT PAGE
+window.location.href = `job_payment.html?job_id=${jobId}`;
 },
 
   /* ❌ REJECT JOB */

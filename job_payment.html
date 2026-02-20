@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Job Payment</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h2>Accepted Job</h2>
+  <div id="jobDetails"></div>
+
+  <h3>Customer Payment (Scan QR)</h3>
+  <img src="gpay-qr.png" width="250" />
+
+  <p id="paymentStatus">Waiting for payment...</p>
+
+<script>
+const sb = supabase.createClient("YOUR_URL", "YOUR_ANON_KEY");
+
+const params = new URLSearchParams(window.location.search);
+const jobId = params.get("job_id");
+
+async function loadJob(){
+  const { data } = await sb
+    .from("jobs")
+    .select("*")
+    .eq("id", jobId)
+    .single();
+
+  document.getElementById("jobDetails").innerHTML = `
+    <b>Customer:</b> ${data.customer_name} <br>
+    <b>Issue:</b> ${data.issue} <br>
+    <b>Location:</b> ${data.location}
+  `;
+
+  checkPayment(data);
+}
+
+function checkPayment(job){
+  if(job.payment_status === "paid"){
+    document.getElementById("paymentStatus").innerText = "✅ Payment Received!";
+  } else {
+    document.getElementById("paymentStatus").innerText = "⏳ Waiting for payment...";
+  }
+}
+
+// 🔥 REALTIME PAYMENT LISTENER
+sb.channel("payment-listener")
+  .on("postgres_changes", {
+    event: "UPDATE",
+    schema: "public",
+    table: "jobs",
+    filter: `id=eq.${jobId}`
+  }, (payload) => {
+    if(payload.new.payment_status === "paid"){
+      document.getElementById("paymentStatus").innerText = "✅ Payment Confirmed!";
+      alert("Payment received! You can proceed.");
+    }
+  })
+  .subscribe();
+
+loadJob();
+</script>
+</body>
+</html>
