@@ -1,64 +1,220 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Job Payment</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Details & Payment | FixZen Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold': '#A07D54',
+                        'brand-cream': '#F8F5F0'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-  <h2>Accepted Job</h2>
-  <div id="jobDetails"></div>
+<body class="bg-brand-cream text-gray-900 font-sans" x-data="jobDetailHandler()" x-init="init()">
 
-  <h3>Customer Payment (Scan QR)</h3>
-  <img src="gpay-qr.png" width="250" />
+    <div class="max-w-md mx-auto p-6 pb-24">
+        <div class="flex items-center gap-4 mb-8">
+            <button @click="goBack()" class="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold text-brand-olive">Active Job Task</h1>
+        </div>
 
-  <p id="paymentStatus">Waiting for payment...</p>
+        <template x-if="loading">
+            <div class="text-center py-20 text-gray-500 italic">Loading job details...</div>
+        </template>
 
-<script>
-const sb = supabase.createClient("YOUR_URL", "YOUR_ANON_KEY");
+        <template x-if="!loading && job">
+            <div class="space-y-6">
+                
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-bold text-brand-gold uppercase tracking-widest" x-text="job.category"></span>
+                            <h2 class="text-2xl font-extrabold text-brand-olive" x-text="job.customer_name"></h2>
+                        </div>
+                        <a :href="'tel:' + job.phone" class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-phone"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-location-dot mt-1 text-brand-gold"></i>
+                            <p class="text-sm text-gray-600" x-text="job.location"></p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa- screwdriver-wrench mt-1 text-brand-gold"></i>
+                            <p class="text-sm italic text-gray-600" x-text="job.issue"></p>
+                        </div>
+                    </div>
+                </div>
 
-const params = new URLSearchParams(window.location.search);
-const jobId = params.get("job_id");
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border-2" :class="job.payment_status === 'paid' ? 'border-green-500' : 'border-red-200'">
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold uppercase text-gray-400">Service Fee Due</p>
+                        <h3 class="text-4xl font-black text-brand-olive">₹<span x-text="calculateFee(job)"></span></h3>
+                        
+                        <div class="my-6 flex justify-center">
+                            <div class="p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=YOUR_UPI_ID@okaxis%26pn=FixZen%26am=" 
+                                     class="w-40 h-40 grayscale" :class="job.payment_status === 'paid' && 'grayscale-0'" alt="GPay QR">
+                            </div>
+                        </div>
 
-async function loadJob(){
-  const { data } = await sb
-    .from("jobs")
-    .select("*")
-    .eq("id", jobId)
-    .single();
+                        <template x-if="job.payment_status !== 'paid'">
+                            <div>
+                                <p class="text-xs text-red-500 font-bold mb-4">Payment Pending - Please scan to unlock job actions</p>
+                                <button @click="verifyPayment()" class="w-full py-4 bg-brand-gold text-white rounded-2xl font-bold shadow-lg">
+                                    I have Received Payment
+                                </button>
+                            </div>
+                        </template>
 
-  document.getElementById("jobDetails").innerHTML = `
-    <b>Customer:</b> ${data.customer_name} <br>
-    <b>Issue:</b> ${data.issue} <br>
-    <b>Location:</b> ${data.location}
-  `;
+                        <template x-if="job.payment_status === 'paid'">
+                            <div class="flex items-center justify-center gap-2 text-green-600 font-bold">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Payment Confirmed</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
 
-  checkPayment(data);
-}
+                <div class="grid grid-cols-1 gap-4">
+                    <button 
+                        @click="markArrived()"
+                        :disabled="job.payment_status !== 'paid' || job.status === 'arrived'"
+                        class="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition"
+                        :class="job.payment_status === 'paid' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+                        <i class="fa-solid fa-person-walking-luggage"></i>
+                        <span x-text="job.status === 'arrived' ? 'Arrived at Location' : 'Mark Arrival'"></span>
+                    </button>
 
-function checkPayment(job){
-  if(job.payment_status === "paid"){
-    document.getElementById("paymentStatus").innerText = "✅ Payment Received!";
-  } else {
-    document.getElementById("paymentStatus").innerText = "⏳ Waiting for payment...";
-  }
-}
+                    <button 
+                        @click="completeJob()"
+                        :disabled="job.payment_status !== 'paid' || job.status !== 'arrived'"
+                        class="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition"
+                        :class="(job.payment_status === 'paid' && job.status === 'arrived') ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+                        <i class="fa-solid fa-check-double"></i>
+                        Complete Work
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
 
-// 🔥 REALTIME PAYMENT LISTENER
-sb.channel("payment-listener")
-  .on("postgres_changes", {
-    event: "UPDATE",
-    schema: "public",
-    table: "jobs",
-    filter: `id=eq.${jobId}`
-  }, (payload) => {
-    if(payload.new.payment_status === "paid"){
-      document.getElementById("paymentStatus").innerText = "✅ Payment Confirmed!";
-      alert("Payment received! You can proceed.");
-    }
-  })
-  .subscribe();
+    <script>
+        // Use the same client setup as your dashboard
+        window.sb = supabase.createClient(
+            "https://kzxdxnxgouthsywbsnvl.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+        );
 
-loadJob();
-</script>
+        function jobDetailHandler() {
+            return {
+                loading: true,
+                job: null,
+                jobId: new URLSearchParams(window.location.search).get('id'),
+
+                async init() {
+                    if (!this.jobId) {
+                        window.location.href = 'techniciandashboard.html';
+                        return;
+                    }
+                    await this.loadJob();
+                    this.subscribeToChanges();
+                },
+
+                async loadJob() {
+                    const { data, error } = await window.sb
+                        .from('jobs')
+                        .select('*')
+                        .eq('id', this.jobId)
+                        .single();
+
+                    if (error) {
+                        console.error(error);
+                        alert("Error loading job details");
+                    } else {
+                        this.job = data;
+                    }
+                    this.loading = false;
+                },
+
+                subscribeToChanges() {
+                    window.sb
+                        .channel(`job-${this.jobId}`)
+                        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, 
+                        payload => {
+                            this.job = payload.new;
+                        })
+                        .subscribe();
+                },
+
+                async verifyPayment() {
+                    const confirmed = confirm("Are you sure you have received ₹" + this.calculateFee(this.job) + "?");
+                    if (!confirmed) return;
+
+                    const { error } = await window.sb
+                        .from('jobs')
+                        .update({ payment_status: 'paid' })
+                        .eq('id', this.jobId);
+
+                    if (error) alert("Update failed: " + error.message);
+                },
+
+                async markArrived() {
+                    const { error } = await window.sb
+                        .from('jobs')
+                        .update({ status: 'arrived', arrived_at: new Date().toISOString() })
+                        .eq('id', this.jobId);
+
+                    if (error) alert("Error: " + error.message);
+                },
+
+                async completeJob() {
+                    const { error } = await window.sb
+                        .from('jobs')
+                        .update({ 
+                            status: 'completed', 
+                            completed_at: new Date().toISOString(),
+                            technician_fee: this.calculateFee(this.job)
+                        })
+                        .eq('id', this.jobId);
+
+                    if (error) {
+                        alert("Error: " + error.message);
+                    } else {
+                        // UNLOCK TECH: Remove the local storage lock
+                        localStorage.removeItem("current_active_job_id");
+                        alert("Job Successful! Returning to Dashboard.");
+                        window.location.href = 'techniciandashboard.html';
+                    }
+                },
+
+                calculateFee(job) {
+                    const BASE = { "Carpenter": 800, "Plumber": 600, "Electrician": 600, "AC Tech": 600 };
+                    return BASE[job.category] ?? 400;
+                },
+
+                goBack() {
+                    window.location.href = 'techniciandashboard.html';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
