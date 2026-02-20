@@ -25,7 +25,7 @@
             }
         }
 
-        // --- 3. MASTER SERVICE DATABASE (With "Visit Charge" as Item 1) ---
+        // --- MASTER SERVICE DATABASE ---
         const servicesDB = {
             "electrician": { 
                 name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
@@ -112,7 +112,7 @@
     </script>
 </head>
 
-<body  class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
       x-data="{
           service: null,
           selectedSubs: [],
@@ -121,13 +121,12 @@
           loading: true,
           bookingLoading: false,
 
-          // REQUIRED FORM FIELDS (YOU FORGOT THESE)
+          // REQUIRED FORM FIELDS
           customerName: '',
           phone: '',
           address: '',
           date: '',
 
-          
           init() {
               const params = new URLSearchParams(window.location.search);
               let rawId = params.get('id');
@@ -164,103 +163,108 @@
               if (this.selectedSubs.length === 0) return; // Prevent empty booking
               this.showAgreement = true;
           },
+
         async confirmBooking() {
-    try {
-        if (!this.agreed) {
-            alert('Please accept the terms to proceed.');
-            return;
+            try {
+                if (!this.agreed) {
+                    alert('Please accept the terms to proceed.');
+                    return;
+                }
+
+                if (!this.customerName || !this.customerName.trim()) {
+                    alert('Please enter your name.');
+                    return;
+                }
+
+                if (!this.phone || !this.phone.trim()) {
+                    alert('Please enter your phone number.');
+                    return;
+                }
+
+                if (!this.address || !this.address.trim()) {
+                    alert('Please enter your address.');
+                    return;
+                }
+
+                if (!this.date) {
+                    alert('Please select a date.');
+                    return;
+                }
+
+                this.bookingLoading = true;
+
+                if (!window.sb) {
+                    alert('System Offline');
+                    this.bookingLoading = false;
+                    return;
+                }
+
+                const { data: { user } } = await window.sb.auth.getUser();
+                if (!user) {
+                    alert('Please Log In to book!');
+                    window.location.href = 'loginuser.html';
+                    return;
+                }
+
+                const firstService = this.selectedSubs[0];
+
+                const jobPayload = {
+                    category: this.service?.name || 'General Service',
+                    device: firstService?.n || 'General Service',
+                    issue: firstService?.d || 'Service requested via app',
+                    customer_name: this.customerName,
+                    location: this.address,
+                    phone: this.phone,
+                    status: 'pending',
+                    urgent: false
+                };
+
+                // Insert into jobs AND SELECT THE RESULT TO GET THE ID
+                const { data: insertedJob, error: jobError } = await window.sb
+                    .from('jobs')
+                    .insert([jobPayload])
+                    .select()
+                    .single();
+
+                if (jobError) {
+                    alert('Job Insert Error: ' + jobError.message);
+                    this.bookingLoading = false;
+                    return;
+                }
+
+                // Insert into bookings (IMPORTANT: use date NOT scheduled_date)
+                const bookingPayload = {
+                    user_id: user.id,
+                    service_name: this.service?.name || 'General Service',
+                    variant_name: firstService?.n || 'Service',
+                    price: this.total,
+                    date: this.date,
+                    address: this.address,
+                    phone: this.phone
+                };
+
+                const { error: bookingError } = await window.sb
+                    .from('bookings')
+                    .insert([bookingPayload]);
+
+                if (bookingError) {
+                    alert('Booking Insert Error: ' + bookingError.message);
+                    this.bookingLoading = false;
+                    return;
+                }
+
+                this.bookingLoading = false;
+                this.showAgreement = false;
+                
+                // REDIRECT TO THE SUCCESS PAGE WITH THE NEW JOB ID
+                window.location.href = 'success.html?job_id=' + insertedJob.id;
+
+            } catch (err) {
+                console.error(err);
+                alert('Unexpected Error: ' + err.message);
+                this.bookingLoading = false;
+            }
         }
-
-        if (!this.customerName || !this.customerName.trim()) {
-            alert('Please enter your name.');
-            return;
-        }
-
-        if (!this.phone || !this.phone.trim()) {
-            alert('Please enter your phone number.');
-            return;
-        }
-
-        if (!this.address || !this.address.trim()) {
-            alert('Please enter your address.');
-            return;
-        }
-
-        if (!this.date) {
-            alert('Please select a date.');
-            return;
-        }
-
-        this.bookingLoading = true;
-
-        if (!window.sb) {
-            alert('System Offline');
-            this.bookingLoading = false;
-            return;
-        }
-
-        const { data: { user } } = await window.sb.auth.getUser();
-        if (!user) {
-            alert('Please Log In to book!');
-            window.location.href = 'loginuser.html';
-            return;
-        }
-
-        const firstService = this.selectedSubs[0];
-
-        const jobPayload = {
-            category: this.service?.name || 'General Service',
-            device: firstService?.n || 'General Service',
-            issue: firstService?.d || 'Service requested via app',
-            customer_name: this.customerName,
-            location: this.address,
-            phone: this.phone,
-            status: 'pending',
-            urgent: false
-        };
-
-        // Insert into jobs
-        const { error: jobError } = await window.sb
-            .from('jobs')
-            .insert([jobPayload]);
-
-        if (jobError) {
-            alert('Job Insert Error: ' + jobError.message);
-            this.bookingLoading = false;
-            return;
-        }
-
-        // Insert into bookings (IMPORTANT: use date NOT scheduled_date)
-        const bookingPayload = {
-            user_id: user.id,
-            service_name: this.service?.name || 'General Service',
-            variant_name: firstService?.n || 'Service',
-            price: this.total,
-            date: this.date,
-            address: this.address,
-            phone: this.phone
-        };
-
-        const { error: bookingError } = await window.sb
-            .from('bookings')
-            .insert([bookingPayload]);
-
-        if (bookingError) {
-            alert('Booking Insert Error: ' + bookingError.message);
-            this.bookingLoading = false;
-            return;
-        }
-
-        this.bookingLoading = false;
-        this.showAgreement = false;
-        alert('Job Created Successfully!');
-
-    } catch (err) {
-        console.error(err);
-        alert('Unexpected Error: ' + err.message);
-        this.bookingLoading = false;
-    }
-}
 
       }">
 
@@ -359,49 +363,43 @@
             </div>
             <div class="space-y-3 mb-4">
 
-    <!-- Customer Name (REQUIRED for jobs table) -->
-    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-        <i class="fa-solid fa-user text-brand-gold"></i>
-        <input type="text"
-               x-model="customerName"
-               placeholder="Enter Your Full Name"
-               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
-    </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-user text-brand-gold"></i>
+                    <input type="text"
+                           x-model="customerName"
+                           placeholder="Enter Your Full Name"
+                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                </div>
 
-    <!-- Phone Number (REQUIRED for dispatch system) -->
-    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-        <i class="fa-solid fa-phone text-brand-gold"></i>
-        <input type="tel"
-               x-model="phone"
-               placeholder="Enter Phone Number"
-               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
-    </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-phone text-brand-gold"></i>
+                    <input type="tel"
+                           x-model="phone"
+                           placeholder="Enter Phone Number"
+                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                </div>
 
-    <!-- Address (already correct) -->
-    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-        <i class="fa-solid fa-location-dot text-brand-gold"></i>
-        <input type="text"
-               x-model="address"
-               placeholder="Enter Full Address"
-               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
-    </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-location-dot text-brand-gold"></i>
+                    <input type="text"
+                           x-model="address"
+                           placeholder="Enter Full Address"
+                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                </div>
 
-    <!-- Date -->
-    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-        <i class="fa-solid fa-calendar text-brand-gold"></i>
-        <input type="date"
-               x-model="date"
-               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
-    </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-calendar text-brand-gold"></i>
+                    <input type="date"
+                           x-model="date"
+                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                </div>
 
-</div>
+            </div>
 
-            
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
                 <ul class="list-disc pl-4 space-y-1.5">
                     <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
-    
                     <li>A minimum visiting charge applies if no service is taken after diagnosis.</li>
                     <li>Cancellations within 30 mins of arrival may incur a fee.</li>
                     <li>You authorize FixZen to share your location with the nearest available expert.</li>
