@@ -289,6 +289,12 @@ return {
         window.location.href = "partnerlogin.html";
         return;
     }
+    // 🔒 HARD ENFORCEMENT: check locked job
+  const lockedJobId = localStorage.getItem("locked_job_id");
+  if (lockedJobId) {
+    window.location.href = "job_detail.html";
+    return;
+  }
     this.techName = this.tech.name;
     await this.setupNotifications();
     
@@ -469,14 +475,16 @@ subscribeRealtime() {
     return;
   }
 
-  // Immediate UI update (no refresh needed)
-  const index = this.jobs.findIndex(j => j.id === jobId);
-  if (index !== -1) {
-    this.jobs[index].status = "in_progress";
-    this.jobs[index].tech_id = this.tech.id;
-  }
+  // Immediate UI update
+const index = this.jobs.findIndex(j => j.id === jobId);
+if (index !== -1) {
+  this.jobs[index].status = "in_progress";
+  this.jobs[index].tech_id = this.tech.id;
+}
 
-  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+// 🔒 HARD LOCK: store active job and force redirect
+localStorage.setItem("locked_job_id", jobId);
+window.location.href = "job_detail.html";
 },
 
   /* ❌ REJECT JOB */
