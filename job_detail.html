@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Active Job</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+<div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+  <h1 class="text-2xl font-bold text-center mb-4">Active Job (Locked)</h1>
+
+  <div id="loading" class="text-center">Loading job...</div>
+
+  <div id="jobBox" class="hidden">
+    <p class="text-sm"><b>Category:</b> <span id="category"></span></p>
+    <p class="text-sm"><b>Device:</b> <span id="device"></span></p>
+    <p class="text-sm"><b>Issue:</b> <span id="issue"></span></p>
+    <p class="text-sm"><b>Customer:</b> <span id="customer"></span></p>
+    <p class="text-sm"><b>Phone:</b> <span id="phone"></span></p>
+    <p class="text-sm"><b>Location:</b> <span id="location"></span></p>
+
+    <div class="mt-6 text-center">
+      <p class="font-bold mb-2">Customer Payment QR</p>
+      <img src="your-gpay-qr.png" class="w-44 mx-auto rounded-lg border">
+      <p class="text-xs text-red-600 mt-2">
+        Collect payment before completing job
+      </p>
+    </div>
+
+    <button id="arrivedBtn"
+      class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl">
+      Mark Arrived
+    </button>
+
+    <button id="completeBtn"
+      class="w-full mt-3 bg-green-600 text-white py-3 rounded-xl">
+      Complete Job
+    </button>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient(
+  "https://kzxdxnxgouthsywbsnvl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+  
+);
+
+const jobId = localStorage.getItem("locked_job_id");
+
+if (!jobId) {
+  // No job = no access
+  window.location.href = "techniciandashboard.html";
+}
+
+async function loadJob() {
+  const { data, error } = await sb
+    .from("jobs")
+    .select("*")
+    .eq("id", jobId)
+    .single();
+
+  if (error || !data) {
+    alert("Job not found");
+    return;
+  }
+
+  document.getElementById("category").innerText = data.category;
+  document.getElementById("device").innerText = data.device;
+  document.getElementById("issue").innerText = data.issue;
+  document.getElementById("customer").innerText = data.customer_name;
+  document.getElementById("phone").innerText = data.phone;
+  document.getElementById("location").innerText = data.location;
+
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("jobBox").classList.remove("hidden");
+}
+
+document.getElementById("arrivedBtn").onclick = async () => {
+  await sb.from("jobs").update({
+    status: "arrived",
+    arrived_at: new Date().toISOString()
+  }).eq("id", jobId);
+
+  alert("Marked as Arrived");
+};
+
+document.getElementById("completeBtn").onclick = async () => {
+  await sb.from("jobs").update({
+    status: "completed",
+    completed_at: new Date().toISOString()
+  }).eq("id", jobId);
+
+  // 🔓 UNLOCK SYSTEM
+  localStorage.removeItem("locked_job_id");
+
+  alert("Job Completed");
+  window.location.href = "techniciandashboard.html";
+};
+
+loadJob();
+</script>
+
+</body>
+</html>
