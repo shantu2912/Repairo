@@ -126,6 +126,11 @@
           phone: '',
           address: '',
           date: '',
+          
+          // NEW GPS DATA
+          lat: null,
+          lng: null,
+          fetchingLocation: false,
 
           init() {
               const params = new URLSearchParams(window.location.search);
@@ -154,42 +159,62 @@
               }
           },
 
-          // LOGIC: Start at 0. Sum of selected items.
           get total() {
               return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
           },
 
           openAgreement() {
-              if (this.selectedSubs.length === 0) return; // Prevent empty booking
+              if (this.selectedSubs.length === 0) return;
               this.showAgreement = true;
+          },
+
+          // NEW LOGIC: HTML5 Geolocation API
+          async fetchGPS() {
+              this.fetchingLocation = true;
+              
+              if (!navigator.geolocation) {
+                  alert('Geolocation is not supported by your browser.');
+                  this.fetchingLocation = false;
+                  return;
+              }
+
+              navigator.geolocation.getCurrentPosition(
+                  async (position) => {
+                      this.lat = position.coords.latitude;
+                      this.lng = position.coords.longitude;
+                      
+                      // Try to convert coords to readable address using free API
+                      try {
+                          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
+                          const data = await response.json();
+                          if(data && data.display_name) {
+                              // Simplify the address string slightly
+                              let addressParts = data.display_name.split(',');
+                              this.address = addressParts.slice(0, 3).join(',').trim();
+                          } else {
+                              this.address = 'GPS Location Captured';
+                          }
+                      } catch (error) {
+                          this.address = 'GPS Location Captured';
+                      }
+                      
+                      this.fetchingLocation = false;
+                  },
+                  (error) => {
+                      alert('Unable to retrieve your location. Please check browser permissions.');
+                      this.fetchingLocation = false;
+                  },
+                  { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+              );
           },
 
         async confirmBooking() {
             try {
-                if (!this.agreed) {
-                    alert('Please accept the terms to proceed.');
-                    return;
-                }
-
-                if (!this.customerName || !this.customerName.trim()) {
-                    alert('Please enter your name.');
-                    return;
-                }
-
-                if (!this.phone || !this.phone.trim()) {
-                    alert('Please enter your phone number.');
-                    return;
-                }
-
-                if (!this.address || !this.address.trim()) {
-                    alert('Please enter your address.');
-                    return;
-                }
-
-                if (!this.date) {
-                    alert('Please select a date.');
-                    return;
-                }
+                if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+                if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+                if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+                if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+                if (!this.date) { alert('Please select a date.'); return; }
 
                 this.bookingLoading = true;
 
@@ -216,10 +241,12 @@
                     location: this.address,
                     phone: this.phone,
                     status: 'pending',
-                    urgent: false
+                    urgent: false,
+                    // ADDING THE NEW LAT & LNG TO THE DATABASE
+                    latitude: this.lat,
+                    longitude: this.lng
                 };
 
-                // Insert into jobs AND SELECT THE RESULT TO GET THE ID
                 const { data: insertedJob, error: jobError } = await window.sb
                     .from('jobs')
                     .insert([jobPayload])
@@ -227,12 +254,11 @@
                     .single();
 
                 if (jobError) {
-                    alert('Job Insert Error: ' + jobError.message);
+                    alert('Job Insert Error: Make sure you added latitude & longitude columns to your Jobs table in Supabase! ' + jobError.message);
                     this.bookingLoading = false;
                     return;
                 }
 
-                // Insert into bookings (IMPORTANT: use date NOT scheduled_date)
                 const bookingPayload = {
                     user_id: user.id,
                     service_name: this.service?.name || 'General Service',
@@ -256,7 +282,6 @@
                 this.bookingLoading = false;
                 this.showAgreement = false;
                 
-                // REDIRECT TO THE SUCCESS PAGE WITH THE NEW JOB ID
                 window.location.href = 'success.html?job_id=' + insertedJob.id;
 
             } catch (err) {
@@ -354,13 +379,14 @@
          class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
          x-transition.opacity style="display: none;">
         
-        <div class="bg-white w-full max-w-md rounded-[30px] p-6 shadow-2xl animate__animated animate__slideInUp">
+        <div class="bg-white w-full max-w-md rounded-[30px] p-6 shadow-2xl animate__animated animate__slideInUp max-h-[90vh] overflow-y-auto">
             <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
             
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-serif font-bold text-brand-olive">Confirm Booking</h3>
                 <span class="text-sm font-bold text-brand-gold">₹<span x-text="total"></span></span>
             </div>
+            
             <div class="space-y-3 mb-4">
 
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
@@ -379,7 +405,14 @@
                            class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
+                <button @click="fetchGPS()" 
+                        class="w-full py-2.5 rounded-xl border border-brand-green/30 bg-green-50 text-brand-green text-xs font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-location-crosshairs" :class="fetchingLocation ? 'fa-spin' : ''"></i>
+                    <span x-text="fetchingLocation ? 'Pinpointing...' : 'Fetch Current GPS Location'"></span>
+                </button>
+
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
+                     :class="lat ? 'ring-2 ring-brand-green border-transparent' : ''">
                     <i class="fa-solid fa-location-dot text-brand-gold"></i>
                     <input type="text"
                            x-model="address"
@@ -396,13 +429,13 @@
 
             </div>
 
-            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
+            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
                 <ul class="list-disc pl-4 space-y-1.5">
                     <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
                     <li>A minimum visiting charge applies if no service is taken after diagnosis.</li>
                     <li>Cancellations within 30 mins of arrival may incur a fee.</li>
-                    <li>You authorize FixZen to share your location with the nearest available expert.</li>
+                    <li>You authorize FixZen to share your exact GPS location with the nearest available expert.</li>
                 </ul>
             </div>
 
