@@ -290,13 +290,7 @@ return {
         return;
     }
     this.techName = this.tech.name;
-    await this.setupNotifications();
-    // 🔥 HARD REDIRECT if active job exists
-const activeJob = JSON.parse(localStorage.getItem("active_job"));
-if (activeJob && activeJob.status !== "completed") {
-  window.location.href = `job_payment.html?job_id=${activeJob.id}`;
-  return;
-}
+    
 // ADD THIS BLOCK HERE
 messaging.onMessage((payload) => {
   console.log("Foreground message:", payload);
