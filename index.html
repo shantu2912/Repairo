@@ -10,10 +10,9 @@
     body { top: 0px !important; }
     .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
     #google_translate_element { display: none !important; }
-</style>
+    </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -21,7 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
     <script>
-        // --- LOGIC: INITIALIZE DATABASE ---
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
         
@@ -29,7 +27,6 @@
             window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 
-        // --- DESIGN CONFIG ---
         tailwind.config = {
             theme: {
                 extend: {
@@ -80,7 +77,6 @@
           searchQuery: '',
           user: null,
 
-          // --- LOGIC: MASTER LIST FOR SEARCH ---
           masterList: [
               {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'}, {n:'Roofer', cat:'Home', icon:'fa-house-chimney'}, {n:'Tiler', cat:'Home', icon:'fa-border-all'},
               {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'}, {n:'Gas Stove', cat:'Appliance', icon:'fa-fire'}, {n:'Elevator', cat:'Appliance', icon:'fa-elevator'},
@@ -141,11 +137,6 @@
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
             </svg>
             <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
-            <div class="mt-4 flex items-center gap-3 opacity-0 animate-sub-text-slide">
-                <div class="h-px w-12 bg-brand-gold/50"></div>
-                <p class="text-brand-beige text-sm uppercase tracking-[0.3em] font-medium">Premium Home Care</p>
-                <div class="h-px w-12 bg-brand-gold/50"></div>
-            </div>
         </div>
     </div>
 
@@ -229,14 +220,15 @@
 
     <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-brand-cream pb-32 overflow-hidden" x-show="!loading">
 
-        <header class="absolute top-0 w-full z-40 px-6 py-4 flex justify-between items-start text-white">
+        <header class="absolute top-0 w-full z-40 px-6 py-4 flex justify-between items-start text-white relative">
             
-            <button @click="sidebarOpen = true" class="bg-black/20 backdrop-blur-md p-2 rounded-full mt-1"><i class="fa-solid fa-bars text-lg px-1"></i></button>
+            <button @click="sidebarOpen = true" class="bg-black/20 backdrop-blur-md p-2 rounded-full absolute left-6 top-4"><i class="fa-solid fa-bars text-lg px-1"></i></button>
             
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center justify-center absolute left-1/2 -translate-x-1/2 top-4 w-full">
+                
                 <div x-data="languageSelector()" class="relative z-50">
                     <button @click="open = !open" 
-                            class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-xs font-bold text-white hover:bg-black/40 transition-all active:scale-95">
+                            class="flex items-center justify-center gap-2 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold text-white hover:bg-black/60 transition-all active:scale-95 shadow-lg">
                         <i class="fa-solid fa-language text-brand-gold text-sm"></i>
                         <span x-text="currentLangName"></span>
                         <i class="fa-solid fa-chevron-down text-[10px] transition-transform text-white/70 ml-1" :class="open ? 'rotate-180' : ''"></i>
@@ -244,18 +236,18 @@
                     <div x-show="open" 
                          @click.away="open = false" 
                          x-transition.opacity.duration.200ms
-                         class="absolute left-1/2 -translate-x-1/2 mt-2 w-40 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 overflow-hidden" style="display: none;">
+                         class="absolute left-1/2 -translate-x-1/2 mt-2 w-36 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 overflow-hidden" style="display: none;">
                         
-                        <button @click="changeLanguage('en', 'English')" class="w-full text-left px-5 py-3 text-sm font-bold text-gray-800 hover:bg-brand-cream border-b border-gray-100 transition-colors">English</button>
-                        <button @click="changeLanguage('hi', 'हिन्दी')" class="w-full text-left px-5 py-3 text-sm font-bold text-gray-800 hover:bg-brand-cream border-b border-gray-100 transition-colors flex justify-between items-center">हिन्दी <span class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Hindi</span></button>
-                        <button @click="changeLanguage('mr', 'मराठी')" class="w-full text-left px-5 py-3 text-sm font-bold text-gray-800 hover:bg-brand-cream transition-colors flex justify-between items-center">मराठी <span class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Marathi</span></button>
+                        <button @click="changeLanguage('en', 'English')" class="w-full text-center px-4 py-3 text-sm font-bold text-gray-800 hover:bg-brand-cream border-b border-gray-100 transition-colors">English</button>
+                        <button @click="changeLanguage('hi', 'हिन्दी')" class="w-full text-center px-4 py-3 text-sm font-bold text-gray-800 hover:bg-brand-cream border-b border-gray-100 transition-colors">हिन्दी</button>
+                        <button @click="changeLanguage('mr', 'मराठी')" class="w-full text-center px-4 py-3 text-sm font-bold text-gray-800 hover:bg-brand-cream transition-colors">मराठी</button>
                     </div>
                 </div>
 
-                <h1 class="font-sans font-extrabold text-2xl tracking-[0.15em] text-white mt-2 drop-shadow-md">FIXZEN</h1>
+                <h1 class="font-sans font-extrabold text-2xl tracking-[0.2em] text-white mt-3 drop-shadow-md">FIXZEN</h1>
             </div>
 
-            <div class="relative bg-brand-gold/90 backdrop-blur-md p-2 rounded-full cursor-pointer mt-1" @click="navigate('bookings.html')">
+            <div class="bg-brand-gold/90 backdrop-blur-md p-2 rounded-full cursor-pointer absolute right-6 top-4 shadow-lg" @click="navigate('bookings.html')">
                 <i class="fa-solid fa-cart-shopping text-lg px-1 text-white"></i>
             </div>
         </header>
