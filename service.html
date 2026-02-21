@@ -91,7 +91,6 @@
                     {n:"Move-in Cleaning", p:1650, d:"Empty house cleaning"}
                 ]
             },
-            // Fallback for any other ID
             "default": {
                 name: "General Service", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Standard inspection and repair service.",
@@ -127,7 +126,7 @@
           address: '',
           date: '',
           
-          // NEW GPS DATA
+          // GPS DATA
           lat: null,
           lng: null,
           fetchingLocation: false,
@@ -140,9 +139,8 @@
               let id = rawId.toLowerCase().trim();
               
               this.service = servicesDB[id] || servicesDB['default'];
-              if(!servicesDB[id]) this.service.name = rawId; // Keep name if fallback
+              if(!servicesDB[id]) this.service.name = rawId; 
 
-              // Set default date to tomorrow
               const tomorrow = new Date();
               tomorrow.setDate(tomorrow.getDate() + 1);
               this.date = tomorrow.toISOString().split('T')[0];
@@ -168,7 +166,7 @@
               this.showAgreement = true;
           },
 
-          // NEW LOGIC: HTML5 Geolocation API
+          // --- FETCH GPS LOCATION FUNCTION ---
           async fetchGPS() {
               this.fetchingLocation = true;
               
@@ -183,12 +181,10 @@
                       this.lat = position.coords.latitude;
                       this.lng = position.coords.longitude;
                       
-                      // Try to convert coords to readable address using free API
                       try {
                           const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
                           const data = await response.json();
                           if(data && data.display_name) {
-                              // Simplify the address string slightly
                               let addressParts = data.display_name.split(',');
                               this.address = addressParts.slice(0, 3).join(',').trim();
                           } else {
@@ -204,93 +200,96 @@
                       alert('Unable to retrieve your location. Please check browser permissions.');
                       this.fetchingLocation = false;
                   },
-                  { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
               );
           },
 
-        async confirmBooking() {
-            try {
-                if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-                if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-                if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-                if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-                if (!this.date) { alert('Please select a date.'); return; }
+          // --- CONFIRM BOOKING FUNCTION ---
+          async confirmBooking() {
+              try {
+                  if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+                  if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+                  if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+                  if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+                  if (!this.date) { alert('Please select a date.'); return; }
 
-                this.bookingLoading = true;
+                  this.bookingLoading = true;
 
-                if (!window.sb) {
-                    alert('System Offline');
-                    this.bookingLoading = false;
-                    return;
-                }
+                  if (!window.sb) {
+                      alert('System Offline');
+                      this.bookingLoading = false;
+                      return;
+                  }
 
-                const { data: { user } } = await window.sb.auth.getUser();
-                if (!user) {
-                    alert('Please Log In to book!');
-                    window.location.href = 'loginuser.html';
-                    return;
-                }
+                  const { data: { user } } = await window.sb.auth.getUser();
+                  if (!user) {
+                      alert('Please Log In to book!');
+                      sessionStorage.setItem('redirect_to', window.location.href);
+                      window.location.href = 'loginuser.html';
+                      return;
+                  }
 
-                const firstService = this.selectedSubs[0];
+                  const firstService = this.selectedSubs[0];
 
-                const jobPayload = {
-                    category: this.service?.name || 'General Service',
-                    device: firstService?.n || 'General Service',
-                    issue: firstService?.d || 'Service requested via app',
-                    customer_name: this.customerName,
-                    location: this.address,
-                    phone: this.phone,
-                    status: 'pending',
-                    urgent: false,
-                    // ADDING THE NEW LAT & LNG TO THE DATABASE
-                    latitude: this.lat,
-                    longitude: this.lng
-                };
+                  // 1. SAVE TO JOBS TABLE (INCLUDING LAT & LNG)
+                  const jobPayload = {
+                      category: this.service?.name || 'General Service',
+                      device: firstService?.n || 'General Service',
+                      issue: firstService?.d || 'Service requested via app',
+                      customer_name: this.customerName,
+                      location: this.address,
+                      phone: this.phone,
+                      status: 'pending',
+                      urgent: false,
+                      latitude: this.lat || null, // Safely handles if user didn't click GPS
+                      longitude: this.lng || null
+                  };
 
-                const { data: insertedJob, error: jobError } = await window.sb
-                    .from('jobs')
-                    .insert([jobPayload])
-                    .select()
-                    .single();
+                  const { data: insertedJob, error: jobError } = await window.sb
+                      .from('jobs')
+                      .insert([jobPayload])
+                      .select()
+                      .single();
 
-                if (jobError) {
-                    alert('Job Insert Error: Make sure you added latitude & longitude columns to your Jobs table in Supabase! ' + jobError.message);
-                    this.bookingLoading = false;
-                    return;
-                }
+                  if (jobError) {
+                      alert('Job Error: ' + jobError.message);
+                      this.bookingLoading = false;
+                      return;
+                  }
 
-                const bookingPayload = {
-                    user_id: user.id,
-                    service_name: this.service?.name || 'General Service',
-                    variant_name: firstService?.n || 'Service',
-                    price: this.total,
-                    date: this.date,
-                    address: this.address,
-                    phone: this.phone
-                };
+                  // 2. SAVE TO BOOKINGS TABLE
+                  const bookingPayload = {
+                      user_id: user.id,
+                      service_name: this.service?.name || 'General Service',
+                      variant_name: firstService?.n || 'Service',
+                      price: this.total,
+                      date: this.date,
+                      address: this.address,
+                      phone: this.phone
+                  };
 
-                const { error: bookingError } = await window.sb
-                    .from('bookings')
-                    .insert([bookingPayload]);
+                  const { error: bookingError } = await window.sb
+                      .from('bookings')
+                      .insert([bookingPayload]);
 
-                if (bookingError) {
-                    alert('Booking Insert Error: ' + bookingError.message);
-                    this.bookingLoading = false;
-                    return;
-                }
+                  if (bookingError) {
+                      alert('Booking Error: ' + bookingError.message);
+                      this.bookingLoading = false;
+                      return;
+                  }
 
-                this.bookingLoading = false;
-                this.showAgreement = false;
-                
-                window.location.href = 'success.html?job_id=' + insertedJob.id;
+                  this.bookingLoading = false;
+                  this.showAgreement = false;
+                  
+                  // Redirect to Success Map
+                  window.location.href = 'success.html?job_id=' + insertedJob.id;
 
-            } catch (err) {
-                console.error(err);
-                alert('Unexpected Error: ' + err.message);
-                this.bookingLoading = false;
-            }
-        }
-
+              } catch (err) {
+                  console.error(err);
+                  alert('Unexpected Error: ' + err.message);
+                  this.bookingLoading = false;
+              }
+          }
       }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
@@ -391,40 +390,29 @@
 
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-user text-brand-gold"></i>
-                    <input type="text"
-                           x-model="customerName"
-                           placeholder="Enter Your Full Name"
-                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                    <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-phone text-brand-gold"></i>
-                    <input type="tel"
-                           x-model="phone"
-                           placeholder="Enter Phone Number"
-                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                    <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <button @click="fetchGPS()" 
-                        class="w-full py-2.5 rounded-xl border border-brand-green/30 bg-green-50 text-brand-green text-xs font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-location-crosshairs" :class="fetchingLocation ? 'fa-spin' : ''"></i>
-                    <span x-text="fetchingLocation ? 'Pinpointing...' : 'Fetch Current GPS Location'"></span>
+                <button @click="fetchGPS()" type="button"
+                        class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-green-50 text-brand-green text-sm font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-location-crosshairs text-lg" :class="fetchingLocation ? 'fa-spin' : ''"></i>
+                    <span x-text="fetchingLocation ? 'Pinpointing Location...' : '📍 Fetch Current GPS Location'"></span>
                 </button>
 
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
-                     :class="lat ? 'ring-2 ring-brand-green border-transparent' : ''">
-                    <i class="fa-solid fa-location-dot text-brand-gold"></i>
-                    <input type="text"
-                           x-model="address"
-                           placeholder="Enter Full Address"
-                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                     :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
+                    <i class="fa-solid fa-location-dot text-brand-gold" :class="lat ? 'text-brand-green' : ''"></i>
+                    <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-calendar text-brand-gold"></i>
-                    <input type="date"
-                           x-model="date"
-                           class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                    <input type="date" x-model="date" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
 
             </div>
