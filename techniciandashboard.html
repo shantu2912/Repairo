@@ -290,6 +290,7 @@ return {
         return;
     }
     this.techName = this.tech.name;
+    await this.setupNotifications();
     
 // ADD THIS BLOCK HERE
 messaging.onMessage((payload) => {
@@ -363,46 +364,42 @@ async setupNotifications() {
 },
 
   async fetchJobs(){
-  this.loading = true;
+    this.loading = true;
+    const { data, error } = await window.sb
+      .from("jobs")
+      .select("*")
+      .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
+      .not("rejected_by", "cs", `{${this.tech.id}}`)
+      .order("created_at", { ascending: false });
 
-  // 🔒 STEP 1: Check if technician already has an active job
-  const { data: activeJob, error: activeError } = await window.sb
-    .from("jobs")
-    .select("*")
-    .eq("tech_id", this.tech.id)
-    .neq("status", "completed")
-    .limit(1);
+    if (!error) {
+  this.jobs = data;
 
-  if (activeError) {
-    console.error("Active job check failed:", activeError);
-  }
+  // Active jobs
+  this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
 
-  // 🚫 LOCK DASHBOARD if active job exists
-  if (activeJob && activeJob.length > 0) {
-    this.jobs = activeJob;
-    this.stats.activeJobs = 1;
+  // 🔥 REAL EARNINGS CALCULATION (you were missing this)
+  const completedJobs = data.filter(
+    j => j.status === 'completed' && j.tech_id === this.tech.id
+  );
+
+  this.stats.earnings = completedJobs.reduce((total, job) => {
+    return total + (job.technician_fee || 0);
+  }, 0);
+  const today = new Date().toISOString().split('T')[0];
+
+this.stats.todayEarnings = data
+  .filter(j =>
+    j.status === 'completed' &&
+    j.tech_id === this.tech.id &&
+    j.completed_at?.startsWith(today)
+  )
+  .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
+
+}
+
     this.loading = false;
-    return; // ⛔ STOP here — DO NOT load new jobs
-  }
-
-  // 🟢 STEP 2: If NO active job → show available jobs
-  const { data, error } = await window.sb
-    .from("jobs")
-    .select("*")
-    .is("tech_id", null)
-    .eq("status", "pending")
-    .not("rejected_by", "cs", `{${this.tech.id}}`)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Fetch jobs error:", error);
-  } else {
-    this.jobs = data;
-    this.stats.activeJobs = 0;
-  }
-
-  this.loading = false;
-},
+  },
 subscribeRealtime() {
   window.sb
     .channel(`public-jobs`)
@@ -447,18 +444,7 @@ subscribeRealtime() {
 
   /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
-
-  // 🚫 BLOCK if technician already has active job
-  const activeJob = this.jobs.find(
-    j => j.tech_id === this.tech.id && j.status !== "completed"
-  );
-
-  if (activeJob) {
-    alert("Finish current job before accepting a new one.");
-    return;
-  }
-
-  // Atomic accept
+  // Strict atomic update: only accept if truly free
   const { data, error } = await window.sb
     .from("jobs")
     .update({
@@ -467,21 +453,30 @@ subscribeRealtime() {
       started_at: new Date().toISOString()
     })
     .eq("id", jobId)
-    .is("tech_id", null)
-    .eq("status", "pending")
-    .select()
-    .single();
+    .is("tech_id", null)        // must be unassigned
+    .eq("status", "pending")    // must be pending
+    .select();
 
-  if (error || !data) {
-    alert("Job already taken by another technician.");
+  if (error) {
+    console.error("Accept error:", error);
+    alert("Database error while accepting job");
     return;
   }
 
-  // 🔥 STORE ACTIVE JOB (VERY IMPORTANT)
-  localStorage.setItem("active_job", JSON.stringify(data));
+  // THIS was your wrong assumption earlier
+  if (!data || data.length === 0) {
+    alert("Too late. Another technician already took this job.");
+    return;
+  }
 
-  // 🔥 REDIRECT TO PAYMENT + JOB DETAIL PAGE
-  window.location.href = `job_payment.html?job_id=${data.id}`;
+  // Immediate UI update (no refresh needed)
+  const index = this.jobs.findIndex(j => j.id === jobId);
+  if (index !== -1) {
+    this.jobs[index].status = "in_progress";
+    this.jobs[index].tech_id = this.tech.id;
+  }
+
+  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
 
   /* ❌ REJECT JOB */
