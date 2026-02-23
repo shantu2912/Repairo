@@ -297,6 +297,11 @@ return {
   }
     this.techName = this.tech.name;
     await this.setupNotifications();
+
+// 🔥 FORCE token refresh every dashboard load (kills dead tokens)
+setInterval(() => {
+  this.setupNotifications();
+}, 1000 * 60 * 30); // every 30 minutes
     
 // ADD THIS BLOCK HERE
 messaging.onMessage((payload) => {
@@ -327,6 +332,8 @@ toggleAvailability(e){
 // Inside dashboardHandler() init
 async setupNotifications() {
   try {
+    console.log("Current Origin:", window.location.origin);
+console.log("Tech ID:", this.tech.id);
     if (!('serviceWorker' in navigator)) {
       console.error("Service Worker not supported");
       return;
@@ -344,25 +351,46 @@ async setupNotifications() {
     }
 
     // Get FCM token
-    const token = await messaging.getToken({
-      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-      serviceWorkerRegistration: registration
-    });
+   // 🔥 FORCE NEW TOKEN (prevents UNREGISTERED errors)
+let token = await messaging.getToken({
+  vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
+  serviceWorkerRegistration: registration
+});
 
-    if (!token) {
-      console.error("No FCM token received");
-      return;
-    }
+if (!token) {
+  console.error("No FCM token received");
+  return;
+}
 
-    console.log("FCM Token:", token);
+console.log("🔥 NEW FCM Token:", token);
 
-    // Save token to DB
-    await window.sb
-      .from("technicians")
-      .update({ fcm_token: token })
-      .eq("id", this.tech.id);
+// 🧠 CHECK existing token in DB (avoid unnecessary writes)
+const { data: existing } = await window.sb
+  .from("technicians")
+  .select("fcm_token")
+  .eq("id", this.tech.id)
+  .single();
 
-    console.log("Token saved to Supabase");
+// 🚨 ONLY update if token changed (VERY IMPORTANT)
+if (!existing || existing.fcm_token !== token) {
+  console.log("Updating token in DB (token changed or new device)");
+
+  const { error } = await window.sb
+    .from("technicians")
+    .update({ 
+      fcm_token: token,
+      token_updated_at: new Date().toISOString()
+    })
+    .eq("id", this.tech.id);
+
+  if (error) {
+    console.error("Token DB save failed:", error);
+  } else {
+    console.log("✅ Fresh token saved to Supabase");
+  }
+} else {
+  console.log("Token unchanged — no DB update needed");
+}
 
   } catch (err) {
     console.error("Notification setup failed:", err);
