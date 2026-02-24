@@ -2,116 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FixZen Pro | Partner Login</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-
-    .premium-input { 
-        width: 100%; 
-        background: #ffffff;
-        border: 1.5px solid #E5E1DA; 
-        padding: 1rem; 
-        border-radius: 12px; 
-        outline: none; 
-        transition: all 0.2s ease-in-out;
-    }
-
-    .premium-input:focus { 
-        border-color: #A07D54; 
-        box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1);
-    }
-
-    .btn-gold { 
-        width: 100%; 
-        padding: 1.1rem; 
-        background: linear-gradient(135deg, #A07D54 0%, #866642 100%); 
-        color: white; 
-        border-radius: 14px; 
-        font-weight: 700; 
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 15px -3px rgba(160, 125, 84, 0.3);
-    }
-
-    .btn-gold:active { transform: scale(0.98); }
-    .btn-gold:disabled { opacity: 0.7; }
-  </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-[#FDFCFB] p-4">
+<body class="min-h-screen flex items-center justify-center bg-[#F8F5F0]">
 
-  <div class="bg-white p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] w-full max-w-[400px] border border-gray-50" x-data="{ isLoggingIn: false }">
-    
-    <div class="text-center mb-10">
-        <div class="inline-block px-3 py-1 rounded-full bg-[#F8F5F0] text-[#A07D54] text-[10px] font-bold tracking-widest uppercase mb-2">
-            Technician Portal
-        </div>
-        <h1 class="text-3xl font-extrabold text-[#3E3A31] tracking-tight">FixZen <span class="text-[#A07D54]">Pro</span></h1>
-        <p class="text-gray-400 mt-2 text-sm">Welcome back, Partner</p>
-    </div>
+  <div class="bg-white p-10 rounded-3xl shadow-xl w-[360px]">
+    <h1 class="text-2xl font-bold text-center mb-6">FixZen Pro</h1>
 
-    <div class="space-y-4">
-        <div>
-            <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Registered Name</label>
-            <input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                class="premium-input mt-1"
-            />
-        </div>
+    <input
+      id="name"
+      placeholder="Your Name"
+      class="w-full mb-4 p-3 border rounded-xl"
+    />
 
-        <div>
-            <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Password</label>
-            <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                class="premium-input mt-1"
-            />
-        </div>
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      class="w-full mb-4 p-3 border rounded-xl"
+    />
 
-        <div id="error" class="text-red-500 text-xs font-medium bg-red-50 p-3 rounded-lg hidden"></div>
+    <p id="error" class="text-red-600 text-sm mb-3 hidden"></p>
 
-        <button
-            onclick="login(this)"
-            class="btn-gold mt-4 relative overflow-hidden"
-            :disabled="isLoggingIn"
-        >
-            <span x-show="!isLoggingIn">LOG IN TO DASHBOARD</span>
-            <span x-show="isLoggingIn" class="flex items-center justify-center">
-                <svg class="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                VERIFYING...
-            </span>
-        </button>
-    </div>
-
-    <div class="text-center mt-8">
-        <p class="text-gray-400 text-xs">Not a partner yet? 
-            <a href="partnerregister.html" class="text-[#A07D54] font-bold hover:underline">Apply Now</a>
-        </p>
-    </div>
+    <button
+      onclick="login()"
+      class="w-full bg-[#5D5646] text-white py-3 rounded-xl font-bold"
+    >
+      LOGIN
+    </button>
   </div>
 
   <script>
-    // ✅ SUPABASE INIT
-    const supabaseUrl = "https://kzxdxnxgouthsywbsnvl.supabase.co";
-        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag";
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // ✅ SUPABASE INIT (ONLY ONCE)
+     supabase = window.supabase.createClient(
+      "https://kzxdxnxgouthsywbsnvl.supabase.co",
+       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+    );
 
     async function login() {
-      // Alpine.js access for loading state
-      const root = document.querySelector('[x-data]');
-      const state = Alpine.$data(root);
-      
       const name = document.getElementById("name").value.trim();
       const password = document.getElementById("password").value;
       const errorEl = document.getElementById("error");
@@ -119,42 +51,33 @@
       errorEl.classList.add("hidden");
 
       if (!name || !password) {
-        showError("Please enter both name and password");
+        showError("Enter name and password");
         return;
       }
-
-      state.isLoggingIn = true;
 
       // 🔒 TEMP PASSWORD CHECK
       if (password !== "1234") {
-        showError("The password you entered is incorrect");
-        state.isLoggingIn = false;
+        showError("Wrong password");
         return;
       }
 
-      try {
-        // 🔍 CHECK NAME EXISTS
-        const { data, error } = await supabase
-            .from("technicians")
-            .select("*")
-            .ilike("name", name)
-            .single();
+      // 🔍 CHECK NAME EXISTS
+      const { data, error } = await supabase
+        .from("technicians")
+        .select("*")
+        .ilike("name", name)
+        .single();
 
-        if (error || !data) {
-            showError("Partner account not found. Please register first.");
-            state.isLoggingIn = false;
-            return;
-        }
-
-        // 🚀 SAVE SESSION
-        localStorage.setItem("active_tech", JSON.stringify(data));
-
-        // ➡️ REDIRECT
-        window.location.href = "techniciandashboard.html";
-      } catch (e) {
-        showError("A connection error occurred. Try again.");
-        state.isLoggingIn = false;
+      if (error || !data) {
+        showError("Partner not found");
+        return;
       }
+
+      // 🚀 SAVE SESSION
+      localStorage.setItem("active_tech", JSON.stringify(data));
+
+      // ➡️ REDIRECT
+      window.location.href = "techniciandashboard.html";
     }
 
     function showError(msg) {
