@@ -16,6 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
+
 <!-- Icons / Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
@@ -74,14 +75,9 @@ class="font-sans antialiased pb-36"
         <p class="font-serif italic text-lg text-brand-olive" x-text="techName"></p>
       </div>
     </div>
-    <div class="flex gap-2">
-      <span x-show="notificationSupported" class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded-full">
-        <i class="fa-solid fa-bell"></i> Live
-      </span>
-      <button @click="logout()" class="text-brand-olive hover:text-red-500">
-        <i class="fa-solid fa-power-off"></i>
-      </button>
-    </div>
+    <button @click="logout()" class="text-brand-olive hover:text-red-500">
+      <i class="fa-solid fa-power-off"></i>
+    </button>
   </div>
 </header>
 
@@ -101,24 +97,26 @@ class="font-sans antialiased pb-36"
       </h3>
     </div>
     <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
-      <h3 class="text-3xl font-extrabold text-purple-700">
-        ₹<span x-text="stats.todayEarnings"></span>
-      </h3>
-    </div>
-    <div class="glass-card p-5 rounded-[2rem] flex items-center justify-center">
-      <label class="flex items-center gap-2 text-xs">
-        <input 
-          type="checkbox" 
-          class="accent-green-600 w-5 h-5"
-          x-model="available"
-          @change="toggleAvailability($event)"
-        >
-        <span class="font-semibold" :class="available ? 'text-green-600' : 'text-gray-400'">
-          <span x-text="available ? 'Available' : 'Unavailable'"></span>
-        </span>
-      </label>
-    </div>
+  <p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
+  <h3 class="text-3xl font-extrabold text-purple-700">
+    ₹<span x-text="stats.todayEarnings"></span>
+  </h3>
+</div>
+<div class="flex items-center gap-4">
+  
+  <!-- Existing stats / buttons -->
+
+  <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
+    <input 
+      type="checkbox" 
+      class="accent-green-600"
+      @change="toggleAvailability($event)"
+    >
+    <span class="font-semibold">Available for Jobs</span>
+  </label>
+
+</div>
+
   </div>
 </section>
 
@@ -146,6 +144,7 @@ class="font-sans antialiased pb-36"
         Started: <span x-text="formatTime(job.started_at)"></span>
       </p>
 
+
       <!-- FOOTER -->
       <div class="flex justify-between items-center border-t mt-4 pt-4">
 
@@ -164,50 +163,56 @@ class="font-sans antialiased pb-36"
             class="text-xs text-blue-600 font-bold mt-1">
             Open in Maps →
           </button>
+
+          <p class="text-[9px] font-mono text-red-600 mt-1"
+             x-show="job.slaRemaining">
+             SLA: <span x-text="job.slaRemaining"></span>
+          </p>
         </div>
 
         <!-- STATUS + ACTION -->
         <div class="flex flex-col items-end gap-2">
+
           <span
-            :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
-                     job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                     job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
-                     'bg-green-100 text-green-700'"
-            class="px-3 py-1 rounded-full text-[10px] font-black"
+           :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
+                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                    job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
+                    'bg-green-100 text-green-700'
+                  "
             x-text="job.status.replace('_',' ')"
           ></span>
-          
-          <button
-            x-show="job.status === 'pending'"
-            @click="acceptJob(job.id)"
-            class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl"
-          >
-            Accept
-          </button>
+                    <!-- ACCEPT / REJECT (only when job is free) -->
+<button
+  x-show="job.status === 'pending'"
+  @click="acceptJob(job.id)"
+  class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
+  Accept
+</button>
 
-          <button
-            x-show="job.status === 'pending'"
-            @click="rejectJob(job.id)"
-            class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl"
-          >
-            Reject
-          </button>
+<button
+  x-show="job.status === 'pending'"
+  @click="rejectJob(job.id)"
+  class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
+  Reject
+</button>
 
-          <button
-            x-show="job.status === 'in_progress'"
-            @click="markArrived(job)"
-            class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl"
-          >
-            Mark Arrived
-          </button>
+<!-- MARK ARRIVED (after accepting job) -->
+<button
+  x-show="job.status === 'in_progress'"
+  @click="markArrived(job)"
+  class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
+  Mark Arrived
+</button>
 
-          <button
-            x-show="job.status === 'arrived'"
-            @click="completeJob(job)"
-            class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase"
-          >
-            Complete Job
-          </button>
+<!-- COMPLETE (ONLY after arrival) -->
+<button
+  x-show="job.status === 'arrived'"
+  @click="completeJob(job)"
+  class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
+  Complete Job
+</button>
+
+            
         </div>
       </div>
     </div>
@@ -220,35 +225,42 @@ class="font-sans antialiased pb-36"
 <!-- BOTTOM NAV -->
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
   <div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
+
     <button class="w-12 h-12 text-brand-gold">
       <i class="fa-solid fa-house"></i>
     </button>
+
     <button @click="scrollToJobs()" class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
       <i class="fa-solid fa-box-open"></i>
     </button>
+
     <div class="w-14 h-12"></div>
+
     <button onclick="window.location.href='completed_jobs.html'"
             class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
       <i class="fa-solid fa-book-open"></i>
     </button>
+
     <button @click="logout()" class="w-12 h-12 text-brand-olive/40">
       <i class="fa-solid fa-circle-user"></i>
     </button>
+
     <button
       class="absolute left-1/2 -translate-x-1/2 -top-6
              w-14 h-14 bg-brand-gold rounded-full
              flex items-center justify-center text-white
-             shadow-lg border-4 border-white"
-      onclick="window.location.href='job_detail.html'">
+             shadow-lg border-4 border-white">
       <i class="fa-solid fa-camera"></i>
     </button>
+
   </div>
 </nav>
 
+</script>
+
 <script>
-// Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+   apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
   authDomain: "fixzen-73d68.firebaseapp.com",
   projectId: "fixzen-73d68",
   messagingSenderId: "816193738840",
@@ -258,370 +270,429 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-function dashboardHandler() {
-  return {
-    tech: null,
-    techName: '',
-    loading: true,
-    jobs: [],
-    stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
-    incomingJob: null,
-    available: true,
-    notificationSupported: false,
+</script>
 
-    async init() {
-      this.tech = JSON.parse(localStorage.getItem("active_tech"));
-      if (!this.tech) {
+<script>function dashboardHandler(){
+return {
+  tech: null,
+  techName: '',
+  loading: true,
+  jobs: [],
+  stats: { activeJobs: 0, earnings: 0 },
+  incomingJob: null,
+  available: true,
+  
+
+  async init() {
+    this.tech = JSON.parse(localStorage.getItem("active_tech"));
+    if (!this.tech) {
         window.location.href = "partnerlogin.html";
         return;
-      }
-      
-      this.techName = this.tech.name;
-      this.notificationSupported = 'Notification' in window;
-      
-      // Check for action from notification click
-      const urlParams = new URLSearchParams(window.location.search);
-      const action = urlParams.get('action');
-      const jobId = urlParams.get('job_id');
-      
-      if (action === 'accept' && jobId) {
-        setTimeout(() => this.acceptJob(jobId), 1000);
-      }
-      
-      await this.setupNotifications();
-      await this.fetchJobs();
-      this.subscribeRealtime();
-      
-      // Listen for foreground messages
-      messaging.onMessage((payload) => {
-        console.log("📱 [FOREGROUND] Message received:", payload);
-        this.showInAppNotification(payload);
-      });
-    },
-
-    async setupNotifications() {
-      try {
-        if (!('serviceWorker' in navigator)) {
-          console.error("Service Worker not supported");
-          alert("Your browser doesn't support background notifications");
-          return;
-        }
-
-        // Register service worker with correct scope
-        const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-          scope: './'
-        });
-        
-        console.log("✅ Service Worker registered:", registration);
-        
-        // Wait for service worker to be ready
-        await navigator.serviceWorker.ready;
-        
-        // Check if we already have permission
-        if (Notification.permission === 'granted') {
-          await this.getAndSaveToken(registration);
-        } else if (Notification.permission !== 'denied') {
-          // Request permission
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            await this.getAndSaveToken(registration);
-          } else {
-            alert("Please enable notifications to receive job alerts");
-          }
-        }
-      } catch (err) {
-        console.error("❌ Notification setup failed:", err);
-      }
-    },
-
-    async getAndSaveToken(registration) {
-      try {
-        const currentToken = await messaging.getToken({
-          vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-          serviceWorkerRegistration: registration
-        });
-
-        if (currentToken) {
-          console.log("✅ FCM Token:", currentToken);
-          
-          // Save token to database
-          const { error } = await window.sb
-            .from("technicians")
-            .update({ 
-              fcm_token: currentToken,
-              last_active: new Date().toISOString()
-            })
-            .eq("id", this.tech.id);
-
-          if (error) {
-            console.error("❌ Failed to save token:", error);
-          } else {
-            console.log("✅ Token saved to database");
-          }
-        } else {
-          console.log("No registration token available");
-        }
-      } catch (err) {
-        console.error("❌ Error getting token:", err);
-      }
-    },
-
-    showInAppNotification(payload) {
-      // Show a small toast/in-app notification
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-20 left-4 right-4 bg-green-600 text-white p-4 rounded-2xl shadow-2xl z-50 animate__animated animate__slideInDown';
-      notification.innerHTML = `
-        <div class="flex items-center gap-3">
-          <i class="fa-solid fa-bell fa-shake text-xl"></i>
-          <div>
-            <p class="font-bold">${payload.notification?.title || 'New Job'}</p>
-            <p class="text-xs opacity-90">${payload.notification?.body || ''}</p>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.remove(), 5000);
-    },
-
-    openMaps(location) {
-      const encoded = encodeURIComponent(location);
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
-    },
-
-    toggleAvailability(e) {
-      this.available = e.target.checked;
-      // Update in database
-      window.sb
-        .from("technicians")
-        .update({ available: this.available })
-        .eq("id", this.tech.id)
-        .then(({ error }) => {
-          if (error) console.error("Failed to update availability:", error);
-        });
-    },
-
-    async fetchJobs() {
-      this.loading = true;
-      const { data, error } = await window.sb
-        .from("jobs")
-        .select("*")
-        .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
-        .not("rejected_by", "cs", `{${this.tech.id}}`)
-        .order("created_at", { ascending: false });
-
-      if (!error) {
-        this.jobs = data || [];
-        this.updateStats();
-      }
-      this.loading = false;
-    },
-
-    updateStats() {
-      this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-      
-      const completedJobs = this.jobs.filter(
-        j => j.status === 'completed' && j.tech_id === this.tech.id
-      );
-
-      this.stats.earnings = completedJobs.reduce((total, job) => {
-        return total + (job.technician_fee || 0);
-      }, 0);
-
-      const today = new Date().toISOString().split('T')[0];
-      this.stats.todayEarnings = completedJobs
-        .filter(j => j.completed_at?.startsWith(today))
-        .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
-    },
-
-    subscribeRealtime() {
-      window.sb
-        .channel(`public-jobs`)
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "jobs" },
-          (payload) => {
-            const job = payload.new;
-            
-            if (job.rejected_by?.includes(this.tech.id)) {
-              this.jobs = this.jobs.filter(j => j.id !== job.id);
-              return;
-            }
-
-            const index = this.jobs.findIndex(j => j.id === job.id);
-            if (index !== -1) {
-              this.jobs[index] = job;
-            } else {
-              if (job.status === "pending" && !job.tech_id) {
-                this.jobs.unshift(job);
-                // Show notification for new pending jobs
-                if (document.visibilityState === 'visible') {
-                  this.showInAppNotification({
-                    notification: {
-                      title: '🔧 New Job Available',
-                      body: `${job.category} - ${job.location}`
-                    }
-                  });
-                }
-              }
-            }
-            this.updateStats();
-          }
-        )
-        .subscribe();
-    },
-
-    async acceptJob(jobId) {
-      const { data, error } = await window.sb
-        .from("jobs")
-        .update({
-          tech_id: this.tech.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        })
-        .eq("id", jobId)
-        .is("tech_id", null)
-        .eq("status", "pending")
-        .select();
-
-      if (error) {
-        console.error("Accept error:", error);
-        alert("Database error while accepting job");
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        alert("Too late. Another technician already took this job.");
-        return;
-      }
-
-      // Update UI
-      const index = this.jobs.findIndex(j => j.id === jobId);
-      if (index !== -1) {
-        this.jobs[index].status = "in_progress";
-        this.jobs[index].tech_id = this.tech.id;
-      }
-
-      // Store active job
-      localStorage.setItem("locked_job_id", jobId);
-      
-      // Show success message
-      alert("Job accepted successfully!");
-      
-      // Optionally redirect to job detail
-      // window.location.href = "job_detail.html";
-    },
-
-    async rejectJob(jobId) {
-      const job = this.jobs.find(j => j.id === jobId);
-      if (!job) return;
-
-      const currentRejected = job.rejected_by || [];
-
-      const { error } = await window.sb
-        .from("jobs")
-        .update({
-          rejected_by: [...currentRejected, this.tech.id]
-        })
-        .eq("id", jobId);
-
-      if (error) {
-        console.error("Reject failed:", error);
-        alert("Reject failed");
-        return;
-      }
-
-      this.jobs = this.jobs.filter(j => j.id !== jobId);
-      this.updateStats();
-    },
-
-    async markArrived(job) {
-      try {
-        const { error } = await window.sb
-          .from('jobs')
-          .update({
-            arrived_at: new Date().toISOString(),
-            status: 'arrived'
-          })
-          .eq('id', job.id)
-          .eq('tech_id', this.tech.id);
-
-        if (error) {
-          console.error("Arrival error:", error);
-          alert("Failed to mark arrival: " + error.message);
-          return;
-        }
-
-        // Update UI
-        job.arrived_at = new Date().toISOString();
-        job.status = "arrived";
-        
-        alert("Arrival marked successfully");
-      } catch (err) {
-        console.error("Arrival error:", err);
-        alert("Failed to mark arrival");
-      }
-    },
-
-    async completeJob(job) {
-      const completedAt = new Date().toISOString();
-      const fee = this.calculateFee(job);
-
-      const { error } = await window.sb
-        .from("jobs")
-        .update({
-          status: "completed",
-          completed_at: completedAt,
-          technician_fee: fee
-        })
-        .eq("id", job.id)
-        .eq("tech_id", this.tech.id);
-
-      if (error) {
-        console.error(error);
-        alert("Failed to complete job: " + error.message);
-        return;
-      }
-
-      alert("Job marked as completed!");
-      this.fetchJobs();
-    },
-
-    calculateFee(job) {
-      const BASE = {
-        "Carpenter": 800,
-        "Plumber": 600,
-        "Electrician": 600,
-        "Painter": 600,
-        "Mason": 600,
-        "Welder": 600,
-        "Roofer": 600,
-        "AC Tech": 600
-      };
-      return BASE[job.category] ?? 400;
-    },
-
-    formatTime(dt) {
-      if(!dt) return "-";
-      const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
-      if(diff < 1) return "just now";
-      if(diff < 60) return diff + " mins ago";
-      const hours = Math.floor(diff / 60);
-      if(hours < 24) return hours + " hrs ago";
-      const days = Math.floor(hours / 24);
-      return days + " days ago";
-    },
-
-    scrollToJobs() {
-      document.getElementById('jobsSection').scrollIntoView({ behavior: 'smooth' });
-    },
-
-    logout() {
-      localStorage.removeItem("active_tech");
-      localStorage.removeItem("locked_job_id");
-      window.location.href = "partnerlogin.html";
     }
+    // 🔒 HARD ENFORCEMENT: check locked job
+  const lockedJobId = localStorage.getItem("locked_job_id");
+  if (lockedJobId) {
+    window.location.href = "job_detail.html";
+    return;
+  }
+    this.techName = this.tech.name;
+    await this.setupNotifications();
+    
+// ADD THIS BLOCK HERE
+messaging.onMessage((payload) => {
+  console.log("Foreground message:", payload);
+
+  const title = payload.notification?.title || "New Job";
+  const body = payload.notification?.body || "You have a new job";
+
+  new Notification(title, {
+    body: body,
+    icon: "/icon-192.png"
+  });
+});
+
+    await this.fetchJobs();
+    this.subscribeRealtime();
+
+    
+  },
+  openMaps(location){
+  const encoded = encodeURIComponent(location);
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
+},
+toggleAvailability(e){
+  this.available = e.target.checked;
+  console.log("Technician availability:", this.available);
+},
+// Inside dashboardHandler() init
+async setupNotifications() {
+  try {
+    if (!('serviceWorker' in navigator)) {
+      console.error("Service Worker not supported");
+      return;
+    }
+
+    // ✅ Correct path (same folder as HTML)
+    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    console.log("SW Registered:", registration);
+
+    // Ask permission
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      console.error("Notification permission denied");
+      return;
+    }
+
+    // Get FCM token
+    const token = await messaging.getToken({
+      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
+      serviceWorkerRegistration: registration
+    });
+
+    if (!token) {
+      console.error("No FCM token received");
+      return;
+    }
+
+    console.log("FCM Token:", token);
+
+    // Save token to DB
+    await window.sb
+      .from("technicians")
+      .update({ fcm_token: token })
+      .eq("id", this.tech.id);
+
+    console.log("Token saved to Supabase");
+
+  } catch (err) {
+    console.error("Notification setup failed:", err);
+  }
+},
+
+  async fetchJobs(){
+    this.loading = true;
+    const { data, error } = await window.sb
+      .from("jobs")
+      .select("*")
+      .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
+      .not("rejected_by", "cs", `{${this.tech.id}}`)
+      .order("created_at", { ascending: false });
+
+    if (!error) {
+  this.jobs = data;
+
+  // Active jobs
+  this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
+
+  // 🔥 REAL EARNINGS CALCULATION (you were missing this)
+  const completedJobs = data.filter(
+    j => j.status === 'completed' && j.tech_id === this.tech.id
+  );
+
+  this.stats.earnings = completedJobs.reduce((total, job) => {
+    return total + (job.technician_fee || 0);
+  }, 0);
+  const today = new Date().toISOString().split('T')[0];
+
+this.stats.todayEarnings = data
+  .filter(j =>
+    j.status === 'completed' &&
+    j.tech_id === this.tech.id &&
+    j.completed_at?.startsWith(today)
+  )
+  .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
+
+}
+
+    this.loading = false;
+  },
+subscribeRealtime() {
+  window.sb
+    .channel(`public-jobs`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "jobs" }, // listen to INSERT + UPDATE
+      (payload) => {
+        const job = payload.new;
+
+        // Remove rejected jobs
+        if (job.rejected_by?.includes(this.tech.id)) {
+          this.jobs = this.jobs.filter(j => j.id !== job.id);
+          return;
+        }
+
+        // Update job if exists
+        const index = this.jobs.findIndex(j => j.id === job.id);
+        if (index !== -1) {
+          this.jobs[index] = job;
+        } else {
+          // Add new pending jobs
+          if (job.status === "pending" && !job.tech_id) {
+            this.jobs.unshift(job);
+          }
+        }
+
+        this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+        // Recalculate earnings live
+        const completedJobs = this.jobs.filter(
+          j => j.status === 'completed' && j.tech_id === this.tech.id
+        );
+
+        this.stats.earnings = completedJobs.reduce((total, job) => {
+          return total + (job.technician_fee || 0);
+        }, 0);
+
+      }
+      
+    )
+    .subscribe();
+},
+
+  /* ✅ ACCEPT JOB */
+ async acceptJob(jobId) {
+  // Strict atomic update: only accept if truly free
+  const { data, error } = await window.sb
+    .from("jobs")
+    .update({
+      tech_id: this.tech.id,
+      status: "in_progress",
+      started_at: new Date().toISOString()
+    })
+    .eq("id", jobId)
+    .is("tech_id", null)        // must be unassigned
+    .eq("status", "pending")    // must be pending
+    .select();
+
+  if (error) {
+    console.error("Accept error:", error);
+    alert("Database error while accepting job");
+    return;
+  }
+
+  // THIS was your wrong assumption earlier
+  if (!data || data.length === 0) {
+    alert("Too late. Another technician already took this job.");
+    return;
+  }
+
+  // Immediate UI update
+const index = this.jobs.findIndex(j => j.id === jobId);
+if (index !== -1) {
+  this.jobs[index].status = "in_progress";
+  this.jobs[index].tech_id = this.tech.id;
+}
+
+// 🔒 HARD LOCK: store active job and force redirect
+localStorage.setItem("locked_job_id", jobId);
+window.location.href = "job_detail.html";
+},
+
+  /* ❌ REJECT JOB */
+  async rejectJob(jobId) {
+  const job = this.jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  const currentRejected = job.rejected_by || [];
+
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      rejected_by: [...currentRejected, this.tech.id]
+    })
+    .eq("id", jobId);
+
+  if (error) {
+    console.error("Reject failed:", error);
+    alert("Reject failed");
+    return;
+  }
+
+  // Remove instantly from UI (no refresh)
+  this.jobs = this.jobs.filter(j => j.id !== jobId);
+  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+},
+/* ✅ COMPLETE JOB */
+  /* ✅ COMPLETE JOB */
+async completeJob(job) {
+  const completedAt = new Date().toISOString();
+  const fee = this.calculateFee(job); // Uses your predefined fee logic
+
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "completed",
+      completed_at: completedAt,
+      technician_fee: fee
+    })
+    .eq("id", job.id)
+    .eq("tech_id", this.tech.id); // Security: ensures only the assigned tech can complete it
+
+  if (error) {
+    console.error(error);
+    alert("Failed to complete job: " + error.message);
+    return;
+  }
+  
+  alert("Job marked as completed!");
+  this.fetchJobs(); // Refresh the list
+},
+async markArrived(job){
+  try {
+    console.log("Marking arrival for job:", job.id);
+
+    const { data, error } = await window.sb   // 🔥 FIXED HERE
+      .from('jobs')
+      .update({
+        arrived_at: new Date().toISOString()
+      })
+      .eq('id', job.id)
+      .eq('tech_id', this.tech.id); // extra safety
+
+    if (error) {
+      console.error("SUPABASE ERROR:", error);
+      alert("DB Error: " + error.message);
+      return;
+    }
+
+    // Update UI instantly (no refresh)
+    job.arrived_at = new Date().toISOString();
+    job.status = "arrived"; // UI-only state (NOT saved to DB)
+
+    alert("Arrival marked successfully");
+
+  } catch (err) 
+  {
+    console.error("ARRIVAL FULL ERROR:", err);
+    alert("Failed to mark arrival: " + (err.message || "Unknown error"));
+  }
+},
+
+
+formatTime(dt){
+  if(!dt) return "-";
+
+  const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
+
+  if(diff < 1) return "just now";
+  if(diff < 60) return diff + " mins ago";
+
+  const hours = Math.floor(diff / 60);
+  if(hours < 24) return hours + " hrs ago";
+
+  const days = Math.floor(hours / 24);
+  return days + " days ago";
+},
+
+  calculateFee(job){
+    const BASE = {
+      "Carpenter": 800,
+      "Plumber": 600,
+      "Electrician": 600,
+      "Painter": 600,
+      "Mason": 600,
+      "Welder": 600,
+      "Roofer": 600,
+      "AC Tech": 600
+
+    };
+    return BASE[job.category] ?? 400;
+  },
+
+async acceptIncoming() {
+  const job = this.incomingJob;
+  if (!job) return;
+
+  const { data, error } = await window.sb
+    .from("jobs")
+    .update({
+      tech_id: this.tech.id,
+      status: "in_progress",
+      started_at: new Date().toISOString()
+    })
+    .eq("id", job.id)
+    .eq("status", "pending")
+    .is("tech_id", null)
+    .select();
+
+  if (!data || data.length === 0) {
+    alert("Too late. Another technician accepted this job.");
+  }
+
+  this.incomingJob = null;
+  this.fetchJobs();
+},
+
+
+async rejectIncoming() {
+  const job = this.incomingJob;
+  if (!job) return;
+
+  await window.sb
+    .from("jobs")
+    .update({
+      rejected_by: window.sb.sql`
+        array_append(coalesce(rejected_by,'{}'), ${this.tech.id})
+      `
+    })
+    .eq("id", job.id);
+
+  this.incomingJob = null;
+},
+  logout(){
+    localStorage.removeItem("active_tech");
+    window.location.href = "partnerlogin.html";
   }
 }
+}
 </script>
+
+
+<!-- 🔔 JOB ALERT MODAL -->
+<div
+  x-show="incomingJob"
+  x-transition
+  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
+
+    <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
+      New Job Arrived
+    </p>
+
+    <h3 class="text-xl font-extrabold text-brand-olive mt-2"
+        x-text="incomingJob?.category"></h3>
+
+    <p class="text-sm text-gray-600 mt-1"
+       x-text="incomingJob?.location"></p>
+
+    <p class="text-xs text-gray-500 italic mt-2"
+       x-text="incomingJob?.issue"></p>
+
+    <div class="flex gap-3 mt-6">
+      <button
+        @click="acceptIncoming()"
+        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
+        Accept
+      </button>
+
+      <button
+        @click="rejectIncoming()"
+        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
+        Reject
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Your dashboard HTML above -->
+
+<!-- JOB POPUP UI -->
+<div id="jobPopup" style="display:none; position:fixed; top:20px; right:20px; background:#111; color:#fff; padding:20px; border-radius:12px; z-index:9999;">
+  <h3>New Job Arrived</h3>
+  <p id="jobInfo"></p>
+  <button onclick="acceptJob()">Accept</button>
+  <button onclick="rejectJob()">Reject</button>
+</div>
 </body>
 </html>
