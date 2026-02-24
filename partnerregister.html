@@ -2,48 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FixZen - TECHNICIAN Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .premium-input { width: 100%; border: 2px solid #DFD4C3; padding: 0.85rem; border-radius: 1rem; outline: none; transition: 0.3s; }
-        .btn-gold { width: 100%; padding: 1rem; background: #A07D54; color: white; border-radius: 1rem; font-weight: bold; }
-        .btn-gold:disabled { opacity: 0.5; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+
+        .premium-input { 
+            width: 100%; 
+            background: #ffffff;
+            border: 1.5px solid #E5E1DA; 
+            padding: 1rem; 
+            border-radius: 12px; 
+            outline: none; 
+            transition: all 0.2s ease-in-out;
+            appearance: none;
+        }
+
+        .premium-input:focus { 
+            border-color: #A07D54; 
+            box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .floating-label-group { position: relative; }
+
+        .btn-gold { 
+            width: 100%; 
+            padding: 1.2rem; 
+            background: linear-gradient(135deg, #A07D54 0%, #866642 100%); 
+            color: white; 
+            border-radius: 14px; 
+            font-weight: 700; 
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(160, 125, 84, 0.3);
+        }
+
+        .btn-gold:active { transform: scale(0.98); }
+        .btn-gold:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Custom Select Arrow */
+        .select-wrapper { position: relative; }
+        .select-wrapper::after {
+            content: '▼'; font-size: 0.8rem; color: #A07D54;
+            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+            pointer-events: none;
+        }
     </style>
 </head>
-<body class="bg-[#F8F5F0] p-6" x-data="{ isSubmitting: false, isSuccess: false }">
+<body class="bg-[#FDFCFB] min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-xl mx-auto bg-white p-8 rounded-[2.5rem] shadow-xl" x-show="!isSuccess">
-        <h1 class="text-2xl font-bold text-[#5D5646] mb-6 text-center">TECHNICIAN REGISTRATION</h1>
+    <div class="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-50" x-data="{ isSubmitting: false, isSuccess: false }" x-cloak>
         
-        <form @submit.prevent="submitTechnician($data)" class="space-y-4">
-            <input type="text" id="regName" class="premium-input" placeholder="Full Name" required>
-            <input type="tel" id="regPhone" class="premium-input" placeholder="Mobile (10 digits)" maxlength="10" required>
-            
-            <select id="regCategory" class="premium-input">
-                <option>AC & Appliance Repair</option>
-                <option>Electrical Specialist</option>
-                <option>Master Plumber</option>
-            </select>
-
-            <div class="grid grid-cols-2 gap-4">
-                <input type="number" id="regExp" class="premium-input" placeholder="Years of Exp" required>
-                <input type="text" id="regAadhaar" class="premium-input" placeholder="12-Digit Aadhar" maxlength="12" required>
+        <div x-show="!isSuccess" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-extrabold text-[#3E3A31] tracking-tight">Join FixZen</h1>
+                <p class="text-gray-400 mt-2 text-sm">Fill in your details to start earning</p>
             </div>
+            
+            <form @submit.prevent="submitTechnician($data)" class="space-y-5">
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Full Name</label>
+                    <input type="text" id="regName" class="premium-input" placeholder="e.g. Rahul Sharma" required>
+                </div>
 
-            <input type="text" id="regArea" class="premium-input" placeholder="Service Area" required>
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Mobile Number</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">+91</span>
+                        <input type="tel" id="regPhone" class="premium-input pl-14" placeholder="9876543210" maxlength="10" required>
+                    </div>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Specialization</label>
+                    <div class="select-wrapper">
+                        <select id="regCategory" class="premium-input">
+                            <option>AC & Appliance Repair</option>
+                            <option>Electrical Specialist</option>
+                            <option>Master Plumber</option>
+                        </select>
+                    </div>
+                </div>
 
-            <button type="submit" class="btn-gold" :disabled="isSubmitting">
-                <span x-text="isSubmitting ? 'Sending...' : 'Submit Application'"></span>
-            </button>
-        </form>
-    </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Experience</label>
+                        <input type="number" id="regExp" class="premium-input" placeholder="Years" required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Aadhaar</label>
+                        <input type="text" id="regAadhaar" class="premium-input" placeholder="12 Digits" maxlength="12" required>
+                    </div>
+                </div>
 
-    <div x-show="isSuccess" class="text-center p-20 bg-white max-w-sm mx-auto rounded-3xl shadow-lg mt-10">
-        <h2 class="text-3xl font-bold text-green-600">Success!</h2>
-        <p class="mt-4">Application submitted successfully our team will you contact to you within 24 hours.</p>
-        <a href="index.html" class="mt-6 inline-block text-[#A07D54] underline">Return Home</a>
+                <div class="space-y-1 pb-2">
+                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Service Area</label>
+                    <input type="text" id="regArea" class="premium-input" placeholder="City or Locality" required>
+                </div>
+
+                <button type="submit" class="btn-gold group relative overflow-hidden" :disabled="isSubmitting">
+                    <span class="relative z-10" x-text="isSubmitting ? 'Registering...' : 'Submit Application'"></span>
+                    <div x-show="isSubmitting" class="absolute inset-0 bg-black/10 animate-pulse"></div>
+                </button>
+            </form>
+        </div>
+
+        <div x-show="isSuccess" x-transition:enter="transition ease-out duration-500" class="text-center py-10">
+            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">Application Sent!</h2>
+            <p class="text-gray-500 mt-3 leading-relaxed">Our onboarding team will reach out to you within <span class="font-bold text-[#A07D54]">24 hours</span>.</p>
+            <a href="index.html" class="mt-8 inline-block w-full py-4 border-2 border-[#A07D54] text-[#A07D54] rounded-xl font-bold hover:bg-[#A07D54] hover:text-white transition-all">Return to Home</a>
+        </div>
     </div>
 
     <script>
