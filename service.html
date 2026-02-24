@@ -120,15 +120,6 @@
           loading: true,
           bookingLoading: false,
 
-          // Coupon related
-          showCouponSection: false,
-          couponCode: '',
-          appliedCoupon: null,
-          couponError: '',
-          couponSuccess: '',
-          couponLoading: false,
-          availableCoupons: [],
-
           // REQUIRED FORM FIELDS
           customerName: '',
           phone: '',
@@ -140,7 +131,7 @@
           lng: null,
           fetchingLocation: false,
 
-          async init() {
+          init() {
               const params = new URLSearchParams(window.location.search);
               let rawId = params.get('id');
               if (!rawId) { window.location.href = 'index.html'; return; }
@@ -154,87 +145,7 @@
               tomorrow.setDate(tomorrow.getDate() + 1);
               this.date = tomorrow.toISOString().split('T')[0];
               
-              // Load available coupons
-              await this.loadActiveCoupons();
-              
               setTimeout(() => this.loading = false, 400);
-          },
-
-          // Load active coupons from database
-          async loadActiveCoupons() {
-              if (!window.sb) return;
-              
-              try {
-                  const { data, error } = await window.sb
-                      .from('promos')
-                      .select('*')
-                      .gte('expiry', new Date().toISOString().split('T')[0])
-                      .order('created_at', { ascending: false });
-                  
-                  if (!error && data) {
-                      this.availableCoupons = data;
-                  }
-              } catch (err) {
-                  console.error('Error loading coupons:', err);
-              }
-          },
-
-          // Apply coupon
-          async applyCoupon() {
-              if (!this.couponCode.trim()) {
-                  this.couponError = 'Please enter a coupon code';
-                  return;
-              }
-
-              this.couponLoading = true;
-              this.couponError = '';
-              this.couponSuccess = '';
-
-              try {
-                  const { data, error } = await window.sb
-                      .from('promos')
-                      .select('*')
-                      .eq('code', this.couponCode.toUpperCase().trim())
-                      .gte('expiry', new Date().toISOString().split('T')[0])
-                      .single();
-
-                  if (error || !data) {
-                      this.couponError = 'Invalid or expired coupon code';
-                      this.appliedCoupon = null;
-                  } else {
-                      this.appliedCoupon = data;
-                      this.couponSuccess = `Coupon applied! You saved ${data.type === 'flat' ? '₹' + data.value : data.value + '%'}`;
-                      this.showCouponSection = false;
-                  }
-              } catch (err) {
-                  this.couponError = 'Error applying coupon';
-                  this.appliedCoupon = null;
-              } finally {
-                  this.couponLoading = false;
-              }
-          },
-
-          // Remove applied coupon
-          removeCoupon() {
-              this.appliedCoupon = null;
-              this.couponCode = '';
-              this.couponSuccess = '';
-          },
-
-          // Calculate discounted total
-          get discountedTotal() {
-              if (!this.appliedCoupon) return this.total;
-              
-              if (this.appliedCoupon.type === 'flat') {
-                  return Math.max(0, this.total - this.appliedCoupon.value);
-              } else {
-                  return Math.round(this.total * (1 - this.appliedCoupon.value / 100));
-              }
-          },
-
-          get savings() {
-              if (!this.appliedCoupon) return 0;
-              return this.total - this.discountedTotal;
           },
 
           toggleSub(sub) {
@@ -330,11 +241,8 @@
                       phone: this.phone,
                       status: 'pending',
                       urgent: false,
-                      latitude: this.lat || null,
-                      longitude: this.lng || null,
-                      original_price: this.total,
-                      discounted_price: this.discountedTotal,
-                      applied_coupon: this.appliedCoupon?.code || null
+                      latitude: this.lat || null, // Safely handles if user didn't click GPS
+                      longitude: this.lng || null
                   };
 
                   const { data: insertedJob, error: jobError } = await window.sb
@@ -354,12 +262,10 @@
                       user_id: user.id,
                       service_name: this.service?.name || 'General Service',
                       variant_name: firstService?.n || 'Service',
-                      price: this.discountedTotal,
-                      original_price: this.total,
+                      price: this.total,
                       date: this.date,
                       address: this.address,
-                      phone: this.phone,
-                      coupon_used: this.appliedCoupon?.code || null
+                      phone: this.phone
                   };
 
                   const { error: bookingError } = await window.sb
@@ -372,19 +278,11 @@
                       return;
                   }
 
-                  // 3. Update coupon usage count if applied
-                  if (this.appliedCoupon) {
-                      await window.sb
-                          .from('promos')
-                          .update({ usage_count: (this.appliedCoupon.usage_count || 0) + 1 })
-                          .eq('id', this.appliedCoupon.id);
-                  }
-
                   this.bookingLoading = false;
                   this.showAgreement = false;
                   
                   // Redirect to Success Map
-                  window.location.href = 'success.html?job_id=' + insertedJob.id + '&savings=' + this.savings;
+                  window.location.href = 'success.html?job_id=' + insertedJob.id;
 
               } catch (err) {
                   console.error(err);
@@ -456,15 +354,7 @@
                 <p class="text-[10px] text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
                 <div class="flex items-baseline gap-1">
                     <span class="text-xl font-bold text-brand-olive">₹</span>
-                    <h2 class="text-4xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="discountedTotal"></h2>
-                </div>
-                <div x-show="appliedCoupon" class="flex items-center gap-1 mt-1">
-                    <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">
-                        Saved ₹<span x-text="savings"></span>
-                    </span>
-                    <button @click="removeCoupon()" class="text-[10px] text-red-500 hover:text-red-700">
-                        <i class="fa-solid fa-times-circle"></i>
-                    </button>
+                    <h2 class="text-4xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="total"></h2>
                 </div>
             </div>
             <div class="text-right">
@@ -475,46 +365,11 @@
             </div>
         </div>
         
-        <!-- Coupon Section -->
-        <div x-show="selectedSubs.length > 0" class="mb-3">
-            <div x-show="!showCouponSection && !appliedCoupon" @click="showCouponSection = true" class="flex items-center gap-2 text-brand-gold text-xs font-bold cursor-pointer hover:text-brand-olive transition-colors">
-                <i class="fa-solid fa-ticket-alt"></i>
-                <span>Have a coupon code? Apply here</span>
-            </div>
-            
-            <div x-show="showCouponSection && !appliedCoupon" class="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                <div class="flex gap-2">
-                    <input type="text" x-model="couponCode" placeholder="Enter coupon code" class="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-brand-gold uppercase">
-                    <button @click="applyCoupon()" :disabled="couponLoading" class="px-4 py-2 bg-brand-olive text-white rounded-xl text-sm font-bold hover:bg-brand-gold transition-colors disabled:opacity-50 flex items-center gap-2">
-                        <i x-show="couponLoading" class="fa-solid fa-circle-notch fa-spin"></i>
-                        <span x-show="!couponLoading">Apply</span>
-                    </button>
-                </div>
-                <p x-show="couponError" class="text-red-500 text-[10px] mt-1 font-bold" x-text="couponError"></p>
-                <p x-show="couponSuccess" class="text-green-600 text-[10px] mt-1 font-bold" x-text="couponSuccess"></p>
-                
-                <!-- Available coupons -->
-                <div x-show="availableCoupons.length > 0" class="mt-3">
-                    <p class="text-[10px] font-bold text-brand-dark/50 mb-2">Available Offers:</p>
-                    <div class="flex flex-wrap gap-2">
-                        <template x-for="coupon in availableCoupons.slice(0,3)" :key="coupon.id">
-                            <button @click="couponCode = coupon.code; applyCoupon()" class="text-[10px] bg-white border border-brand-gold/30 text-brand-olive px-2 py-1 rounded-full font-bold hover:bg-brand-gold hover:text-white transition-colors">
-                                <span x-text="coupon.code"></span>
-                                <span x-text="coupon.type === 'flat' ? ' - ₹' + coupon.value : ' - ' + coupon.value + '%'"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-                
-                <button @click="showCouponSection = false" class="text-[10px] text-gray-400 mt-2 hover:text-gray-600">Cancel</button>
-            </div>
-        </div>
-        
         <button id="mainBookBtn" @click="openAgreement()" 
                 :disabled="selectedSubs.length === 0"
                 class="w-full rounded-2xl font-bold text-lg py-4 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 shadow-lg"
                 :class="selectedSubs.length > 0 ? 'bg-brand-olive text-white hover:bg-brand-gold shadow-brand-olive/30' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
-            <span x-text="selectedSubs.length > 0 ? 'Proceed to Book' : 'Select a Service'"></span>
+            <span x-text="selectedSubs.length > 0 ? 'Book Now' : 'Select a Service'"></span>
             <i class="fa-solid fa-arrow-right text-sm" x-show="selectedSubs.length > 0"></i>
         </button>
     </div>
@@ -528,10 +383,7 @@
             
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-serif font-bold text-brand-olive">Confirm Booking</h3>
-                <div class="text-right">
-                    <span class="text-sm font-bold text-brand-gold">₹<span x-text="discountedTotal"></span></span>
-                    <div x-show="appliedCoupon" class="text-[10px] text-green-600 line-through opacity-50">₹<span x-text="total"></span></div>
-                </div>
+                <span class="text-sm font-bold text-brand-gold">₹<span x-text="total"></span></span>
             </div>
             
             <div class="space-y-3 mb-4">
@@ -596,4 +448,4 @@
     </div>
 
 </body>
-</html>
+</html> 
