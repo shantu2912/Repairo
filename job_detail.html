@@ -306,20 +306,32 @@ document.getElementById("arrivedBtn").onclick = async () => {
 
   location.reload(); // refresh UI state
 };
-
 document.getElementById("completeBtn").onclick = async () => {
+
+  const BASE = {
+    "Carpenter": 800,
+    "Plumber": 600,
+    "Electrician": 600,
+    "Painter": 600,
+    "Mason": 600,
+    "Welder": 600,
+    "Roofer": 600,
+    "AC Tech": 600
+  };
+
+  const fee = BASE[jobData.category] ?? 400;
+
   await sb.from("jobs").update({
     status: "completed",
-    completed_at: new Date().toISOString()
+    completed_at: new Date().toISOString(),
+    technician_fee: fee
   }).eq("id", jobId);
 
-  // 🔓 unlock next job
   localStorage.removeItem("locked_job_id");
 
   alert("Job Completed Successfully");
   window.location.href = "techniciandashboard.html";
 };
-
 loadJob();
 
 </script>
