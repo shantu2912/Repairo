@@ -167,7 +167,6 @@ class="font-sans antialiased pb-36"
         Started: <span x-text="formatTime(job.started_at)"></span>
       </p>
 
-
       <div class="flex justify-between items-center border-t mt-4 pt-4">
 
         <div>
@@ -306,7 +305,6 @@ return {
         window.location.href = "partnerlogin.html";
         return;
     }
-    // 🔒 HARD ENFORCEMENT: check locked job
   const lockedJobId = localStorage.getItem("locked_job_id");
   if (lockedJobId) {
     window.location.href = "job_detail.html";
@@ -355,11 +353,11 @@ async fetchTechnicianData() {
             
         if (error) throw error;
         
-        // Fix: Force to integer. If it's null/undefined, default to 0.
+        // Force to integer. If it's null/undefined, default to 0.
         this.tokens = parseInt(data?.tokens) || 0;
     } catch (err) {
         console.error("Error fetching tokens:", err);
-        this.tokens = 0; // Fallback to avoid UI breaking
+        this.tokens = 0; 
     }
 },
 
@@ -372,12 +370,19 @@ async redeemTokens() {
     try {
         const newTokens = currentTokens - 500;
         
-        const { error } = await window.sb
+        const { error, data } = await window.sb
             .from('technicians')
             .update({ tokens: newTokens })
-            .eq('id', this.tech.id);
+            .eq('id', this.tech.id)
+            .select();
             
         if (error) throw error;
+        
+        if (!data || data.length === 0) {
+            alert("Database Blocked the Token Redemption! Please check Supabase RLS.");
+            this.redeeming = false;
+            return;
+        }
         
         this.tokens = newTokens;
         this.stats.earnings += 100;
@@ -564,7 +569,7 @@ window.location.href = "job_detail.html";
   this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
 
-/* ✅ COMPLETE JOB (UPDATED TO ADD TOKENS BULLETPROOF) */
+/* ✅ COMPLETE JOB (UPDATED TO ADD TOKENS WITH RLS CHECK) */
 async completeJob(job) {
   const completedAt = new Date().toISOString();
   const fee = this.calculateFee(job); 
@@ -586,23 +591,30 @@ async completeJob(job) {
     return;
   }
   
-  // 2. Add 50 Tokens securely
+  // 2. Add 50 Tokens securely & explicitly catch RLS blocks
   try {
       const currentTokens = parseInt(this.tokens) || 0;
       const newTokens = currentTokens + 50;
       
-      const { error: tokenError } = await window.sb
+      const { data: updatedTech, error: tokenError } = await window.sb
         .from('technicians')
         .update({ tokens: newTokens })
-        .eq('id', this.tech.id);
+        .eq('id', this.tech.id)
+        .select(); // <--- This forces Supabase to tell us if RLS blocked it!
         
       if(tokenError) throw tokenError;
       
-      this.tokens = newTokens; // Update UI instantly
-      alert("✅ Job completed! You earned 50 Tokens!");
+      // If data is null/empty, RLS silently blocked the update
+      if (!updatedTech || updatedTech.length === 0) {
+          alert("Job Completed! BUT Supabase Blocked your Token Reward! Please go to Supabase -> Table Editor -> Technicians -> and turn OFF RLS (Row Level Security).");
+      } else {
+          this.tokens = newTokens; // Update UI instantly
+          alert("✅ Job completed! You earned 50 Tokens!");
+      }
+      
   } catch(tokenErr) {
       console.error("Job completed, but failed to add tokens:", tokenErr);
-      alert("Job Completed, but there was a database error adding your Tokens. Please check permissions.");
+      alert("Job Completed, but there was a database error adding your Tokens.");
   }
   
   localStorage.removeItem("locked_job_id");
