@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FixZen - Premium Home Services</title>
+
+    <style>
+        /* Force the app to snap to the top and remove Google Translate gaps */
+        html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
+        .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +47,6 @@
                         'text-scroll': 'textScroll 6s infinite',
                         'float-icon': 'floatIcon 3s ease-in-out infinite',
                         'float-fast': 'floatIcon 2s ease-in-out infinite',
-                        'shine-pass': 'shinePass 0.8s ease-in-out',
                     },
                     keyframes: {
                         textScroll: { '0%, 20%': { transform: 'translateY(0%)' }, '25%, 45%': { transform: 'translateY(-25%)' }, '50%, 70%': { transform: 'translateY(-50%)' }, '75%, 95%': { transform: 'translateY(-75%)' }, '100%': { transform: 'translateY(-0%)' } },
@@ -48,22 +56,15 @@
                         fillText: { 'from': { fillOpacity: '0' }, 'to': { fillOpacity: '1' } },
                         logoShine: { '0%': { backgroundPosition: '-200%' }, '100%': { backgroundPosition: '200%' } },
                         subTextSlide: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
-                        floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
-                        shinePass: { '0%': { transform: 'translateX(-100%) skewX(-15deg)' }, '100%': { transform: 'translateX(200%) skewX(-15deg)' } }
+                        floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } }
                     }
                 }
             }
         }
     </script>
-    <style>
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
-        .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    </style>
 </head>
 
-<body class="bg-brand-cream text-brand-dark antialiased"
+<body class="bg-gray-200 text-brand-dark antialiased"
       x-data="{ 
           loading: true, 
           searchOpen: false, 
@@ -132,11 +133,6 @@
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
             </svg>
             <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
-            <div class="mt-4 flex items-center gap-3 opacity-0 animate-sub-text-slide">
-                <div class="h-px w-12 bg-brand-gold/50"></div>
-                <p class="text-brand-beige text-sm uppercase tracking-[0.3em] font-medium">Premium Home Care</p>
-                <div class="h-px w-12 bg-brand-gold/50"></div>
-            </div>
         </div>
     </div>
 
@@ -218,19 +214,19 @@
         </aside>
     </div>
 
-    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-brand-cream pb-32 overflow-hidden" x-show="!loading">
+    <div class="max-w-md mx-auto min-h-screen bg-brand-cream relative shadow-2xl overflow-hidden pb-32" x-show="!loading">
 
-        <header class="absolute top-0 w-full z-40 px-6 py-4 flex justify-between items-start text-white relative">
+        <header class="absolute top-0 w-full z-[60] px-5 py-4 flex justify-between items-center pointer-events-none">
             
-            <button @click="sidebarOpen = true" class="bg-black/20 backdrop-blur-md p-2 rounded-full absolute left-6 top-4"><i class="fa-solid fa-bars text-lg px-1"></i></button>
+            <button @click="sidebarOpen = true" class="pointer-events-auto bg-black/30 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/50 transition-colors shadow-lg text-white">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
             
-            <div class="flex flex-col items-center justify-center absolute left-1/2 -translate-x-1/2 top-4 w-full">
-                <img src="fixzen.png" alt="FixZen Logo" class="h-10 drop-shadow-md object-contain">
-            </div>
+            <img src="fixzen.png" alt="FixZen" class="pointer-events-auto h-8 object-contain drop-shadow-lg">
 
-            <div class="bg-brand-gold/90 backdrop-blur-md p-2 rounded-full cursor-pointer absolute right-6 top-4 shadow-lg" @click="navigate('bookings.html')">
-                <i class="fa-solid fa-cart-shopping text-lg px-1 text-white"></i>
-            </div>
+            <button @click="navigate('bookings.html')" class="pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white">
+                <i class="fa-solid fa-cart-shopping text-lg"></i>
+            </button>
         </header>
 
         <div class="relative h-[380px] rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
@@ -461,3 +457,4 @@
 
 </body>
 </html>
+
