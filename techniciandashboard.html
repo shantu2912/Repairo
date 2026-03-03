@@ -121,7 +121,7 @@ class="font-sans antialiased pb-36"
                 <i class="fa-solid fa-gem text-yellow-500"></i> Token Rewards
             </p>
             <h3 class="text-2xl font-extrabold text-brand-olive leading-none mt-1">
-                <span x-text="tokens"></span> <span class="text-sm font-medium text-brand-dark/50">/ 500</span>
+                <span x-text="tokens || 0"></span> <span class="text-sm font-medium text-brand-dark/50">/ 500</span>
             </h3>
         </div>
         
@@ -138,7 +138,7 @@ class="font-sans antialiased pb-36"
 
     <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 relative z-10 overflow-hidden">
       <div class="bg-gradient-to-r from-yellow-400 to-brand-gold h-2.5 rounded-full transition-all duration-1000 ease-out" 
-           :style="`width: ${(tokens / 500) * 100}%`"></div>
+           :style="`width: ${Math.min((tokens / 500) * 100, 100)}%`"></div>
     </div>
     <p class="text-[9px] text-brand-dark/60 text-right relative z-10">Earn 50 tokens per completed job!</p>
 </section>
@@ -319,23 +319,20 @@ return {
     
     await this.setupNotifications();
     
-// ADD THIS BLOCK HERE
-messaging.onMessage((payload) => {
-  console.log("Foreground message:", payload);
+    messaging.onMessage((payload) => {
+      console.log("Foreground message:", payload);
 
-  const title = payload.notification?.title || "New Job";
-  const body = payload.notification?.body || "You have a new job";
+      const title = payload.notification?.title || "New Job";
+      const body = payload.notification?.body || "You have a new job";
 
-  new Notification(title, {
-    body: body,
-    icon: "/icon-192.png"
-  });
-});
+      new Notification(title, {
+        body: body,
+        icon: "/icon-192.png"
+      });
+    });
 
     await this.fetchJobs();
     this.subscribeRealtime();
-
-    
   },
   
   openMaps(location){
@@ -347,7 +344,7 @@ toggleAvailability(e){
   console.log("Technician availability:", this.available);
 },
 
-// --- REWARDS LOGIC ---
+// --- BULLETPROOF REWARDS LOGIC ---
 async fetchTechnicianData() {
     try {
         const { data, error } = await window.sb
@@ -356,24 +353,25 @@ async fetchTechnicianData() {
             .eq('id', this.tech.id)
             .single();
             
-        if (data && data.tokens !== undefined) {
-            this.tokens = data.tokens;
-        }
+        if (error) throw error;
+        
+        // Fix: Force to integer. If it's null/undefined, default to 0.
+        this.tokens = parseInt(data?.tokens) || 0;
     } catch (err) {
         console.error("Error fetching tokens:", err);
+        this.tokens = 0; // Fallback to avoid UI breaking
     }
 },
 
 async redeemTokens() {
-    if (this.tokens < 500 || this.redeeming) return;
+    const currentTokens = parseInt(this.tokens) || 0;
+    if (currentTokens < 500 || this.redeeming) return;
     
     this.redeeming = true;
     
     try {
-        // Calculate new token balance
-        const newTokens = this.tokens - 500;
+        const newTokens = currentTokens - 500;
         
-        // Update database
         const { error } = await window.sb
             .from('technicians')
             .update({ tokens: newTokens })
@@ -381,10 +379,7 @@ async redeemTokens() {
             
         if (error) throw error;
         
-        // Success
         this.tokens = newTokens;
-        
-        // Add 100 rs to their visual earnings immediately for that "dopamine hit"
         this.stats.earnings += 100;
         this.stats.todayEarnings += 100;
         
@@ -398,7 +393,6 @@ async redeemTokens() {
     }
 },
 
-// Inside dashboardHandler() init
 async setupNotifications() {
   try {
     if (!('serviceWorker' in navigator)) {
@@ -406,18 +400,15 @@ async setupNotifications() {
       return;
     }
 
-    // ✅ Correct path (same folder as HTML)
     const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
     console.log("SW Registered:", registration);
 
-    // Ask permission
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
       console.error("Notification permission denied");
       return;
     }
 
-    // Get FCM token
     const token = await messaging.getToken({
       vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
       serviceWorkerRegistration: registration
@@ -430,7 +421,6 @@ async setupNotifications() {
 
     console.log("FCM Token:", token);
 
-    // Save token to DB
     await window.sb
       .from("technicians")
       .update({ fcm_token: token })
@@ -455,10 +445,8 @@ async setupNotifications() {
     if (!error) {
   this.jobs = data;
 
-  // Active jobs
   this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
 
-  // 🔥 REAL EARNINGS CALCULATION
   const completedJobs = data.filter(
     j => j.status === 'completed' && j.tech_id === this.tech.id
   );
@@ -466,6 +454,7 @@ async setupNotifications() {
   this.stats.earnings = completedJobs.reduce((total, job) => {
     return total + (job.technician_fee || 0);
   }, 0);
+  
   const today = new Date().toISOString().split('T')[0];
 
 this.stats.todayEarnings = data
@@ -489,25 +478,21 @@ subscribeRealtime() {
       (payload) => {
         const job = payload.new;
 
-        // Remove rejected jobs
         if (job.rejected_by?.includes(this.tech.id)) {
           this.jobs = this.jobs.filter(j => j.id !== job.id);
           return;
         }
 
-        // Update job if exists
         const index = this.jobs.findIndex(j => j.id === job.id);
         if (index !== -1) {
           this.jobs[index] = job;
         } else {
-          // Add new pending jobs
           if (job.status === "pending" && !job.tech_id) {
             this.jobs.unshift(job);
           }
         }
 
         this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-        // Recalculate earnings live
         const completedJobs = this.jobs.filter(
           j => j.status === 'completed' && j.tech_id === this.tech.id
         );
@@ -522,9 +507,7 @@ subscribeRealtime() {
     .subscribe();
 },
 
-  /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
-  // Strict atomic update: only accept if truly free
   const { data, error } = await window.sb
     .from("jobs")
     .update({
@@ -548,19 +531,16 @@ subscribeRealtime() {
     return;
   }
 
-  // Immediate UI update
 const index = this.jobs.findIndex(j => j.id === jobId);
 if (index !== -1) {
   this.jobs[index].status = "in_progress";
   this.jobs[index].tech_id = this.tech.id;
 }
 
-// 🔒 HARD LOCK: store active job and force redirect
 localStorage.setItem("locked_job_id", jobId);
 window.location.href = "job_detail.html";
 },
 
-  /* ❌ REJECT JOB */
   async rejectJob(jobId) {
   const job = this.jobs.find(j => j.id === jobId);
   if (!job) return;
@@ -580,15 +560,14 @@ window.location.href = "job_detail.html";
     return;
   }
 
-  // Remove instantly from UI (no refresh)
   this.jobs = this.jobs.filter(j => j.id !== jobId);
   this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
 
-  /* ✅ COMPLETE JOB (UPDATED TO ADD TOKENS) */
+/* ✅ COMPLETE JOB (UPDATED TO ADD TOKENS BULLETPROOF) */
 async completeJob(job) {
   const completedAt = new Date().toISOString();
-  const fee = this.calculateFee(job); // Uses your predefined fee logic
+  const fee = this.calculateFee(job); 
 
   // 1. Mark job as completed
   const { error: jobError } = await window.sb
@@ -607,37 +586,40 @@ async completeJob(job) {
     return;
   }
   
-  // 2. Add 50 Tokens to the technician's profile
+  // 2. Add 50 Tokens securely
   try {
-      const newTokens = this.tokens + 50;
-      await window.sb
+      const currentTokens = parseInt(this.tokens) || 0;
+      const newTokens = currentTokens + 50;
+      
+      const { error: tokenError } = await window.sb
         .from('technicians')
         .update({ tokens: newTokens })
         .eq('id', this.tech.id);
         
-      this.tokens = newTokens; // Update UI immediately
+      if(tokenError) throw tokenError;
+      
+      this.tokens = newTokens; // Update UI instantly
+      alert("✅ Job completed! You earned 50 Tokens!");
   } catch(tokenErr) {
       console.error("Job completed, but failed to add tokens:", tokenErr);
+      alert("Job Completed, but there was a database error adding your Tokens. Please check permissions.");
   }
   
-  alert("✅ Job completed! You earned 50 Tokens!");
-  
-  // Remove hard lock
   localStorage.removeItem("locked_job_id");
-  this.fetchJobs(); // Refresh the list
+  this.fetchJobs(); 
 },
 
 async markArrived(job){
   try {
     console.log("Marking arrival for job:", job.id);
 
-    const { data, error } = await window.sb   // 🔥 FIXED HERE
+    const { data, error } = await window.sb   
       .from('jobs')
       .update({
         arrived_at: new Date().toISOString()
       })
       .eq('id', job.id)
-      .eq('tech_id', this.tech.id); // extra safety
+      .eq('tech_id', this.tech.id); 
 
     if (error) {
       console.error("SUPABASE ERROR:", error);
@@ -645,9 +627,8 @@ async markArrived(job){
       return;
     }
 
-    // Update UI instantly (no refresh)
     job.arrived_at = new Date().toISOString();
-    job.status = "arrived"; // UI-only state (NOT saved to DB)
+    job.status = "arrived"; 
 
     alert("Arrival marked successfully");
 
@@ -684,7 +665,6 @@ formatTime(dt){
       "Welder": 600,
       "Roofer": 600,
       "AC Tech": 600
-
     };
     return BASE[job.category] ?? 400;
   },
@@ -731,7 +711,7 @@ async rejectIncoming() {
 },
   logout(){
     localStorage.removeItem("active_tech");
-    window.location.href = "techniciandashboard.html"; // Changed back to correct path
+    window.location.href = "techniciandashboard.html"; 
   },
   scrollToJobs() {
       document.getElementById('jobsSection').scrollIntoView({ behavior: 'smooth' });
