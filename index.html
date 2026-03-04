@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,8 +10,22 @@
         html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
-        .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Premium Cinematic Animation CSS */
+        .fixzen-svg-text { 
+            fill: transparent; 
+            stroke: #A07D54; /* brand-gold */
+            stroke-width: 1.5; 
+            stroke-dasharray: 400; 
+            stroke-dashoffset: 400; 
+            fill-opacity: 0; 
+        }
+        .fixzen-filled-text { 
+            background: linear-gradient(90deg, #A07D54, #FFFFFF, #A07D54); 
+            background-size: 200% auto; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
     </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -39,23 +53,21 @@
                     boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)', 'neon': '0 0 20px rgba(160, 125, 84, 0.4)' },
                     animation: {
                         'chaos-spin': 'chaosSpin 2s linear infinite',
-                        'forge-flash': 'forgeFlash 1.5s ease-out forwards 1s',
-                        'draw-text': 'drawText 2s ease-out forwards 1.2s',
-                        'fill-text': 'fillText 1s ease-out forwards 2.5s',
-                        'logo-shine': 'logoShine 2s ease-in-out forwards 2.8s',
-                        'sub-text-slide': 'subTextSlide 1s ease-out forwards 3s',
+                        'draw-text': 'drawText 1.5s ease-in-out forwards 0.5s',
+                        'fill-text': 'fillText 1s ease-out forwards 1.8s',
+                        'logo-shine': 'logoShine 2.5s ease-in-out forwards 2s',
+                        'sub-text-slide': 'subTextSlide 1s ease-out forwards 2.5s',
                         'text-scroll': 'textScroll 6s infinite',
                         'float-icon': 'floatIcon 3s ease-in-out infinite',
                         'float-fast': 'floatIcon 2s ease-in-out infinite',
                     },
                     keyframes: {
                         textScroll: { '0%, 20%': { transform: 'translateY(0%)' }, '25%, 45%': { transform: 'translateY(-25%)' }, '50%, 70%': { transform: 'translateY(-50%)' }, '75%, 95%': { transform: 'translateY(-75%)' }, '100%': { transform: 'translateY(-0%)' } },
-                        chaosSpin: { '0%': { transform: 'rotate(0deg) scale(1)', opacity: '0.5' }, '50%': { transform: 'rotate(180deg) scale(1.2)', opacity: '1' }, '100%': { transform: 'rotate(360deg) scale(1)', opacity: '0.5' } },
-                        forgeFlash: { '0%': { opacity: '0', transform: 'scale(0)' }, '50%': { opacity: '1', transform: 'scale(1.5)' }, '100%': { opacity: '0', transform: 'scale(2)' } },
+                        chaosSpin: { '0%': { transform: 'rotate(0deg) scale(0.9)', opacity: '0' }, '30%': { opacity: '0.4' }, '70%': { opacity: '0.4' }, '100%': { transform: 'rotate(180deg) scale(1.1)', opacity: '0' } },
                         drawText: { 'to': { strokeDashoffset: '0' } },
                         fillText: { 'from': { fillOpacity: '0' }, 'to': { fillOpacity: '1' } },
                         logoShine: { '0%': { backgroundPosition: '-200%' }, '100%': { backgroundPosition: '200%' } },
-                        subTextSlide: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+                        subTextSlide: { 'from': { opacity: '0', transform: 'translateY(15px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
                         floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } }
                     }
                 }
@@ -112,7 +124,7 @@
       }"
       x-init="
           if (sessionStorage.getItem('introShown')) { loading = false; } 
-          else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
+          else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4200); }
           
           let attempts = 0;
           let check = setInterval(() => { 
@@ -124,15 +136,23 @@
       ">
 
     <div x-show="loading" x-transition:leave="transition ease-in-out duration-1000" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-110" class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 flex items-center justify-center opacity-20">
-            <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
-            <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
+        
+        <div class="absolute inset-0 flex items-center justify-center">
+            <i class="fa-solid fa-gear text-[250px] text-brand-gold absolute top-[-50px] left-[-80px] animate-chaos-spin" style="animation-duration: 4s;"></i>
+            <i class="fa-solid fa-wrench text-[180px] text-brand-beige absolute bottom-[-20px] right-[-50px] animate-chaos-spin" style="animation-direction: reverse; animation-duration: 5s;"></i>
         </div>
+
         <div class="relative z-10 flex flex-col items-center">
-            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
+            <svg height="80" width="320" xmlns="http://www.w3.org/2000/svg">
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.2em] fixzen-svg-text animate-draw-text">FIXZEN</text>
             </svg>
-            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
+            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.2em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine drop-shadow-2xl">FIXZEN</h1>
+            
+            <div class="mt-4 flex items-center gap-4 opacity-0 animate-sub-text-slide">
+                <div class="h-[1px] w-10 bg-gradient-to-r from-transparent to-brand-gold"></div>
+                <p class="text-brand-beige text-xs uppercase tracking-[0.4em] font-medium">Premium Care</p>
+                <div class="h-[1px] w-10 bg-gradient-to-l from-transparent to-brand-gold"></div>
+            </div>
         </div>
     </div>
 
@@ -457,4 +477,3 @@
 
 </body>
 </html>
-
