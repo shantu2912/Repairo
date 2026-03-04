@@ -5,15 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FixZen Pro | Technician Dashboard</title>
 
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
 
+<!-- Alpine -->
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
 
+<!-- Icons / Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
@@ -43,6 +47,7 @@ body{background:#F8F5F0;color:#2D2B28}
 }
 </style>
 
+<!-- ✅ SUPABASE CLIENT -->
 <script>
 window.sb = supabase.createClient(
   "https://kzxdxnxgouthsywbsnvl.supabase.co",
@@ -58,6 +63,7 @@ x-cloak
 class="font-sans antialiased pb-36"
 >
 
+<!-- HEADER -->
 <header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur border-b p-5">
   <div class="max-w-md mx-auto flex justify-between items-center">
     <div class="flex items-center gap-3">
@@ -77,6 +83,7 @@ class="font-sans antialiased pb-36"
 
 <main class="max-w-md mx-auto p-6 space-y-8">
 
+<!-- STATS -->
 <section>
   <div class="grid grid-cols-2 gap-4">
     <div class="glass-card p-5 rounded-[2rem]">
@@ -97,14 +104,15 @@ class="font-sans antialiased pb-36"
 </div>
 <div class="flex items-center gap-4">
   
-  <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow cursor-pointer border border-brand-beige/50 hover:bg-brand-cream transition-colors">
+  <!-- Existing stats / buttons -->
+
+  <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
     <input 
       type="checkbox" 
-      class="accent-green-600 w-4 h-4"
+      class="accent-green-600"
       @change="toggleAvailability($event)"
-      checked
     >
-    <span class="font-bold text-brand-olive">Available for Jobs</span>
+    <span class="font-semibold">Available for Jobs</span>
   </label>
 
 </div>
@@ -112,54 +120,23 @@ class="font-sans antialiased pb-36"
   </div>
 </section>
 
-<section class="glass-card p-5 rounded-[2rem] border border-brand-gold/30 relative overflow-hidden bg-gradient-to-br from-white to-yellow-50/50">
-    <div class="absolute top-0 right-0 w-24 h-24 bg-brand-gold/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
-    
-    <div class="flex justify-between items-center mb-3 relative z-10">
-        <div>
-            <p class="text-[10px] font-bold text-brand-gold uppercase tracking-wider flex items-center gap-1">
-                <i class="fa-solid fa-gem text-yellow-500"></i> Token Rewards
-            </p>
-            <h3 class="text-2xl font-extrabold text-brand-olive leading-none mt-1">
-                <span x-text="tokens || 0"></span> <span class="text-sm font-medium text-brand-dark/50">/ 500</span>
-            </h3>
-        </div>
-        
-        <button 
-            @click="redeemTokens()"
-            :disabled="tokens < 500 || redeeming"
-            class="px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2"
-            :class="tokens >= 500 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:scale-105 active:scale-95 cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'">
-            <i class="fa-solid fa-gift" x-show="!redeeming"></i>
-            <i class="fa-solid fa-circle-notch fa-spin" x-show="redeeming"></i>
-            <span x-text="redeeming ? 'Processing...' : 'Redeem ₹100'"></span>
-        </button>
-    </div>
-
-    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 relative z-10 overflow-hidden">
-      <div class="bg-gradient-to-r from-yellow-400 to-brand-gold h-2.5 rounded-full transition-all duration-1000 ease-out" 
-           :style="`width: ${Math.min((tokens / 500) * 100, 100)}%`"></div>
-    </div>
-    <p class="text-[9px] text-brand-dark/60 text-right relative z-10">Earn 50 tokens per completed job!</p>
-</section>
-
+<!-- JOBS -->
 <section id="jobsSection" class="space-y-4">
 
-  <div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-10">
-    <i class="fa-solid fa-circle-notch fa-spin text-brand-gold text-2xl mb-2"></i><br>
-    Loading jobs...
+  <div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-20">
+    Loading jobs…
   </div>
 
   <div x-show="!loading && jobs.length === 0"
-       class="text-center text-sm text-brand-dark/50 mt-10 bg-white/50 p-6 rounded-[2rem] border border-white">
-    <i class="fa-solid fa-mug-hot text-brand-gold/40 text-4xl mb-3"></i><br>
-    No active jobs at the moment.<br>Take a break!
+       class="text-center text-sm text-brand-dark/50 mt-20">
+    No active jobs
   </div>
 
   <template x-for="job in jobs" :key="job.id">
     <div class="glass-card p-6 rounded-[2.5rem] border-l-4"
          :class="job.urgent ? 'border-red-500':'border-brand-gold'">
 
+      <!-- TITLE -->
       <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
       <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
       <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
@@ -167,8 +144,11 @@ class="font-sans antialiased pb-36"
         Started: <span x-text="formatTime(job.started_at)"></span>
       </p>
 
+
+      <!-- FOOTER -->
       <div class="flex justify-between items-center border-t mt-4 pt-4">
 
+        <!-- CUSTOMER -->
         <div>
           <p class="text-sm font-bold" x-text="job.customer_name"></p>
           <a
@@ -177,10 +157,10 @@ class="font-sans antialiased pb-36"
             📞 Call Customer
           </a>
 
-          <p class="text-[9px] uppercase text-brand-dark/40 mt-1 truncate w-32" x-text="job.location"></p>
+          <p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
           <button
             @click="openMaps(job.location)"
-            class="text-xs text-blue-600 font-bold mt-1 bg-blue-50 px-2 py-1 rounded-md">
+            class="text-xs text-blue-600 font-bold mt-1">
             Open in Maps →
           </button>
 
@@ -190,44 +170,49 @@ class="font-sans antialiased pb-36"
           </p>
         </div>
 
+        <!-- STATUS + ACTION -->
         <div class="flex flex-col items-end gap-2">
 
-          <span class="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+          <span
            :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
                     job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
                     job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
                     'bg-green-100 text-green-700'
                   "
-            x-text="job.status.replace('_',' ')"></span>
-                    
-<div class="flex gap-2" x-show="job.status === 'pending'">
-    <button
-      @click="acceptJob(job.id)"
-      class="px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700 active:scale-95 transition-all shadow-md shadow-green-600/20">
-      Accept
-    </button>
+            x-text="job.status.replace('_',' ')"
+          ></span>
+                    <!-- ACCEPT / REJECT (only when job is free) -->
+<button
+  x-show="job.status === 'pending'"
+  @click="acceptJob(job.id)"
+  class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
+  Accept
+</button>
 
-    <button
-      @click="rejectJob(job.id)"
-      class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 text-xs font-bold rounded-xl hover:bg-red-100 active:scale-95 transition-all">
-      Reject
-    </button>
-</div>
+<button
+  x-show="job.status === 'pending'"
+  @click="rejectJob(job.id)"
+  class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
+  Reject
+</button>
 
+<!-- MARK ARRIVED (after accepting job) -->
 <button
   x-show="job.status === 'in_progress'"
   @click="markArrived(job)"
-  class="px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all">
-  <i class="fa-solid fa-location-dot mr-1"></i> Arrived
+  class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
+  Mark Arrived
 </button>
 
+<!-- COMPLETE (ONLY after arrival) -->
 <button
   x-show="job.status === 'arrived'"
   @click="completeJob(job)"
-  class="px-5 py-3 bg-brand-olive text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-brand-dark active:scale-95 transition-all">
-  <i class="fa-solid fa-check-double mr-1"></i> Complete Job
+  class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
+  Complete Job
 </button>
 
+            
         </div>
       </div>
     </div>
@@ -237,6 +222,7 @@ class="font-sans antialiased pb-36"
 
 </main>
 
+<!-- BOTTOM NAV -->
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
   <div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
 
@@ -251,38 +237,45 @@ class="font-sans antialiased pb-36"
     <div class="w-14 h-12"></div>
 
     <button onclick="window.location.href='completed_jobs.html'"
-            class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold transition-colors">
+            class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
       <i class="fa-solid fa-book-open"></i>
     </button>
 
-    <button @click="logout()" class="w-12 h-12 text-brand-olive/40 hover:text-red-500 transition-colors">
-      <i class="fa-solid fa-power-off"></i>
+    <button @click="logout()" class="w-12 h-12 text-brand-olive/40">
+      <i class="fa-solid fa-circle-user"></i>
     </button>
 
     <button
       class="absolute left-1/2 -translate-x-1/2 -top-6
              w-14 h-14 bg-brand-gold rounded-full
              flex items-center justify-center text-white
-             shadow-lg border-4 border-white hover:scale-105 transition-transform">
+             shadow-lg border-4 border-white">
       <i class="fa-solid fa-camera"></i>
     </button>
 
   </div>
 </nav>
 
-
+</script>
 <script>
-const firebaseConfig = {
-   apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-};
+// Move ALL Firebase code to the top, before any other scripts
+(function() {
+  // Initialize Firebase only ONCE
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+    authDomain: "fixzen-73d68.firebaseapp.com",
+    projectId: "fixzen-73d68",
+    messagingSenderId: "816193738840",
+    appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+  };
 
-firebase.initializeApp(firebaseConfig);
+  // Check if already initialized
+  if (!firebase.apps?.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+})();
+
 const messaging = firebase.messaging();
-
 </script>
 
 <script>function dashboardHandler(){
@@ -291,13 +284,10 @@ return {
   techName: '',
   loading: true,
   jobs: [],
-  stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
+  stats: { activeJobs: 0, earnings: 0 },
   incomingJob: null,
   available: true,
   
-  // REWARDS STATE
-  tokens: 0,
-  redeeming: false,
 
   async init() {
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
@@ -305,99 +295,42 @@ return {
         window.location.href = "partnerlogin.html";
         return;
     }
+    // 🔒 HARD ENFORCEMENT: check locked job
   const lockedJobId = localStorage.getItem("locked_job_id");
   if (lockedJobId) {
     window.location.href = "job_detail.html";
     return;
   }
     this.techName = this.tech.name;
-    
-    // FETCH TOKENS ON LOAD
-    await this.fetchTechnicianData();
-    
     await this.setupNotifications();
     
-    messaging.onMessage((payload) => {
-      console.log("Foreground message:", payload);
+// ADD THIS BLOCK HERE
+messaging.onMessage((payload) => {
+  console.log("Foreground message:", payload);
 
-      const title = payload.notification?.title || "New Job";
-      const body = payload.notification?.body || "You have a new job";
+  const title = payload.notification?.title || "New Job";
+  const body = payload.notification?.body || "You have a new job";
 
-      new Notification(title, {
-        body: body,
-        icon: "/icon-192.png"
-      });
-    });
+  new Notification(title, {
+    body: body,
+    icon: "/icon-192.png"
+  });
+});
 
     await this.fetchJobs();
     this.subscribeRealtime();
+
+    
   },
-  
   openMaps(location){
   const encoded = encodeURIComponent(location);
-  window.open(`https://maps.google.com/?q=${encoded}`, '_blank');
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
 },
 toggleAvailability(e){
   this.available = e.target.checked;
   console.log("Technician availability:", this.available);
 },
-
-// --- BULLETPROOF REWARDS LOGIC ---
-async fetchTechnicianData() {
-    try {
-        const { data, error } = await window.sb
-            .from('technicians')
-            .select('tokens')
-            .eq('id', this.tech.id)
-            .single();
-            
-        if (error) throw error;
-        
-        // Force to integer. If it's null/undefined, default to 0.
-        this.tokens = parseInt(data?.tokens) || 0;
-    } catch (err) {
-        console.error("Error fetching tokens:", err);
-        this.tokens = 0; 
-    }
-},
-
-async redeemTokens() {
-    const currentTokens = parseInt(this.tokens) || 0;
-    if (currentTokens < 500 || this.redeeming) return;
-    
-    this.redeeming = true;
-    
-    try {
-        const newTokens = currentTokens - 500;
-        
-        const { error, data } = await window.sb
-            .from('technicians')
-            .update({ tokens: newTokens })
-            .eq('id', this.tech.id)
-            .select();
-            
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-            alert("Database Blocked the Token Redemption! Please check Supabase RLS.");
-            this.redeeming = false;
-            return;
-        }
-        
-        this.tokens = newTokens;
-        this.stats.earnings += 100;
-        this.stats.todayEarnings += 100;
-        
-        alert("🎉 Congratulations! You have successfully redeemed 500 tokens for ₹100 cash! It has been added to your pending payout.");
-        
-    } catch (err) {
-        alert("Failed to redeem tokens. Please try again.");
-        console.error(err);
-    } finally {
-        this.redeeming = false;
-    }
-},
-
+// Inside dashboardHandler() init
 async setupNotifications() {
   try {
     if (!('serviceWorker' in navigator)) {
@@ -405,15 +338,24 @@ async setupNotifications() {
       return;
     }
 
-    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-    console.log("SW Registered:", registration);
-
+    // Request permission first
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
       console.error("Notification permission denied");
       return;
     }
 
+    // Register service worker with correct path
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      scope: '/'
+    });
+    
+    console.log("SW Registered:", registration);
+    
+    // Wait for service worker to be ready
+    await navigator.serviceWorker.ready;
+    
+    // Get FCM token with VAPID key
     const token = await messaging.getToken({
       vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
       serviceWorkerRegistration: registration
@@ -424,17 +366,39 @@ async setupNotifications() {
       return;
     }
 
-    console.log("FCM Token:", token);
+    console.log("✅ FCM Token:", token);
 
-    await window.sb
+    // Save token to DB
+    const { error } = await window.sb
       .from("technicians")
       .update({ fcm_token: token })
       .eq("id", this.tech.id);
 
-    console.log("Token saved to Supabase");
+    if (error) {
+      console.error("Error saving token:", error);
+    } else {
+      console.log("✅ Token saved to Supabase");
+    }
+
+    // ✅ Handle foreground messages
+    messaging.onMessage((payload) => {
+      console.log("✅ Foreground message received:", payload);
+      
+      const title = payload.notification?.title || payload.data?.title || "New Job";
+      const body = payload.notification?.body || payload.data?.body || "You have a new job";
+      
+      // Show notification even in foreground
+      registration.showNotification(title, {
+        body: body,
+        icon: "/icon-192.png",
+        badge: "/icon-192.png",
+        vibrate: [200, 100, 200],
+        data: payload.data || {}
+      });
+    });
 
   } catch (err) {
-    console.error("Notification setup failed:", err);
+    console.error("❌ Notification setup failed:", err);
   }
 },
 
@@ -450,8 +414,10 @@ async setupNotifications() {
     if (!error) {
   this.jobs = data;
 
+  // Active jobs
   this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
 
+  // 🔥 REAL EARNINGS CALCULATION (you were missing this)
   const completedJobs = data.filter(
     j => j.status === 'completed' && j.tech_id === this.tech.id
   );
@@ -459,7 +425,6 @@ async setupNotifications() {
   this.stats.earnings = completedJobs.reduce((total, job) => {
     return total + (job.technician_fee || 0);
   }, 0);
-  
   const today = new Date().toISOString().split('T')[0];
 
 this.stats.todayEarnings = data
@@ -483,21 +448,25 @@ subscribeRealtime() {
       (payload) => {
         const job = payload.new;
 
+        // Remove rejected jobs
         if (job.rejected_by?.includes(this.tech.id)) {
           this.jobs = this.jobs.filter(j => j.id !== job.id);
           return;
         }
 
+        // Update job if exists
         const index = this.jobs.findIndex(j => j.id === job.id);
         if (index !== -1) {
           this.jobs[index] = job;
         } else {
+          // Add new pending jobs
           if (job.status === "pending" && !job.tech_id) {
             this.jobs.unshift(job);
           }
         }
 
         this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+        // Recalculate earnings live
         const completedJobs = this.jobs.filter(
           j => j.status === 'completed' && j.tech_id === this.tech.id
         );
@@ -512,7 +481,9 @@ subscribeRealtime() {
     .subscribe();
 },
 
+  /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
+  // Strict atomic update: only accept if truly free
   const { data, error } = await window.sb
     .from("jobs")
     .update({
@@ -531,21 +502,25 @@ subscribeRealtime() {
     return;
   }
 
+  // THIS was your wrong assumption earlier
   if (!data || data.length === 0) {
     alert("Too late. Another technician already took this job.");
     return;
   }
 
+  // Immediate UI update
 const index = this.jobs.findIndex(j => j.id === jobId);
 if (index !== -1) {
   this.jobs[index].status = "in_progress";
   this.jobs[index].tech_id = this.tech.id;
 }
 
+// 🔒 HARD LOCK: store active job and force redirect
 localStorage.setItem("locked_job_id", jobId);
 window.location.href = "job_detail.html";
 },
 
+  /* ❌ REJECT JOB */
   async rejectJob(jobId) {
   const job = this.jobs.find(j => j.id === jobId);
   if (!job) return;
@@ -565,17 +540,17 @@ window.location.href = "job_detail.html";
     return;
   }
 
+  // Remove instantly from UI (no refresh)
   this.jobs = this.jobs.filter(j => j.id !== jobId);
   this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
-
-/* ✅ COMPLETE JOB (UPDATED TO ADD TOKENS WITH RLS CHECK) */
+/* ✅ COMPLETE JOB */
+  /* ✅ COMPLETE JOB */
 async completeJob(job) {
   const completedAt = new Date().toISOString();
-  const fee = this.calculateFee(job); 
+  const fee = this.calculateFee(job); // Uses your predefined fee logic
 
-  // 1. Mark job as completed
-  const { error: jobError } = await window.sb
+  const { error } = await window.sb
     .from("jobs")
     .update({
       status: "completed",
@@ -583,55 +558,28 @@ async completeJob(job) {
       technician_fee: fee
     })
     .eq("id", job.id)
-    .eq("tech_id", this.tech.id); 
+    .eq("tech_id", this.tech.id); // Security: ensures only the assigned tech can complete it
 
-  if (jobError) {
-    console.error(jobError);
-    alert("Failed to complete job: " + jobError.message);
+  if (error) {
+    console.error(error);
+    alert("Failed to complete job: " + error.message);
     return;
   }
   
-  // 2. Add 50 Tokens securely & explicitly catch RLS blocks
-  try {
-      const currentTokens = parseInt(this.tokens) || 0;
-      const newTokens = currentTokens + 50;
-      
-      const { data: updatedTech, error: tokenError } = await window.sb
-        .from('technicians')
-        .update({ tokens: newTokens })
-        .eq('id', this.tech.id)
-        .select(); // <--- This forces Supabase to tell us if RLS blocked it!
-        
-      if(tokenError) throw tokenError;
-      
-      // If data is null/empty, RLS silently blocked the update
-      if (!updatedTech || updatedTech.length === 0) {
-          alert("Job Completed! BUT Supabase Blocked your Token Reward! Please go to Supabase -> Table Editor -> Technicians -> and turn OFF RLS (Row Level Security).");
-      } else {
-          this.tokens = newTokens; // Update UI instantly
-          alert("✅ Job completed! You earned 50 Tokens!");
-      }
-      
-  } catch(tokenErr) {
-      console.error("Job completed, but failed to add tokens:", tokenErr);
-      alert("Job Completed, but there was a database error adding your Tokens.");
-  }
-  
-  localStorage.removeItem("locked_job_id");
-  this.fetchJobs(); 
+  alert("Job marked as completed!");
+  this.fetchJobs(); // Refresh the list
 },
-
 async markArrived(job){
   try {
     console.log("Marking arrival for job:", job.id);
 
-    const { data, error } = await window.sb   
+    const { data, error } = await window.sb   // 🔥 FIXED HERE
       .from('jobs')
       .update({
         arrived_at: new Date().toISOString()
       })
       .eq('id', job.id)
-      .eq('tech_id', this.tech.id); 
+      .eq('tech_id', this.tech.id); // extra safety
 
     if (error) {
       console.error("SUPABASE ERROR:", error);
@@ -639,8 +587,9 @@ async markArrived(job){
       return;
     }
 
+    // Update UI instantly (no refresh)
     job.arrived_at = new Date().toISOString();
-    job.status = "arrived"; 
+    job.status = "arrived"; // UI-only state (NOT saved to DB)
 
     alert("Arrival marked successfully");
 
@@ -677,6 +626,7 @@ formatTime(dt){
       "Welder": 600,
       "Roofer": 600,
       "AC Tech": 600
+
     };
     return BASE[job.category] ?? 400;
   },
@@ -723,16 +673,14 @@ async rejectIncoming() {
 },
   logout(){
     localStorage.removeItem("active_tech");
-    window.location.href = "techniciandashboard.html"; 
-  },
-  scrollToJobs() {
-      document.getElementById('jobsSection').scrollIntoView({ behavior: 'smooth' });
+    window.location.href = "partnerlogin.html";
   }
 }
 }
 </script>
 
 
+<!-- 🔔 JOB ALERT MODAL -->
 <div
   x-show="incomingJob"
   x-transition
@@ -756,13 +704,13 @@ async rejectIncoming() {
     <div class="flex gap-3 mt-6">
       <button
         @click="acceptIncoming()"
-        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 active:scale-95 transition-all shadow-lg shadow-green-600/30">
+        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
         Accept
       </button>
 
       <button
         @click="rejectIncoming()"
-        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 active:scale-95 transition-all shadow-lg shadow-red-500/30">
+        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
         Reject
       </button>
     </div>
@@ -770,5 +718,14 @@ async rejectIncoming() {
   </div>
 </div>
 
+<!-- Your dashboard HTML above -->
+
+<!-- JOB POPUP UI -->
+<div id="jobPopup" style="display:none; position:fixed; top:20px; right:20px; background:#111; color:#fff; padding:20px; border-radius:12px; z-index:9999;">
+  <h3>New Job Arrived</h3>
+  <p id="jobInfo"></p>
+  <button onclick="acceptJob()">Accept</button>
+  <button onclick="rejectJob()">Reject</button>
+</div>
 </body>
 </html>
