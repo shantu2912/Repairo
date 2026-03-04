@@ -257,25 +257,19 @@ class="font-sans antialiased pb-36"
 </nav>
 
 </script>
+
 <script>
-// Move ALL Firebase code to the top, before any other scripts
-(function() {
-  // Initialize Firebase only ONCE
-  const firebaseConfig = {
-    apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-    authDomain: "fixzen-73d68.firebaseapp.com",
-    projectId: "fixzen-73d68",
-    messagingSenderId: "816193738840",
-    appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-  };
+const firebaseConfig = {
+   apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+  authDomain: "fixzen-73d68.firebaseapp.com",
+  projectId: "fixzen-73d68",
+  messagingSenderId: "816193738840",
+  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+};
 
-  // Check if already initialized
-  if (!firebase.apps?.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-})();
-
+firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
+
 </script>
 
 <script>function dashboardHandler(){
@@ -288,99 +282,40 @@ return {
   incomingJob: null,
   available: true,
   
-async init() {
+
+  async init() {
     this.tech = JSON.parse(localStorage.getItem("active_tech"));
     if (!this.tech) {
         window.location.href = "partnerlogin.html";
         return;
     }
-    
     // 🔒 HARD ENFORCEMENT: check locked job
-    const lockedJobId = localStorage.getItem("locked_job_id");
-    if (lockedJobId) {
-        window.location.href = "job_detail.html";
-        return;
-    }
-    
+  const lockedJobId = localStorage.getItem("locked_job_id");
+  if (lockedJobId) {
+    window.location.href = "job_detail.html";
+    return;
+  }
     this.techName = this.tech.name;
-    
-    // ✅ Handle URL parameters from notification clicks
-    const urlParams = new URLSearchParams(window.location.search);
-    const action = urlParams.get('action');
-    const jobId = urlParams.get('job');
-    
-    if (action && jobId) {
-        console.log(`🔔 Notification action: ${action} for job ${jobId}`);
-        
-        // Small delay to ensure jobs are loaded
-        setTimeout(() => {
-            if (action === 'accept') {
-                this.acceptJob(jobId);
-            } else if (action === 'reject') {
-                this.rejectJob(jobId);
-            }
-        }, 1000);
-        
-        // Clean URL (remove params) without reloading
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
     await this.setupNotifications();
     
-    // ✅ Enhanced foreground message handler
-    messaging.onMessage((payload) => {
-        console.log("🔥 Foreground message received:", payload);
-        
-        const title = payload.notification?.title || payload.data?.title || "New Job";
-        const body = payload.notification?.body || payload.data?.body || "You have a new job";
-        const jobId = payload.data?.jobId;
-        
-        // Show notification with actions even in foreground
-        const notification = new Notification(title, {
-            body: body,
-            icon: "/icon-192.png",
-            badge: "/icon-192.png",
-            vibrate: [200, 100, 200],
-            requireInteraction: true,
-            data: { jobId: jobId, ...payload.data },
-            actions: [
-                { action: 'accept', title: '✅ Accept Job' },
-                { action: 'reject', title: '❌ Reject' }
-            ]
-        });
-        
-        // Handle action clicks on the notification
-        notification.onclick = (event) => {
-            event.preventDefault();
-            window.focus();
-            
-            if (jobId) {
-                if (notification.data?.action === 'accept') {
-                    this.acceptJob(jobId);
-                } else if (notification.data?.action === 'reject') {
-                    this.rejectJob(jobId);
-                }
-            }
-        };
-        
-        // Also handle the notification actions
-        notification.onaction = (event) => {
-            if (event.action === 'accept') {
-                if (jobId) this.acceptJob(jobId);
-            } else if (event.action === 'reject') {
-                if (jobId) this.rejectJob(jobId);
-            }
-        };
-    });
+// ADD THIS BLOCK HERE
+messaging.onMessage((payload) => {
+  console.log("Foreground message:", payload);
+
+  const title = payload.notification?.title || "New Job";
+  const body = payload.notification?.body || "You have a new job";
+
+  new Notification(title, {
+    body: body,
+    icon: "/icon-192.png"
+  });
+});
 
     await this.fetchJobs();
     this.subscribeRealtime();
+
     
-    // ✅ Check if we have an incoming job from the modal
-    if (this.incomingJob) {
-        console.log("📦 Pending incoming job:", this.incomingJob);
-    }
-},
+  },
   openMaps(location){
   const encoded = encodeURIComponent(location);
   window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
@@ -390,75 +325,44 @@ toggleAvailability(e){
   console.log("Technician availability:", this.available);
 },
 // Inside dashboardHandler() init
- async setupNotifications() {
+async setupNotifications() {
   try {
     if (!('serviceWorker' in navigator)) {
       console.error("Service Worker not supported");
       return;
     }
 
-    // Request permission
+    // ✅ Correct path (same folder as HTML)
+    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    console.log("SW Registered:", registration);
+
+    // Ask permission
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
       console.error("Notification permission denied");
       return;
     }
 
-    // OPTION: Use a blob URL as fallback if file doesn't exist
-    try {
-      const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-      console.log("SW Registered:", registration);
-    } catch (swError) {
-      console.warn("SW file not found, using fallback:", swError);
-      
-      // Create service worker content as a blob
-      const swContent = `
-        importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-        importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
-        
-        firebase.initializeApp({
-          apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-          authDomain: "fixzen-73d68.firebaseapp.com",
-          projectId: "fixzen-73d68",
-          messagingSenderId: "816193738840",
-          appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-        });
-        
-        const messaging = firebase.messaging();
-        
-        messaging.onBackgroundMessage(function(payload) {
-          self.registration.showNotification(
-            payload.notification?.title || "New Job",
-            {
-              body: payload.notification?.body || "You have a new job",
-              icon: "/icon-192.png",
-              actions: [
-                { action: 'accept', title: 'Accept' },
-                { action: 'reject', title: 'Reject' }
-              ]
-            }
-          );
-        });
-      `;
-      
-      const blob = new Blob([swContent], { type: 'application/javascript' });
-      const blobUrl = URL.createObjectURL(blob);
-      const registration = await navigator.serviceWorker.register(blobUrl);
-      console.log("SW Registered with fallback:", registration);
-    }
-
     // Get FCM token
     const token = await messaging.getToken({
-      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk"
+      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
+      serviceWorkerRegistration: registration
     });
 
-    console.log("✅ FCM Token:", token);
+    if (!token) {
+      console.error("No FCM token received");
+      return;
+    }
+
+    console.log("FCM Token:", token);
 
     // Save token to DB
     await window.sb
       .from("technicians")
       .update({ fcm_token: token })
       .eq("id", this.tech.id);
+
+    console.log("Token saved to Supabase");
 
   } catch (err) {
     console.error("Notification setup failed:", err);
@@ -546,89 +450,66 @@ subscribeRealtime() {
 
   /* ✅ ACCEPT JOB */
  async acceptJob(jobId) {
-    // Strict atomic update: only accept if truly free
-    const { data, error } = await window.sb
-        .from("jobs")
-        .update({
-            tech_id: this.tech.id,
-            status: "in_progress",
-            started_at: new Date().toISOString()
-        })
-        .eq("id", jobId)
-        .is("tech_id", null)        // must be unassigned
-        .eq("status", "pending")    // must be pending
-        .select();
+  // Strict atomic update: only accept if truly free
+  const { data, error } = await window.sb
+    .from("jobs")
+    .update({
+      tech_id: this.tech.id,
+      status: "in_progress",
+      started_at: new Date().toISOString()
+    })
+    .eq("id", jobId)
+    .is("tech_id", null)        // must be unassigned
+    .eq("status", "pending")    // must be pending
+    .select();
 
-    if (error) {
-        console.error("Accept error:", error);
-        alert("Database error while accepting job");
-        return;
-    }
+  if (error) {
+    console.error("Accept error:", error);
+    alert("Database error while accepting job");
+    return;
+  }
 
-    if (!data || data.length === 0) {
-        alert("Too late. Another technician already took this job.");
-        return;
-    }
+  // THIS was your wrong assumption earlier
+  if (!data || data.length === 0) {
+    alert("Too late. Another technician already took this job.");
+    return;
+  }
 
-    // Immediate UI update
-    const index = this.jobs.findIndex(j => j.id === jobId);
-    if (index !== -1) {
-        this.jobs[index].status = "in_progress";
-        this.jobs[index].tech_id = this.tech.id;
-    }
+  // Immediate UI update
+const index = this.jobs.findIndex(j => j.id === jobId);
+if (index !== -1) {
+  this.jobs[index].status = "in_progress";
+  this.jobs[index].tech_id = this.tech.id;
+}
 
-    // 🔒 HARD LOCK: store active job and force redirect
-    localStorage.setItem("locked_job_id", jobId);
-    
-    // Show success message before redirect
-    alert("✅ Job accepted! Redirecting to job details...");
-    window.location.href = "job_detail.html";
+// 🔒 HARD LOCK: store active job and force redirect
+localStorage.setItem("locked_job_id", jobId);
+window.location.href = "job_detail.html";
 },
 
   /* ❌ REJECT JOB */
   async rejectJob(jobId) {
-    const job = this.jobs.find(j => j.id === jobId);
-    if (!job) return;
+  const job = this.jobs.find(j => j.id === jobId);
+  if (!job) return;
 
-    const currentRejected = job.rejected_by || [];
+  const currentRejected = job.rejected_by || [];
 
-    const { error } = await window.sb
-        .from("jobs")
-        .update({
-            rejected_by: [...currentRejected, this.tech.id]
-        })
-        .eq("id", jobId);
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      rejected_by: [...currentRejected, this.tech.id]
+    })
+    .eq("id", jobId);
 
-    if (error) {
-        console.error("Reject failed:", error);
-        alert("Reject failed");
-        return;
-    }
+  if (error) {
+    console.error("Reject failed:", error);
+    alert("Reject failed");
+    return;
+  }
 
-    // Remove instantly from UI (no refresh)
-    this.jobs = this.jobs.filter(j => j.id !== jobId);
-    this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-    
-    // Show feedback
-    alert("❌ Job rejected");
-    
-    // Clear incoming job modal if open
-    this.incomingJob = null;
-},
-// Add this to your dashboardHandler
-checkPendingActions() {
-    // Check if we came from a notification click
-    const pendingAction = sessionStorage.getItem('pending_job_action');
-    if (pendingAction) {
-        const { action, jobId } = JSON.parse(pendingAction);
-        sessionStorage.removeItem('pending_job_action');
-        
-        if (action === 'accept') {
-            this.acceptJob(jobId);
-        } else if (action === 'reject') {
-            this.rejectJob(jobId);
-        }
-    }
+  // Remove instantly from UI (no refresh)
+  this.jobs = this.jobs.filter(j => j.id !== jobId);
+  this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
 /* ✅ COMPLETE JOB */
   /* ✅ COMPLETE JOB */
