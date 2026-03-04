@@ -390,74 +390,78 @@ toggleAvailability(e){
   console.log("Technician availability:", this.available);
 },
 // Inside dashboardHandler() init
-async setupNotifications() {
+ async setupNotifications() {
   try {
     if (!('serviceWorker' in navigator)) {
       console.error("Service Worker not supported");
       return;
     }
 
-    // Request permission first
+    // Request permission
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
       console.error("Notification permission denied");
       return;
     }
 
-    // Register service worker with correct path
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-      scope: '/'
-    });
-    
-    console.log("SW Registered:", registration);
-    
-    // Wait for service worker to be ready
-    await navigator.serviceWorker.ready;
-    
-    // Get FCM token with VAPID key
-    const token = await messaging.getToken({
-      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-      serviceWorkerRegistration: registration
-    });
-
-    if (!token) {
-      console.error("No FCM token received");
-      return;
+    // OPTION: Use a blob URL as fallback if file doesn't exist
+    try {
+      const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      console.log("SW Registered:", registration);
+    } catch (swError) {
+      console.warn("SW file not found, using fallback:", swError);
+      
+      // Create service worker content as a blob
+      const swContent = `
+        importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+        importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+        
+        firebase.initializeApp({
+          apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+          authDomain: "fixzen-73d68.firebaseapp.com",
+          projectId: "fixzen-73d68",
+          messagingSenderId: "816193738840",
+          appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+        });
+        
+        const messaging = firebase.messaging();
+        
+        messaging.onBackgroundMessage(function(payload) {
+          self.registration.showNotification(
+            payload.notification?.title || "New Job",
+            {
+              body: payload.notification?.body || "You have a new job",
+              icon: "/icon-192.png",
+              actions: [
+                { action: 'accept', title: 'Accept' },
+                { action: 'reject', title: 'Reject' }
+              ]
+            }
+          );
+        });
+      `;
+      
+      const blob = new Blob([swContent], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      const registration = await navigator.serviceWorker.register(blobUrl);
+      console.log("SW Registered with fallback:", registration);
     }
+
+    // Get FCM token
+    const token = await messaging.getToken({
+      vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk"
+    });
 
     console.log("✅ FCM Token:", token);
 
     // Save token to DB
-    const { error } = await window.sb
+    await window.sb
       .from("technicians")
       .update({ fcm_token: token })
       .eq("id", this.tech.id);
 
-    if (error) {
-      console.error("Error saving token:", error);
-    } else {
-      console.log("✅ Token saved to Supabase");
-    }
-
-    // ✅ Handle foreground messages
-    messaging.onMessage((payload) => {
-      console.log("✅ Foreground message received:", payload);
-      
-      const title = payload.notification?.title || payload.data?.title || "New Job";
-      const body = payload.notification?.body || payload.data?.body || "You have a new job";
-      
-      // Show notification even in foreground
-      registration.showNotification(title, {
-        body: body,
-        icon: "/icon-192.png",
-        badge: "/icon-192.png",
-        vibrate: [200, 100, 200],
-        data: payload.data || {}
-      });
-    });
-
   } catch (err) {
-    console.error("❌ Notification setup failed:", err);
+    console.error("Notification setup failed:", err);
   }
 },
 

@@ -11,28 +11,17 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Background message handler
 messaging.onBackgroundMessage(function(payload) {
   console.log("✅ Background message received:", payload);
 
-  // Extract data from payload
-  const data = payload.data || {};
-  const notification = payload.notification || {};
-  
-  const notificationTitle = notification.title || data.title || "New Job Available";
-  const notificationBody = notification.body || data.body || "You have a new service job";
-  
+  const notificationTitle = payload.notification?.title || "New Job Available";
   const notificationOptions = {
-    body: notificationBody,
+    body: payload.notification?.body || "You have a new service job",
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     vibrate: [200, 100, 200],
-    requireInteraction: true, // Keep notification until user interacts
-    data: {
-      ...data,
-      click_action: "OPEN_JOB",
-      url: "/techniciandashboard.html"
-    },
+    requireInteraction: true,
+    data: payload.data || {},
     actions: [
       {
         action: 'accept',
@@ -50,25 +39,25 @@ messaging.onBackgroundMessage(function(payload) {
 
 // Handle notification click
 self.addEventListener('notificationclick', function(event) {
-  console.log('🔔 Notification clicked:', event.action);
+  console.log('Notification clicked:', event.action);
   event.notification.close();
   
-  const data = event.notification.data || {};
+  const urlToOpen = 'https://shantu2912.github.io/techniciandashboard.html';
   
-  if (event.action === 'accept') {
-    // Handle accept action
-    event.waitUntil(
-      clients.openWindow('/techniciandashboard.html?action=accept&job=' + (data.jobId || ''))
-    );
-  } else if (event.action === 'reject') {
-    // Handle reject action
-    event.waitUntil(
-      clients.openWindow('/techniciandashboard.html?action=reject&job=' + (data.jobId || ''))
-    );
-  } else {
-    // Default click - open dashboard
-    event.waitUntil(
-      clients.openWindow('/techniciandashboard.html')
-    );
-  }
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(function(clientList) {
+      // If already open, focus the tab
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open new window
+      return clients.openWindow(urlToOpen);
+    })
+  );
 });
