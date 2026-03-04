@@ -11,28 +11,36 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// ✅ CRITICAL: Handle background messages
+// Background message handler
 messaging.onBackgroundMessage(function(payload) {
   console.log("✅ Background message received:", payload);
 
-  const notificationTitle = payload.data?.title || payload.notification?.title || "New Job Available";
-  const notificationBody = payload.data?.body || payload.notification?.body || "You have a new service job";
+  // Extract data from payload
+  const data = payload.data || {};
+  const notification = payload.notification || {};
+  
+  const notificationTitle = notification.title || data.title || "New Job Available";
+  const notificationBody = notification.body || data.body || "You have a new service job";
   
   const notificationOptions = {
     body: notificationBody,
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    data: payload.data || {},
     vibrate: [200, 100, 200],
-    requireInteraction: true,
+    requireInteraction: true, // Keep notification until user interacts
+    data: {
+      ...data,
+      click_action: "OPEN_JOB",
+      url: "/techniciandashboard.html"
+    },
     actions: [
       {
         action: 'accept',
-        title: 'Accept Job'
+        title: '✅ Accept Job'
       },
       {
         action: 'reject',
-        title: 'Reject'
+        title: '❌ Reject'
       }
     ]
   };
@@ -40,16 +48,25 @@ messaging.onBackgroundMessage(function(payload) {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// ✅ Handle notification click
+// Handle notification click
 self.addEventListener('notificationclick', function(event) {
+  console.log('🔔 Notification clicked:', event.action);
   event.notification.close();
+  
+  const data = event.notification.data || {};
   
   if (event.action === 'accept') {
     // Handle accept action
     event.waitUntil(
-      clients.openWindow('/techniciandashboard.html?action=accept&job=' + event.notification.data?.jobId)
+      clients.openWindow('/techniciandashboard.html?action=accept&job=' + (data.jobId || ''))
+    );
+  } else if (event.action === 'reject') {
+    // Handle reject action
+    event.waitUntil(
+      clients.openWindow('/techniciandashboard.html?action=reject&job=' + (data.jobId || ''))
     );
   } else {
+    // Default click - open dashboard
     event.waitUntil(
       clients.openWindow('/techniciandashboard.html')
     );
