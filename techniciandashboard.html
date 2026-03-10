@@ -316,9 +316,7 @@ messaging.onMessage((payload) => {
 
     
   },
- // FIXED MAPS FUNCTION
-openMaps(location) {
-  if (!location) return;
+  openMaps(location){
   const encoded = encodeURIComponent(location);
   window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
 },
@@ -327,60 +325,47 @@ toggleAvailability(e){
   console.log("Technician availability:", this.available);
 },
 // Inside dashboardHandler() init
-// Locate your setupNotifications() function inside dashboardHandler() and replace with this:
 async setupNotifications() {
   try {
     if (!('serviceWorker' in navigator)) {
-      console.warn("Push notifications not supported in this browser.");
+      console.error("Service Worker not supported");
       return;
     }
 
-    const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-    console.log("Service Worker Active:", registration.scope);
+    // ✅ Correct path (same folder as HTML)
+    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    console.log("SW Registered:", registration);
 
+    // Ask permission
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      alert("Please enable notifications to receive new job alerts!");
+      console.error("Notification permission denied");
       return;
     }
 
-    // Retrieve Token
+    // Get FCM token
     const token = await messaging.getToken({
       vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
       serviceWorkerRegistration: registration
     });
 
-    if (token) {
-      console.log("FCM Token:", token);
-      // Only update if the token is different to save DB calls
-      if (this.tech.fcm_token !== token) {
-        await window.sb
-          .from("technicians")
-          .update({ fcm_token: token })
-          .eq("id", this.tech.id);
-        
-        // Update local session
-        this.tech.fcm_token = token;
-        localStorage.setItem("active_tech", JSON.stringify(this.tech));
-      }
+    if (!token) {
+      console.error("No FCM token received");
+      return;
     }
 
-    // Handle Foreground Messages
-    messaging.onMessage((payload) => {
-      console.log("Foreground Notification:", payload);
-      // Trigger the Alpine.js modal you already have
-      this.incomingJob = {
-        category: payload.notification.title,
-        issue: payload.notification.body,
-        location: "New Request" 
-      };
-      // Optional: Play a sound
-      const audio = new Audio('notification_sound.mp3');
-      audio.play().catch(() => {});
-    });
+    console.log("FCM Token:", token);
+
+    // Save token to DB
+    await window.sb
+      .from("technicians")
+      .update({ fcm_token: token })
+      .eq("id", this.tech.id);
+
+    console.log("Token saved to Supabase");
 
   } catch (err) {
-    console.error("FCM Setup Error:", err);
+    console.error("Notification setup failed:", err);
   }
 },
 
