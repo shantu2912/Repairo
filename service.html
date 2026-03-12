@@ -208,33 +208,6 @@
           // --- CONFIRM BOOKING FUNCTION ---
           async confirmBooking() {
 
-                let uploadedImageURL = null;
-
-if (this.photoFile) {
-
-    this.uploadingPhoto = true;
-
-    const fileName = Date.now() + "_" + this.photoFile.name;
-
-    const { data, error } = await window.sb.storage
-        .from('job-images')
-        .upload(fileName, this.photoFile);
-
-    if (error) {
-        alert("Image upload failed");
-        console.log(error);
-    } else {
-
-        const { data: publicURL } = window.sb.storage
-            .from('job-images')
-            .getPublicUrl(fileName);
-
-        uploadedImageURL = publicURL.publicUrl;
-    }
-
-    this.uploadingPhoto = false;
-}
-
     
               try {
                   if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
@@ -313,6 +286,33 @@ if (this.photoFile) {
                   
                   // Redirect to Success Map
                   window.location.href = 'success.html?job_id=' + insertedJob.id;
+
+       let uploadedImageURL = null;
+
+if (this.photoFile) {
+
+    this.uploadingPhoto = true;
+
+    const fileName = Date.now() + "_" + this.photoFile.name;
+
+    const { data, error } = await window.sb.storage
+        .from('job-images')
+        .upload(fileName, this.photoFile);
+
+    if (error) {
+        alert("Image upload failed");
+        console.log(error);
+    } else {
+
+        const { data: publicURL } = window.sb.storage
+            .from('job-images')
+            .getPublicUrl(fileName);
+
+        uploadedImageURL = publicURL.publicUrl;
+    }
+
+    this.uploadingPhoto = false;
+}
 
               } catch (err) {
                   console.error(err);
