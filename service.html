@@ -112,24 +112,25 @@
 </head>
 
 <body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
-      x-data="{
-          service: null,
-          selectedSubs: [],
-          showAgreement: false,
-          agreed: false,
-          loading: true,
-          bookingLoading: false,
+     x-data="{
+    service:null,
+    selectedSubs:[],
+    showAgreement:false,
+    agreed:false,
+    loading:true,
+    bookingLoading:false,
 
-          // REQUIRED FORM FIELDS
-          customerName: '',
-          phone: '',
-          address: '',
-          date: '',
-          
-          // GPS DATA
-          lat: null,
-          lng: null,
-          fetchingLocation: false,
+    customerName:'',
+    phone:'',
+    address:'',
+    date:'',
+
+    lat:null,
+    lng:null,
+
+    photoFile:null,
+    photoUrl:null,
+    uploadingPhoto:false,
 
           init() {
               const params = new URLSearchParams(window.location.search);
@@ -206,6 +207,35 @@
 
           // --- CONFIRM BOOKING FUNCTION ---
           async confirmBooking() {
+
+                let uploadedImageURL = null;
+
+if (this.photoFile) {
+
+    this.uploadingPhoto = true;
+
+    const fileName = Date.now() + "_" + this.photoFile.name;
+
+    const { data, error } = await window.sb.storage
+        .from('job-images')
+        .upload(fileName, this.photoFile);
+
+    if (error) {
+        alert("Image upload failed");
+        console.log(error);
+    } else {
+
+        const { data: publicURL } = window.sb.storage
+            .from('job-images')
+            .getPublicUrl(fileName);
+
+        uploadedImageURL = publicURL.publicUrl;
+    }
+
+    this.uploadingPhoto = false;
+}
+
+    
               try {
                   if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
                   if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
@@ -416,6 +446,26 @@
                 </div>
 
             </div>
+
+            <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col gap-2">
+
+    <div class="flex items-center gap-3">
+        <i class="fa-solid fa-camera text-brand-gold"></i>
+        <span class="text-sm font-semibold">Upload Issue Photo</span>
+    </div>
+
+    <input 
+        type="file"
+        accept="image/*"
+        capture="environment"
+        @change="photoFile = $event.target.files[0]"
+        class="text-xs">
+
+    <p class="text-[10px] text-gray-400">
+        You can take a photo using camera or upload from gallery
+    </p>
+
+</div>
 
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
