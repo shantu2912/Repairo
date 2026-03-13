@@ -122,13 +122,14 @@
     fetchingLocation: false,
     showCamera: false,
     cameraStream: null,
-    videoRef: null,
-    canvasRef: null,
 
     customerName:'',
     phone:'',
     address:'',
     date:'',
+    time:'',
+    minTime: '',
+    minDate: '',
 
     lat:null,
     lng:null,
@@ -146,9 +147,17 @@
         this.service = servicesDB[id] || servicesDB['default'];
         if(!servicesDB[id]) this.service.name = rawId; 
 
+        // Set minimum date (today)
+        const today = new Date();
+        this.minDate = today.toISOString().split('T')[0];
+        
+        // Set default date to tomorrow (as before)
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         this.date = tomorrow.toISOString().split('T')[0];
+        
+        // Set default time to current time + 30 minutes
+        this.setDefaultTime();
         
         setTimeout(() => this.loading = false, 400);
         
@@ -160,6 +169,54 @@
                 this.stopCamera();
             }
         });
+    },
+
+    setDefaultTime() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 30); // Add 30 minutes
+        
+        // Round to nearest 30 minutes
+        const minutes = now.getMinutes();
+        const roundedMinutes = Math.ceil(minutes / 30) * 30;
+        now.setMinutes(roundedMinutes);
+        now.setSeconds(0);
+        now.setMilliseconds(0);
+        
+        // Format time as HH:MM
+        const hours = now.getHours().toString().padStart(2, '0');
+        const mins = now.getMinutes().toString().padStart(2, '0');
+        this.time = `${hours}:${mins}`;
+        
+        // Update min time for today
+        this.updateMinTime();
+    },
+
+    updateMinTime() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 30);
+        const hours = now.getHours().toString().padStart(2, '0');
+        const mins = now.getMinutes().toString().padStart(2, '0');
+        this.minTime = `${hours}:${mins}`;
+    },
+
+    // Validate if selected date/time is in the past
+    isDateTimeValid() {
+        if (!this.date || !this.time) return false;
+        
+        const selectedDateTime = new Date(`${this.date}T${this.time}`);
+        const now = new Date();
+        const minDateTime = new Date(now.getTime() + 30 * 60000); // Now + 30 minutes
+        
+        return selectedDateTime >= minDateTime;
+    },
+
+    // Get validation error message
+    getDateTimeError() {
+        if (!this.date || !this.time) return 'Please select date and time';
+        if (!this.isDateTimeValid()) {
+            return 'Selected time must be at least 30 minutes from now';
+        }
+        return '';
     },
 
     toggleSub(sub) {
@@ -289,7 +346,7 @@
         );
     },
 
-    // --- CONFIRM BOOKING FUNCTION (Modified - no photo upload) ---
+    // --- CONFIRM BOOKING FUNCTION (Updated with time) ---
     async confirmBooking() {
         try {
             if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
@@ -297,6 +354,13 @@
             if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
             if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
             if (!this.date) { alert('Please select a date.'); return; }
+            if (!this.time) { alert('Please select a time.'); return; }
+            
+            // Validate date/time is not in the past
+            if (!this.isDateTimeValid()) {
+                alert('Please select a time at least 30 minutes from now.');
+                return;
+            }
 
             this.bookingLoading = true;
 
@@ -316,15 +380,10 @@
 
             const firstService = this.selectedSubs[0];
 
-            // NOTE: Photo is NOT being uploaded to database
-            // We're just capturing it locally for reference
-            if (this.photoFile) {
-                console.log('Photo captured locally:', this.photoFile.name);
-                // You can display this photo to the user or use it locally
-                // but it won't be saved to the database
-            }
+            // Combine date and time for database storage
+            const scheduledDateTime = `${this.date}T${this.time}:00`;
 
-            // 1. SAVE TO JOBS TABLE (NO IMAGE URL)
+            // 1. SAVE TO JOBS TABLE (WITH TIME)
             const jobPayload = {
                 category: this.service?.name || 'General Service',
                 device: firstService?.n || 'General Service',
@@ -335,8 +394,8 @@
                 status: 'pending',
                 urgent: false,
                 latitude: this.lat || null,
-                longitude: this.lng || null
-                // NO image_url field
+                longitude: this.lng || null,
+                scheduled_time: scheduledDateTime // Add scheduled time to jobs table
             };
 
             const { data: insertedJob, error: jobError } = await window.sb
@@ -351,13 +410,14 @@
                 return;
             }
 
-            // 2. SAVE TO BOOKINGS TABLE
+            // 2. SAVE TO BOOKINGS TABLE (WITH TIME)
             const bookingPayload = {
                 user_id: user.id,
                 service_name: this.service?.name || 'General Service',
                 variant_name: firstService?.n || 'Service',
                 price: this.total,
                 date: this.date,
+                time: this.time, // Add time field
                 address: this.address,
                 phone: this.phone
             };
@@ -557,7 +617,24 @@
                 <!-- Date Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-calendar text-brand-gold"></i>
-                    <input type="date" x-model="date" min="" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                    <input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                </div>
+
+                <!-- Time Input - New Section -->
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
+                     :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
+                    <i class="fa-solid fa-clock text-brand-gold"></i>
+                    <div class="flex-1">
+                        <input type="time" 
+                               x-model="time" 
+                               :min="date === minDate ? minTime : ''"
+                               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                        <!-- Validation Message -->
+                        <p x-show="!isDateTimeValid() && date && time" 
+                           class="text-[10px] text-brand-red mt-1">
+                            ⚠️ Please select a time at least 30 minutes from now
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Photo Upload Section - Live Camera & Gallery Options -->
@@ -636,25 +713,20 @@
             <div class="flex gap-3">
                 <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
                 <button @click="confirmBooking()" 
-                        :disabled="!agreed || bookingLoading"
+                        :disabled="!agreed || bookingLoading || !isDateTimeValid()"
                         class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
                     <span x-show="!bookingLoading">Confirm Booking</span>
                     <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
+            
+            <!-- Validation summary -->
+            <p x-show="!isDateTimeValid() && date && time" 
+               class="text-center text-xs text-brand-red mt-2">
+                ⚠️ Please select a valid future time (minimum 30 minutes from now)
+            </p>
         </div>
     </div>
-
-    <!-- Set min date attribute dynamically -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            // Set min date attribute for date input
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('input[type="date"]').forEach(input => {
-                input.setAttribute('min', today);
-            });
-        });
-    </script>
 
 </body>
 </html>
