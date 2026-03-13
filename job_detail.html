@@ -152,8 +152,11 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
     
     <!-- Warning if no photo taken -->
     <div x-show="!completionPhoto" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-      <p class="text-xs text-amber-700 text-center">
-        ⚠️ You must take a completion photo before finishing this job
+      <p class="text-xs text-amber-700 text-center font-bold">
+        ⚠️ Photo required before completing job
+      </p>
+      <p class="text-xs text-amber-600 text-center mt-1">
+        Please take a photo of the completed work
       </p>
     </div>
 
@@ -164,8 +167,8 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
         Mark Arrived
       </button>
 
-      <!-- Complete Job Button - Now opens photo modal -->
-      <button @click="openCompletionModal()"
+      <!-- Complete Job Button - Direct check for photo -->
+      <button @click="attemptCompleteJob()"
               class="w-full bg-green-600 text-white py-3 rounded-xl font-black uppercase">
         Complete Job & Unlock
       </button>
@@ -296,6 +299,17 @@ function jobCompletion() {
     completionPhoto: null,
     photoFile: null,
     
+    // New method: Check photo before allowing completion
+    attemptCompleteJob() {
+      if (this.completionPhoto) {
+        // If photo already exists, proceed directly to completion
+        this.finalizeJobCompletion();
+      } else {
+        // If no photo, open modal to take photo
+        this.openCompletionModal();
+      }
+    },
+    
     openCompletionModal() {
       this.showCompletionModal = true;
     },
@@ -303,7 +317,6 @@ function jobCompletion() {
     closeCompletionModal() {
       this.showCompletionModal = false;
       this.stopCamera();
-      // Keep photo if taken, but modal closed
     },
     
     async startCamera() {
@@ -372,13 +385,8 @@ function jobCompletion() {
       this.completionPhoto = null;
     },
     
-    async submitCompletion() {
-      // Validate photo is present
-      if (!this.completionPhoto) {
-        alert('Please take a completion photo before finishing the job');
-        return;
-      }
-      
+    // Direct completion when photo already exists
+    async finalizeJobCompletion() {
       // Base fee calculation
       const BASE = {
         "Carpenter": 800,
@@ -412,16 +420,28 @@ function jobCompletion() {
         // Clear locked job
         localStorage.removeItem("locked_job_id");
         
-        // Close modal
-        this.showCompletionModal = false;
-        this.stopCamera();
-        
         alert("Job Completed Successfully!");
         window.location.href = "techniciandashboard.html";
         
       } catch (error) {
         alert(error.message);
       }
+    },
+    
+    // Submit from modal
+    async submitCompletion() {
+      // Validate photo is present
+      if (!this.completionPhoto) {
+        alert('Please take a completion photo before finishing the job');
+        return;
+      }
+      
+      // Close modal first
+      this.showCompletionModal = false;
+      this.stopCamera();
+      
+      // Then complete the job
+      await this.finalizeJobCompletion();
     }
   }
 }
