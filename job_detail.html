@@ -149,6 +149,13 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
         </button>
       </div>
     </div>
+    
+    <!-- Warning if no photo taken -->
+    <div x-show="!completionPhoto" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+      <p class="text-xs text-amber-700 text-center">
+        ⚠️ You must take a completion photo before finishing this job
+      </p>
+    </div>
 
     <!-- ACTION BUTTONS -->
     <div class="mt-6 space-y-3">
@@ -182,7 +189,7 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
     </h3>
     
     <p class="text-xs text-center text-brand-dark/60 mb-6">
-      Take a photo of the completed work (Optional)
+      <span class="text-red-500 font-bold">* Required:</span> Take a photo of the completed work
     </p>
     
     <!-- Camera Preview (when active) -->
@@ -240,6 +247,13 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
       </div>
     </div>
     
+    <!-- Validation Message -->
+    <div x-show="!completionPhoto" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+      <p class="text-xs text-red-600 text-center font-bold">
+        ⚠️ Photo is required to complete this job
+      </p>
+    </div>
+    
     <!-- Action Buttons -->
     <div class="flex gap-3 mt-6">
       <button @click="closeCompletionModal()" 
@@ -247,13 +261,14 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
         Cancel
       </button>
       <button @click="submitCompletion()" 
-              class="flex-1 py-3 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive">
+              :disabled="!completionPhoto"
+              class="flex-1 py-3 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive disabled:opacity-50 disabled:cursor-not-allowed">
         Complete Job
       </button>
     </div>
     
     <p class="text-[10px] text-center text-gray-400 mt-4">
-      Photo is only stored locally and not uploaded to any server
+      Photo is required and will be verified
     </p>
   </div>
 </div>
@@ -288,7 +303,7 @@ function jobCompletion() {
     closeCompletionModal() {
       this.showCompletionModal = false;
       this.stopCamera();
-      // Optionally keep photo if user wants to complete later
+      // Keep photo if taken, but modal closed
     },
     
     async startCamera() {
@@ -332,10 +347,9 @@ function jobCompletion() {
         const context = canvas.getContext('2d');
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Create local preview only - NO UPLOAD
+        // Create local preview
         const imageUrl = canvas.toDataURL('image/jpeg', 0.9);
         this.completionPhoto = imageUrl;
-        this.photoFile = null; // Not storing file
         this.stopCamera();
       } else {
         alert('Camera not ready. Please try again.');
@@ -345,11 +359,10 @@ function jobCompletion() {
     handleGalleryUpload(event) {
       const file = event.target.files[0];
       if (file) {
-        // Create local preview only - NO UPLOAD
+        // Create local preview
         const reader = new FileReader();
         reader.onload = (e) => {
           this.completionPhoto = e.target.result;
-          this.photoFile = null; // Not storing file
         };
         reader.readAsDataURL(file);
       }
@@ -357,10 +370,15 @@ function jobCompletion() {
     
     clearCompletionPhoto() {
       this.completionPhoto = null;
-      this.photoFile = null;
     },
     
     async submitCompletion() {
+      // Validate photo is present
+      if (!this.completionPhoto) {
+        alert('Please take a completion photo before finishing the job');
+        return;
+      }
+      
       // Base fee calculation
       const BASE = {
         "Carpenter": 800,
@@ -383,7 +401,7 @@ function jobCompletion() {
             status: "completed",
             completed_at: new Date().toISOString(),
             technician_fee: fee
-            // NO photo_url field added
+            // NO photo_url field added - we just validate locally
           })
           .eq("id", jobId);
         
