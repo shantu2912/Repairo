@@ -16,11 +16,32 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F5F2EB', 'brand-dark': '#2D2C2B', 'brand-green': '#10B981', 'brand-red': '#EF4444' },
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
-                    boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 'up': '0 -5px 20px rgba(0,0,0,0.05)' },
-                    animation: { 'slide-up': 'slideUp 0.4s ease-out forwards', 'pulse-slow': 'pulse 3s infinite' },
-                    keyframes: { slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } } }
+                    colors: { 
+                        'brand-olive': '#5D5646', 
+                        'brand-gold': '#A07D54', 
+                        'brand-cream': '#F5F2EB', 
+                        'brand-dark': '#2D2C2B', 
+                        'brand-green': '#10B981', 
+                        'brand-red': '#EF4444' 
+                    },
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'], 
+                        serif: ['"Playfair Display"', 'serif'] 
+                    },
+                    boxShadow: { 
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 
+                        'up': '0 -5px 20px rgba(0,0,0,0.05)' 
+                    },
+                    animation: { 
+                        'slide-up': 'slideUp 0.4s ease-out forwards', 
+                        'pulse-slow': 'pulse 3s infinite' 
+                    },
+                    keyframes: { 
+                        slideUp: { 
+                            '0%': { transform: 'translateY(100%)' }, 
+                            '100%': { transform: 'translateY(0)' } 
+                        } 
+                    }
                 }
             }
         }
@@ -28,7 +49,8 @@
         // --- MASTER SERVICE DATABASE ---
         const servicesDB = {
             "electrician": { 
-                name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
+                name: "Expert Electrician", 
+                image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
                 desc: "Certified electricians for wiring, appliance installation, and repairs.",
                 subs: [
                     {n:"Visit & Inspection", p:250, d:"Diagnosis charge (Waived if service taken)"},
@@ -42,7 +64,8 @@
                 ]
             },
             "carpenter": { 
-                name: "Expert Carpentry", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
+                name: "Expert Carpentry", 
+                image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
                 desc: "Furniture assembly, door repairs, and custom woodwork.",
                 subs: [
                     {n:"Visit & Inspection", p:299, d:"Assessment & measurement"},
@@ -55,7 +78,8 @@
                 ]
             },
             "plumber": { 
-                name: "Professional Plumbing", image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
+                name: "Professional Plumbing", 
+                image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
                 desc: "Leakage fixing, tap installation, and blockage removal.",
                 subs: [
                     {n:"Visit & Inspection", p:250, d:"Leak detection & quote"},
@@ -67,7 +91,8 @@
                 ]
             },
             "ac tech": { 
-                name: "AC Repair & Service", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
+                name: "AC Repair & Service", 
+                image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
                 desc: "Cooling issues, gas refill, and deep cleaning.",
                 subs: [
                     {n:"AC Inspection", p:330, d:"Diagnosis charge"},
@@ -80,7 +105,8 @@
                 ]
             },
             "clean": { 
-                name: "Deep Cleaning", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
+                name: "Deep Cleaning", 
+                image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Professional home deep cleaning and sanitization.",
                 subs: [
                     {n:"1 BHK Deep Clean", p:1100, d:"Full house floor & dusting"},
@@ -92,7 +118,8 @@
                 ]
             },
             "default": {
-                name: "General Service", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
+                name: "General Service", 
+                image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Standard inspection and repair service.",
                 subs: [
                     {n:"Visit & Inspection", p:299, d:"Standard visit charge"},
@@ -151,7 +178,7 @@
         const today = new Date();
         this.minDate = today.toISOString().split('T')[0];
         
-        // Set default date to tomorrow (as before)
+        // Set default date to tomorrow
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         this.date = tomorrow.toISOString().split('T')[0];
@@ -346,15 +373,34 @@
         );
     },
 
-    // --- CONFIRM BOOKING FUNCTION (Updated with time) ---
+    // --- UPDATED CONFIRM BOOKING FUNCTION - Saves all selected services as comma-separated values ---
     async confirmBooking() {
         try {
-            if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-            if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-            if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-            if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-            if (!this.date) { alert('Please select a date.'); return; }
-            if (!this.time) { alert('Please select a time.'); return; }
+            // VALIDATION CHECKS
+            if (!this.agreed) { 
+                alert('Please accept the terms to proceed.'); 
+                return; 
+            }
+            if (!this.customerName || !this.customerName.trim()) { 
+                alert('Please enter your name.'); 
+                return; 
+            }
+            if (!this.phone || !this.phone.trim()) { 
+                alert('Please enter your phone number.'); 
+                return; 
+            }
+            if (!this.address || !this.address.trim()) { 
+                alert('Please enter your address.'); 
+                return; 
+            }
+            if (!this.date) { 
+                alert('Please select a date.'); 
+                return; 
+            }
+            if (!this.time) { 
+                alert('Please select a time.'); 
+                return; 
+            }
             
             // Validate date/time is not in the past
             if (!this.isDateTimeValid()) {
@@ -370,6 +416,7 @@
                 return;
             }
 
+            // Check if user is logged in
             const { data: { user } } = await window.sb.auth.getUser();
             if (!user) {
                 alert('Please Log In to book!');
@@ -378,16 +425,26 @@
                 return;
             }
 
-            const firstService = this.selectedSubs[0];
-
-            // Combine date and time for database storage
+            // STEP 1: Create comma-separated list of ALL selected services
+            // This takes all service names and joins them with commas
+            // Example: "Fan Installation, Switch Repair, MCB Replacement"
+            const selectedServicesList = this.selectedSubs.map(sub => sub.n).join(', ');
+            
+            // STEP 2: Create combined description of all services (optional but useful)
+            // This takes all service descriptions and joins them with semicolons
+            // Example: "Ceiling fan assembly & hanging; Per switchboard unit; Fuse box repair/upgrade"
+            const allDescriptions = this.selectedSubs.map(sub => sub.d).join('; ');
+            
+            // STEP 3: Combine date and time for database storage
             const scheduledDateTime = `${this.date}T${this.time}:00`;
 
-            // 1. SAVE TO JOBS TABLE (WITH TIME)
+            // STEP 4: Save to JOBS table with ALL services in the 'device' field
             const jobPayload = {
                 category: this.service?.name || 'General Service',
-                device: firstService?.n || 'General Service',
-                issue: firstService?.d || 'Service requested via app',
+                // 'device' field now stores ALL selected services as comma-separated string
+                device: selectedServicesList,
+                // 'issue' field stores all descriptions combined
+                issue: allDescriptions || 'Service requested via app',
                 customer_name: this.customerName,
                 location: this.address,
                 phone: this.phone,
@@ -395,8 +452,10 @@
                 urgent: false,
                 latitude: this.lat || null,
                 longitude: this.lng || null,
-                scheduled_time: scheduledDateTime // Add scheduled time to jobs table
+                scheduled_time: scheduledDateTime
             };
+
+            console.log('Saving to jobs table:', jobPayload); // For debugging
 
             const { data: insertedJob, error: jobError } = await window.sb
                 .from('jobs')
@@ -410,17 +469,21 @@
                 return;
             }
 
-            // 2. SAVE TO BOOKINGS TABLE (WITH TIME)
+            // STEP 5: Save to BOOKINGS table with ALL services in the 'variant_name' field
             const bookingPayload = {
                 user_id: user.id,
                 service_name: this.service?.name || 'General Service',
-                variant_name: firstService?.n || 'Service',
+                // 'variant_name' field now stores ALL selected services as comma-separated string
+                variant_name: selectedServicesList,
                 price: this.total,
                 date: this.date,
-                time: this.time, // Add time field
+                time: this.time,
                 address: this.address,
                 phone: this.phone
+                // Note: If you want to add a dedicated 'services_list' column, you can add it here
             };
+
+            console.log('Saving to bookings table:', bookingPayload); // For debugging
 
             const { error: bookingError } = await window.sb
                 .from('bookings')
@@ -438,6 +501,9 @@
             // Clean up camera if still running
             this.stopCamera();
             
+            // Show success message
+            alert('Booking confirmed! Selected services: ' + selectedServicesList);
+            
             // Redirect to Success Map
             window.location.href = 'success.html?job_id=' + insertedJob.id;
 
@@ -449,6 +515,7 @@
     }
 }">
 
+    <!-- REST OF THE HTML (unchanged) -->
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
             <i class="fa-solid fa-arrow-left"></i>
@@ -620,7 +687,7 @@
                     <input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
 
-                <!-- Time Input - New Section -->
+                <!-- Time Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
                      :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
                     <i class="fa-solid fa-clock text-brand-gold"></i>
