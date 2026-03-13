@@ -119,6 +119,7 @@
     agreed:false,
     loading:true,
     bookingLoading:false,
+    fetchingLocation: false,
 
     customerName:'',
     phone:'',
@@ -129,7 +130,7 @@
     lng:null,
 
     photoFile:null,
-    photoUrl:null,
+    photoPreview:null,
     uploadingPhoto:false,
 
           init() {
@@ -165,6 +166,22 @@
           openAgreement() {
               if (this.selectedSubs.length === 0) return;
               this.showAgreement = true;
+          },
+
+          // Handle photo selection
+          handlePhotoSelect(event) {
+              const file = event.target.files[0];
+              if (file) {
+                  this.photoFile = file;
+                  // Create preview URL
+                  this.photoPreview = URL.createObjectURL(file);
+              }
+          },
+
+          // Clear selected photo
+          clearPhoto() {
+              this.photoFile = null;
+              this.photoPreview = null;
           },
 
           // --- FETCH GPS LOCATION FUNCTION ---
@@ -232,35 +249,40 @@
 
                   const firstService = this.selectedSubs[0];
 
-                   let uploadedImageURL = null;
+                  let uploadedImageURL = null;
 
-if (this.photoFile) {
+                  // Upload photo if selected
+                  if (this.photoFile) {
+                      this.uploadingPhoto = true;
+                      
+                      // Create a unique filename
+                      const fileExt = this.photoFile.name.split('.').pop();
+                      const fileName = `job-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                      
+                      try {
+                          const { data, error } = await window.sb.storage
+                              .from('job-images')
+                              .upload(fileName, this.photoFile);
 
-    this.uploadingPhoto = true;
+                          if (error) {
+                              console.error('Upload error:', error);
+                              alert('Failed to upload image. You can continue without photo.');
+                          } else {
+                              const { data: publicURL } = window.sb.storage
+                                  .from('job-images')
+                                  .getPublicUrl(fileName);
+                              
+                              uploadedImageURL = publicURL.publicUrl;
+                          }
+                      } catch (uploadError) {
+                          console.error('Upload exception:', uploadError);
+                          alert('Image upload failed. Continuing without photo.');
+                      } finally {
+                          this.uploadingPhoto = false;
+                      }
+                  }
 
-    const fileName = Date.now() + "_" + this.photoFile.name;
-
-    const { data, error } = await window.sb.storage
-        .from('job-images')
-        .upload(fileName, this.photoFile);
-
-    if (error) {
-        alert("Image upload failed");
-        console.log(error);
-    } else {
-
-        const { data: publicURL } = window.sb.storage
-            .from('job-images')
-            .getPublicUrl(fileName);
-
-        uploadedImageURL = publicURL.publicUrl;
-    }
-
-    this.uploadingPhoto = false;
-}
-    
-
-                  // 1. SAVE TO JOBS TABLE (INCLUDING LAT & LNG)
+                  // 1. SAVE TO JOBS TABLE (INCLUDING LAT & LNG AND IMAGE URL)
                   const jobPayload = {
                       category: this.service?.name || 'General Service',
                       device: firstService?.n || 'General Service',
@@ -270,8 +292,9 @@ if (this.photoFile) {
                       phone: this.phone,
                       status: 'pending',
                       urgent: false,
-                      latitude: this.lat || null, // Safely handles if user didn't click GPS
-                      longitude: this.lng || null
+                      latitude: this.lat || null,
+                      longitude: this.lng || null,
+                      image_url: uploadedImageURL // Add image URL to job
                   };
 
                   const { data: insertedJob, error: jobError } = await window.sb
@@ -417,57 +440,81 @@ if (this.photoFile) {
             
             <div class="space-y-3 mb-4">
 
+                <!-- Name Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-user text-brand-gold"></i>
                     <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
+                <!-- Phone Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-phone text-brand-gold"></i>
                     <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
+                <!-- GPS Button -->
                 <button @click="fetchGPS()" type="button"
                         class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-green-50 text-brand-green text-sm font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-location-crosshairs text-lg" :class="fetchingLocation ? 'fa-spin' : ''"></i>
                     <span x-text="fetchingLocation ? 'Pinpointing Location...' : '📍 Fetch Current GPS Location'"></span>
                 </button>
 
+                <!-- Address Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
                      :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
                     <i class="fa-solid fa-location-dot text-brand-gold" :class="lat ? 'text-brand-green' : ''"></i>
                     <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
+                <!-- Date Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-calendar text-brand-gold"></i>
-                    <input type="date" x-model="date" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                    <input type="date" x-model="date" min="" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                </div>
+
+                <!-- Photo Upload Section - Camera/Photo Option -->
+                <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-camera text-brand-gold text-lg"></i>
+                        <span class="text-sm font-semibold text-brand-dark">Upload Issue Photo</span>
+                    </div>
+                    
+                    <!-- Camera/Photo Input -->
+                    <div class="flex flex-col gap-3">
+                        <!-- Hidden file input -->
+                        <input type="file" 
+                               accept="image/*" 
+                               capture="environment"
+                               @change="handlePhotoSelect"
+                               class="hidden"
+                               id="cameraInput">
+                        
+                        <!-- Camera button -->
+                        <button type="button" 
+                                @click="document.getElementById('cameraInput').click()"
+                                class="w-full py-3 rounded-xl border-2 border-brand-gold/30 bg-white text-brand-gold text-sm font-bold hover:bg-brand-gold/5 transition-colors flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>📸 Take Photo or Upload</span>
+                        </button>
+                        
+                        <!-- Photo Preview -->
+                        <div x-show="photoPreview" class="relative mt-2 rounded-lg overflow-hidden border border-gray-200">
+                            <img :src="photoPreview" class="w-full h-32 object-cover">
+                            <button @click="clearPhoto" 
+                                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors">
+                                <i class="fa-solid fa-times text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <p class="text-[10px] text-gray-400 text-center">
+                            Tap the button to take a photo or upload from gallery
+                        </p>
+                    </div>
                 </div>
 
             </div>
 
-            <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col gap-2">
-
-    <div class="flex items-center gap-3">
-        <i class="fa-solid fa-camera text-brand-gold"></i>
-        <span class="text-sm font-semibold">Upload Issue Photo</span>
-    </div>
-
-    <input 
-        type="file"
-        accept="image/*"
-        capture="environment"
-        @change="photoFile = $event.target.files[0]"
-        class="text-xs">
-
-    <p class="text-[10px] text-gray-400">
-        You can take a photo using camera or upload from gallery
-    </p>
-
-</div>
-
-            
-
+            <!-- Terms & Conditions -->
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
                 <ul class="list-disc pl-4 space-y-1.5">
@@ -478,6 +525,7 @@ if (this.photoFile) {
                 </ul>
             </div>
 
+            <!-- Agreement Checkbox -->
             <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6 border border-transparent hover:border-gray-100">
                 <div class="relative flex items-center">
                     <input type="checkbox" x-model="agreed" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-brand-gold checked:bg-brand-gold transition-all">
@@ -486,17 +534,30 @@ if (this.photoFile) {
                 <span class="text-xs font-medium text-brand-dark/80 leading-snug select-none">I agree to the Terms & Conditions and authorize the job broadcast.</span>
             </label>
 
+            <!-- Action Buttons -->
             <div class="flex gap-3">
                 <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
                 <button @click="confirmBooking()" 
-                        :disabled="!agreed || bookingLoading"
+                        :disabled="!agreed || bookingLoading || uploadingPhoto"
                         class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                    <span x-show="!bookingLoading">Confirm Booking</span>
-                    <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
+                    <span x-show="!bookingLoading && !uploadingPhoto">Confirm Booking</span>
+                    <span x-show="uploadingPhoto">Uploading...</span>
+                    <i x-show="bookingLoading || uploadingPhoto" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Set min date attribute dynamically -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            // Set min date attribute for date input
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.setAttribute('min', today);
+            });
+        });
+    </script>
+
 </body>
-</html> 
+</html>
