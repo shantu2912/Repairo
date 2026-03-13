@@ -120,6 +120,10 @@
     loading:true,
     bookingLoading:false,
     fetchingLocation: false,
+    showCamera: false,
+    cameraStream: null,
+    videoRef: null,
+    canvasRef: null,
 
     customerName:'',
     phone:'',
@@ -131,218 +135,259 @@
 
     photoFile:null,
     photoPreview:null,
-    uploadingPhoto:false,
 
-          init() {
-              const params = new URLSearchParams(window.location.search);
-              let rawId = params.get('id');
-              if (!rawId) { window.location.href = 'index.html'; return; }
-              
-              let id = rawId.toLowerCase().trim();
-              
-              this.service = servicesDB[id] || servicesDB['default'];
-              if(!servicesDB[id]) this.service.name = rawId; 
+    init() {
+        const params = new URLSearchParams(window.location.search);
+        let rawId = params.get('id');
+        if (!rawId) { window.location.href = 'index.html'; return; }
+        
+        let id = rawId.toLowerCase().trim();
+        
+        this.service = servicesDB[id] || servicesDB['default'];
+        if(!servicesDB[id]) this.service.name = rawId; 
 
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              this.date = tomorrow.toISOString().split('T')[0];
-              
-              setTimeout(() => this.loading = false, 400);
-          },
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        this.date = tomorrow.toISOString().split('T')[0];
+        
+        setTimeout(() => this.loading = false, 400);
+        
+        // Set up video element reference
+        this.$watch('showCamera', (value) => {
+            if (value) {
+                this.startCamera();
+            } else {
+                this.stopCamera();
+            }
+        });
+    },
 
-          toggleSub(sub) {
-              const index = this.selectedSubs.findIndex(s => s.n === sub.n);
-              if (index > -1) {
-                  this.selectedSubs.splice(index, 1);
-              } else {
-                  this.selectedSubs.push(sub);
-              }
-          },
+    toggleSub(sub) {
+        const index = this.selectedSubs.findIndex(s => s.n === sub.n);
+        if (index > -1) {
+            this.selectedSubs.splice(index, 1);
+        } else {
+            this.selectedSubs.push(sub);
+        }
+    },
 
-          get total() {
-              return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
-          },
+    get total() {
+        return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
+    },
 
-          openAgreement() {
-              if (this.selectedSubs.length === 0) return;
-              this.showAgreement = true;
-          },
+    openAgreement() {
+        if (this.selectedSubs.length === 0) return;
+        this.showAgreement = true;
+    },
 
-          // Handle photo selection
-          handlePhotoSelect(event) {
-              const file = event.target.files[0];
-              if (file) {
-                  this.photoFile = file;
-                  // Create preview URL
-                  this.photoPreview = URL.createObjectURL(file);
-              }
-          },
+    // Handle photo selection from gallery
+    handlePhotoSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.photoFile = file;
+            this.photoPreview = URL.createObjectURL(file);
+        }
+    },
 
-          // Clear selected photo
-          clearPhoto() {
-              this.photoFile = null;
-              this.photoPreview = null;
-          },
+    // Start camera for live photo
+    async startCamera() {
+        try {
+            this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' }, 
+                audio: false 
+            });
+            
+            // Wait for DOM to update
+            setTimeout(() => {
+                const video = document.getElementById('liveCamera');
+                if (video && this.cameraStream) {
+                    video.srcObject = this.cameraStream;
+                    video.play();
+                }
+            }, 100);
+        } catch (err) {
+            alert('Unable to access camera. Please check permissions.');
+            console.error('Camera error:', err);
+            this.showCamera = false;
+        }
+    },
 
-          // --- FETCH GPS LOCATION FUNCTION ---
-          async fetchGPS() {
-              this.fetchingLocation = true;
-              
-              if (!navigator.geolocation) {
-                  alert('Geolocation is not supported by your browser.');
-                  this.fetchingLocation = false;
-                  return;
-              }
+    // Stop camera
+    stopCamera() {
+        if (this.cameraStream) {
+            this.cameraStream.getTracks().forEach(track => track.stop());
+            this.cameraStream = null;
+        }
+    },
 
-              navigator.geolocation.getCurrentPosition(
-                  async (position) => {
-                      this.lat = position.coords.latitude;
-                      this.lng = position.coords.longitude;
-                      
-                      try {
-                          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
-                          const data = await response.json();
-                          if(data && data.display_name) {
-                              let addressParts = data.display_name.split(',');
-                              this.address = addressParts.slice(0, 3).join(',').trim();
-                          } else {
-                              this.address = 'GPS Location Captured';
-                          }
-                      } catch (error) {
-                          this.address = 'GPS Location Captured';
-                      }
-                      
-                      this.fetchingLocation = false;
-                  },
-                  (error) => {
-                      alert('Unable to retrieve your location. Please check browser permissions.');
-                      this.fetchingLocation = false;
-                  },
-                  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-              );
-          },
+    // Capture photo from camera
+    capturePhoto() {
+        const video = document.getElementById('liveCamera');
+        const canvas = document.getElementById('photoCanvas');
+        
+        if (video && canvas) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to file
+            canvas.toBlob((blob) => {
+                const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                this.photoFile = file;
+                this.photoPreview = URL.createObjectURL(blob);
+                this.showCamera = false; // Close camera after capture
+            }, 'image/jpeg', 0.9);
+        }
+    },
 
-          // --- CONFIRM BOOKING FUNCTION ---
-          async confirmBooking() {
-              try {
-                  if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-                  if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-                  if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-                  if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-                  if (!this.date) { alert('Please select a date.'); return; }
+    // Clear selected photo
+    clearPhoto() {
+        if (this.photoPreview) {
+            URL.revokeObjectURL(this.photoPreview);
+        }
+        this.photoFile = null;
+        this.photoPreview = null;
+    },
 
-                  this.bookingLoading = true;
+    // --- FETCH GPS LOCATION FUNCTION ---
+    async fetchGPS() {
+        this.fetchingLocation = true;
+        
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            this.fetchingLocation = false;
+            return;
+        }
 
-                  if (!window.sb) {
-                      alert('System Offline');
-                      this.bookingLoading = false;
-                      return;
-                  }
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                this.lat = position.coords.latitude;
+                this.lng = position.coords.longitude;
+                
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
+                    const data = await response.json();
+                    if(data && data.display_name) {
+                        let addressParts = data.display_name.split(',');
+                        this.address = addressParts.slice(0, 3).join(',').trim();
+                    } else {
+                        this.address = 'GPS Location Captured';
+                    }
+                } catch (error) {
+                    this.address = 'GPS Location Captured';
+                }
+                
+                this.fetchingLocation = false;
+            },
+            (error) => {
+                alert('Unable to retrieve your location. Please check browser permissions.');
+                this.fetchingLocation = false;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    },
 
-                  const { data: { user } } = await window.sb.auth.getUser();
-                  if (!user) {
-                      alert('Please Log In to book!');
-                      sessionStorage.setItem('redirect_to', window.location.href);
-                      window.location.href = 'loginuser.html';
-                      return;
-                  }
+    // --- CONFIRM BOOKING FUNCTION (Modified - no photo upload) ---
+    async confirmBooking() {
+        try {
+            if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+            if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+            if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+            if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+            if (!this.date) { alert('Please select a date.'); return; }
 
-                  const firstService = this.selectedSubs[0];
+            this.bookingLoading = true;
 
-                  let uploadedImageURL = null;
+            if (!window.sb) {
+                alert('System Offline');
+                this.bookingLoading = false;
+                return;
+            }
 
-                  // Upload photo if selected
-                  if (this.photoFile) {
-                      this.uploadingPhoto = true;
-                      
-                      // Create a unique filename
-                      const fileExt = this.photoFile.name.split('.').pop();
-                      const fileName = `job-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-                      
-                      try {
-                          const { data, error } = await window.sb.storage
-                              .from('job-images')
-                              .upload(fileName, this.photoFile);
+            const { data: { user } } = await window.sb.auth.getUser();
+            if (!user) {
+                alert('Please Log In to book!');
+                sessionStorage.setItem('redirect_to', window.location.href);
+                window.location.href = 'loginuser.html';
+                return;
+            }
 
-                          if (error) {
-                              console.error('Upload error:', error);
-                              alert('Failed to upload image. You can continue without photo.');
-                          } else {
-                              const { data: publicURL } = window.sb.storage
-                                  .from('job-images')
-                                  .getPublicUrl(fileName);
-                              
-                              uploadedImageURL = publicURL.publicUrl;
-                          }
-                      } catch (uploadError) {
-                          console.error('Upload exception:', uploadError);
-                          alert('Image upload failed. Continuing without photo.');
-                      } finally {
-                          this.uploadingPhoto = false;
-                      }
-                  }
+            const firstService = this.selectedSubs[0];
 
-                  // 1. SAVE TO JOBS TABLE (INCLUDING LAT & LNG AND IMAGE URL)
-                  const jobPayload = {
-                      category: this.service?.name || 'General Service',
-                      device: firstService?.n || 'General Service',
-                      issue: firstService?.d || 'Service requested via app',
-                      customer_name: this.customerName,
-                      location: this.address,
-                      phone: this.phone,
-                      status: 'pending',
-                      urgent: false,
-                      latitude: this.lat || null,
-                      longitude: this.lng || null,
-                      image_url: uploadedImageURL // Add image URL to job
-                  };
+            // NOTE: Photo is NOT being uploaded to database
+            // We're just capturing it locally for reference
+            if (this.photoFile) {
+                console.log('Photo captured locally:', this.photoFile.name);
+                // You can display this photo to the user or use it locally
+                // but it won't be saved to the database
+            }
 
-                  const { data: insertedJob, error: jobError } = await window.sb
-                      .from('jobs')
-                      .insert([jobPayload])
-                      .select()
-                      .single();
+            // 1. SAVE TO JOBS TABLE (NO IMAGE URL)
+            const jobPayload = {
+                category: this.service?.name || 'General Service',
+                device: firstService?.n || 'General Service',
+                issue: firstService?.d || 'Service requested via app',
+                customer_name: this.customerName,
+                location: this.address,
+                phone: this.phone,
+                status: 'pending',
+                urgent: false,
+                latitude: this.lat || null,
+                longitude: this.lng || null
+                // NO image_url field
+            };
 
-                  if (jobError) {
-                      alert('Job Error: ' + jobError.message);
-                      this.bookingLoading = false;
-                      return;
-                  }
+            const { data: insertedJob, error: jobError } = await window.sb
+                .from('jobs')
+                .insert([jobPayload])
+                .select()
+                .single();
 
-                  // 2. SAVE TO BOOKINGS TABLE
-                  const bookingPayload = {
-                      user_id: user.id,
-                      service_name: this.service?.name || 'General Service',
-                      variant_name: firstService?.n || 'Service',
-                      price: this.total,
-                      date: this.date,
-                      address: this.address,
-                      phone: this.phone
-                  };
+            if (jobError) {
+                alert('Job Error: ' + jobError.message);
+                this.bookingLoading = false;
+                return;
+            }
 
-                  const { error: bookingError } = await window.sb
-                      .from('bookings')
-                      .insert([bookingPayload]);
+            // 2. SAVE TO BOOKINGS TABLE
+            const bookingPayload = {
+                user_id: user.id,
+                service_name: this.service?.name || 'General Service',
+                variant_name: firstService?.n || 'Service',
+                price: this.total,
+                date: this.date,
+                address: this.address,
+                phone: this.phone
+            };
 
-                  if (bookingError) {
-                      alert('Booking Error: ' + bookingError.message);
-                      this.bookingLoading = false;
-                      return;
-                  }
+            const { error: bookingError } = await window.sb
+                .from('bookings')
+                .insert([bookingPayload]);
 
-                  this.bookingLoading = false;
-                  this.showAgreement = false;
-                  
-                  // Redirect to Success Map
-                  window.location.href = 'success.html?job_id=' + insertedJob.id;
+            if (bookingError) {
+                alert('Booking Error: ' + bookingError.message);
+                this.bookingLoading = false;
+                return;
+            }
 
-              } catch (err) {
-                  console.error(err);
-                  alert('Unexpected Error: ' + err.message);
-                  this.bookingLoading = false;
-              }
-          }
-      }">
+            this.bookingLoading = false;
+            this.showAgreement = false;
+            
+            // Clean up camera if still running
+            this.stopCamera();
+            
+            // Redirect to Success Map
+            window.location.href = 'success.html?job_id=' + insertedJob.id;
+
+        } catch (err) {
+            console.error(err);
+            alert('Unexpected Error: ' + err.message);
+            this.bookingLoading = false;
+        }
+    }
+}">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
@@ -426,6 +471,49 @@
         </button>
     </div>
 
+    <!-- Camera Modal -->
+    <div x-show="showCamera" 
+         class="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-0"
+         x-transition.opacity style="display: none;">
+        
+        <div class="relative w-full h-full flex flex-col">
+            <!-- Camera View -->
+            <video id="liveCamera" class="w-full h-full object-cover"></video>
+            
+            <!-- Hidden Canvas for capturing photo -->
+            <canvas id="photoCanvas" class="hidden"></canvas>
+            
+            <!-- Camera Controls -->
+            <div class="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-6">
+                <!-- Close Camera -->
+                <button @click="showCamera = false; stopCamera()" 
+                        class="w-14 h-14 rounded-full bg-red-500/80 text-white flex items-center justify-center text-2xl hover:bg-red-600 transition-colors shadow-lg">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                
+                <!-- Capture Photo -->
+                <button @click="capturePhoto()" 
+                        class="w-20 h-20 rounded-full bg-white border-4 border-brand-gold flex items-center justify-center hover:scale-110 transition-transform shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-brand-gold"></div>
+                </button>
+                
+                <!-- Gallery Option (opens file picker) -->
+                <button @click="document.getElementById('cameraGalleryInput').click(); showCamera = false;" 
+                        class="w-14 h-14 rounded-full bg-white/80 text-brand-olive flex items-center justify-center text-xl hover:bg-white transition-colors shadow-lg">
+                    <i class="fa-solid fa-images"></i>
+                </button>
+            </div>
+            
+            <!-- Hidden file input for camera gallery -->
+            <input type="file" 
+                   id="cameraGalleryInput"
+                   accept="image/*" 
+                   @change="handlePhotoSelect"
+                   class="hidden">
+        </div>
+    </div>
+
+    <!-- Booking Confirmation Modal -->
     <div x-show="showAgreement" 
          class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
          x-transition.opacity style="display: none;">
@@ -472,30 +560,40 @@
                     <input type="date" x-model="date" min="" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
 
-                <!-- Photo Upload Section - Camera/Photo Option -->
+                <!-- Photo Upload Section - Live Camera & Gallery Options -->
                 <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-3">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-camera text-brand-gold text-lg"></i>
-                        <span class="text-sm font-semibold text-brand-dark">Upload Issue Photo</span>
+                        <span class="text-sm font-semibold text-brand-dark">Add Photo (Optional)</span>
                     </div>
                     
-                    <!-- Camera/Photo Input -->
+                    <!-- Photo Options -->
                     <div class="flex flex-col gap-3">
-                        <!-- Hidden file input -->
-                        <input type="file" 
-                               accept="image/*" 
-                               capture="environment"
-                               @change="handlePhotoSelect"
-                               class="hidden"
-                               id="cameraInput">
+                        <!-- Two options: Live Camera or Gallery -->
+                        <div class="flex gap-2">
+                            <!-- Live Camera Button -->
+                            <button type="button" 
+                                    @click="showCamera = true; showAgreement = false;"
+                                    class="flex-1 py-3 rounded-xl bg-brand-gold/10 border-2 border-brand-gold/30 text-brand-gold text-sm font-bold hover:bg-brand-gold/20 transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-video"></i>
+                                <span>Live Camera</span>
+                            </button>
+                            
+                            <!-- Gallery Upload Button -->
+                            <button type="button" 
+                                    @click="document.getElementById('galleryInput').click()"
+                                    class="flex-1 py-3 rounded-xl bg-gray-100 border-2 border-gray-200 text-brand-dark text-sm font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-images"></i>
+                                <span>Gallery</span>
+                            </button>
+                        </div>
                         
-                        <!-- Camera button -->
-                        <button type="button" 
-                                @click="document.getElementById('cameraInput').click()"
-                                class="w-full py-3 rounded-xl border-2 border-brand-gold/30 bg-white text-brand-gold text-sm font-bold hover:bg-brand-gold/5 transition-colors flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-camera"></i>
-                            <span>📸 Take Photo or Upload</span>
-                        </button>
+                        <!-- Hidden file input for gallery -->
+                        <input type="file" 
+                               id="galleryInput"
+                               accept="image/*" 
+                               @change="handlePhotoSelect"
+                               class="hidden">
                         
                         <!-- Photo Preview -->
                         <div x-show="photoPreview" class="relative mt-2 rounded-lg overflow-hidden border border-gray-200">
@@ -507,7 +605,7 @@
                         </div>
                         
                         <p class="text-[10px] text-gray-400 text-center">
-                            Tap the button to take a photo or upload from gallery
+                            Take a live photo or upload from gallery (not saved to database)
                         </p>
                     </div>
                 </div>
@@ -538,11 +636,10 @@
             <div class="flex gap-3">
                 <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
                 <button @click="confirmBooking()" 
-                        :disabled="!agreed || bookingLoading || uploadingPhoto"
+                        :disabled="!agreed || bookingLoading"
                         class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                    <span x-show="!bookingLoading && !uploadingPhoto">Confirm Booking</span>
-                    <span x-show="uploadingPhoto">Uploading...</span>
-                    <i x-show="bookingLoading || uploadingPhoto" class="fa-solid fa-circle-notch fa-spin"></i>
+                    <span x-show="!bookingLoading">Confirm Booking</span>
+                    <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
         </div>
