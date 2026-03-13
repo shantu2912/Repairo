@@ -411,16 +411,16 @@
                 return;
             }
 
-            // Create comma-separated list of ALL selected services
+            // STEP 1: Create comma-separated list of ALL selected services
             const selectedServicesList = this.selectedSubs.map(sub => sub.n).join(', ');
             
-            // Create combined description of all services
+            // STEP 2: Create combined description of all services
             const allDescriptions = this.selectedSubs.map(sub => sub.d).join('; ');
             
-            // Combine date and time for database storage
+            // STEP 3: Combine date and time for database storage
             const scheduledDateTime = `${this.date}T${this.time}:00`;
 
-            // Save to JOBS table with ALL services in the 'device' field
+            // STEP 4: Save to JOBS table with ALL services in the 'device' field
             const jobPayload = {
                 category: this.service?.name || 'General Service',
                 device: selectedServicesList,
@@ -435,6 +435,8 @@
                 scheduled_time: scheduledDateTime
             };
 
+            console.log('Saving to jobs table:', jobPayload);
+
             const { data: insertedJob, error: jobError } = await window.sb
                 .from('jobs')
                 .insert([jobPayload])
@@ -447,7 +449,7 @@
                 return;
             }
 
-            // Save to BOOKINGS table with ALL services in the 'variant_name' field
+            // STEP 5: Save to BOOKINGS table with ALL services in the 'variant_name' field
             const bookingPayload = {
                 user_id: user.id,
                 service_name: this.service?.name || 'General Service',
@@ -458,6 +460,8 @@
                 address: this.address,
                 phone: this.phone
             };
+
+            console.log('Saving to bookings table:', bookingPayload);
 
             const { error: bookingError } = await window.sb
                 .from('bookings')
