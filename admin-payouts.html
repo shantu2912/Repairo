@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FixZen Admin | Partner Payouts</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family:'Plus Jakarta Sans',sans-serif;
+background:#EEEAE2;
+color:#4D4C4B;
+}
+
+.card{
+background:white;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,0.05);
+}
+</style>
+
+</head>
+
+
+<body class="p-6">
+
+<!-- HEADER -->
+
+<div class="max-w-7xl mx-auto mb-10 flex justify-between items-center">
+
+<div>
+
+<h1 class="text-3xl font-extrabold text-[#5D5646]">
+FixZen <span class="text-[#A07D54]">Partner Payouts</span>
+</h1>
+
+<p class="text-sm opacity-60">
+Manage technician payments and earnings
+</p>
+
+</div>
+
+<div class="flex gap-3">
+
+<button onclick="location.href='admin.html'"
+class="bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold">
+← Back
+</button>
+
+<button onclick="loadPayouts()"
+class="bg-[#5D5646] text-white px-5 py-2 rounded-lg font-bold text-sm">
+Refresh
+</button>
+
+</div>
+
+</div>
+
+
+<!-- STATS -->
+
+<div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-6 mb-10">
+
+<div class="card p-6">
+<p class="text-xs uppercase font-bold opacity-50">Unpaid Amount</p>
+<h2 id="unpaidTotal" class="text-3xl font-extrabold text-red-600">₹0</h2>
+</div>
+
+<div class="card p-6">
+<p class="text-xs uppercase font-bold opacity-50">Paid This Month</p>
+<h2 id="settledTotal" class="text-3xl font-extrabold text-green-600">₹0</h2>
+</div>
+
+<div class="card p-6">
+<p class="text-xs uppercase font-bold opacity-50">Pending Payments</p>
+<h2 id="pendingJobs" class="text-3xl font-extrabold text-[#A07D54]">0</h2>
+</div>
+
+</div>
+
+
+<!-- FILTER -->
+
+<div class="max-w-7xl mx-auto mb-6 flex gap-4">
+
+<button onclick="filterJobs('all')"
+class="px-4 py-2 rounded-full bg-[#5D5646] text-white text-sm">
+All
+</button>
+
+<button onclick="filterJobs('unpaid')"
+class="px-4 py-2 rounded-full bg-red-100 text-red-600 text-sm">
+Unpaid
+</button>
+
+<button onclick="filterJobs('paid')"
+class="px-4 py-2 rounded-full bg-green-100 text-green-600 text-sm">
+Paid
+</button>
+
+</div>
+
+
+<!-- TABLE -->
+
+<div class="max-w-7xl mx-auto card overflow-hidden">
+
+<table class="w-full text-left">
+
+<thead class="bg-gray-50 text-xs uppercase">
+
+<tr>
+
+<th class="p-5">Technician</th>
+<th class="p-5">Job</th>
+<th class="p-5">Amount</th>
+<th class="p-5 text-center">Status</th>
+<th class="p-5 text-right">Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="payoutList"></tbody>
+
+</table>
+
+</div>
+
+
+<script>
+
+const sb = supabase.createClient(
+"https://kzxdxnxgouthsywbsnvl.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+)
+
+let allJobs = []
+
+
+async function loadPayouts(){
+const { data, error } = await sb
+.from("jobs")
+.select(`
+  id,
+  technician_fee,
+  category,
+  status,
+  payout_status,
+  technicians!jobs_tech_fk(name, phone)
+`)
+.eq("status","completed")
+.order("created_at",{ascending:false});
+
+if(error){
+alert(error.message)
+return
+}
+
+allJobs = data
+
+renderJobs(data)
+calculateStats(data)
+
+}
+
+
+function renderJobs(jobs){
+
+const list = document.getElementById("payoutList")
+
+list.innerHTML=""
+
+jobs.forEach(j=>{
+
+const paid = j.payout_status === "paid"
+const fee = j.technician_fee || 0
+
+list.innerHTML += `
+
+<tr class="border-t hover:bg-gray-50">
+
+<td class="p-5">
+
+<div class="font-semibold">
+${j.technicians?.name || "Unknown"}
+</div>
+
+<div class="text-xs text-gray-400">
+${j.technicians?.phone || ""}
+</div>
+
+</td>
+
+<td class="p-5">
+
+<div class="text-sm">${j.category}</div>
+
+<div class="text-xs opacity-50">
+ID: ${j.id.substring(0,8)}
+</div>
+
+</td>
+
+<td class="p-5 font-bold text-[#5D5646]">
+₹${fee}
+</td>
+
+<td class="p-5 text-center">
+
+<span class="px-3 py-1 text-xs rounded-full
+${paid ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}">
+
+${paid ? "PAID" : "UNPAID"}
+
+</span>
+
+</td>
+
+<td class="p-5 text-right">
+
+${
+!paid ?
+`<button onclick="markPaid('${j.id}')"
+class="bg-[#A07D54] text-white text-xs px-4 py-2 rounded-lg">
+Mark Paid
+</button>`
+:
+`<span class="text-green-500 font-bold">✓ Done</span>`
+}
+
+</td>
+
+</tr>
+`
+})
+
+}
+
+
+
+function calculateStats(jobs){
+
+let unpaid = 0
+let settled = 0
+
+jobs.forEach(j=>{
+
+const fee = j.technician_fee || 0
+
+if(j.payout_status === "paid") settled += fee
+else unpaid += fee
+
+})
+
+document.getElementById("unpaidTotal").innerText = `₹${unpaid}`
+document.getElementById("settledTotal").innerText = `₹${settled}`
+document.getElementById("pendingJobs").innerText =
+jobs.filter(j=>j.payout_status !== "paid").length
+
+}
+
+
+
+function filterJobs(type){
+
+if(type === "all") renderJobs(allJobs)
+
+if(type === "paid")
+renderJobs(allJobs.filter(j=>j.payout_status==="paid"))
+
+if(type === "unpaid")
+renderJobs(allJobs.filter(j=>j.payout_status!=="paid"))
+
+}
+
+
+
+async function markPaid(jobId){
+
+if(!confirm("Confirm payout sent to technician?")) return
+
+const {error} = await sb
+.from("jobs")
+.update({payout_status:"paid"})
+.eq("id",jobId)
+
+if(error){
+alert(error.message)
+}else{
+loadPayouts()
+}
+
+}
+
+
+loadPayouts()
+
+</script>
+
+</body>
+</html>
