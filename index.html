@@ -63,8 +63,6 @@
                 }
             }
         }
-
-        
     </script>
 </head>
 
@@ -459,87 +457,5 @@
 
     </div>
 
-    <script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('fixzenApp', () => ({
-        user: null,
-        pendingJobId: null,
-
-        async init() {
-            // 1. Initialize Supabase Session
-            const { data: { user } } = await window.sb.auth.getUser();
-            this.user = user;
-
-            if (this.user) {
-                // RUN FUNCTION 1: Check for missed reviews from the past
-                await this.checkUnratedServices();
-
-                // RUN FUNCTION 2: Listen for live updates while the app is open
-                this.setupRealtimeFeedbackListener();
-            }
-        },
-
-        /**
-         * FUNCTION 1: Passive Cleanup
-         * Purpose: Checks if there are any completed jobs that were never rated.
-         * Runs: Once on page load.
-         */
-        async checkUnratedServices() {
-            try {
-                const { data, error } = await window.sb
-                    .from('jobs')
-                    .select('id')
-                    .eq('user_id', this.user.id)
-                    .eq('status', 'completed')
-                    .eq('feedback_provided', false) // Ensure your DB has this column
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-
-                if (data && data.length > 0) {
-                    console.log("Found unrated service from previous session.");
-                    // Redirect to feedback page
-                    window.location.href = `feedback.html?job_id=${data[0].id}`;
-                }
-            } catch (err) {
-                console.error("Cleanup Check Error:", err);
-            }
-        },
-
-        /**
-         * FUNCTION 2: Real-Time Listener
-         * Purpose: Automatically triggers feedback the moment a technician finishes.
-         * Runs: Continuously in the background while app is open.
-         */
-        setupRealtimeFeedbackListener() {
-            window.sb
-                .channel('live-feedback-trigger')
-                .on('postgres_changes', { 
-                    event: 'UPDATE', 
-                    schema: 'public', 
-                    table: 'jobs',
-                    filter: `user_id=eq.${this.user.id}` 
-                }, (payload) => {
-                    const oldStatus = payload.old.status;
-                    const newStatus = payload.new.status;
-                    const wasRated = payload.new.feedback_provided;
-
-                    // Trigger ONLY if status moves to 'completed' and hasn't been rated
-                    if (newStatus === 'completed' && oldStatus !== 'completed' && !wasRated) {
-                        console.log("Technician marked job as completed!");
-                        
-                        // Haptic feedback for mobile devices
-                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-                        // Redirect after a brief pause for the 'Success' feeling
-                        setTimeout(() => {
-                            window.location.href = `feedback.html?job_id=${payload.new.id}`;
-                        }, 1200);
-                    }
-                })
-                .subscribe();
-        }
-    }));
-});
-</script>
 </body>
 </html>
