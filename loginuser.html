@@ -73,74 +73,71 @@ x-data="{
   loading: false,
   message: '',
   showPassword: false,
-  form: { name:'', phone:'', user:'', pass:'', otp:'' },
+  form: { name:'', phone:'', user:'', pass:'' },
 
   normalizePhone() {
     return '+91' + this.form.phone.trim();
   },
+async handleAction() {
 
+this.message='';
 
-    async getLatLngFromAddress(address) {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+if (!this.form.phone || this.form.phone.length !== 10) {
+this.message='ENTER VALID PHONE NUMBER';
+return;
+}
 
-    const response = await fetch(url);
-    const data = await response.json();
+if (this.isNewUser && !this.form.pass) {
+this.message='ENTER PASSWORD';
+return;
+}
 
-    if (!data || data.length === 0) {
-      throw new Error('ADDRESS NOT FOUND');
-    }
+this.loading=true;
 
-    return {
-      lat: data[0].lat,
-      lon: data[0].lon
-    };
-  },
+try {
 
+const phone = '+91'+this.form.phone;
 
-  async handleAction() {
-    this.message = '';
-    if (!this.form.phone || this.form.phone.length !== 10) {
-      this.message = 'ENTER VALID PHONE NUMBER';
-      return;
-    }
+if(this.isNewUser){
 
-    this.loading = true;
-    try {
-      const phone = this.normalizePhone();
+const {data,error} = await supabase.auth.signUp({
+phone:phone,
+password:this.form.pass
+});
 
-      const { data: existingUser, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', phone)
-        .maybeSingle();
+if(error) throw error;
 
-      if (error) throw error;
+await supabase.from('profiles').insert({
+id:data.user.id,
+full_name:this.form.name,
+phone:phone
+});
 
-      if (this.isNewUser) {
-        if (existingUser) {
-          this.message = 'ACCOUNT ALREADY EXISTS';
-          this.loading = false;
-          return;
-        }
+window.location.href='index.html';
 
-        const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
-        if (otpError) throw otpError;
+}
+else{
 
-        this.step = 'otp';
-      } else {
-        if (!existingUser) {
-          this.message = 'NO ACCOUNT FOUND';
-          this.loading = false;
-          return;
-        }
-        this.showPassword = true;
-      }
-    } catch (err) {
-      this.message = err.message.toUpperCase();
-    } finally {
-      this.loading = false;
-    }
-  },
+const {error} = await supabase.auth.signInWithPassword({
+phone:phone,
+password:this.form.pass
+});
+
+if(error) throw error;
+
+window.location.href='index.html';
+
+}
+
+}
+catch(err){
+this.message = err.message.toUpperCase();
+}
+finally{
+this.loading=false;
+}
+
+},
 
   async loginWithPassword() {
     if (!this.form.pass || this.form.pass.length < 6) {
@@ -200,6 +197,13 @@ x-data="{
 
       await supabase.auth.updateUser({ password: this.form.pass });
 
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: user.id,
+        full_name: this.form.name,
+        username: this.form.user,
+        phone
+      });
+
       if (profileError) {
         this.message = 'ACCOUNT ALREADY EXISTS';
         return;
@@ -246,10 +250,7 @@ x-data="{
                             <label class="input-label">Full Name</label>
                             <input type="text" x-model="form.name" class="fixzen-input" placeholder="Rahul Sharma">
                         </div>
-                        <div>
-                            <label class="input-label">Username</label>
-                            <input type="text" x-model="form.user" class="fixzen-input" placeholder="username">
-                        </div>
+                        
                         <div>
                             <label class="input-label">Password</label>
                             <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
@@ -257,7 +258,11 @@ x-data="{
                     </div>
                 </template>
 
-
+                <!-- Login password field -->
+                <div x-show="showPassword && !isNewUser">
+                    <label class="input-label">Password</label>
+                    <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
+                </div>
 
                 <div>
                     <label class="input-label">Mobile Number</label>
@@ -267,15 +272,8 @@ x-data="{
                     </div>
                 </div>
 
-                
-                <!-- Login password field -->
-                <div x-show="showPassword && !isNewUser">
-                    <label class="input-label">Password</label>
-                    <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
-                </div>
-
                 <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg" :disabled="loading">
-                    <span x-show="!loading" x-text="isNewUser ? 'Send Verification' : 'Check Account'"></span>
+                    <span x-show="!loading" x-text="isNewUser ? 'Create Account' : 'Check Account'"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
 
@@ -294,28 +292,6 @@ x-data="{
             </div>
         </div>
 
-        <!-- OTP Verification -->
-        <div x-show="step==='otp'" x-cloak class="text-center">
-            <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
-                <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
-            </div>
-            <h2 class="font-serif italic text-2xl text-brand-olive mb-2">Verify Mobile</h2>
-            <p class="text-[10px] font-bold text-brand-dark/40 uppercase tracking-widest mb-8">
-                Code sent to +91 <span x-text="form.phone"></span>
-            </p>
-
-            <div class="space-y-6">
-                <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" placeholder="000000">
-                <button @click="verifyOtp()" class="btn-primary bg-brand-gold" :disabled="loading">
-                    <span x-show="!loading">Verify & Join</span>
-                    <div x-show="loading" class="loader"></div>
-                </button>
-                <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center uppercase tracking-widest mt-2"></p>
-                <button @click="step='auth'; message=''" class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest hover:text-brand-gold">
-                    Change Details
-                </button>
-            </div>
-        </div>
 
     </div>
 </div>
@@ -331,6 +307,4 @@ x-data="{
 </script>
 
 </body>
-
 </html>
-
