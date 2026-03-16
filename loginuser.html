@@ -73,71 +73,56 @@ x-data="{
   loading: false,
   message: '',
   showPassword: false,
-  form: { name:'', phone:'', user:'', pass:'' },
+  form: { name:'', phone:'', user:'', pass:'', otp:'' },
 
   normalizePhone() {
     return '+91' + this.form.phone.trim();
   },
-async handleAction() {
 
-this.message='';
+  async handleAction() {
+    this.message = '';
+    if (!this.form.phone || this.form.phone.length !== 10) {
+      this.message = 'ENTER VALID PHONE NUMBER';
+      return;
+    }
 
-if (!this.form.phone || this.form.phone.length !== 10) {
-this.message='ENTER VALID PHONE NUMBER';
-return;
-}
+    this.loading = true;
+    try {
+      const phone = this.normalizePhone();
 
-if (this.isNewUser && !this.form.pass) {
-this.message='ENTER PASSWORD';
-return;
-}
+      const { data: existingUser, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
 
-this.loading=true;
+      if (error) throw error;
 
-try {
+      if (this.isNewUser) {
+        if (existingUser) {
+          this.message = 'ACCOUNT ALREADY EXISTS';
+          this.loading = false;
+          return;
+        }
 
-const phone = '+91'+this.form.phone;
+        const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
+        if (otpError) throw otpError;
 
-if(this.isNewUser){
-
-const {data,error} = await supabase.auth.signUp({
-phone:phone,
-password:this.form.pass
-});
-
-if(error) throw error;
-
-await supabase.from('profiles').insert({
-id:data.user.id,
-full_name:this.form.name,
-phone:phone
-});
-
-window.location.href='index.html';
-
-}
-else{
-
-const {error} = await supabase.auth.signInWithPassword({
-phone:phone,
-password:this.form.pass
-});
-
-if(error) throw error;
-
-window.location.href='index.html';
-
-}
-
-}
-catch(err){
-this.message = err.message.toUpperCase();
-}
-finally{
-this.loading=false;
-}
-
-},
+        this.step = 'otp';
+      } else {
+        if (!existingUser) {
+          this.message = 'NO ACCOUNT FOUND';
+          this.loading = false;
+          return;
+        }
+        this.showPassword = true;
+      }
+    } catch (err) {
+      this.message = err.message.toUpperCase();
+    } finally {
+      this.loading = false;
+    }
+  },
 
   async loginWithPassword() {
     if (!this.form.pass || this.form.pass.length < 6) {
@@ -250,7 +235,10 @@ this.loading=false;
                             <label class="input-label">Full Name</label>
                             <input type="text" x-model="form.name" class="fixzen-input" placeholder="Rahul Sharma">
                         </div>
-                        
+                        <div>
+                            <label class="input-label">Username</label>
+                            <input type="text" x-model="form.user" class="fixzen-input" placeholder="username">
+                        </div>
                         <div>
                             <label class="input-label">Password</label>
                             <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
@@ -273,7 +261,7 @@ this.loading=false;
                 </div>
 
                 <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg" :disabled="loading">
-                    <span x-show="!loading" x-text="isNewUser ? 'Create Account' : 'Check Account'"></span>
+                    <span x-show="!loading" x-text="isNewUser ? 'Send Verification' : 'Check Account'"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
 
@@ -292,6 +280,28 @@ this.loading=false;
             </div>
         </div>
 
+        <!-- OTP Verification -->
+        <div x-show="step==='otp'" x-cloak class="text-center">
+            <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
+                <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
+            </div>
+            <h2 class="font-serif italic text-2xl text-brand-olive mb-2">Verify Mobile</h2>
+            <p class="text-[10px] font-bold text-brand-dark/40 uppercase tracking-widest mb-8">
+                Code sent to +91 <span x-text="form.phone"></span>
+            </p>
+
+            <div class="space-y-6">
+                <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" placeholder="000000">
+                <button @click="verifyOtp()" class="btn-primary bg-brand-gold" :disabled="loading">
+                    <span x-show="!loading">Verify & Join</span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
+                <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center uppercase tracking-widest mt-2"></p>
+                <button @click="step='auth'; message=''" class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest hover:text-brand-gold">
+                    Change Details
+                </button>
+            </div>
+        </div>
 
     </div>
 </div>
