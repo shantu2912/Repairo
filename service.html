@@ -395,7 +395,9 @@
                 urgent: false,
                 latitude: this.lat || null,
                 longitude: this.lng || null,
-                scheduled_time: scheduledDateTime // Add scheduled time to jobs table
+                scheduled_time: scheduledDateTime,
+                original_price: this.total,
+                discounted_price: this.total
             };
 
             const { data: insertedJob, error: jobError } = await window.sb
