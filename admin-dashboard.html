@@ -175,7 +175,7 @@ const COMMISSION = 0.157; // 15.7% platform commission
 
 function getServicePrice(job) {
   // Use actual service price stored from service.html
-  return Number(job.discounted_price || job.original_price || job.price || 0);
+  return Number(job.discounted_price || job.original_price || 0);
 }
 
 function getPlatformProfit(job) {
@@ -193,7 +193,7 @@ async function loadDashboard() {
   try {
     const { data: jobs, error } = await sb
       .from("jobs")
-      .select("id, status, category, original_price, discounted_price, price, technician_fee, created_at, completed_at, tech_id");
+      .select("id, status, category, original_price, discounted_price, technician_fee, created_at, completed_at, tech_id");
 
     const { data: techs } = await sb
       .from("technicians")
