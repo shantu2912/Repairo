@@ -140,6 +140,14 @@ class="font-sans antialiased pb-36"
       <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
       <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
       <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
+
+      <!-- Per-job earning (shown when a price is available) -->
+      <p class="text-xs font-bold text-green-700 mt-1"
+         x-show="(job.final_price || job.discounted_price || job.original_price)">
+        Your earning: ₹<span x-text="techEarning(job)"></span>
+        <span class="text-[9px] font-normal text-gray-400">(after 15.7% platform fee)</span>
+      </p>
+
       <p class="text-xs text-gray-500 mt-1">
         Started: <span x-text="formatTime(job.started_at)"></span>
       </p>
@@ -390,7 +398,8 @@ async setupNotifications() {
   );
 
   this.stats.earnings = completedJobs.reduce((total, job) => {
-    return total + (job.technician_fee || 0);
+    const price = job.final_price || job.discounted_price || job.original_price || 0;
+    return total + Math.round(price * 0.843);
   }, 0);
   const today = new Date().toISOString().split('T')[0];
 
@@ -400,7 +409,10 @@ this.stats.todayEarnings = data
     j.tech_id === this.tech.id &&
     j.completed_at?.startsWith(today)
   )
-  .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
+  .reduce((sum, j) => {
+    const price = j.final_price || j.discounted_price || j.original_price || 0;
+    return sum + Math.round(price * 0.843);
+  }, 0);
 
 }
 
@@ -439,7 +451,8 @@ subscribeRealtime() {
         );
 
         this.stats.earnings = completedJobs.reduce((total, job) => {
-          return total + (job.technician_fee || 0);
+          const price = job.final_price || job.discounted_price || job.original_price || 0;
+          return total + Math.round(price * 0.843);
         }, 0);
 
       }
@@ -515,26 +528,27 @@ window.location.href = "job_detail.html";
   /* ✅ COMPLETE JOB */
 async completeJob(job) {
   const completedAt = new Date().toISOString();
-  const fee = this.calculateFee(job); // Uses your predefined fee logic
+  const price = job.final_price || job.discounted_price || job.original_price || 0;
+  const techFee = Math.round(price * 0.843);
 
   const { error } = await window.sb
     .from("jobs")
     .update({
       status: "completed",
       completed_at: completedAt,
-      technician_fee: fee
+      technician_fee: techFee
     })
     .eq("id", job.id)
-    .eq("tech_id", this.tech.id); // Security: ensures only the assigned tech can complete it
+    .eq("tech_id", this.tech.id);
 
   if (error) {
     console.error(error);
     alert("Failed to complete job: " + error.message);
     return;
   }
-  
+
   alert("Job marked as completed!");
-  this.fetchJobs(); // Refresh the list
+  this.fetchJobs();
 },
 async markArrived(job){
   try {
@@ -568,6 +582,12 @@ async markArrived(job){
 },
 
 
+/* ₹ Technician net earning after 15.7% platform fee */
+techEarning(job) {
+  const price = job.final_price || job.discounted_price || job.original_price || 0;
+  return Math.round(price * 0.843);
+},
+
 formatTime(dt){
   if(!dt) return "-";
 
@@ -582,21 +602,6 @@ formatTime(dt){
   const days = Math.floor(hours / 24);
   return days + " days ago";
 },
-
-  calculateFee(job){
-    const BASE = {
-      "Carpenter": 800,
-      "Plumber": 600,
-      "Electrician": 600,
-      "Painter": 600,
-      "Mason": 600,
-      "Welder": 600,
-      "Roofer": 600,
-      "AC Tech": 600
-
-    };
-    return BASE[job.category] ?? 400;
-  },
 
 async acceptIncoming() {
   const job = this.incomingJob;
