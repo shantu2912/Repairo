@@ -63,19 +63,42 @@ button:active {
 
   <div class="bg-white p-4 sm:p-6 rounded-2xl shadow">
     <p class="text-[10px] sm:text-xs text-gray-500 font-bold">TOTAL REVENUE</p>
-    <h2 id="totalRevenue" class="text-2xl sm:text-3xl font-black mt-2 text-green-700">₹0</h2>
+    <p class="text-[9px] text-gray-400">Customer paid</p>
+    <h2 id="totalRevenue" class="text-2xl sm:text-3xl font-black mt-1 text-green-700">₹0</h2>
   </div>
 
   <div class="bg-white p-4 sm:p-6 rounded-2xl shadow">
-    <p class="text-[10px] sm:text-xs text-gray-500 font-bold">ACTIVE TECHNICIANS</p>
-    <h2 id="activeTechs" class="text-2xl sm:text-3xl font-black mt-2 text-blue-600">0</h2>
+    <p class="text-[10px] sm:text-xs text-gray-500 font-bold">PLATFORM PROFIT</p>
+    <p class="text-[9px] text-gray-400">15.7% commission</p>
+    <h2 id="platformProfit" class="text-2xl sm:text-3xl font-black mt-1 text-amber-600">₹0</h2>
   </div>
 
   <div class="bg-white p-4 sm:p-6 rounded-2xl shadow">
-    <p class="text-[10px] sm:text-xs text-gray-500 font-bold">JOBS TODAY</p>
-    <h2 id="jobsToday" class="text-2xl sm:text-3xl font-black mt-2 text-purple-600">0</h2>
+    <p class="text-[10px] sm:text-xs text-gray-500 font-bold">TECH PAYOUTS</p>
+    <p class="text-[9px] text-gray-400">84.3% to technicians</p>
+    <h2 id="techPayouts" class="text-2xl sm:text-3xl font-black mt-1 text-blue-600">₹0</h2>
   </div>
 
+</div>
+
+<!-- SECONDARY ROW -->
+<div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 px-4 mt-4">
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <p class="text-[10px] text-gray-500 font-bold">ACTIVE TECHNICIANS</p>
+    <h2 id="activeTechs" class="text-2xl font-black mt-2 text-blue-600">0</h2>
+  </div>
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <p class="text-[10px] text-gray-500 font-bold">JOBS TODAY</p>
+    <h2 id="jobsToday" class="text-2xl font-black mt-2 text-purple-600">0</h2>
+  </div>
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <p class="text-[10px] text-gray-500 font-bold">REVENUE TODAY</p>
+    <h2 id="revenueToday" class="text-2xl font-black mt-2 text-green-600">₹0</h2>
+  </div>
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <p class="text-[10px] text-gray-500 font-bold">AVG JOB VALUE</p>
+    <h2 id="avgJobValue" class="text-2xl font-black mt-2 text-gray-700">₹0</h2>
+  </div>
 </div>
 
 <!-- CHARTS -->
@@ -125,7 +148,9 @@ button:active {
         <tr>
           <th class="p-2 sm:p-4 text-left">SERVICE</th>
           <th class="p-2 sm:p-4 text-center">STATUS</th>
-          <th class="p-2 sm:p-4 text-center">FEE</th>
+          <th class="p-2 sm:p-4 text-center">PRICE</th>
+          <th class="p-2 sm:p-4 text-center">TECH GETS</th>
+          <th class="p-2 sm:p-4 text-center">PROFIT</th>
           <th class="p-2 sm:p-4 text-center">DATE</th>
         </tr>
       </thead>
@@ -146,6 +171,21 @@ let revenueChart = null;
 let categoryChart = null;
 let isLoading = false;
 
+const COMMISSION = 0.157; // 15.7% platform commission
+
+function getServicePrice(job) {
+  // Use actual service price stored from service.html
+  return Number(job.discounted_price || job.original_price || job.price || 0);
+}
+
+function getPlatformProfit(job) {
+  return Math.round(getServicePrice(job) * COMMISSION);
+}
+
+function getTechPayout(job) {
+  return Math.round(getServicePrice(job) * (1 - COMMISSION));
+}
+
 async function loadDashboard() {
   if (isLoading) return;
   isLoading = true;
@@ -153,7 +193,7 @@ async function loadDashboard() {
   try {
     const { data: jobs, error } = await sb
       .from("jobs")
-      .select("id, status, category, technician_fee, created_at, tech_id");
+      .select("id, status, category, original_price, discounted_price, price, technician_fee, created_at, completed_at, tech_id");
 
     const { data: techs } = await sb
       .from("technicians")
@@ -166,47 +206,71 @@ async function loadDashboard() {
     }
 
     const totalJobs = jobs.length;
-    const completedJobs = jobs.filter(j => j.status === "completed").length;
+    const completedJobsList = jobs.filter(j => j.status === "completed");
+    const completedJobs = completedJobsList.length;
     const pendingJobs = jobs.filter(j =>
-      j.status === "pending" ||
-      j.status === "assigned" ||
-      j.status === "in_progress"
+      j.status === "pending" || j.status === "assigned" || j.status === "in_progress"
     ).length;
 
-    const totalRevenue = jobs
-      .filter(j => j.status === "completed")
-      .reduce((sum, j) => sum + (j.technician_fee || 0), 0);
+    // Correct financial calculations
+    const totalRevenue = completedJobsList.reduce((sum, j) => sum + getServicePrice(j), 0);
+    const totalPlatformProfit = completedJobsList.reduce((sum, j) => sum + getPlatformProfit(j), 0);
+    const totalTechPayouts = completedJobsList.reduce((sum, j) => sum + getTechPayout(j), 0);
 
     const activeTechs = techs.filter(t => t.status === "approved").length;
 
     const today = new Date().toISOString().split("T")[0];
-    const jobsToday = jobs.filter(j =>
-      j.created_at && j.created_at.startsWith(today)
-    ).length;
+    const jobsToday = jobs.filter(j => j.created_at?.startsWith(today)).length;
+    const revenueToday = jobs
+      .filter(j => j.status === "completed" && j.completed_at?.startsWith(today))
+      .reduce((sum, j) => sum + getServicePrice(j), 0);
+    const avgJobValue = completedJobs > 0 ? Math.round(totalRevenue / completedJobs) : 0;
 
     document.getElementById("totalJobs").innerText = totalJobs;
     document.getElementById("completedJobs").innerText = completedJobs;
     document.getElementById("pendingJobs").innerText = pendingJobs;
-    document.getElementById("totalRevenue").innerText = "₹" + totalRevenue;
+    document.getElementById("totalRevenue").innerText = "₹" + totalRevenue.toLocaleString('en-IN');
+    document.getElementById("platformProfit").innerText = "₹" + totalPlatformProfit.toLocaleString('en-IN');
+    document.getElementById("techPayouts").innerText = "₹" + totalTechPayouts.toLocaleString('en-IN');
     document.getElementById("activeTechs").innerText = activeTechs;
     document.getElementById("jobsToday").innerText = jobsToday;
+    document.getElementById("revenueToday").innerText = "₹" + revenueToday.toLocaleString('en-IN');
+    document.getElementById("avgJobValue").innerText = "₹" + avgJobValue.toLocaleString('en-IN');
 
+    // Revenue chart — based on actual service price
     const revenueMap = {};
     jobs.forEach(j => {
       if (j.status === "completed" && j.created_at) {
         const date = j.created_at.split("T")[0];
-        revenueMap[date] = (revenueMap[date] || 0) + (j.technician_fee || 0);
+        revenueMap[date] = (revenueMap[date] || 0) + getServicePrice(j);
       }
     });
 
-    const labels = Object.keys(revenueMap).slice(-7);
+    const labels = Object.keys(revenueMap).sort().slice(-7);
     const dataVals = labels.map(d => revenueMap[d]);
 
     if (revenueChart) revenueChart.destroy();
     revenueChart = new Chart(document.getElementById("revenueChart"), {
       type: "line",
-      data: { labels, datasets: [{ data: dataVals, borderWidth: 3, fill: true, tension: 0.4 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      data: {
+        labels,
+        datasets: [{
+          label: "Revenue (₹)",
+          data: dataVals,
+          borderColor: "#16a34a",
+          backgroundColor: "rgba(22,163,74,0.08)",
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: "#16a34a"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => "₹" + v } } }
+      }
     });
 
     const categoryMap = {};
@@ -218,10 +282,14 @@ async function loadDashboard() {
     if (categoryChart) categoryChart.destroy();
     categoryChart = new Chart(document.getElementById("categoryChart"), {
       type: "doughnut",
-      data: { labels: Object.keys(categoryMap), datasets: [{ data: Object.values(categoryMap) }] },
+      data: {
+        labels: Object.keys(categoryMap),
+        datasets: [{ data: Object.values(categoryMap), hoverOffset: 6 }]
+      },
       options: { responsive: true, maintainAspectRatio: false }
     });
 
+    // Leaderboard by completed jobs
     const leaderboardMap = {};
     jobs.forEach(j => {
       if (j.status === "completed" && j.tech_id) {
@@ -246,21 +314,28 @@ async function loadDashboard() {
       });
     }
 
+    // Recent jobs table with full price breakdown
     const recent = jobs
       .filter(j => j.created_at)
-      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
-      .slice(0,8);
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 8);
 
     const tbody = document.getElementById("recentJobs");
     tbody.innerHTML = "";
-    recent.forEach(job=>{
+    recent.forEach(job => {
+      const price = getServicePrice(job);
+      const techPays = getTechPayout(job);
+      const profit = getPlatformProfit(job);
+      const isCompleted = job.status === "completed";
       tbody.innerHTML += `
-        <tr class="border-t">
+        <tr class="border-t text-xs sm:text-sm">
           <td class="p-2 sm:p-4 font-bold">${job.category || "N/A"}</td>
-          <td class="p-2 sm:p-4 text-center text-sm">${job.status}</td>
-          <td class="p-2 sm:p-4 text-center font-bold">₹${job.technician_fee || 0}</td>
-          <td class="p-2 sm:p-4 text-center text-xs">
-            ${new Date(job.created_at).toLocaleDateString()}
+          <td class="p-2 sm:p-4 text-center">${job.status}</td>
+          <td class="p-2 sm:p-4 text-center font-bold text-green-700">${isCompleted ? "₹" + price.toLocaleString('en-IN') : "—"}</td>
+          <td class="p-2 sm:p-4 text-center font-bold text-blue-600">${isCompleted ? "₹" + techPays.toLocaleString('en-IN') : "—"}</td>
+          <td class="p-2 sm:p-4 text-center font-bold text-amber-600">${isCompleted ? "₹" + profit.toLocaleString('en-IN') : "—"}</td>
+          <td class="p-2 sm:p-4 text-center text-xs text-gray-500">
+            ${new Date(job.created_at).toLocaleDateString('en-IN')}
           </td>
         </tr>`;
     });

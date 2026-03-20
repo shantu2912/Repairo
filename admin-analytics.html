@@ -17,6 +17,9 @@
 <!-- Fonts (MATCH YOUR ADMIN PANEL) -->
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
 <style>
 body{
   background:#EEEAE2; /* brand-cream */
@@ -31,6 +34,12 @@ body{
   border:1px solid rgba(93,86,70,0.08);
   box-shadow:0 25px 50px -12px rgba(93,86,70,0.15);
   border-radius:28px;
+  transition: transform 0.2s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow:0 30px 60px -12px rgba(93,86,70,0.2);
 }
 
 /* Brand Text Styles */
@@ -63,48 +72,219 @@ body{
   font-weight:700;
   font-size:20px;
 }
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.loader {
+  border: 3px solid rgba(160,125,84,0.2);
+  border-top: 3px solid #A07D54;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Small decorative elements */
+.stat-trend {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  background: rgba(160,125,84,0.1);
+  color: #A07D54;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
 </style>
 </head>
 
 <body class="p-6 md:p-10">
 
-<!-- HEADER -->
-<div class="mb-10">
-  <h1 class="text-4xl font-extrabold brand-title">
-    FIX <span class="text-[#A07D54]">ZEN</span> Analytics
-  </h1>
-  <p class="text-sm text-black/60 mt-2">
-    Financial insights, job performance & platform efficiency
-  </p>
+<!-- HEADER with period selector -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
+  <div>
+    <h1 class="text-4xl font-extrabold brand-title flex items-center gap-3">
+      FIX <span class="text-[#A07D54]">ZEN</span> 
+      <span class="text-sm font-normal bg-white/50 px-4 py-2 rounded-full text-[#5D5646]">
+        <i class="fa-regular fa-calendar mr-2"></i>Real-time
+      </span>
+    </h1>
+    <p class="text-sm text-black/60 mt-2 flex items-center gap-2">
+      <i class="fa-regular fa-clock text-[#A07D54]"></i>
+      Financial insights, job performance & platform efficiency
+    </p>
+  </div>
+  
+  <!-- Refresh button -->
+  <button onclick="loadAnalytics()" class="mt-4 md:mt-0 bg-white/80 backdrop-blur px-5 py-3 rounded-2xl text-sm font-bold text-[#5D5646] hover:bg-white transition-all shadow-sm flex items-center gap-2">
+    <i class="fa-solid fa-rotate-right text-[#A07D54]"></i>
+    Refresh Data
+  </button>
+</div>
+
+<!-- Loading State (hidden by default) -->
+<div id="loadingOverlay" class="hidden fixed inset-0 bg-black/5 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center">
+    <div class="loader mb-4"></div>
+    <p class="text-sm font-bold text-[#5D5646]">Updating analytics...</p>
+  </div>
 </div>
 
 <!-- KPI CARDS -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
 
   <!-- Total Revenue -->
-  <div class="glass-card p-7">
-    <p class="kpi-label">Total Revenue</p>
-    <h2 id="totalRevenue" class="text-4xl kpi-value mt-2">₹0</h2>
+  <div class="glass-card p-7 relative overflow-hidden group">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A07D54]/5 to-transparent rounded-full -mr-10 -mt-10"></div>
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="kpi-label flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-[#A07D54]"></i>
+          Total Revenue
+        </p>
+        <h2 id="totalRevenue" class="text-4xl kpi-value mt-2">₹0</h2>
+      </div>
+      <div class="stat-icon bg-[#A07D54]/10 text-[#A07D54]">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center gap-2">
+      <span class="stat-trend" id="revenueTrend">+0%</span>
+      <span class="text-xs text-black/40">vs last month</span>
+    </div>
   </div>
 
-  <!-- Profit -->
-  <div class="glass-card p-7">
-    <p class="kpi-label">Platform Profit</p>
-    <h2 id="totalProfit" class="text-4xl gold-value mt-2">₹0</h2>
+  <!-- Platform Profit -->
+  <div class="glass-card p-7 relative overflow-hidden group">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A07D54]/5 to-transparent rounded-full -mr-10 -mt-10"></div>
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="kpi-label flex items-center gap-2">
+          <i class="fa-regular fa-circle-check text-[#A07D54]"></i>
+          Platform Profit
+        </p>
+        <h2 id="totalProfit" class="text-4xl gold-value mt-2">₹0</h2>
+      </div>
+      <div class="stat-icon bg-[#A07D54]/10 text-[#A07D54]">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center gap-2">
+      <span class="stat-trend" id="profitTrend">15.7% cut</span>
+      <span class="text-xs text-black/40">of completed revenue</span>
+    </div>
   </div>
 
   <!-- Total Jobs -->
-  <div class="glass-card p-7">
-    <p class="kpi-label">Total Jobs</p>
-    <h2 id="totalJobs" class="text-4xl kpi-value mt-2">0</h2>
+  <div class="glass-card p-7 relative overflow-hidden group">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A07D54]/5 to-transparent rounded-full -mr-10 -mt-10"></div>
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="kpi-label flex items-center gap-2">
+          <i class="fa-solid fa-briefcase text-[#A07D54]"></i>
+          Total Jobs
+        </p>
+        <h2 id="totalJobs" class="text-4xl kpi-value mt-2">0</h2>
+      </div>
+      <div class="stat-icon bg-[#A07D54]/10 text-[#A07D54]">
+        <i class="fa-solid fa-clipboard-list"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center gap-2">
+      <span class="stat-trend" id="jobsTrend">+0%</span>
+      <span class="text-xs text-black/40">completion rate: <span id="completionRate">0%</span></span>
+    </div>
   </div>
 
   <!-- Avg Completion Time -->
-  <div class="glass-card p-7">
-    <p class="kpi-label">Avg Completion Time</p>
-    <h2 id="avgTime" class="text-4xl kpi-value mt-2">--</h2>
+  <div class="glass-card p-7 relative overflow-hidden group">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A07D54]/5 to-transparent rounded-full -mr-10 -mt-10"></div>
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="kpi-label flex items-center gap-2">
+          <i class="fa-regular fa-hourglass-half text-[#A07D54]"></i>
+          Avg Completion Time
+        </p>
+        <h2 id="avgTime" class="text-4xl kpi-value mt-2">--</h2>
+      </div>
+      <div class="stat-icon bg-[#A07D54]/10 text-[#A07D54]">
+        <i class="fa-regular fa-clock"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center gap-2">
+      <span class="stat-trend" id="timeTrend">--</span>
+      <span class="text-xs text-black/40">avg response: <span id="avgResponse">--</span></span>
+    </div>
   </div>
 
+</div>
+
+<!-- Secondary Stats Row -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+  <div class="glass-card p-5 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-[#5D5646]/10 flex items-center justify-center text-[#5D5646]">
+      <i class="fa-solid fa-tag"></i>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-black/40 uppercase">Avg. Job Value</p>
+      <p id="avgJobValue" class="text-2xl font-extrabold text-[#5D5646]">₹0</p>
+    </div>
+  </div>
+  
+  <div class="glass-card p-5 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-[#5D5646]/10 flex items-center justify-center text-[#5D5646]">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-black/40 uppercase">Active Technicians</p>
+      <p id="activeTechs" class="text-2xl font-extrabold text-[#5D5646]">0</p>
+    </div>
+  </div>
+  
+  <div class="glass-card p-5 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+      <i class="fa-solid fa-hand-holding-dollar"></i>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-black/40 uppercase">Tech Payouts (84.3%)</p>
+      <p id="totalTechPayouts" class="text-2xl font-extrabold text-blue-600">₹0</p>
+    </div>
+  </div>
+  
+  <div class="glass-card p-5 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-[#5D5646]/10 flex items-center justify-center text-[#5D5646]">
+      <i class="fa-solid fa-ticket"></i>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-black/40 uppercase">Coupon Usage</p>
+      <p id="couponUsage" class="text-2xl font-extrabold text-[#5D5646]">0</p>
+    </div>
+  </div>
 </div>
 
 <!-- CHARTS -->
@@ -112,16 +292,43 @@ body{
 
   <!-- Job Status Pie -->
   <div class="glass-card p-8">
-    <h2 class="section-title mb-6">Job Status Distribution</h2>
-    <canvas id="statusChart"></canvas>
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="section-title flex items-center gap-2">
+        <i class="fa-solid fa-chart-pie text-[#A07D54] text-xl"></i>
+        Job Status Distribution
+      </h2>
+      <span class="text-xs bg-white px-3 py-1 rounded-full text-[#5D5646] font-bold" id="totalJobsBadge">0 total</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="statusChart"></canvas>
+    </div>
   </div>
 
   <!-- Peak Booking Hours -->
   <div class="glass-card p-8">
-    <h2 class="section-title mb-6">Peak Booking Hours</h2>
-    <canvas id="hourChart"></canvas>
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="section-title flex items-center gap-2">
+        <i class="fa-regular fa-sun text-[#A07D54] text-xl"></i>
+        Peak Booking Hours
+      </h2>
+      <span class="text-xs bg-white px-3 py-1 rounded-full text-[#5D5646] font-bold" id="peakHourBadge">24h cycle</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="hourChart"></canvas>
+    </div>
   </div>
 
+</div>
+
+<!-- Recent Activity Footer -->
+<div class="mt-8 glass-card p-6">
+  <div class="flex items-center gap-3 mb-4">
+    <i class="fa-regular fa-bell text-[#A07D54]"></i>
+    <h3 class="font-bold text-[#5D5646]">Recent Activity</h3>
+  </div>
+  <div id="recentActivity" class="text-sm text-black/60">
+    Loading recent jobs...
+  </div>
 </div>
 
 <script>
@@ -133,52 +340,151 @@ const sb = supabase.createClient(
 let statusChart = null;
 let hourChart = null;
 
+// Format currency
+function formatCurrency(amount) {
+  return '₹' + amount.toLocaleString('en-IN');
+}
+
+// Format date for display
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return diffDays + ' days ago';
+  return date.toLocaleDateString('en-IN');
+}
+
+// Show loading overlay
+function showLoading() {
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+}
+
+// Hide loading overlay
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
+// Calculate percentage change
+function calculateTrend(current, previous) {
+  if (!previous || previous === 0) return '+0%';
+  const change = ((current - previous) / previous) * 100;
+  return (change > 0 ? '+' : '') + change.toFixed(1) + '%';
+}
+
 async function loadAnalytics() {
+  showLoading();
+  
   const { data: jobs, error } = await sb
     .from("jobs")
     .select("*");
+    
   if (error) {
     console.error(error);
     alert(error.message);
+    hideLoading();
     return;
   }
 
-  if (!jobs || jobs.length === 0) return;
+  // Fetch technicians data for additional stats
+  const { data: technicians } = await sb
+    .from("technicians")
+    .select("*");
+
+  // Fetch promos data for coupon stats
+  const { data: promos } = await sb
+    .from("promos")
+    .select("*");
+
+  if (!jobs || jobs.length === 0) {
+    hideLoading();
+    return;
+  }
 
   let totalRevenue = 0;
   let totalProfit = 0;
   let completedTimes = [];
+  let responseTimes = [];
+  let completedJobs = 0;
+
+  const COMMISSION = 0.157;
+
+  function getServicePrice(job) {
+    return Number(job.discounted_price || job.original_price || job.price || 0);
+  }
 
   const statusCount = {
     pending: 0,
     assigned: 0,
     in_progress: 0,
+    arrived: 0,
     completed: 0,
     cancelled: 0
   };
 
   const hourMap = new Array(24).fill(0);
+  const categoryMap = {};
+  let couponCount = 0;
+
+  // For trends (compare with last month)
+  const now = new Date();
+  const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
+  let revenueLastMonth = 0;
+  let jobsLastMonth = 0;
 
   jobs.forEach(job => {
+    const createdAt = new Date(job.created_at);
+    
     // Status count
     if (statusCount[job.status] !== undefined) {
       statusCount[job.status]++;
     }
 
-    // Revenue & Profit (only completed jobs)
+    // Track coupon usage
+    if (job.applied_coupon || job.coupon_used) {
+      couponCount++;
+    }
+
+    // Category breakdown
+    if (job.category) {
+      categoryMap[job.category] = (categoryMap[job.category] || 0) + 1;
+    }
+
+    // Last month comparison
+    if (createdAt > oneMonthAgo) {
+      if (job.status === "completed") {
+        revenueLastMonth += getServicePrice(job);
+      }
+      jobsLastMonth++;
+    }
+
+    // Completed jobs analysis
     if (job.status === "completed") {
-      const fee = Number(job.fee || 0);
-      const techFee = Number(job.technician_fee || 0);
+      completedJobs++;
+      
+      const price = getServicePrice(job);
+      const techFee = Math.round(price * (1 - COMMISSION));
 
-      totalRevenue += fee;
-      totalProfit += (fee - techFee);
+      totalRevenue += price;
+      totalProfit += Math.round(price * COMMISSION);
 
-      // Avg completion time (hours)
+      // Completion time (hours)
       if (job.completed_at && job.created_at) {
         const start = new Date(job.created_at);
         const end = new Date(job.completed_at);
         const diffHours = (end - start) / (1000 * 60 * 60);
         if (diffHours > 0) completedTimes.push(diffHours);
+      }
+      
+      // Response time (assignment to completion)
+      if (job.assigned_at && job.completed_at) {
+        const assigned = new Date(job.assigned_at);
+        const completed = new Date(job.completed_at);
+        const responseHours = (completed - assigned) / (1000 * 60 * 60);
+        if (responseHours > 0) responseTimes.push(responseHours);
       }
     }
 
@@ -189,18 +495,50 @@ async function loadAnalytics() {
     }
   });
 
-  // Average completion time
+  // Calculate averages
   let avgTime = "--";
   if (completedTimes.length > 0) {
     const avg = completedTimes.reduce((a, b) => a + b, 0) / completedTimes.length;
     avgTime = avg.toFixed(1) + " hrs";
   }
 
-  // Update UI
-  document.getElementById("totalRevenue").textContent = "₹" + totalRevenue;
-  document.getElementById("totalProfit").textContent = "₹" + totalProfit;
+  let avgResponse = "--";
+  if (responseTimes.length > 0) {
+    const avg = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+    avgResponse = avg.toFixed(1) + " hrs";
+  }
+
+  let avgJobValue = completedJobs > 0 ? totalRevenue / completedJobs : 0;
+  let totalTechPayouts = totalRevenue - totalProfit;
+  
+  let completionRate = jobs.length > 0 ? ((completedJobs / jobs.length) * 100).toFixed(1) + '%' : '0%';
+  
+  let activeTechs = technicians ? technicians.filter(t => t.available === true).length : 0;
+
+  // Update KPI values
+  document.getElementById("totalRevenue").textContent = formatCurrency(totalRevenue);
+  document.getElementById("totalProfit").textContent = formatCurrency(totalProfit);
   document.getElementById("totalJobs").textContent = jobs.length;
   document.getElementById("avgTime").textContent = avgTime;
+  
+  // Update secondary stats
+  document.getElementById("avgJobValue").textContent = formatCurrency(avgJobValue);
+  document.getElementById("activeTechs").textContent = activeTechs;
+  document.getElementById("couponUsage").textContent = couponCount;
+  document.getElementById("totalTechPayouts").textContent = formatCurrency(totalTechPayouts);
+  
+  // Update badges and trends
+  document.getElementById("totalJobsBadge").textContent = jobs.length + ' total';
+  document.getElementById("completionRate").textContent = completionRate;
+  document.getElementById("avgResponse").textContent = avgResponse;
+  
+  // Calculate trends
+  document.getElementById("revenueTrend").textContent = calculateTrend(totalRevenue, revenueLastMonth);
+  document.getElementById("jobsTrend").textContent = calculateTrend(jobs.length, jobsLastMonth);
+  
+  // Find peak hour
+  const peakHour = hourMap.indexOf(Math.max(...hourMap));
+  document.getElementById("peakHourBadge").textContent = hourMap[peakHour] + ' bookings at ' + peakHour + ':00';
 
   // Chart theme (brand consistent)
   Chart.defaults.color = "#5D5646";
@@ -212,27 +550,48 @@ async function loadAnalytics() {
 
   // Status Pie Chart
   statusChart = new Chart(document.getElementById("statusChart"), {
-    type: "pie",
+    type: "doughnut",
     data: {
-      labels: Object.keys(statusCount),
+      labels: Object.keys(statusCount).map(key => key.replace('_', ' ').toUpperCase()),
       datasets: [{
         data: Object.values(statusCount),
         backgroundColor: [
           "#A07D54",  // gold
           "#5D5646",  // olive
           "#D6CFC3",  // soft cream
+          "#9CA3AF",  // gray
           "#6B7280",  // neutral
           "#E5E1D8"   // light cream
         ],
-        borderWidth: 0
+        borderWidth: 0,
+        hoverOffset: 8
       }]
     },
     options: {
+      cutout: '65%',
       plugins: {
         legend: {
-          position: "bottom"
+          position: "bottom",
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 20
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
         }
-      }
+      },
+      responsive: true,
+      maintainAspectRatio: false
     }
   });
 
@@ -247,29 +606,87 @@ async function loadAnalytics() {
         "6PM","7PM","8PM","9PM","10PM","11PM"
       ],
       datasets: [{
-        label: "Bookings",
+        label: "Number of Bookings",
         data: hourMap,
         backgroundColor: "#A07D54",
-        borderRadius: 8
+        borderRadius: 8,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       }]
     },
     options: {
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `Bookings: ${context.raw}`;
+            }
+          }
+        }
       },
       scales: {
         x: {
-          grid: { display: false }
+          grid: { display: false },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45
+          }
         },
         y: {
           grid: { color: "rgba(93,86,70,0.1)" },
-          beginAtZero: true
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
         }
-      }
+      },
+      responsive: true,
+      maintainAspectRatio: false
     }
   });
+
+  // Update recent activity
+  const recentJobs = jobs.slice(0, 5);
+  let activityHtml = '<div class="space-y-3">';
+  
+  recentJobs.forEach(job => {
+    const statusColor = {
+      'pending': 'bg-yellow-100 text-yellow-700',
+      'assigned': 'bg-blue-100 text-blue-700',
+      'in_progress': 'bg-purple-100 text-purple-700',
+      'arrived': 'bg-green-100 text-green-700',
+      'completed': 'bg-emerald-100 text-emerald-700',
+      'cancelled': 'bg-red-100 text-red-700'
+    }[job.status] || 'bg-gray-100 text-gray-700';
+    
+    activityHtml += `
+      <div class="flex items-center justify-between p-3 bg-white/50 rounded-2xl">
+        <div class="flex items-center gap-3">
+          <div class="w-2 h-2 rounded-full ${statusColor.split(' ')[0]}"></div>
+          <div>
+            <p class="text-sm font-bold text-[#5D5646]">${job.category || 'Service'}</p>
+            <p class="text-xs text-black/40">${job.location || 'Location not specified'}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-xs px-2 py-1 rounded-full ${statusColor} font-bold">${job.status.replace('_', ' ')}</span>
+          <p class="text-xs text-black/40 mt-1">${formatDate(job.created_at)}</p>
+        </div>
+      </div>
+    `;
+  });
+  
+  activityHtml += '</div>';
+  document.getElementById('recentActivity').innerHTML = activityHtml;
+
+  hideLoading();
 }
 
+// Auto-refresh every 30 seconds
+setInterval(loadAnalytics, 30000);
+
+// Initial load
 loadAnalytics();
 </script>
 
