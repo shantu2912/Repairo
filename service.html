@@ -346,95 +346,7 @@
         );
     },
 
-    // --- SEND NOTIFICATION TO TECHNICIANS (Push Notification via Supabase) ---
-    async sendNotificationToTechnicians(jobDetails) {
-        try {
-            // Fetch all technicians from the 'technicians' table (assuming table exists with email/device_token)
-            // If technicians table doesn't exist, we'll create a fallback: insert into 'notifications' table
-            // that technicians can read. For real push, we'd need FCM/OneSignal but for demo we use
-            // database notifications table that technicians' dashboard polls.
-            
-            // First, check if technicians table exists and fetch tokens
-            const { data: technicians, error: techError } = await window.sb
-                .from('technicians')
-                .select('id, email, fcm_token, phone, name')
-                .eq('active', true);
-            
-            // Prepare notification message
-            const notificationMessage = {
-                title: '🔧 New Service Booking!',
-                body: `${jobDetails.customer_name} booked ${jobDetails.service_name} - ${jobDetails.variant_name} for ${jobDetails.scheduled_time}. Amount: ₹${jobDetails.amount}`,
-                data: {
-                    job_id: jobDetails.job_id,
-                    customer_name: jobDetails.customer_name,
-                    customer_phone: jobDetails.customer_phone,
-                    address: jobDetails.address,
-                    scheduled_time: jobDetails.scheduled_time,
-                    service_type: jobDetails.service_name,
-                    amount: jobDetails.amount,
-                    type: 'new_booking'
-                },
-                created_at: new Date().toISOString()
-            };
-            
-            // 1. Insert into a 'notifications' table for technicians to fetch (polling)
-            if (technicians && technicians.length > 0) {
-                const notificationsToInsert = technicians.map(tech => ({
-                    technician_id: tech.id,
-                    title: notificationMessage.title,
-                    message: notificationMessage.body,
-                    data: notificationMessage.data,
-                    read: false,
-                    created_at: notificationMessage.created_at,
-                    type: 'booking_request'
-                }));
-                
-                const { error: notifError } = await window.sb
-                    .from('technician_notifications')
-                    .insert(notificationsToInsert);
-                
-                if (notifError) console.warn('Notification insert error:', notifError);
-            } else {
-                // Fallback: If no technicians table, insert into generic notifications table
-                const { error: fallbackError } = await window.sb
-                    .from('notifications')
-                    .insert([{
-                        title: notificationMessage.title,
-                        message: notificationMessage.body,
-                        payload: notificationMessage.data,
-                        target_role: 'technician',
-                        created_at: notificationMessage.created_at
-                    }]);
-                if (fallbackError) console.warn('Fallback notification error:', fallbackError);
-            }
-            
-            // 2. For web push (if browser supports and technicians have subscribed)
-            // Since we can't directly push without service worker & tokens, we store in realtime
-            // and also broadcast via Supabase Realtime for online technicians
-            try {
-                const channel = window.sb.channel('public:tech_notifications');
-                await channel.subscribe();
-                await channel.send({
-                    type: 'broadcast',
-                    event: 'new_booking_alert',
-                    payload: notificationMessage
-                });
-                // Unsubscribe after sending to avoid memory leaks
-                setTimeout(() => channel.unsubscribe(), 3000);
-            } catch (realtimeErr) {
-                console.warn('Realtime broadcast error:', realtimeErr);
-            }
-            
-            console.log('✅ Notification sent to technicians via database + realtime');
-            return true;
-        } catch (err) {
-            console.error('Failed to send technician notification:', err);
-            // Don't block booking flow if notification fails
-            return false;
-        }
-    },
-
-    // --- CONFIRM BOOKING FUNCTION (with automatic technician notification) ---
+    // --- CONFIRM BOOKING FUNCTION (Updated with time) ---
     async confirmBooking() {
         try {
             if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
@@ -467,10 +379,11 @@
             }
 
             const firstService = this.selectedSubs[0];
-            const scheduledDateTime = `${this.date}T${this.time}:00`;
-            const totalAmount = this.total;
 
-            // 1. SAVE TO JOBS TABLE
+            // Combine date and time for database storage
+            const scheduledDateTime = `${this.date}T${this.time}:00`;
+
+            // 1. SAVE TO JOBS TABLE (WITH TIME)
             const jobPayload = {
                 category: this.service?.name || 'General Service',
                 device: firstService?.n || 'General Service',
@@ -483,9 +396,8 @@
                 latitude: this.lat || null,
                 longitude: this.lng || null,
                 scheduled_time: scheduledDateTime,
-                original_price: totalAmount,
-                discounted_price: totalAmount,
-                user_id: user.id
+                original_price: this.total,
+                discounted_price: this.total
             };
 
             const { data: insertedJob, error: jobError } = await window.sb
@@ -500,17 +412,16 @@
                 return;
             }
 
-            // 2. SAVE TO BOOKINGS TABLE
+            // 2. SAVE TO BOOKINGS TABLE (WITH TIME)
             const bookingPayload = {
                 user_id: user.id,
                 service_name: this.service?.name || 'General Service',
                 variant_name: firstService?.n || 'Service',
-                price: totalAmount,
+                price: this.total,
                 date: this.date,
-                time: this.time,
+                time: this.time, // Add time field
                 address: this.address,
-                phone: this.phone,
-                job_id: insertedJob.id
+                phone: this.phone
             };
 
             const { error: bookingError } = await window.sb
@@ -523,41 +434,11 @@
                 return;
             }
 
-            // --- AUTOMATIC NOTIFICATION TO TECHNICIANS ---
-            // Prepare job details for notification
-            const jobDetailsForNotif = {
-                job_id: insertedJob.id,
-                customer_name: this.customerName,
-                customer_phone: this.phone,
-                address: this.address,
-                scheduled_time: scheduledDateTime,
-                service_name: this.service?.name,
-                variant_name: firstService?.n,
-                amount: totalAmount,
-                latitude: this.lat,
-                longitude: this.lng
-            };
-            
-            // Send notification to all registered technicians
-            await this.sendNotificationToTechnicians(jobDetailsForNotif);
-            
-            // Also send SMS-like alert via email if technicians have emails (optional)
-            // We'll also try to log into technician_alert_log for audit
-            await window.sb.from('notification_logs').insert([{
-                job_id: insertedJob.id,
-                type: 'technician_alert',
-                recipient_type: 'all_technicians',
-                message: `New booking: ${this.service?.name} - ${firstService?.n} by ${this.customerName}`,
-                sent_at: new Date().toISOString()
-            }]).catch(e => console.warn('Log insert failed', e));
-            
-            // Show success message with notification confirmation
             this.bookingLoading = false;
             this.showAgreement = false;
-            this.stopCamera();
             
-            // Optional: Show a local toast that technicians have been notified
-            alert('✅ Booking confirmed! Nearby technicians have been notified and will contact you shortly.');
+            // Clean up camera if still running
+            this.stopCamera();
             
             // Redirect to Success Map
             window.location.href = 'success.html?job_id=' + insertedJob.id;
@@ -585,12 +466,11 @@
         
         <div class="relative h-[40vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
             <img :src="service?.image" class="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent">
-                <div class="absolute bottom-8 left-6 right-6 text-white">
-                    <span class="bg-brand-gold/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg border border-white/20">Verified Pro</span>
-                    <h1 class="text-3xl font-serif font-bold mt-3 leading-tight" x-text="service?.name"></h1>
-                    <p class="text-white/70 text-xs mt-2 font-light leading-relaxed line-clamp-2" x-text="service?.desc"></p>
-                </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+            <div class="absolute bottom-8 left-6 right-6 text-white">
+                <span class="bg-brand-gold/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg border border-white/20">Verified Pro</span>
+                <h1 class="text-3xl font-serif font-bold mt-3 leading-tight" x-text="service?.name"></h1>
+                <p class="text-white/70 text-xs mt-2 font-light leading-relaxed line-clamp-2" x-text="service?.desc"></p>
             </div>
         </div>
 
@@ -653,29 +533,49 @@
         </button>
     </div>
 
-    <!-- Camera Modal (same as original) -->
+    <!-- Camera Modal -->
     <div x-show="showCamera" 
          class="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-0"
          x-transition.opacity style="display: none;">
+        
         <div class="relative w-full h-full flex flex-col">
+            <!-- Camera View -->
             <video id="liveCamera" class="w-full h-full object-cover"></video>
+            
+            <!-- Hidden Canvas for capturing photo -->
             <canvas id="photoCanvas" class="hidden"></canvas>
+            
+            <!-- Camera Controls -->
             <div class="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-6">
-                <button @click="showCamera = false; stopCamera()" class="w-14 h-14 rounded-full bg-red-500/80 text-white flex items-center justify-center text-2xl hover:bg-red-600 transition-colors shadow-lg">
+                <!-- Close Camera -->
+                <button @click="showCamera = false; stopCamera()" 
+                        class="w-14 h-14 rounded-full bg-red-500/80 text-white flex items-center justify-center text-2xl hover:bg-red-600 transition-colors shadow-lg">
                     <i class="fa-solid fa-times"></i>
                 </button>
-                <button @click="capturePhoto()" class="w-20 h-20 rounded-full bg-white border-4 border-brand-gold flex items-center justify-center hover:scale-110 transition-transform shadow-xl">
+                
+                <!-- Capture Photo -->
+                <button @click="capturePhoto()" 
+                        class="w-20 h-20 rounded-full bg-white border-4 border-brand-gold flex items-center justify-center hover:scale-110 transition-transform shadow-xl">
                     <div class="w-16 h-16 rounded-full bg-brand-gold"></div>
                 </button>
-                <button @click="document.getElementById('cameraGalleryInput').click(); showCamera = false;" class="w-14 h-14 rounded-full bg-white/80 text-brand-olive flex items-center justify-center text-xl hover:bg-white transition-colors shadow-lg">
+                
+                <!-- Gallery Option (opens file picker) -->
+                <button @click="document.getElementById('cameraGalleryInput').click(); showCamera = false;" 
+                        class="w-14 h-14 rounded-full bg-white/80 text-brand-olive flex items-center justify-center text-xl hover:bg-white transition-colors shadow-lg">
                     <i class="fa-solid fa-images"></i>
                 </button>
             </div>
-            <input type="file" id="cameraGalleryInput" accept="image/*" @change="handlePhotoSelect" class="hidden">
+            
+            <!-- Hidden file input for camera gallery -->
+            <input type="file" 
+                   id="cameraGalleryInput"
+                   accept="image/*" 
+                   @change="handlePhotoSelect"
+                   class="hidden">
         </div>
     </div>
 
-    <!-- Booking Confirmation Modal (updated with technician notification mention) -->
+    <!-- Booking Confirmation Modal -->
     <div x-show="showAgreement" 
          class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
          x-transition.opacity style="display: none;">
@@ -689,42 +589,110 @@
             </div>
             
             <div class="space-y-3 mb-4">
+
+                <!-- Name Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-user text-brand-gold"></i>
                     <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
+
+                <!-- Phone Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-phone text-brand-gold"></i>
                     <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
+
+                <!-- GPS Button -->
                 <button @click="fetchGPS()" type="button"
                         class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-green-50 text-brand-green text-sm font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-location-crosshairs text-lg" :class="fetchingLocation ? 'fa-spin' : ''"></i>
                     <span x-text="fetchingLocation ? 'Pinpointing Location...' : '📍 Fetch Current GPS Location'"></span>
                 </button>
+
+                <!-- Address Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
                      :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
                     <i class="fa-solid fa-location-dot text-brand-gold" :class="lat ? 'text-brand-green' : ''"></i>
                     <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
+
+                <!-- Date Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-calendar text-brand-gold"></i>
                     <input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3" :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
+
+                <!-- Time Input - New Section -->
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
+                     :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
                     <i class="fa-solid fa-clock text-brand-gold"></i>
                     <div class="flex-1">
-                        <input type="time" x-model="time" :min="date === minDate ? minTime : ''" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
-                        <p x-show="!isDateTimeValid() && date && time" class="text-[10px] text-brand-red mt-1">⚠️ Please select a time at least 30 minutes from now</p>
+                        <input type="time" 
+                               x-model="time" 
+                               :min="date === minDate ? minTime : ''"
+                               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                        <!-- Validation Message -->
+                        <p x-show="!isDateTimeValid() && date && time" 
+                           class="text-[10px] text-brand-red mt-1">
+                            ⚠️ Please select a time at least 30 minutes from now
+                        </p>
                     </div>
                 </div>
-                <div class="bg-brand-green/10 p-3 rounded-xl flex items-start gap-2 border border-brand-green/20">
-                    <i class="fa-solid fa-bell text-brand-green text-sm mt-0.5"></i>
-                    <p class="text-xs text-brand-dark/80">After booking, all nearby technicians will receive instant notification about your request.</p>
+
+                <!-- Photo Upload Section - Live Camera & Gallery Options -->
+                <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-camera text-brand-gold text-lg"></i>
+                        <span class="text-sm font-semibold text-brand-dark">Add Photo (Optional)</span>
+                    </div>
+                    
+                    <!-- Photo Options -->
+                    <div class="flex flex-col gap-3">
+                        <!-- Two options: Live Camera or Gallery -->
+                        <div class="flex gap-2">
+                            <!-- Live Camera Button -->
+                            <button type="button" 
+                                    @click="showCamera = true; showAgreement = false;"
+                                    class="flex-1 py-3 rounded-xl bg-brand-gold/10 border-2 border-brand-gold/30 text-brand-gold text-sm font-bold hover:bg-brand-gold/20 transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-video"></i>
+                                <span>Live Camera</span>
+                            </button>
+                            
+                            <!-- Gallery Upload Button -->
+                            <button type="button" 
+                                    @click="document.getElementById('galleryInput').click()"
+                                    class="flex-1 py-3 rounded-xl bg-gray-100 border-2 border-gray-200 text-brand-dark text-sm font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-images"></i>
+                                <span>Gallery</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Hidden file input for gallery -->
+                        <input type="file" 
+                               id="galleryInput"
+                               accept="image/*" 
+                               @change="handlePhotoSelect"
+                               class="hidden">
+                        
+                        <!-- Photo Preview -->
+                        <div x-show="photoPreview" class="relative mt-2 rounded-lg overflow-hidden border border-gray-200">
+                            <img :src="photoPreview" class="w-full h-32 object-cover">
+                            <button @click="clearPhoto" 
+                                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors">
+                                <i class="fa-solid fa-times text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <p class="text-[10px] text-gray-400 text-center">
+                            Take a live photo or upload from gallery (not saved to database)
+                        </p>
+                    </div>
                 </div>
+
             </div>
 
-            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed">
+            <!-- Terms & Conditions -->
+            <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
                 <ul class="list-disc pl-4 space-y-1.5">
                     <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
@@ -734,6 +702,7 @@
                 </ul>
             </div>
 
+            <!-- Agreement Checkbox -->
             <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6 border border-transparent hover:border-gray-100">
                 <div class="relative flex items-center">
                     <input type="checkbox" x-model="agreed" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-brand-gold checked:bg-brand-gold transition-all">
@@ -742,16 +711,22 @@
                 <span class="text-xs font-medium text-brand-dark/80 leading-snug select-none">I agree to the Terms & Conditions and authorize the job broadcast.</span>
             </label>
 
+            <!-- Action Buttons -->
             <div class="flex gap-3">
                 <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
                 <button @click="confirmBooking()" 
                         :disabled="!agreed || bookingLoading || !isDateTimeValid()"
                         class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                    <span x-show="!bookingLoading">Confirm & Notify Technicians</span>
+                    <span x-show="!bookingLoading">Confirm Booking</span>
                     <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
-            <p x-show="!isDateTimeValid() && date && time" class="text-center text-xs text-brand-red mt-2">⚠️ Please select a valid future time (minimum 30 minutes from now)</p>
+            
+            <!-- Validation summary -->
+            <p x-show="!isDateTimeValid() && date && time" 
+               class="text-center text-xs text-brand-red mt-2">
+                ⚠️ Please select a valid future time (minimum 30 minutes from now)
+            </p>
         </div>
     </div>
 
