@@ -61,8 +61,8 @@
         
         <div x-show="!isSuccess" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-extrabold text-[#3E3A31] tracking-tight">Join FixZen</h1>
-                <p class="text-gray-400 mt-2 text-sm">Fill in your details to start earning</p>
+                <h1 class="text-3xl font-extrabold text-[#3E3A31] tracking-tight">Join FixZenix</h1>
+                <p class="text-gray-400 mt-2 text-sm">Fill in your details to get jobs and start earning</p>
             </div>
             
             <form @submit.prevent="submitTechnician($data)" class="space-y-5">
@@ -79,6 +79,19 @@
                     </div>
                 </div>
                 
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Username</label>
+                    <div class="relative">
+                        <input type="text" id="regUsername" class="premium-input pl-14" placeholder="Enter username" required>
+                    </div>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Password</label>
+                    <div class="relative">
+                        <input type="password" id="regPassword" class="premium-input pl-14" placeholder="Enter password" required>
+                    </div>
+                </div>
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Specialization</label>
                     <div class="select-wrapper">
@@ -138,6 +151,8 @@
                 const { error } = await _supabase.from('technicians').insert([{
                     name: document.getElementById('regName').value,
                     phone: "+91" + document.getElementById('regPhone').value,
+                    username: document.getElementById('regUsername').value,
+                    password: document.getElementById('regPassword').value,
                     category: document.getElementById('regCategory').value,
                     experience: parseFloat(document.getElementById('regExp').value),
                     aadhaar: document.getElementById('regAadhaar').value,

@@ -11,18 +11,18 @@
 <body class="min-h-screen flex items-center justify-center bg-[#F8F5F0]">
 
   <div class="bg-white p-10 rounded-3xl shadow-xl w-[360px]">
-    <h1 class="text-2xl font-bold text-center mb-6">FixZen Pro</h1>
+    <h1 class="text-2xl font-bold text-center mb-6">FixZenix</h1>
 
     <input
       id="name"
-      placeholder="Your Name"
+      placeholder="Your Username"
       class="w-full mb-4 p-3 border rounded-xl"
     />
 
     <input
       id="password"
       type="password"
-      placeholder="Password"
+      placeholder="Your Password"
       class="w-full mb-4 p-3 border rounded-xl"
     />
 
@@ -42,43 +42,37 @@
       "https://kzxdxnxgouthsywbsnvl.supabase.co",
        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
     );
+async function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const errorEl = document.getElementById("error");
 
-    async function login() {
-      const name = document.getElementById("name").value.trim();
-      const password = document.getElementById("password").value;
-      const errorEl = document.getElementById("error");
+  errorEl.classList.add("hidden");
 
-      errorEl.classList.add("hidden");
+  if (!username || !password) {
+    showError("Enter username and password");
+    return;
+  }
 
-      if (!name || !password) {
-        showError("Enter name and password");
-        return;
-      }
+  // 🔍 CHECK USERNAME + PASSWORD IN DATABASE
+  const { data, error } = await supabase
+    .from("technicians")
+    .select("*")
+    .eq("username", username)
+    .eq("password", password)
+    .single();
 
-      // 🔒 TEMP PASSWORD CHECK
-      if (password !== "1234") {
-        showError("Wrong password");
-        return;
-      }
+  if (error || !data) {
+    showError("Invalid username or password");
+    return;
+  }
 
-      // 🔍 CHECK NAME EXISTS
-      const { data, error } = await supabase
-        .from("technicians")
-        .select("*")
-        .ilike("name", name)
-        .single();
+  // 🚀 SAVE SESSION
+  localStorage.setItem("active_tech", JSON.stringify(data));
 
-      if (error || !data) {
-        showError("Partner not found");
-        return;
-      }
-
-      // 🚀 SAVE SESSION
-      localStorage.setItem("active_tech", JSON.stringify(data));
-
-      // ➡️ REDIRECT
-      window.location.href = "techniciandashboard.html";
-    }
+  // ➡️ REDIRECT
+  window.location.href = "techniciandashboard.html";
+}
 
     function showError(msg) {
       const el = document.getElementById("error");
