@@ -671,28 +671,25 @@ function dashboardHandler() {
 
     // ─────────────────────────────────────────────────────────
     async completeJob(job) {
-      const completedAt = new Date().toISOString();
-       
+  const completedAt = new Date().toISOString();
 
-      const { error } = await window.sb
-        .from("jobs")
-        .update({
-          status: "completed",
-          completed_at: completedAt,
-          technician_earning: this.calculateFee(job)
-        })
-        .eq("id", job.id)
-        .eq("tech_id", this.tech.id);
+  const { error } = await window.sb
+    .from("jobs")
+    .update({
+      status: "completed",
+      completed_at: completedAt
+    })
+    .eq("id", job.id)
+    .eq("tech_id", this.tech.id);
 
-      if (error) {
-        console.error(error);
-        alert("Failed to complete job: " + error.message);
-        return;
-      }
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-      alert("Job marked as completed!");
-      this.fetchJobs();
-    },
+  alert("Job completed");
+  this.fetchJobs();
+},
 
     // ─────────────────────────────────────────────────────────
     async markArrived(job) {
