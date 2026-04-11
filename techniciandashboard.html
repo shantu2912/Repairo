@@ -678,8 +678,7 @@ function dashboardHandler() {
         .update({
           status: "completed",
           completed_at: completedAt,
-          technician_fee: fee,
-          technician_earning: technicianEarning
+          technician_earning: fee
         })
         .eq("id", job.id)
         .eq("tech_id", this.tech.id);
@@ -777,9 +776,7 @@ function dashboardHandler() {
     calculateFee(job) {
       const COMMISSION = 0.157;
       const servicePrice = job.discounted_price || job.original_price || job.price || 0;
-     
-const technicianEarning =  Math.round(servicePrice * (1 - COMMISSION));
-      return technicianEarning;
+      return Math.round(servicePrice * (1 - COMMISSION));
     },
 
     // ─────────────────────────────────────────────────────────
