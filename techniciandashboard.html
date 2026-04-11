@@ -296,6 +296,7 @@ window.firebaseMessaging = firebase.messaging();
      ALPINE COMPONENT
      ============================================================ -->
 <script>
+  
 function dashboardHandler() {
   return {
     tech: null,
@@ -671,14 +672,14 @@ function dashboardHandler() {
     // ─────────────────────────────────────────────────────────
     async completeJob(job) {
       const completedAt = new Date().toISOString();
-      const fee = this.calculateFee(job);
+       
 
       const { error } = await window.sb
         .from("jobs")
         .update({
           status: "completed",
           completed_at: completedAt,
-          technician_earning: fee
+          technician_earning: this.calculateFee(job)
         })
         .eq("id", job.id)
         .eq("tech_id", this.tech.id);
@@ -776,7 +777,8 @@ function dashboardHandler() {
     calculateFee(job) {
       const COMMISSION = 0.157;
       const servicePrice = job.discounted_price || job.original_price || job.price || 0;
-      return Math.round(servicePrice * (1 - COMMISSION));
+      const fee= Math.round(servicePrice * (1 - COMMISSION));
+      return(fee);
     },
 
     // ─────────────────────────────────────────────────────────
