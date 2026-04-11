@@ -677,11 +677,12 @@ function dashboardHandler() {
     .from("jobs")
     .update({
       status: "completed",
-      completed_at: completedAt
+      completed_at: completedAt,
+      technician_earning: this.calculateFee(job)
     })
     .eq("id", job.id)
     .eq("tech_id", this.tech.id);
-
+ console.log(this.calculateFee(job));
   if (error) {
     alert(error.message);
     return;
