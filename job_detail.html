@@ -5,16 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FixZen Pro | Active Job</title>
 
-<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Alpine.js for better UI interactions -->
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 
 <script>
@@ -41,12 +37,17 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
   border:1px solid #fff;
   box-shadow:0 15px 35px rgba(93,86,70,.08)
 }
+/* Stops input arrows on number fields */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
 </style>
 </head>
 
 <body class="min-h-screen pb-28" x-data="jobCompletion()">
 
-<!-- HEADER -->
 <header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur border-b p-5">
   <div class="max-w-md mx-auto">
     <p class="text-[10px] uppercase tracking-widest text-brand-gold font-black">
@@ -60,27 +61,21 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
 
 <main class="max-w-md mx-auto p-6 space-y-6">
 
-  <!-- LOADING -->
   <div id="loading" class="text-center text-sm text-brand-dark/50 mt-20">
     Loading job details…
   </div>
 
-  <!-- JOB CARD -->
   <div id="jobBox" class="hidden glass-card p-6 rounded-[2.5rem] border-l-4 border-brand-gold">
 
-    <!-- CATEGORY -->
     <span id="category"
       class="text-[10px] font-bold text-brand-gold uppercase"></span>
 
-    <!-- DEVICE -->
     <h2 id="device"
       class="text-2xl font-extrabold text-brand-olive mt-1"></h2>
 
-    <!-- ISSUE -->
     <p id="issue"
       class="text-sm italic text-brand-dark/60 mt-1"></p>
 
-    <!-- STATUS BADGE -->
     <div class="mt-3">
       <span id="statusBadge"
         class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-bold">
@@ -88,7 +83,6 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
       </span>
     </div>
 
-    <!-- CUSTOMER SECTION -->
     <div class="border-t mt-6 pt-4 space-y-2">
       <p class="text-sm font-bold" id="customer"></p>
 
@@ -100,7 +94,6 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
       <p id="location"
         class="text-xs text-brand-dark/60"></p>
 
-      <!-- LIVE ETA PANEL -->
       <div class="glass-card mt-4 p-4 rounded-2xl text-center">
         <p class="text-[10px] uppercase tracking-widest text-brand-gold font-bold">
           Live Route Status
@@ -120,14 +113,12 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
         </p>
       </div>
 
-      <!-- ROUTE BUTTON (CRITICAL FEATURE) -->
       <button id="routeBtn"
         class="w-full mt-3 bg-brand-olive text-white py-3 rounded-xl font-bold">
         Navigate to Customer (Route)
       </button>
     </div>
 
-    <!-- PAYMENT QR -->
     <div class="glass-card mt-6 p-4 rounded-2xl text-center">
       <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
         Customer Payment
@@ -138,39 +129,17 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
       </p>
     </div>
 
-    <!-- COMPLETION PHOTO PREVIEW (if any) -->
-    <div x-show="completionPhoto" class="mt-4">
-      <p class="text-xs font-bold text-brand-olive mb-2">📸 Completion Photo:</p>
-      <div class="relative rounded-xl overflow-hidden border-2 border-brand-gold">
-        <img :src="completionPhoto" class="w-full h-32 object-cover">
-        <button @click="clearCompletionPhoto()" 
-                class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600">
-          <i class="fa-solid fa-times text-sm">✕</i>
-        </button>
-      </div>
-    </div>
-    
-    <!-- Warning if no photo taken -->
-    <div x-show="!completionPhoto" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-      <p class="text-xs text-amber-700 text-center font-bold">
-        ⚠️ Photo required before completing job
-      </p>
-      <p class="text-xs text-amber-600 text-center mt-1">
-        Please take a photo of the completed work
-      </p>
-    </div>
-
-    <!-- ACTION BUTTONS -->
     <div class="mt-6 space-y-3">
       <button id="arrivedBtn"
         class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
         Mark Arrived
       </button>
 
-      <!-- Complete Job Button - Direct check for photo -->
-      <button @click="attemptCompleteJob()"
-              class="w-full bg-green-600 text-white py-3 rounded-xl font-black uppercase">
-        Complete Job & Unlock
+      <button @click="initiateCompletion()"
+              :disabled="isGeneratingOtp"
+              class="w-full bg-green-600 text-white py-3 rounded-xl font-black uppercase disabled:opacity-50 transition-opacity">
+        <span x-show="!isGeneratingOtp">Complete Job & Unlock</span>
+        <span x-show="isGeneratingOtp">Generating Code...</span>
       </button>
     </div>
 
@@ -178,101 +147,48 @@ body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif
 
 </main>
 
-<!-- COMPLETION PHOTO MODAL -->
-<div x-show="showCompletionModal" 
+<div x-show="showOtpModal" 
      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
      x-transition.opacity
      style="display: none;">
   
-  <div class="bg-white w-full max-w-md rounded-[30px] p-6 shadow-2xl animate__animated animate__slideInUp">
-    <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
+  <div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl text-center animate__animated animate__zoomIn">
     
-    <h3 class="text-xl font-serif font-bold text-brand-olive text-center mb-4">
-      📸 Add Completion Photo
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fa-solid fa-shield-halved text-2xl text-green-600"></i>
+    </div>
+
+    <h3 class="text-xl font-bold text-brand-olive mb-2">
+      Verify Completion
     </h3>
     
-    <p class="text-xs text-center text-brand-dark/60 mb-6">
-      <span class="text-red-500 font-bold">* Required:</span> Take a photo of the completed work
+    <p class="text-xs text-gray-600 mb-6">
+      Ask the customer for the 4-digit code displayed on their screen to finalize this job.
     </p>
     
-    <!-- Camera Preview (when active) -->
-    <div x-show="cameraActive" class="relative mb-4 rounded-xl overflow-hidden bg-black">
-      <video id="completionCamera" class="w-full h-48 object-cover"></video>
-      <button @click="stopCamera()" 
-              class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white">
-        ✕
-      </button>
-      
-      <!-- Capture Button -->
-      <button @click="capturePhoto()" 
-              class="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-white border-4 border-brand-gold hover:scale-110 transition-transform">
-        <div class="w-12 h-12 rounded-full bg-brand-gold mx-auto"></div>
-      </button>
-    </div>
+    <input type="number" 
+           x-model="enteredOtp" 
+           maxlength="4" 
+           placeholder="••••"
+           class="w-full text-center text-4xl tracking-[0.5em] p-4 border-2 border-brand-gold/50 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:border-brand-gold transition-colors font-bold text-brand-dark mb-2">
     
-    <!-- Photo Options (when camera not active and no photo taken) -->
-    <div x-show="!cameraActive && !completionPhoto" class="space-y-3">
-      <!-- Live Camera Button -->
-      <button @click="startCamera()" 
-              class="w-full py-4 rounded-xl bg-brand-gold/10 border-2 border-brand-gold/30 text-brand-gold font-bold hover:bg-brand-gold/20 flex items-center justify-center gap-2">
-        <span>📸</span> Take Live Photo
-      </button>
-      
-      <!-- Gallery Upload Button -->
-      <button @click="document.getElementById('completionGallery').click()" 
-              class="w-full py-4 rounded-xl bg-gray-100 border-2 border-gray-200 text-brand-dark font-bold hover:bg-gray-200 flex items-center justify-center gap-2">
-        <span>🖼️</span> Upload from Gallery
-      </button>
-      
-      <!-- Hidden file input -->
-      <input type="file" 
-             id="completionGallery"
-             accept="image/*" 
-             @change="handleGalleryUpload"
-             class="hidden">
-    </div>
-    
-    <!-- Captured Photo Preview -->
-    <div x-show="completionPhoto" class="mt-4">
-      <p class="text-sm font-bold text-brand-olive mb-2">Preview:</p>
-      <img :src="completionPhoto" class="w-full h-40 object-cover rounded-xl border-2 border-brand-gold">
-      
-      <!-- Retake/Reupload Options -->
-      <div class="flex gap-2 mt-3">
-        <button @click="clearCompletionPhoto(); startCamera()" 
-                class="flex-1 py-2 rounded-lg bg-brand-gold/10 text-brand-gold text-sm font-bold">
-          Retake Photo
-        </button>
-        <button @click="clearCompletionPhoto(); document.getElementById('completionGallery').click()" 
-                class="flex-1 py-2 rounded-lg bg-gray-100 text-gray-600 text-sm font-bold">
-          Choose Different
-        </button>
-      </div>
-    </div>
-    
-    <!-- Validation Message -->
-    <div x-show="!completionPhoto" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-      <p class="text-xs text-red-600 text-center font-bold">
-        ⚠️ Photo is required to complete this job
-      </p>
-    </div>
-    
-    <!-- Action Buttons -->
-    <div class="flex gap-3 mt-6">
-      <button @click="closeCompletionModal()" 
+    <p x-show="otpError" class="text-red-500 text-xs font-bold mb-4">
+      ❌ Invalid code. Please check with the customer.
+    </p>
+
+    <div class="flex gap-3 mt-4">
+      <button @click="closeOtpModal()" 
               class="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50">
         Cancel
       </button>
-      <button @click="submitCompletion()" 
-              :disabled="!completionPhoto"
-              class="flex-1 py-3 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive disabled:opacity-50 disabled:cursor-not-allowed">
-        Complete Job
+      <button @click="verifyAndComplete()" 
+              :disabled="enteredOtp.length !== 4 || isVerifying"
+              class="flex-1 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+        <span x-show="!isVerifying">Verify</span>
+        <span x-show="isVerifying">Verifying...</span>
       </button>
     </div>
     
-    <p class="text-[10px] text-center text-gray-400 mt-4">
-      Photo is required and will be verified
-    </p>
   </div>
 </div>
 
@@ -289,175 +205,105 @@ if (!jobId) {
 }
 
 let jobData = null;
-let cameraStream = null;
 
-// Alpine.js data
+// Alpine.js data & logic for OTP
 function jobCompletion() {
   return {
-    showCompletionModal: false,
-    cameraActive: false,
-    completionPhoto: null,
-    photoFile: null,
+    showOtpModal: false,
+    generatedOtp: null,
+    enteredOtp: '',
+    otpError: false,
+    isGeneratingOtp: false,
+    isVerifying: false,
     
-    // New method: Check photo before allowing completion
-    attemptCompleteJob() {
-      if (this.completionPhoto) {
-        // If photo already exists, proceed directly to completion
-        this.finalizeJobCompletion();
-      } else {
-        // If no photo, open modal to take photo
-        this.openCompletionModal();
-      }
-    },
-    
-    openCompletionModal() {
-      this.showCompletionModal = true;
-    },
-    
-    closeCompletionModal() {
-      this.showCompletionModal = false;
-      this.stopCamera();
-    },
-    
-    async startCamera() {
+    // Step 1: Generate OTP, push to Supabase, open modal
+    async initiateCompletion() {
+      this.isGeneratingOtp = true;
+      
+      // Generate random 4 digit number
+      this.generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      
       try {
-        this.cameraActive = true;
-        cameraStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment' }, 
-          audio: false 
-        });
-        
-        // Wait for DOM to update
-        setTimeout(() => {
-          const video = document.getElementById('completionCamera');
-          if (video && cameraStream) {
-            video.srcObject = cameraStream;
-            video.play();
-          }
-        }, 100);
-      } catch (err) {
-        alert('Unable to access camera. Please check permissions.');
-        this.cameraActive = false;
+        // Push to the 'otp' column in Supabase
+        const { error } = await sb
+          .from('jobs')
+          .update({ otp: this.generatedOtp })
+          .eq('id', jobId);
+
+        if (error) throw error;
+
+        // Open modal for input
+        this.showOtpModal = true;
+
+      } catch (error) {
+        alert("Network error: Could not generate code. Please try again.");
+        console.error(error);
+      } finally {
+        this.isGeneratingOtp = false;
       }
     },
     
-    stopCamera() {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
+    // Step 2: Verify typed code and complete job
+    async verifyAndComplete() {
+      // Basic check
+      if (this.enteredOtp !== this.generatedOtp) {
+        this.otpError = true;
+        this.enteredOtp = ''; // reset input
+        return;
       }
-      this.cameraActive = false;
-    },
-    
-    capturePhoto() {
-      const video = document.getElementById('completionCamera');
-      const canvas = document.createElement('canvas');
       
-      if (video && video.videoWidth) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Create local preview
-        const imageUrl = canvas.toDataURL('image/jpeg', 0.9);
-        this.completionPhoto = imageUrl;
-        this.stopCamera();
-      } else {
-        alert('Camera not ready. Please try again.');
-      }
-    },
-    
-    handleGalleryUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        // Create local preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.completionPhoto = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    
-    clearCompletionPhoto() {
-      this.completionPhoto = null;
-    },
-    
-    // Direct completion when photo already exists
-    async finalizeJobCompletion() {
-      // Base fee calculation
+      this.isVerifying = true;
+      this.otpError = false;
+
+      // Calculate technician fee based on category
       const BASE = {
-        "Carpenter": 800,
-        "Plumber": 600,
-        "Electrician": 600,
-        "Painter": 600,
-        "Mason": 600,
-        "Welder": 600,
-        "Roofer": 600,
-        "AC Tech": 600
+        "Carpenter": 800, "Plumber": 600, "Electrician": 600, 
+        "Painter": 600, "Mason": 600, "Welder": 600, 
+        "Roofer": 600, "AC Tech": 600
       };
-      
       const fee = BASE[jobData?.category] ?? 400;
       
       try {
-        // Update job WITHOUT any photo URL - just job completion
+        // Final update to complete the job
         const { error: updateError } = await sb
           .from('jobs')
           .update({
             status: "completed",
             completed_at: new Date().toISOString(),
             technician_fee: fee
-            // NO photo_url field added - we just validate locally
           })
           .eq("id", jobId);
         
-        if (updateError) {
-          throw new Error('Failed to update job: ' + updateError.message);
-        }
+        if (updateError) throw updateError;
         
-        // Clear locked job
+        // Success
         localStorage.removeItem("locked_job_id");
-        
-        alert("Job Completed Successfully!");
+        alert("Job Completed Successfully! ✅");
         window.location.href = "techniciandashboard.html";
         
       } catch (error) {
-        alert(error.message);
+        alert("Database Error: " + error.message);
+        this.isVerifying = false;
       }
     },
     
-    // Submit from modal
-    async submitCompletion() {
-      // Validate photo is present
-      if (!this.completionPhoto) {
-        alert('Please take a completion photo before finishing the job');
-        return;
-      }
-      
-      // Close modal first
-      this.showCompletionModal = false;
-      this.stopCamera();
-      
-      // Then complete the job
-      await this.finalizeJobCompletion();
+    closeOtpModal() {
+      this.showOtpModal = false;
+      this.enteredOtp = '';
+      this.otpError = false;
     }
   }
 }
 
+// --- GPS & Tracking Logic remains unchanged ---
 function getCurrentLocation(){
   return new Promise((resolve, reject) => {
     if(!navigator.geolocation){
       reject("Geolocation not supported");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
-      pos => resolve({
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
-      }),
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       err => reject(err.message),
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -466,41 +312,23 @@ function getCurrentLocation(){
 
 async function updateDistanceAndETA(){
   if(!jobData || !jobData.location) return;
-
   try {
     const current = await getCurrentLocation();
-
-    // Simple geocoding using OpenStreetMap (free, no API key)
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(jobData.location)}`
-    );
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(jobData.location)}`);
     const data = await response.json();
     
     if (data && data[0]) {
-      const destCoords = {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon)
-      };
-      
+      const destCoords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
       const R = 6371;
       const dLat = (destCoords.lat - current.lat) * Math.PI/180;
       const dLon = (destCoords.lng - current.lng) * Math.PI/180;
-      const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(current.lat*Math.PI/180) *
-        Math.cos(destCoords.lat*Math.PI/180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(current.lat*Math.PI/180) * Math.cos(destCoords.lat*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       const distanceKm = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-      const etaMinutes = Math.round((distanceKm / 30) * 60); // 30km/h avg
+      const etaMinutes = Math.round((distanceKm / 30) * 60);
 
-      document.getElementById("distanceText").innerText =
-        distanceKm.toFixed(1) + " km";
-
-      document.getElementById("etaText").innerText =
-        etaMinutes <= 1 ? "Arriving" : etaMinutes + " mins";
+      document.getElementById("distanceText").innerText = distanceKm.toFixed(1) + " km";
+      document.getElementById("etaText").innerText = etaMinutes <= 1 ? "Arriving" : etaMinutes + " mins";
     }
-
   } catch (err) {
     document.getElementById("distanceText").innerText = "Location off";
     document.getElementById("etaText").innerText = "Enable GPS";
@@ -509,12 +337,8 @@ async function updateDistanceAndETA(){
 
 function openRoute(location){
   if(!location) return alert("Customer location missing");
-
   const encoded = encodeURIComponent(location);
-  window.open(
-    `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`,
-    '_blank'
-  );
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`, '_blank');
 }
 
 async function loadJob() {
@@ -536,14 +360,9 @@ async function loadJob() {
   document.getElementById("issue").innerText = data.issue;
   document.getElementById("customer").innerText = data.customer_name;
   document.getElementById("location").innerText = data.location;
-
-  // Call button
   document.getElementById("callBtn").href = "tel:" + (data.phone || "");
-
-  // Route navigation
   document.getElementById("routeBtn").onclick = () => openRoute(data.location);
 
-  // Status badge logic
   const badge = document.getElementById("statusBadge");
   if(data.status === "arrived"){
     badge.innerText = "Arrived at Location";
@@ -553,7 +372,6 @@ async function loadJob() {
   document.getElementById("loading").style.display = "none";
   document.getElementById("jobBox").classList.remove("hidden");
   
-  // Start live ETA tracking every 10 seconds
   updateDistanceAndETA();
   setInterval(updateDistanceAndETA, 10000);
 }
@@ -563,15 +381,12 @@ document.getElementById("arrivedBtn").onclick = async () => {
     status: "arrived",
     arrived_at: new Date().toISOString()
   }).eq("id", jobId);
-
-  location.reload(); // refresh UI state
+  location.reload(); 
 };
 
 loadJob();
-
 </script>
 
-<!-- Add Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
 </body>
