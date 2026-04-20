@@ -9,6 +9,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -186,13 +188,103 @@
                 <h2 class="text-3xl font-black text-brand-dark mb-2">Job Completed!</h2>
                 <p class="text-sm text-gray-500 mb-8 px-2">Thank you for choosing FixZen. The technician has successfully verified your code and completed the service.</p>
 
-                <button @click="window.location.href='index.html'" class="w-full py-4 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition shadow-lg flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-house"></i> Return to Home
-                </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button @click="openBillModal()" class="py-4 bg-white border-2 border-brand-dark text-brand-dark rounded-xl font-bold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-invoice"></i> View Bill
+                    </button>
+                    <button @click="window.location.href='index.html'" class="py-4 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-house"></i> Home
+                    </button>
+                </div>
             </div>
 
         </div>
+    </div>
 
+    <div x-show="showBill" 
+         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+         x-transition.opacity
+         style="display: none;">
+      
+        <div class="bg-white w-full max-w-md rounded-[20px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            
+            <div class="p-6 overflow-y-auto bg-[#fdfdfd]" id="invoice-content">
+                
+                <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-4">
+                    <h1 class="font-serif italic text-3xl text-brand-dark font-bold">FixZen</h1>
+                    <p class="text-xs text-gray-500 mt-1">Premium Home Services</p>
+                    <p class="text-[10px] text-gray-400 mt-1 font-mono">Invoice #<span x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></p>
+                </div>
+
+                <div class="flex justify-between text-xs text-gray-600 mb-6 font-mono">
+                    <div>
+                        <p class="font-bold text-gray-800">Billed To:</p>
+                        <p x-text="fullJobData?.customer_name || 'Customer'"></p>
+                        <p x-text="fullJobData?.phone || ''"></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-gray-800">Date:</p>
+                        <p x-text="new Date().toLocaleDateString()"></p>
+                        <p class="font-bold text-gray-800 mt-2">Tech:</p>
+                        <p x-text="techData?.name || 'Expert'"></p>
+                    </div>
+                </div>
+
+                <div class="border-b-2 border-dashed border-gray-300 pb-4 mb-4">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-400 border-b border-gray-200">
+                                <th class="pb-2 font-normal">Service</th>
+                                <th class="pb-2 text-right font-normal">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-3">
+                                    <p class="font-bold text-brand-dark" x-text="fullBookingData?.service_name || fullJobData?.category || 'Service'"></p>
+                                    <p class="text-xs text-gray-500" x-text="fullBookingData?.variant_name || fullJobData?.device || 'Standard Visit'"></p>
+                                </td>
+                                <td class="py-3 text-right font-mono font-bold">
+                                    ₹<span x-text="fullBookingData?.price || '0.00'"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="space-y-2 text-sm text-gray-600 mb-6">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span class="font-mono">₹<span x-text="fullBookingData?.price || '0.00'"></span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Platform Fee</span>
+                        <span class="font-mono">₹49.00</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-black text-brand-dark mt-2 pt-2 border-t border-gray-200">
+                        <span>Total Paid</span>
+                        <span class="font-mono text-green-600">
+                            ₹<span x-text="(Number(fullBookingData?.price || 0) + 49).toFixed(2)"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-gray-400 mt-6 pb-2">
+                    <p>Thank you for trusting FixZen!</p>
+                    <p>For support, email help@fixzen.in</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 border-t flex gap-3">
+                <button @click="showBill = false" class="flex-1 py-3 rounded-xl border border-gray-300 font-bold text-gray-600 hover:bg-gray-100">
+                    Close
+                </button>
+                <button @click="downloadPDF()" :disabled="isPrinting" class="flex-1 py-3 rounded-xl bg-brand-green text-white font-bold shadow-md hover:bg-green-600 flex items-center justify-center gap-2">
+                    <span x-show="!isPrinting"><i class="fa-solid fa-download"></i> Save PDF</span>
+                    <span x-show="isPrinting"><i class="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -204,11 +296,15 @@
                 secondsElapsed: 0,
                 timerInterval: null,
                 
-                // New Variables for OTP and Status
                 otpCode: null,
                 jobStatus: 'pending',
                 
-                // Map Data
+                // NEW INVOICE VARIABLES
+                showBill: false,
+                fullJobData: null,
+                fullBookingData: null,
+                isPrinting: false,
+                
                 map: null,
                 techMarker: null,
                 etaMins: 12,
@@ -224,31 +320,66 @@
                     }
 
                     this.startTimer();
-                    
-                    // Initial check to see where the job is currently at
                     await this.checkJobStatus();
 
-                    // The upgraded Supabase Realtime Listener
                     sb.channel('waiting-room')
                       .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, (payload) => {
                           
-                          // 1. Listen for Technician Assignment
                           if (payload.new && payload.new.tech_id && !this.technicianFound) {
                               this.fetchTechnician(payload.new.tech_id);
                           }
                           
-                          // 2. Listen for OTP Generation
                           if (payload.new && payload.new.otp && !this.otpCode) {
                               this.otpCode = payload.new.otp;
                           }
                           
-                          // 3. Listen for Job Completion
                           if (payload.new && payload.new.status) {
                               this.jobStatus = payload.new.status;
                           }
                           
                       })
                       .subscribe();
+                },
+
+                // NEW INVOICE FUNCTIONS
+                async openBillModal() {
+                    this.showBill = true;
+                    
+                    // Fetch full job data
+                    const { data: job } = await sb.from('jobs').select('*').eq('id', this.jobId).single();
+                    if (job) {
+                        this.fullJobData = job;
+                        
+                        // Fetch the linked booking data for prices
+                        if (job.booking_id) {
+                            const { data: booking } = await sb.from('bookings').select('*').eq('id', job.booking_id).single();
+                            this.fullBookingData = booking;
+                        } else {
+                            // Fallback if no booking ID exists
+                            this.fullBookingData = { price: 499 };
+                        }
+                    }
+                },
+
+                downloadPDF() {
+                    this.isPrinting = true;
+                    const element = document.getElementById('invoice-content');
+                    
+                    const opt = {
+                        margin:       0.5,
+                        filename:     `FixZen_Invoice_${this.jobId.slice(0,6).toUpperCase()}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true },
+                        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    };
+
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        this.isPrinting = false;
+                    }).catch((err) => {
+                        console.error("PDF Error:", err);
+                        alert("Failed to generate PDF.");
+                        this.isPrinting = false;
+                    });
                 },
 
                 startTimer() {
@@ -268,7 +399,6 @@
                 },
 
                 async checkJobStatus() {
-                    // Fetch existing status, OTP, and tech on page load in case of refresh
                     const { data: job } = await sb.from('jobs').select('tech_id, otp, status').eq('id', this.jobId).single();
                     if (job) {
                         if (job.tech_id) this.fetchTechnician(job.tech_id);
@@ -284,7 +414,6 @@
                         this.technicianFound = true;
                         clearInterval(this.timerInterval);
                         
-                        // Initialize map only if the job is not completed yet and no OTP is blocking it
                         if(this.jobStatus !== 'completed' && !this.otpCode) {
                             this.$nextTick(() => {
                                 this.initMap();
@@ -293,9 +422,8 @@
                     }
                 },
 
-                // --- THE LEAFLET MAP MAGIC ---
                 initMap() {
-                    if (this.map) return; // Prevent re-initializing
+                    if (this.map) return; 
 
                     const customerLat = 21.1458;
                     const customerLng = 79.0882;
