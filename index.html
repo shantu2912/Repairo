@@ -226,7 +226,7 @@
             
             <img src="fixzen.png" alt="FixZen" class="pointer-events-auto h-8 object-contain drop-shadow-lg">
 
-            <button @click="navigate('bookings.html')" class="pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white">
+            <button @click="checkActiveOrder()" class="pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white relative">
                 <i class="fa-solid fa-cart-shopping text-lg"></i>
             </button>
         </header>
@@ -457,5 +457,43 @@
 
     </div>
 
+    <script>
+        async function checkActiveOrder() {
+            // 1. Look for the sticky note we saved in service.html
+            const activeJobId = localStorage.getItem('fixzen_active_job');
+            
+            if (!activeJobId) {
+                alert("You do not have any active bookings right now.");
+                return;
+            }
+
+            try {
+                // 2. Double check with Supabase to make sure it hasn't been completed yet
+                const { data: job, error } = await window.sb
+                    .from('jobs')
+                    .select('status')
+                    .eq('id', activeJobId)
+                    .single();
+
+                if (error) {
+                    // If the job was deleted from the database entirely
+                    localStorage.removeItem('fixzen_active_job');
+                    alert("This booking is no longer valid.");
+                    return;
+                }
+
+                // 3. Teleport back to the map if it's still active!
+                if (job.status !== 'completed' && job.status !== 'cancelled') {
+                    window.location.href = `success.html?job_id=${activeJobId}`;
+                } else {
+                    localStorage.removeItem('fixzen_active_job');
+                    alert("Your previous booking has already been completed!");
+                }
+            } catch (err) {
+                console.error("Error checking job status:", err);
+                alert("Could not connect to the database. Please try again.");
+            }
+        }
+    </script>
 </body>
 </html>
