@@ -346,7 +346,7 @@
         );
     },
 
-    // --- CONFIRM BOOKING FUNCTION (Updated with time) ---
+    // --- CONFIRM BOOKING FUNCTION (Updated with sticky note) ---
     async confirmBooking() {
         try {
             if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
@@ -439,6 +439,10 @@
             
             // Clean up camera if still running
             this.stopCamera();
+            
+            // --- NEW: SAVE THE STICKY NOTE FOR THE CART BUTTON ---
+            localStorage.setItem('fixzen_active_job', insertedJob.id);
+            // ----------------------------------------------------
             
             // Redirect to Success Map
             window.location.href = 'success.html?job_id=' + insertedJob.id;
@@ -533,40 +537,32 @@
         </button>
     </div>
 
-    <!-- Camera Modal -->
     <div x-show="showCamera" 
          class="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-0"
          x-transition.opacity style="display: none;">
         
         <div class="relative w-full h-full flex flex-col">
-            <!-- Camera View -->
             <video id="liveCamera" class="w-full h-full object-cover"></video>
             
-            <!-- Hidden Canvas for capturing photo -->
             <canvas id="photoCanvas" class="hidden"></canvas>
             
-            <!-- Camera Controls -->
             <div class="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-6">
-                <!-- Close Camera -->
                 <button @click="showCamera = false; stopCamera()" 
                         class="w-14 h-14 rounded-full bg-red-500/80 text-white flex items-center justify-center text-2xl hover:bg-red-600 transition-colors shadow-lg">
                     <i class="fa-solid fa-times"></i>
                 </button>
                 
-                <!-- Capture Photo -->
                 <button @click="capturePhoto()" 
                         class="w-20 h-20 rounded-full bg-white border-4 border-brand-gold flex items-center justify-center hover:scale-110 transition-transform shadow-xl">
                     <div class="w-16 h-16 rounded-full bg-brand-gold"></div>
                 </button>
                 
-                <!-- Gallery Option (opens file picker) -->
                 <button @click="document.getElementById('cameraGalleryInput').click(); showCamera = false;" 
                         class="w-14 h-14 rounded-full bg-white/80 text-brand-olive flex items-center justify-center text-xl hover:bg-white transition-colors shadow-lg">
                     <i class="fa-solid fa-images"></i>
                 </button>
             </div>
             
-            <!-- Hidden file input for camera gallery -->
             <input type="file" 
                    id="cameraGalleryInput"
                    accept="image/*" 
@@ -575,7 +571,6 @@
         </div>
     </div>
 
-    <!-- Booking Confirmation Modal -->
     <div x-show="showAgreement" 
          class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
          x-transition.opacity style="display: none;">
@@ -590,39 +585,33 @@
             
             <div class="space-y-3 mb-4">
 
-                <!-- Name Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-user text-brand-gold"></i>
                     <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <!-- Phone Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-phone text-brand-gold"></i>
                     <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <!-- GPS Button -->
                 <button @click="fetchGPS()" type="button"
                         class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-green-50 text-brand-green text-sm font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-location-crosshairs text-lg" :class="fetchingLocation ? 'fa-spin' : ''"></i>
                     <span x-text="fetchingLocation ? 'Pinpointing Location...' : '📍 Fetch Current GPS Location'"></span>
                 </button>
 
-                <!-- Address Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
                      :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
                     <i class="fa-solid fa-location-dot text-brand-gold" :class="lat ? 'text-brand-green' : ''"></i>
                     <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <!-- Date Input -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-calendar text-brand-gold"></i>
                     <input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
 
-                <!-- Time Input - New Section -->
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
                      :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
                     <i class="fa-solid fa-clock text-brand-gold"></i>
@@ -631,7 +620,6 @@
                                x-model="time" 
                                :min="date === minDate ? minTime : ''"
                                class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
-                        <!-- Validation Message -->
                         <p x-show="!isDateTimeValid() && date && time" 
                            class="text-[10px] text-brand-red mt-1">
                             ⚠️ Please select a time at least 30 minutes from now
@@ -639,18 +627,14 @@
                     </div>
                 </div>
 
-                <!-- Photo Upload Section - Live Camera & Gallery Options -->
                 <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-3">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-camera text-brand-gold text-lg"></i>
                         <span class="text-sm font-semibold text-brand-dark">Add Photo (Optional)</span>
                     </div>
                     
-                    <!-- Photo Options -->
                     <div class="flex flex-col gap-3">
-                        <!-- Two options: Live Camera or Gallery -->
                         <div class="flex gap-2">
-                            <!-- Live Camera Button -->
                             <button type="button" 
                                     @click="showCamera = true; showAgreement = false;"
                                     class="flex-1 py-3 rounded-xl bg-brand-gold/10 border-2 border-brand-gold/30 text-brand-gold text-sm font-bold hover:bg-brand-gold/20 transition-colors flex items-center justify-center gap-2">
@@ -658,7 +642,6 @@
                                 <span>Live Camera</span>
                             </button>
                             
-                            <!-- Gallery Upload Button -->
                             <button type="button" 
                                     @click="document.getElementById('galleryInput').click()"
                                     class="flex-1 py-3 rounded-xl bg-gray-100 border-2 border-gray-200 text-brand-dark text-sm font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
@@ -667,14 +650,12 @@
                             </button>
                         </div>
                         
-                        <!-- Hidden file input for gallery -->
                         <input type="file" 
                                id="galleryInput"
                                accept="image/*" 
                                @change="handlePhotoSelect"
                                class="hidden">
                         
-                        <!-- Photo Preview -->
                         <div x-show="photoPreview" class="relative mt-2 rounded-lg overflow-hidden border border-gray-200">
                             <img :src="photoPreview" class="w-full h-32 object-cover">
                             <button @click="clearPhoto" 
@@ -691,7 +672,6 @@
 
             </div>
 
-            <!-- Terms & Conditions -->
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
                 <p class="font-bold mb-2 text-brand-olive">Terms & Conditions:</p>
                 <ul class="list-disc pl-4 space-y-1.5">
@@ -702,7 +682,6 @@
                 </ul>
             </div>
 
-            <!-- Agreement Checkbox -->
             <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-6 border border-transparent hover:border-gray-100">
                 <div class="relative flex items-center">
                     <input type="checkbox" x-model="agreed" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-brand-gold checked:bg-brand-gold transition-all">
@@ -711,7 +690,6 @@
                 <span class="text-xs font-medium text-brand-dark/80 leading-snug select-none">I agree to the Terms & Conditions and authorize the job broadcast.</span>
             </label>
 
-            <!-- Action Buttons -->
             <div class="flex gap-3">
                 <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
                 <button @click="confirmBooking()" 
@@ -722,7 +700,6 @@
                 </button>
             </div>
             
-            <!-- Validation summary -->
             <p x-show="!isDateTimeValid() && date && time" 
                class="text-center text-xs text-brand-red mt-2">
                 ⚠️ Please select a valid future time (minimum 30 minutes from now)
