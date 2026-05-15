@@ -164,54 +164,54 @@
             <nav class="flex-1 overflow-y-auto py-2 hide-scroll">
                 <a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="nav_home">HOME</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">HOME</span>
                 </a>
                 
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" data-i18n="sidebar_for_experts">For Experts</p>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">For Experts</p>
                 <a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="sidebar_register_tech">REGISTER AS TECHNICIAN</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">REGISTER AS TECHNICIAN</span>
                 </a>
                 <a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="sidebar_tech_login">TECHNICIAN LOGIN</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">TECHNICIAN LOGIN</span>
                 </a>
                 
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" data-i18n="sidebar_utility">Utility</p>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
                 
                 <a href="#" @click.prevent="navigate('bookings.html')" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="nav_bookings">MY BOOKINGS</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">MY BOOKINGS</span>
                 </a>
                 <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="sidebar_admin">ADMIN DASHBOARD</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">ADMIN DASHBOARD</span>
                 </a>
                 <a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="sidebar_contact">CONTACT US</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">CONTACT US</span>
                 </a>
 
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" data-i18n="sidebar_legal">Legal</p>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Legal</p>
                 <a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="sidebar_privacy">PRIVACY POLICY</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">PRIVACY POLICY</span>
                 </a>
                 <a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="sidebar_terms">TERMS & POLICY</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide">TERMS & POLICY</span>
                 </a>
             </nav>
 
             <div class="p-6 bg-brand-cream/30">
                 <template x-if="user">
-                    <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center" data-i18n="sidebar_log_out">Log Out</button>
+                    <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center">Log Out</button>
                 </template>
                 <template x-if="!user">
-                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center" data-i18n="sidebar_log_in">Log In</a>
+                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
                 </template>
             </div>
         </aside>
@@ -238,7 +238,7 @@
             <div class="absolute inset-0" x-show="slideIndex === 2"><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div>
             <div class="absolute bottom-24 left-6 right-6">
-                <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider" data-i18n="index_top_rated">Top Rated</span>
+                <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Top Rated</span>
                 <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="slideIndex===0 ? 'Expert Electricians' : (slideIndex===1 ? 'Summer Sale' : 'Deep Cleaning')"></h2>
             </div>
         </div>
@@ -249,7 +249,7 @@
                      <div class="w-12 h-12 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-magnifying-glass"></i></div>
                      <div class="flex-1 h-12 relative flex items-center">
                          <div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
-                             <span class="text-brand-dark/40 text-sm font-medium mr-1" data-i18n="index_search_for">Search for</span>
+                             <span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span>
                              <div class="relative h-5 w-32 overflow-hidden">
                                  <div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
                                      <div class="h-5 flex items-center">AC Repair</div>
@@ -290,8 +290,8 @@
 
                     <div x-show="filteredServices.length === 0" class="p-6 text-center">
                         <i class="fa-solid fa-face-frown-open text-2xl text-brand-dark/20 mb-2"></i>
-                        <p class="text-sm text-brand-dark/50 font-medium" data-i18n="index_no_service">No service found matching "<span x-text="searchQuery"></span>"</p>
-                        <p class="text-[10px] text-brand-dark/30 mt-1" data-i18n="index_try_search">Try "AC", "Clean", or "Repair"</p>
+                        <p class="text-sm text-brand-dark/50 font-medium">No service found matching "<span x-text="searchQuery"></span>"</p>
+                        <p class="text-[10px] text-brand-dark/30 mt-1">Try "AC", "Clean", or "Repair"</p>
                     </div>
                 </div>
             </div>
@@ -305,7 +305,7 @@
         <div class="pb-12 space-y-8 mt-6">
             
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" data-i18n="index_section_home">Construction & Home</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Construction & Home</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Carpenter', img:'https://cdn-icons-png.flaticon.com/512/2991/2991138.png', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop'}, 
@@ -330,7 +330,7 @@
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" data-i18n="index_section_appliance">Appliance Repair</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Appliance Repair</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'AC Tech', img:'https://cdn-icons-png.flaticon.com/512/2366/2366050.png', bg:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&fit=crop'}, 
@@ -354,7 +354,7 @@
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" data-i18n="index_section_electronics">Electronics & IT</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Mobile', img:'https://cdn-icons-png.flaticon.com/512/2920/2920349.png', bg:'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&fit=crop'}, 
@@ -378,7 +378,7 @@
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" data-i18n="index_section_auto">Automobile</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Automobile</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Car Mech', img:'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop'}, 
@@ -400,7 +400,7 @@
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" data-i18n="index_section_industrial">Industrial</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Industrial</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Machinery', img:'https://cdn-icons-png.flaticon.com/512/3063/3063823.png', bg:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200&fit=crop'}, 
@@ -423,7 +423,7 @@
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" data-i18n="index_section_other">Other Services</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Other Services</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Pest Ctrl', img:'https://cdn-icons-png.flaticon.com/512/2364/2364539.png', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop'}, 
@@ -448,7 +448,7 @@
 
         <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
             <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-around items-center shadow-super-float">
-                <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold" data-i18n="nav_home">Home</span></a>
+                <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
                 <a href="#" @click.prevent="navigate('bookings.html')" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-calendar-check text-xl"></i></a>
                 <button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors outline-none">
                     <i :class="user ? 'fa-solid fa-user text-brand-olive' : 'fa-regular fa-user'" class="text-xl"></i>
@@ -457,90 +457,6 @@
         </div>
 
     </div>
-<script>
-    // ── FixZen Inline i18n ──────────────────────────────────────
-    const FZT = {
-      en: {
-        nav_home:'Home', nav_bookings:'My Bookings',
-        sidebar_for_experts:'For Experts', sidebar_register_tech:'Register as Technician',
-        sidebar_tech_login:'Technician Login', sidebar_utility:'Utility',
-        sidebar_admin:'Admin Dashboard', sidebar_contact:'Contact Us',
-        sidebar_legal:'Legal', sidebar_privacy:'Privacy Policy',
-        sidebar_terms:'Terms & Policy', sidebar_log_out:'Log Out', sidebar_log_in:'Log In',
-        index_top_rated:'Top Rated', index_search_for:'Search for',
-        index_no_service:'No service found', index_try_search:'Try "AC", "Clean", or "Repair"',
-        index_section_home:'Construction & Home', index_section_appliance:'Appliance Repair',
-        index_section_electronics:'Electronics & IT', index_section_auto:'Automobile',
-        index_section_industrial:'Industrial', index_section_other:'Other Services',
-      },
-      hi: {
-        nav_home:'होम', nav_bookings:'मेरी बुकिंग',
-        sidebar_for_experts:'विशेषज्ञों के लिए', sidebar_register_tech:'तकनीशियन के रूप में पंजीकरण',
-        sidebar_tech_login:'तकनीशियन लॉगिन', sidebar_utility:'उपयोगिता',
-        sidebar_admin:'एडमिन डैशबोर्ड', sidebar_contact:'संपर्क करें',
-        sidebar_legal:'कानूनी', sidebar_privacy:'गोपनीयता नीति',
-        sidebar_terms:'नियम और शर्तें', sidebar_log_out:'लॉग आउट', sidebar_log_in:'लॉग इन',
-        index_top_rated:'टॉप रेटेड', index_search_for:'खोजें',
-        index_no_service:'कोई सेवा नहीं मिली', index_try_search:'"AC", "सफाई" आज़माएं',
-        index_section_home:'निर्माण और घर', index_section_appliance:'उपकरण मरम्मत',
-        index_section_electronics:'इलेक्ट्रॉनिक्स और IT', index_section_auto:'ऑटोमोबाइल',
-        index_section_industrial:'औद्योगिक', index_section_other:'अन्य सेवाएं',
-      },
-      mr: {
-        nav_home:'मुख्यपृष्ठ', nav_bookings:'माझ्या बुकिंग',
-        sidebar_for_experts:'तज्ञांसाठी', sidebar_register_tech:'तंत्रज्ञ म्हणून नोंदणी',
-        sidebar_tech_login:'तंत्रज्ञ लॉगिन', sidebar_utility:'उपयुक्तता',
-        sidebar_admin:'अॅडमिन डॅशबोर्ड', sidebar_contact:'संपर्क करा',
-        sidebar_legal:'कायदेशीर', sidebar_privacy:'गोपनीयता धोरण',
-        sidebar_terms:'अटी व शर्ती', sidebar_log_out:'लॉग आउट', sidebar_log_in:'लॉग इन',
-        index_top_rated:'टॉप रेटेड', index_search_for:'शोधा',
-        index_no_service:'कोणतीही सेवा सापडली नाही', index_try_search:'"AC", "स्वच्छता" वापरून पहा',
-        index_section_home:'बांधकाम आणि घर', index_section_appliance:'उपकरण दुरुस्ती',
-        index_section_electronics:'इलेक्ट्रॉनिक्स आणि IT', index_section_auto:'ऑटोमोबाइल',
-        index_section_industrial:'औद्योगिक', index_section_other:'इतर सेवा',
-      }
-    };
- 
-    function fzApply() {
-      const lang = localStorage.getItem('fixzen_lang') || 'en';
-      const dict = FZT[lang] || FZT.en;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const k = el.getAttribute('data-i18n');
-        if (dict[k]) el.textContent = dict[k];
-      });
-      // Update switcher button highlight
-      ['en','hi','mr'].forEach(l => {
-        const btn = document.getElementById('fz-lang-' + l);
-        if (!btn) return;
-        btn.style.background = (l === lang) ? '#5D5646' : 'white';
-        btn.style.color = (l === lang) ? 'white' : '#5D5646';
-        btn.style.borderColor = (l === lang) ? '#5D5646' : '#DFD4C3';
-      });
-    }
- 
-    function fzSetLang(lang) {
-      localStorage.setItem('fixzen_lang', lang);
-      fzApply();
-    }
- 
-    // Run after DOM is fully painted
-    window.addEventListener('DOMContentLoaded', () => {
-      // Inject floating switcher
-      const sw = document.createElement('div');
-      sw.style.cssText = 'position:fixed;bottom:20px;right:16px;z-index:99999;background:white;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #DFD4C3;display:flex;gap:4px;align-items:center;padding:6px 10px;font-family:"Noto Sans Devanagari","Plus Jakarta Sans",sans-serif;';
-      sw.innerHTML = `
-        <button id="fz-lang-en" onclick="fzSetLang('en')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #DFD4C3;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#5D5646;">EN</button>
-        <button id="fz-lang-hi" onclick="fzSetLang('hi')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #DFD4C3;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#5D5646;font-family:'Noto Sans Devanagari',sans-serif;">हि</button>
-        <button id="fz-lang-mr" onclick="fzSetLang('mr')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #DFD4C3;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#5D5646;font-family:'Noto Sans Devanagari',sans-serif;">म</button>
-      `;
-      document.body.appendChild(sw);
- 
-      // Apply translations — retry a few times to catch Alpine-rendered elements
-      fzApply();
-      setTimeout(fzApply, 500);
-      setTimeout(fzApply, 1500);
-      setTimeout(fzApply, 4500); // after intro animation
-    });
-    </script>
+
 </body>
 </html>

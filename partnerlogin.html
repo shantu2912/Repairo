@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>FixZen Pro | Partner Login</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="i18n.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,14 +12,27 @@
 <body class="min-h-screen flex items-center justify-center bg-[#F8F5F0]">
 
   <div class="bg-white p-10 rounded-3xl shadow-xl w-[360px]">
-    <h1 class="text-2xl font-bold text-center mb-6" data-i18n="partner_title">FixZenix</h1>
+    <h1 class="text-2xl font-bold text-center mb-6">FixZenix</h1>
 
-    <input id="username" data-i18n-placeholder="partner_username" placeholder="Your Username" class="w-full mb-4 p-3 border rounded-xl"/>
-    <input id="password" type="password" data-i18n-placeholder="partner_password" placeholder="Your Password" class="w-full mb-4 p-3 border rounded-xl"/>
+    <input
+      id="username"
+      placeholder="Your Username"
+      class="w-full mb-4 p-3 border rounded-xl"
+    />
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Your Password"
+      class="w-full mb-4 p-3 border rounded-xl"
+    />
 
     <p id="error" class="text-red-600 text-sm mb-3 hidden"></p>
 
-    <button onclick="login()" class="w-full bg-[#5D5646] text-white py-3 rounded-xl font-bold" data-i18n="partner_login_btn">
+    <button
+      onclick="login()"
+      class="w-full bg-[#5D5646] text-white py-3 rounded-xl font-bold"
+    >
       LOGIN
     </button>
   </div>
@@ -37,7 +51,7 @@ async function login() {
   errorEl.classList.add("hidden");
 
   if (!username || !password) {
-    showError(fzT('partner_err_fields'));
+    showError("Enter username and password");
     return;
   }
 
@@ -50,7 +64,7 @@ async function login() {
     .single();
 
   if (error || !data) {
-    showError(fzT('partner_err_invalid'));
+    showError("Invalid username or password");
     return;
   }
 
@@ -67,5 +81,5 @@ async function login() {
       el.classList.remove("hidden");
     }
   </script>
-  <script src="fixzen-i18n.js"></script>
 </body>
+</html>
