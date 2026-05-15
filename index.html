@@ -457,6 +457,90 @@
         </div>
 
     </div>
-
+<script>
+    // ── FixZen Inline i18n ──────────────────────────────────────
+    const FZT = {
+      en: {
+        nav_home:'Home', nav_bookings:'My Bookings',
+        sidebar_for_experts:'For Experts', sidebar_register_tech:'Register as Technician',
+        sidebar_tech_login:'Technician Login', sidebar_utility:'Utility',
+        sidebar_admin:'Admin Dashboard', sidebar_contact:'Contact Us',
+        sidebar_legal:'Legal', sidebar_privacy:'Privacy Policy',
+        sidebar_terms:'Terms & Policy', sidebar_log_out:'Log Out', sidebar_log_in:'Log In',
+        index_top_rated:'Top Rated', index_search_for:'Search for',
+        index_no_service:'No service found', index_try_search:'Try "AC", "Clean", or "Repair"',
+        index_section_home:'Construction & Home', index_section_appliance:'Appliance Repair',
+        index_section_electronics:'Electronics & IT', index_section_auto:'Automobile',
+        index_section_industrial:'Industrial', index_section_other:'Other Services',
+      },
+      hi: {
+        nav_home:'होम', nav_bookings:'मेरी बुकिंग',
+        sidebar_for_experts:'विशेषज्ञों के लिए', sidebar_register_tech:'तकनीशियन के रूप में पंजीकरण',
+        sidebar_tech_login:'तकनीशियन लॉगिन', sidebar_utility:'उपयोगिता',
+        sidebar_admin:'एडमिन डैशबोर्ड', sidebar_contact:'संपर्क करें',
+        sidebar_legal:'कानूनी', sidebar_privacy:'गोपनीयता नीति',
+        sidebar_terms:'नियम और शर्तें', sidebar_log_out:'लॉग आउट', sidebar_log_in:'लॉग इन',
+        index_top_rated:'टॉप रेटेड', index_search_for:'खोजें',
+        index_no_service:'कोई सेवा नहीं मिली', index_try_search:'"AC", "सफाई" आज़माएं',
+        index_section_home:'निर्माण और घर', index_section_appliance:'उपकरण मरम्मत',
+        index_section_electronics:'इलेक्ट्रॉनिक्स और IT', index_section_auto:'ऑटोमोबाइल',
+        index_section_industrial:'औद्योगिक', index_section_other:'अन्य सेवाएं',
+      },
+      mr: {
+        nav_home:'मुख्यपृष्ठ', nav_bookings:'माझ्या बुकिंग',
+        sidebar_for_experts:'तज्ञांसाठी', sidebar_register_tech:'तंत्रज्ञ म्हणून नोंदणी',
+        sidebar_tech_login:'तंत्रज्ञ लॉगिन', sidebar_utility:'उपयुक्तता',
+        sidebar_admin:'अॅडमिन डॅशबोर्ड', sidebar_contact:'संपर्क करा',
+        sidebar_legal:'कायदेशीर', sidebar_privacy:'गोपनीयता धोरण',
+        sidebar_terms:'अटी व शर्ती', sidebar_log_out:'लॉग आउट', sidebar_log_in:'लॉग इन',
+        index_top_rated:'टॉप रेटेड', index_search_for:'शोधा',
+        index_no_service:'कोणतीही सेवा सापडली नाही', index_try_search:'"AC", "स्वच्छता" वापरून पहा',
+        index_section_home:'बांधकाम आणि घर', index_section_appliance:'उपकरण दुरुस्ती',
+        index_section_electronics:'इलेक्ट्रॉनिक्स आणि IT', index_section_auto:'ऑटोमोबाइल',
+        index_section_industrial:'औद्योगिक', index_section_other:'इतर सेवा',
+      }
+    };
+ 
+    function fzApply() {
+      const lang = localStorage.getItem('fixzen_lang') || 'en';
+      const dict = FZT[lang] || FZT.en;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (dict[k]) el.textContent = dict[k];
+      });
+      // Update switcher button highlight
+      ['en','hi','mr'].forEach(l => {
+        const btn = document.getElementById('fz-lang-' + l);
+        if (!btn) return;
+        btn.style.background = (l === lang) ? '#5D5646' : 'white';
+        btn.style.color = (l === lang) ? 'white' : '#5D5646';
+        btn.style.borderColor = (l === lang) ? '#5D5646' : '#DFD4C3';
+      });
+    }
+ 
+    function fzSetLang(lang) {
+      localStorage.setItem('fixzen_lang', lang);
+      fzApply();
+    }
+ 
+    // Run after DOM is fully painted
+    window.addEventListener('DOMContentLoaded', () => {
+      // Inject floating switcher
+      const sw = document.createElement('div');
+      sw.style.cssText = 'position:fixed;bottom:20px;right:16px;z-index:99999;background:white;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #DFD4C3;display:flex;gap:4px;align-items:center;padding:6px 10px;font-family:"Noto Sans Devanagari","Plus Jakarta Sans",sans-serif;';
+      sw.innerHTML = `
+        <button id="fz-lang-en" onclick="fzSetLang('en')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #DFD4C3;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#5D5646;">EN</button>
+        <button id="fz-lang-hi" onclick="fzSetLang('hi')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #DFD4C3;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#5D5646;font-family:'Noto Sans Devanagari',sans-serif;">हि</button>
+        <button id="fz-lang-mr" onclick="fzSetLang('mr')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #DFD4C3;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;background:white;color:#5D5646;font-family:'Noto Sans Devanagari',sans-serif;">म</button>
+      `;
+      document.body.appendChild(sw);
+ 
+      // Apply translations — retry a few times to catch Alpine-rendered elements
+      fzApply();
+      setTimeout(fzApply, 500);
+      setTimeout(fzApply, 1500);
+      setTimeout(fzApply, 4500); // after intro animation
+    });
+    </script>
 </body>
 </html>
