@@ -365,7 +365,7 @@
                         this.fullJobData = job;
                         
                         // 2. Determine where the price and service name are stored
-                        if (job.price !== undefined || job.amount !== undefined) {
+                        if (job.original_amount !== undefined || job.amount !== undefined) {
                             this.fullBookingData = { 
                                 price: job.price || job.amount || 0, 
                                 service_name: job.service_name || job.category || 'Expert Service',
