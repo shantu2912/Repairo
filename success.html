@@ -367,8 +367,8 @@
                         this.billVariantName = job.variant_name || job.device || 'Furniture Assembly';
 
                         // 3. Extract original_amount value and convert string safely to float
-                        if (job.original_amount !== undefined && job.original_amount !== null) {
-                            this.billPrice = parseFloat(job.original_amount);
+                        if (job.original_price !== undefined && job.original_price !== null) {
+                            this.billPrice = parseFloat(job.original_price);
                             console.log("Successfully set billPrice variable to values:", this.billPrice);
                         } else {
                             console.warn("original_amount value returned empty string or null inside the schema row.");
