@@ -341,23 +341,59 @@
                       .subscribe();
                 },
 
-                // NEW INVOICE FUNCTIONS
+                // UPDATED, ROBUST INVOICE GENERATOR
                 async openBillModal() {
                     this.showBill = true;
                     
-                    // Fetch full job data
-                    const { data: job } = await sb.from('jobs').select('*').eq('id', this.jobId).single();
-                    if (job) {
+                    try {
+                        console.log("Fetching data for Job ID:", this.jobId);
+                        
+                        // 1. Fetch the main job record from Supabase
+                        const { data: job, error: jobError } = await sb
+                            .from('jobs')
+                            .select('*')
+                            .eq('id', this.jobId)
+                            .single();
+                            
+                        if (jobError) {
+                            console.error("Error fetching job:", jobError.message);
+                            alert("Could not load bill data. Please check database connection.");
+                            return;
+                        }
+
+                        console.log("Job Data retrieved:", job);
                         this.fullJobData = job;
                         
-                        // Fetch the linked booking data for prices
-                        if (job.booking_id) {
-                            const { data: booking } = await sb.from('bookings').select('*').eq('id', job.booking_id).single();
-                            this.fullBookingData = booking;
-                        } else {
-                            // Fallback if no booking ID exists
-                            this.fullBookingData = { price: 499 };
+                        // 2. Determine where the price and service name are stored
+                        if (job.price !== undefined || job.amount !== undefined) {
+                            this.fullBookingData = { 
+                                price: job.price || job.amount || 0, 
+                                service_name: job.service_name || job.category || 'Expert Service',
+                                variant_name: job.variant_name || job.device || ''
+                            };
+                        } 
+                        else if (job.booking_id) {
+                            const { data: booking, error: bookingError } = await sb
+                                .from('bookings')
+                                .select('*')
+                                .eq('id', job.booking_id)
+                                .single();
+                                
+                            if (bookingError) {
+                                console.error("Error fetching linked booking:", bookingError.message);
+                                this.fullBookingData = { price: 0, service_name: "Service Name Missing" };
+                            } else {
+                                console.log("Booking Data retrieved:", booking);
+                                this.fullBookingData = booking;
+                            }
+                        } 
+                        else {
+                            console.warn("No price or booking_id found in the jobs table!");
+                            this.fullBookingData = { price: 0, service_name: job.category || "Standard Visit" };
                         }
+                        
+                    } catch (err) {
+                        console.error("Unexpected error generating bill:", err);
                     }
                 },
 
