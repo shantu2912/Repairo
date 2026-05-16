@@ -14,7 +14,7 @@
         .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="i18n.js"></script>
+    <script src="i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -75,6 +75,7 @@
           slideIndex: 0,
           searchQuery: '',
           user: null,
+          currentActiveJobId: null,
 
           masterList: [
               {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'}, {n:'Roofer', cat:'Home', icon:'fa-house-chimney'}, {n:'Tiler', cat:'Home', icon:'fa-border-all'},
@@ -101,6 +102,7 @@
 
           async logout() {
               await window.sb.auth.signOut();
+              localStorage.removeItem('active_job_id');
               window.location.reload();
           },
 
@@ -111,12 +113,25 @@
                   sessionStorage.setItem('redirect_to', url);
                   window.location.href = 'loginuser.html';
               }
+          },
+
+          // INTERCEPTIVE ROUTING FOR THE CART LOGIC
+          handleCartNavigation() {
+              if (this.currentActiveJobId) {
+                  window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
+              } else {
+                  this.navigate('bookings.html');
+              }
           }
       }"
       x-init="
           if (sessionStorage.getItem('introShown')) { loading = false; } 
           else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
           
+          // Check for active tracker order token cached within native localStorage context
+          currentActiveJobId = localStorage.getItem('active_job_id');
+          console.log('Discovered tracking token payload status:', currentActiveJobId);
+
           let attempts = 0;
           let check = setInterval(() => { 
               if(window.sb || attempts > 20) { clearInterval(check); checkUser(); }
@@ -181,9 +196,9 @@
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
                 
-                <a href="#" @click.prevent="navigate('bookings.html')" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                <a href="#" @click.prevent="handleCartNavigation()" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">MY BOOKINGS</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? 'LIVE TRACKING' : 'MY BOOKINGS'"></span>
                 </a>
                 <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
@@ -210,8 +225,10 @@
                 <template x-if="user">
                     <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center">Log Out</button>
                 </template>
-                <template x-if="!user">
-                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
+                <template x-if="!notUser">
+                    <template x-if="!user">
+                        <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
+                    </template>
                 </template>
             </div>
         </aside>
@@ -227,8 +244,15 @@
             
             <img src="fixzen.png" alt="FixZen" class="pointer-events-auto h-8 object-contain drop-shadow-lg">
 
-            <button @click="navigate('bookings.html')" class="pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white">
+            <button @click="handleCartNavigation()" class="relative pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-all shadow-lg text-white">
                 <i class="fa-solid fa-cart-shopping text-lg"></i>
+                
+                <template x-if="currentActiveJobId">
+                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white"></span>
+                    </span>
+                </template>
             </button>
         </header>
 
@@ -449,7 +473,17 @@
         <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
             <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-around items-center shadow-super-float">
                 <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
-                <a href="#" @click.prevent="navigate('bookings.html')" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors"><i class="fa-solid fa-calendar-check text-xl"></i></a>
+                
+                <a href="#" @click.prevent="handleCartNavigation()" class="relative w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors">
+                    <i class="fa-solid fa-calendar-check text-xl"></i>
+                    <template x-if="currentActiveJobId">
+                        <span class="absolute top-2 right-2 flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                    </template>
+                </a>
+                
                 <button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors outline-none">
                     <i :class="user ? 'fa-solid fa-user text-brand-olive' : 'fa-regular fa-user'" class="text-xl"></i>
                 </button>
