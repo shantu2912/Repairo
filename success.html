@@ -364,14 +364,15 @@
                         console.log("Job Data retrieved:", job);
                         this.fullJobData = job;
                         
-                        // 2. Determine where the price and service name are stored
-                        if (job.original_amount !== undefined || job.amount !== undefined) {
-                            this.fullBookingData = { 
-                                price: job.price || job.amount || 0, 
-                                service_name: job.service_name || job.category || 'Expert Service',
-                                variant_name: job.variant_name || job.device || ''
-                            };
-                        } 
+                    // 2. Determine where the price and service name are stored
+if (job.original_amount !== undefined || job.price !== undefined) {
+    this.fullBookingData = { 
+        // THIS IS THE MAGIC LINE: We tell it to look for original_amount first
+        price: job.original_amount || job.price || 0, 
+        service_name: job.service_name || job.category || 'Expert Service',
+        variant_name: job.variant_name || job.device || ''
+    };
+}
                         else if (job.booking_id) {
                             const { data: booking, error: bookingError } = await sb
                                 .from('bookings')
