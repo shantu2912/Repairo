@@ -115,7 +115,6 @@
               }
           },
 
-          // INTERCEPTIVE ROUTING FOR THE CART LOGIC
           handleCartNavigation() {
               if (this.currentActiveJobId) {
                   window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
@@ -128,9 +127,9 @@
           if (sessionStorage.getItem('introShown')) { loading = false; } 
           else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
           
-          // Check for active tracker order token cached within native localStorage context
-          currentActiveJobId = localStorage.getItem('active_job_id');
-          console.log('Discovered tracking token payload status:', currentActiveJobId);
+          // CRITICAL FIXED SCOPING: Use 'this.' to strictly bind variables to the reactive virtual DOM state
+          this.currentActiveJobId = localStorage.getItem('active_job_id');
+          console.log('Active Tracking Key Read Status:', this.currentActiveJobId);
 
           let attempts = 0;
           let check = setInterval(() => { 
@@ -225,10 +224,8 @@
                 <template x-if="user">
                     <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center">Log Out</button>
                 </template>
-                <template x-if="!notUser">
-                    <template x-if="!user">
-                        <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
-                    </template>
+                <template x-if="!user">
+                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
                 </template>
             </div>
         </aside>
@@ -244,7 +241,7 @@
             
             <img src="fixzen.png" alt="FixZen" class="pointer-events-auto h-8 object-contain drop-shadow-lg">
 
-            <button @click="handleCartNavigation()" class="relative pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-all shadow-lg text-white">
+            <button @click="handleCartNavigation()" class="relative pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white">
                 <i class="fa-solid fa-cart-shopping text-lg"></i>
                 
                 <template x-if="currentActiveJobId">
