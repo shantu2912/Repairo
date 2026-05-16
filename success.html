@@ -241,11 +241,11 @@
                         <tbody>
                             <tr>
                                 <td class="py-3">
-                                    <p class="font-bold text-brand-dark" x-text="fullBookingData?.service_name || 'Service'"></p>
-                                    <p class="text-xs text-gray-500" x-text="fullBookingData?.variant_name || 'Standard Visit'"></p>
+                                    <p class="font-bold text-brand-dark" x-text="billServiceName"></p>
+                                    <p class="text-xs text-gray-500" x-text="billVariantName"></p>
                                 </td>
                                 <td class="py-3 text-right font-mono font-bold">
-                                    ₹<span x-text="Number(fullBookingData?.price || 0).toFixed(2)"></span>
+                                    ₹<span x-text="Number(billPrice).toFixed(2)"></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -255,7 +255,7 @@
                 <div class="space-y-2 text-sm text-gray-600 mb-6">
                     <div class="flex justify-between">
                         <span>Subtotal</span>
-                        <span class="font-mono">₹<span x-text="Number(fullBookingData?.price || 0).toFixed(2)"></span></span>
+                        <span class="font-mono">₹<span x-text="Number(billPrice).toFixed(2)"></span></span>
                     </div>
                     <div class="flex justify-between">
                         <span>Platform Fee</span>
@@ -264,7 +264,7 @@
                     <div class="flex justify-between text-lg font-black text-brand-dark mt-2 pt-2 border-t border-gray-200">
                         <span>Total Paid</span>
                         <span class="font-mono text-green-600">
-                            ₹<span x-text="(Number(fullBookingData?.price || 0) + 49).toFixed(2)"></span>
+                            ₹<span x-text="(Number(billPrice) + 49).toFixed(2)"></span>
                         </span>
                     </div>
                 </div>
@@ -299,9 +299,12 @@
                 otpCode: null,
                 jobStatus: 'pending',
                 
+                // UNNESTED REACTIVE VARIABLES FOR STABLE TRACKING
                 showBill: false,
                 fullJobData: null,
-                fullBookingData: { price: 0, service_name: 'Loading...', variant_name: '' },
+                billPrice: 0,
+                billServiceName: 'Expert Carpentry',
+                billVariantName: 'Furniture Assembly',
                 isPrinting: false,
                 
                 map: null,
@@ -340,13 +343,11 @@
                       .subscribe();
                 },
 
-                // FIXED MODAL FUNCTION CAPTURING 'original_amount' PROPERLY
                 async openBillModal() {
-                    this.showBill = true;
-                    
                     try {
-                        console.log("Fetching live payload for Job ID:", this.jobId);
+                        console.log("Fetching live row data for Job ID:", this.jobId);
                         
+                        // 1. Fetch live row data first
                         const { data: job, error: jobError } = await sb
                             .from('jobs')
                             .select('*')
@@ -354,43 +355,33 @@
                             .single();
                             
                         if (jobError) {
-                            console.error("Supabase Error:", jobError.message);
+                            console.error("Supabase Dynamic read failed:", jobError.message);
                             return;
                         }
 
-                        console.log("Fetched Row Structure:", job);
+                        console.log("Database Row Retrieved:", job);
                         this.fullJobData = job;
                         
-                        // Check if original_amount column exists explicitly inside the object
+                        // 2. Set structural strings
+                        this.billServiceName = job.service_name || job.category || 'Expert Carpentry';
+                        this.billVariantName = job.variant_name || job.device || 'Furniture Assembly';
+
+                        // 3. Extract original_amount value and convert string safely to float
                         if (job.original_amount !== undefined && job.original_amount !== null) {
-                            this.fullBookingData = { 
-                                price: parseFloat(job.original_amount), 
-                                service_name: job.service_name || job.category || 'Expert Carpentry',
-                                variant_name: job.variant_name || job.device || 'Furniture Assembly'
-                            };
-                        } 
-                        else if (job.booking_id) {
-                            // If it's a fallback relational structure
-                            const { data: booking } = await sb
-                                .from('bookings')
-                                .select('*')
-                                .eq('id', job.booking_id)
-                                .single();
-                                
-                            if (booking) {
-                                this.fullBookingData = {
-                                    price: parseFloat(booking.price || booking.original_amount || 0),
-                                    service_name: booking.service_name || 'Expert Service',
-                                    variant_name: booking.variant_name || ''
-                                };
-                            }
+                            this.billPrice = parseFloat(job.original_amount);
+                            console.log("Successfully set billPrice variable to values:", this.billPrice);
                         } else {
-                            // Absolute safe structural fallback if record is blank
-                            this.fullBookingData = { price: 0, service_name: job.category || 'Service' };
+                            console.warn("original_amount value returned empty string or null inside the schema row.");
+                            this.billPrice = 0;
                         }
                         
+                        // 4. Update visibility flags using native microtask tick to allow clean template evaluation
+                        this.$nextTick(() => {
+                            this.showBill = true;
+                        });
+                        
                     } catch (err) {
-                        console.error("Critical Runtime Error:", err);
+                        console.error("Critical Runtime execution failure:", err);
                     }
                 },
 
