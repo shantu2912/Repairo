@@ -115,9 +115,11 @@
               }
           },
 
+          // FOOLPROOF CART ROUTING LOGIC (Bypasses checkUser race condition)
           handleCartNavigation() {
-              if (this.currentActiveJobId) {
-                  window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
+              const activeId = localStorage.getItem('active_job_id');
+              if (activeId) {
+                  window.location.href = `success.html?job_id=${activeId}`;
               } else {
                   this.navigate('bookings.html');
               }
@@ -127,9 +129,9 @@
           if (sessionStorage.getItem('introShown')) { loading = false; } 
           else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
           
-          // CRITICAL FIXED SCOPING: Use 'this.' to strictly bind variables to the reactive virtual DOM state
+          // Pull local state tokens instantly upon application frame mount
           this.currentActiveJobId = localStorage.getItem('active_job_id');
-          console.log('Active Tracking Key Read Status:', this.currentActiveJobId);
+          console.log('Active Order Token Value:', this.currentActiveJobId);
 
           let attempts = 0;
           let check = setInterval(() => { 
