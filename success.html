@@ -224,7 +224,7 @@
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-gray-800">Date:</p>
-                        <p x-text="new Date().toLocaleDateString()"></p>
+                        <p x-text="new Date().toLocaleDateString('en-IN')"></p>
                         <p class="font-bold text-gray-800 mt-2">Tech:</p>
                         <p x-text="techData?.name || 'Expert'"></p>
                     </div>
@@ -241,11 +241,11 @@
                         <tbody>
                             <tr>
                                 <td class="py-3">
-                                    <p class="font-bold text-brand-dark" x-text="fullBookingData?.service_name || fullJobData?.category || 'Service'"></p>
-                                    <p class="text-xs text-gray-500" x-text="fullBookingData?.variant_name || fullJobData?.device || 'Standard Visit'"></p>
+                                    <p class="font-bold text-brand-dark" x-text="fullBookingData?.service_name || 'Service'"></p>
+                                    <p class="text-xs text-gray-500" x-text="fullBookingData?.variant_name || 'Standard Visit'"></p>
                                 </td>
                                 <td class="py-3 text-right font-mono font-bold">
-                                    ₹<span x-text="fullBookingData?.price || '0.00'"></span>
+                                    ₹<span x-text="Number(fullBookingData?.price || 0).toFixed(2)"></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -255,7 +255,7 @@
                 <div class="space-y-2 text-sm text-gray-600 mb-6">
                     <div class="flex justify-between">
                         <span>Subtotal</span>
-                        <span class="font-mono">₹<span x-text="fullBookingData?.price || '0.00'"></span></span>
+                        <span class="font-mono">₹<span x-text="Number(fullBookingData?.price || 0).toFixed(2)"></span></span>
                     </div>
                     <div class="flex justify-between">
                         <span>Platform Fee</span>
@@ -299,10 +299,9 @@
                 otpCode: null,
                 jobStatus: 'pending',
                 
-                // NEW INVOICE VARIABLES
                 showBill: false,
                 fullJobData: null,
-                fullBookingData: null,
+                fullBookingData: { price: 0, service_name: 'Loading...', variant_name: '' },
                 isPrinting: false,
                 
                 map: null,
@@ -341,14 +340,13 @@
                       .subscribe();
                 },
 
-                // UPDATED, ROBUST INVOICE GENERATOR
+                // FIXED MODAL FUNCTION CAPTURING 'original_amount' PROPERLY
                 async openBillModal() {
                     this.showBill = true;
                     
                     try {
-                        console.log("Fetching data for Job ID:", this.jobId);
+                        console.log("Fetching live payload for Job ID:", this.jobId);
                         
-                        // 1. Fetch the main job record from Supabase
                         const { data: job, error: jobError } = await sb
                             .from('jobs')
                             .select('*')
@@ -356,45 +354,43 @@
                             .single();
                             
                         if (jobError) {
-                            console.error("Error fetching job:", jobError.message);
-                            alert("Could not load bill data. Please check database connection.");
+                            console.error("Supabase Error:", jobError.message);
                             return;
                         }
 
-                        console.log("Job Data retrieved:", job);
+                        console.log("Fetched Row Structure:", job);
                         this.fullJobData = job;
                         
-                    // 2. Determine where the price and service name are stored
-if (job.original_amount !== undefined || job.price !== undefined) {
-    this.fullBookingData = { 
-        // THIS IS THE MAGIC LINE: We tell it to look for original_amount first
-        price: job.original_amount || job.price || 0, 
-        service_name: job.service_name || job.category || 'Expert Service',
-        variant_name: job.variant_name || job.device || ''
-    };
-}
+                        // Check if original_amount column exists explicitly inside the object
+                        if (job.original_amount !== undefined && job.original_amount !== null) {
+                            this.fullBookingData = { 
+                                price: parseFloat(job.original_amount), 
+                                service_name: job.service_name || job.category || 'Expert Carpentry',
+                                variant_name: job.variant_name || job.device || 'Furniture Assembly'
+                            };
+                        } 
                         else if (job.booking_id) {
-                            const { data: booking, error: bookingError } = await sb
+                            // If it's a fallback relational structure
+                            const { data: booking } = await sb
                                 .from('bookings')
                                 .select('*')
                                 .eq('id', job.booking_id)
                                 .single();
                                 
-                            if (bookingError) {
-                                console.error("Error fetching linked booking:", bookingError.message);
-                                this.fullBookingData = { price: 0, service_name: "Service Name Missing" };
-                            } else {
-                                console.log("Booking Data retrieved:", booking);
-                                this.fullBookingData = booking;
+                            if (booking) {
+                                this.fullBookingData = {
+                                    price: parseFloat(booking.price || booking.original_amount || 0),
+                                    service_name: booking.service_name || 'Expert Service',
+                                    variant_name: booking.variant_name || ''
+                                };
                             }
-                        } 
-                        else {
-                            console.warn("No price or booking_id found in the jobs table!");
-                            this.fullBookingData = { price: 0, service_name: job.category || "Standard Visit" };
+                        } else {
+                            // Absolute safe structural fallback if record is blank
+                            this.fullBookingData = { price: 0, service_name: job.category || 'Service' };
                         }
                         
                     } catch (err) {
-                        console.error("Unexpected error generating bill:", err);
+                        console.error("Critical Runtime Error:", err);
                     }
                 },
 
@@ -414,7 +410,6 @@ if (job.original_amount !== undefined || job.price !== undefined) {
                         this.isPrinting = false;
                     }).catch((err) => {
                         console.error("PDF Error:", err);
-                        alert("Failed to generate PDF.");
                         this.isPrinting = false;
                     });
                 },
