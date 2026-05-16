@@ -75,13 +75,19 @@
 
     <script>
         // 1. Initialize Supabase
-        const SUPABASE_URL = "https://kzxdxnxgouthsywbsnvl.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+       // 1. Initialize Supabase correctly
+const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
 
-        const form = document.getElementById('reviewForm');
-        const statusMessage = document.getElementById('statusMessage');
-        const submitBtn = document.getElementById('submitBtn');
+// CHANGE THIS LINE: Use window.supabase to access the library, 
+// and name your instance 'supabase'
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const form = document.getElementById('reviewForm');
+const statusMessage = document.getElementById('statusMessage');
+const submitBtn = document.getElementById('submitBtn');
+
+// ... rest of your code remains exactly the same ...
 
         // 2. Form Submission Event
         form.addEventListener('submit', async (e) => {
