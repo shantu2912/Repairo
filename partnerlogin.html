@@ -1,85 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>FixZen Pro | Partner Login</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<title>FixZen Pro | Partner Login</title>
+<link href="https://fonts.googleapis.com/css2?
+family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="i18n.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body class="min-h-screen flex items-center justify-center bg-[#F8F5F0]">
+<div class="bg-white p-10 rounded-3xl shadow-xl w-[360px]">
+<h1 class="text-2xl font-bold text-center mb-6">FixZenix</h1>
+<input
+id="username"
+placeholder="Your Username"
+class="w-full mb-4 p-3 border rounded-xl"
+/>
+<input
+id="password"
+type="password"
+placeholder="Your Password"
+class="w-full mb-4 p-3 border rounded-xl"
+/>
+<!-- LANGUAGE SELECT -->
+<select
 
-  <div class="bg-white p-10 rounded-3xl shadow-xl w-[360px]">
-    <h1 class="text-2xl font-bold text-center mb-6">FixZenix</h1>
-
-    <input
-      id="username"
-      placeholder="Your Username"
-      class="w-full mb-4 p-3 border rounded-xl"
-    />
-
-    <input
-      id="password"
-      type="password"
-      placeholder="Your Password"
-      class="w-full mb-4 p-3 border rounded-xl"
-    />
-
-    <p id="error" class="text-red-600 text-sm mb-3 hidden"></p>
-
-    <button
-      onclick="login()"
-      class="w-full bg-[#5D5646] text-white py-3 rounded-xl font-bold"
-    >
+id="languageSelect"
+class="w-full mb-4 p-3 border rounded-xl"
+>
+<option value="en">English</option>
+<option value="mr">मराठी</option>
+<option value="hi"> हिन्दी</option>
+</select>
+<p id="error" class="text-red-600 text-sm mb-3 hidden"></p>
+<button
+onclick="login()"
+class="w-full bg-[#5D5646] text-white py-3 rounded-xl font-bold"
+>
       LOGIN
-    </button>
-  </div>
-
-  <script>
-    // ✅ SUPABASE INIT (ONLY ONCE)
-     supabase = window.supabase.createClient(
-      "https://kzxdxnxgouthsywbsnvl.supabase.co",
-       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
-    );
+</button>
+</div>
+<script>
+// ✅ SUPABASE INIT
+const supabaseClient = window.supabase.createClient(
+"https://kzxdxnxgouthsywbsnvl.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+);
 async function login() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
-  const errorEl = document.getElementById("error");
-
-  errorEl.classList.add("hidden");
-
-  if (!username || !password) {
-    showError("Enter username and password");
-    return;
-  }
-
-  // 🔍 CHECK USERNAME + PASSWORD IN DATABASE
-  const { data, error } = await supabase
-    .from("technicians")
-    .select("*")
-    .eq("username", username)
-    .eq("password", password)
-    .single();
-
-  if (error || !data) {
-    showError("Invalid username or password");
-    return;
-  }
-
-  // 🚀 SAVE SESSION
-  localStorage.setItem("active_tech", JSON.stringify(data));
-
-  // ➡️ REDIRECT
-  window.location.href = "techniciandashboard.html";
+const username = document.getElementById("username").value.trim();
+const password = document.getElementById("password").value;
+const selectedLanguage = document.getElementById("languageSelect").value;
+const errorEl = document.getElementById("error");
+errorEl.classList.add("hidden");
+if (!username || !password) {
+showError("Enter username and password");
+return;
 }
+const { data, error } = await supabaseClient
+.from("technicians")
+.select("*")
+.eq("username", username)
+.eq("password", password)
 
-    function showError(msg) {
-      const el = document.getElementById("error");
-      el.innerText = msg;
-      el.classList.remove("hidden");
-    }
-  </script>
+.single();
+if (error || !data) {
+showError("Invalid username or password");
+return;
+}
+// ✅ SAVE LANGUAGE
+localStorage.setItem("preferred_language", selectedLanguage);
+// ✅ APPLY LANGUAGE
+if (typeof setLanguage === "function") {
+setLanguage(selectedLanguage);
+}
+// ✅ SAVE LOGIN SESSION
+localStorage.setItem("active_tech", JSON.stringify(data));
+// ✅ REDIRECT
+window.location.href = "techniciandashboard.html";
+}
+function showError(msg) {
+const el = document.getElementById("error");
+el.innerText = msg;
+el.classList.remove("hidden");
+}
+// ✅ AUTO LOAD SAVED LANGUAGE
+window.addEventListener("DOMContentLoaded", () => {
+const savedLang = localStorage.getItem("preferred_language") || "en";
+const select = document.getElementById("languageSelect");
+if (select) {
+select.value = savedLang;
+}
+if (typeof setLanguage === "function") {
+setLanguage(savedLang);
+}
+});
+</script>
+
 </body>
 </html>

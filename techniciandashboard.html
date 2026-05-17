@@ -312,6 +312,11 @@ function dashboardHandler() {
     // INIT
     // ─────────────────────────────────────────────────────────
     async init() {
+      // ✅ LOAD SAVED LANGUAGE
+const savedLang = localStorage.getItem("preferred_language") || "en";
+if (typeof setLanguage === "function") {
+setLanguage(savedLang);
+}
       this.tech = JSON.parse(localStorage.getItem("active_tech"));
       if (!this.tech) {
         window.location.href = "partnerlogin.html";
@@ -326,7 +331,7 @@ function dashboardHandler() {
       }
 
       this.techName = this.tech.name;
-
+      
       // Set initial availability from DB
       await this.loadTechProfile();
 
