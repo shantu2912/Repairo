@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -79,11 +78,23 @@
           currentActiveJobId: null,
 
           masterList: [
-              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'},
-              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'},
-              {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, {n:'CCTV', cat:'Electronics', icon:'fa-video'}, 
-              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, 
-              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, {n:'Grass Cutting', cat:'Other', icon:'fa-key'}
+              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, 
+              {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, 
+              {n:'Electrician', cat:'Home', icon:'fa-bolt'}, 
+              {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, 
+              {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, 
+              {n:'Welder', cat:'Home', icon:'fa-fire-burner'},
+              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, 
+              {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, 
+              {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, 
+              {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, 
+              {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'},
+              {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, 
+              {n:'CCTV', cat:'Electronics', icon:'fa-video'}, 
+              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, 
+              {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, 
+              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, 
+              {n:'Grass Cutting', cat:'Other', icon:'fa-scissors'}
           ],
 
           get filteredServices() {
@@ -332,18 +343,18 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Construction & Home</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Carpenter', img:'https://cdn-icons-png.flaticon.com/512/2991/2991138.png', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop'}, 
-                        {n:'Plumber', img:'https://cdn-icons-png.flaticon.com/512/1045/1045163.png', bg:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&fit=crop'}, 
-                        {n:'Electrician', img:'https://cdn-icons-png.flaticon.com/512/2933/2933190.png', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop'}, 
-                        {n:'Painter', img:'https://cdn-icons-png.flaticon.com/512/2972/2972106.png', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop'}, 
-                        {n:'Mason', img:'https://cdn-icons-png.flaticon.com/512/1839/1839274.png', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop'}, 
-                        {n:'Welder', img:'https://cdn-icons-png.flaticon.com/512/3233/3233302.png', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop'}
+                        {n:'Carpenter', img:'https://cdn-icons-png.flaticon.com/512/2991/2991138.png', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop', icon:'fa-hammer'}, 
+                        {n:'Plumber', img:'https://cdn-icons-png.flaticon.com/512/1045/1045163.png', bg:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&fit=crop', icon:'fa-faucet-drip'}, 
+                        {n:'Electrician', img:'https://cdn-icons-png.flaticon.com/512/2933/2933190.png', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop', icon:'fa-bolt'}, 
+                        {n:'Painter', img:'https://cdn-icons-png.flaticon.com/512/2972/2972106.png', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop', icon:'fa-paint-roller'}, 
+                        {n:'Mason', img:'https://cdn-icons-png.flaticon.com/512/1839/1839274.png', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop', icon:'fa-trowel-bricks'}, 
+                        {n:'Welder', img:'https://cdn-icons-png.flaticon.com/512/3233/3233302.png', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop', icon:'fa-fire-burner'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
+                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -355,17 +366,17 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Appliance Repair</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'AC Tech', img:'https://cdn-icons-png.flaticon.com/512/2366/2366050.png', bg:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&fit=crop'}, 
-                        {n:'Fridge', img:'https://cdn-icons-png.flaticon.com/512/2402/2402248.png', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop'}, 
-                        {n:'Washing M.', img:'https://cdn-icons-png.flaticon.com/512/2251/2251998.png', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop'}, 
-                        {n:'Microwave', img:'https://cdn-icons-png.flaticon.com/512/2928/2928827.png', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop'},
-                        {n:'RO Filter', img:'https://cdn-icons-png.flaticon.com/512/3143/3143643.png', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop'}
+                        {n:'AC Tech', img:'https://cdn-icons-png.flaticon.com/512/2366/2366050.png', bg:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&fit=crop', icon:'fa-snowflake'}, 
+                        {n:'Fridge', img:'https://cdn-icons-png.flaticon.com/512/2402/2402248.png', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop', icon:'fa-temperature-arrow-down'}, 
+                        {n:'Washing M.', img:'https://cdn-icons-png.flaticon.com/512/2251/2251998.png', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop', icon:'fa-shirt'}, 
+                        {n:'Microwave', img:'https://cdn-icons-png.flaticon.com/512/2928/2928827.png', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop', icon:'fa-stopwatch'},
+                        {n:'RO Filter', img:'https://cdn-icons-png.flaticon.com/512/3143/3143643.png', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop', icon:'fa-glass-water'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
+                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -377,14 +388,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'TV / LED', img:'https://cdn-icons-png.flaticon.com/512/3273/3273444.png', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop'},
-                        {n:'CCTV', img:'https://cdn-icons-png.flaticon.com/512/3125/3125638.png', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop'}
+                        {n:'TV / LED', img:'https://cdn-icons-png.flaticon.com/512/3273/3273444.png', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop', icon:'fa-tv'},
+                        {n:'CCTV', img:'https://cdn-icons-png.flaticon.com/512/3125/3125638.png', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop', icon:'fa-video'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
+                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -396,14 +407,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Automobile</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Car Mech', img:'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop'}, 
-                        {n:'Bike Mech', img:'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop'}
+                        {n:'Car Mech', img:'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop', icon:'fa-car'}, 
+                        {n:'Bike Mech', img:'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop', icon:'fa-motorcycle'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
+                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -415,14 +426,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Other Services</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Pest Ctrl', img:'https://cdn-icons-png.flaticon.com/512/2364/2364539.png', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop'}, 
-                        {n:'Grass Cutting', img:'https://cdn-icons-png.flaticon.com/512/3065/3065961.png', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop'}
+                        {n:'Pest Ctrl', img:'https://cdn-icons-png.flaticon.com/512/2364/2364539.png', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop', icon:'fa-bug'}, 
+                        {n:'Grass Cutting', img:'https://cdn-icons-png.flaticon.com/512/3065/3065961.png', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop', icon:'fa-soap'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
+                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -456,4 +467,3 @@
 
 </body>
 </html>
-
