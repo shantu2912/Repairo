@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -78,12 +79,11 @@
           currentActiveJobId: null,
 
           masterList: [
-              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'}, {n:'Roofer', cat:'Home', icon:'fa-house-chimney'}, {n:'Tiler', cat:'Home', icon:'fa-border-all'},
-              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'}, {n:'Gas Stove', cat:'Appliance', icon:'fa-fire'}, {n:'Elevator', cat:'Appliance', icon:'fa-elevator'},
-              {n:'Mobile', cat:'Electronics', icon:'fa-mobile-screen'}, {n:'Laptop', cat:'Electronics', icon:'fa-laptop'}, {n:'Printer', cat:'Electronics', icon:'fa-print'}, {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, {n:'CCTV', cat:'Electronics', icon:'fa-video'}, {n:'Network', cat:'Electronics', icon:'fa-wifi'}, {n:'Automation', cat:'Electronics', icon:'fa-robot'},
-              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, {n:'Auto Elec', cat:'Auto', icon:'fa-car-battery'}, {n:'Tyres', cat:'Auto', icon:'fa-truck-monster'}, {n:'Diesel', cat:'Auto', icon:'fa-gas-pump'},
-              {n:'Machinery', cat:'Industrial', icon:'fa-gears'}, {n:'Generator', cat:'Industrial', icon:'fa-industry'}, {n:'Boiler', cat:'Industrial', icon:'fa-fire-burner'}, {n:'HVAC', cat:'Industrial', icon:'fa-fan'}, {n:'Solar', cat:'Industrial', icon:'fa-solar-panel'}, {n:'Fire Safety', cat:'Industrial', icon:'fa-fire-extinguisher'},
-              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, {n:'Locksmith', cat:'Other', icon:'fa-key'}, {n:'Glass Fit', cat:'Other', icon:'fa-border-none'}, {n:'False Ceiling', cat:'Other', icon:'fa-layer-group'}, {n:'UPVC Win', cat:'Other', icon:'fa-window-maximize'}
+              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, {n:'Electrician', cat:'Home', icon:'fa-bolt'}, {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, {n:'Welder', cat:'Home', icon:'fa-fire-burner'},
+              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'},
+              {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, {n:'CCTV', cat:'Electronics', icon:'fa-video'}, 
+              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, 
+              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, {n:'Grass Cutting', cat:'Other', icon:'fa-key'}
           ],
 
           get filteredServices() {
@@ -115,7 +115,6 @@
               }
           },
 
-          // FOOLPROOF REAL-TIME CHECK: Reads localStorage directly on button click interaction
           handleCartNavigation() {
               const directStoredId = localStorage.getItem('active_job_id');
               console.log('Real-time button click checked token value:', directStoredId);
@@ -131,7 +130,6 @@
           if (sessionStorage.getItem('introShown')) { loading = false; } 
           else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
           
-          // Seed visual dot tracker token context on app init
           this.currentActiveJobId = localStorage.getItem('active_job_id');
 
           let attempts = 0;
@@ -153,6 +151,8 @@
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
             </svg>
             <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
+            
+            <p class="text-brand-gold text-[11px] font-bold tracking-[0.35em] uppercase mt-2 opacity-0 animate-sub-text-slide" style="animation-delay: 2.8s;">WE FIX, YOU RELAX</p>
         </div>
     </div>
 
@@ -337,15 +337,13 @@
                         {n:'Electrician', img:'https://cdn-icons-png.flaticon.com/512/2933/2933190.png', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop'}, 
                         {n:'Painter', img:'https://cdn-icons-png.flaticon.com/512/2972/2972106.png', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop'}, 
                         {n:'Mason', img:'https://cdn-icons-png.flaticon.com/512/1839/1839274.png', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop'}, 
-                        {n:'Welder', img:'https://cdn-icons-png.flaticon.com/512/3233/3233302.png', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop'}, 
-                        {n:'Roofer', img:'https://cdn-icons-png.flaticon.com/512/2312/2312686.png', bg:'https://images.unsplash.com/photo-1632759145351-1d592919f522?w=200&fit=crop'}, 
-                        {n:'Tiler', img:'https://cdn-icons-png.flaticon.com/512/3055/3055375.png', bg:'https://images.unsplash.com/photo-1623935833075-f3747d079946?w=200&fit=crop'}
+                        {n:'Welder', img:'https://cdn-icons-png.flaticon.com/512/3233/3233302.png', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
+                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -361,15 +359,13 @@
                         {n:'Fridge', img:'https://cdn-icons-png.flaticon.com/512/2402/2402248.png', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop'}, 
                         {n:'Washing M.', img:'https://cdn-icons-png.flaticon.com/512/2251/2251998.png', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop'}, 
                         {n:'Microwave', img:'https://cdn-icons-png.flaticon.com/512/2928/2928827.png', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop'},
-                        {n:'RO Filter', img:'https://cdn-icons-png.flaticon.com/512/3143/3143643.png', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop'},
-                        {n:'Gas Stove', img:'https://cdn-icons-png.flaticon.com/512/3256/3256020.png', bg:'https://images.unsplash.com/photo-1585237672814-8f85a83ccb95?w=200&fit=crop'},
-                        {n:'Elevator', img:'https://cdn-icons-png.flaticon.com/512/3063/3063229.png', bg:'https://images.unsplash.com/photo-1541336032412-2048956132b8?w=200&fit=crop'}
+                        {n:'RO Filter', img:'https://cdn-icons-png.flaticon.com/512/3143/3143643.png', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
+                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -381,19 +377,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Mobile', img:'https://cdn-icons-png.flaticon.com/512/2920/2920349.png', bg:'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&fit=crop'}, 
-                        {n:'Laptop', img:'https://cdn-icons-png.flaticon.com/512/2933/2933246.png', bg:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&fit=crop'}, 
-                        {n:'Printer', img:'https://cdn-icons-png.flaticon.com/512/3022/3022234.png', bg:'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200&fit=crop'}, 
                         {n:'TV / LED', img:'https://cdn-icons-png.flaticon.com/512/3273/3273444.png', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop'},
-                        {n:'CCTV', img:'https://cdn-icons-png.flaticon.com/512/3125/3125638.png', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop'},
-                        {n:'Network', img:'https://cdn-icons-png.flaticon.com/512/3288/3288330.png', bg:'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=200&fit=crop'},
-                        {n:'Automation', img:'https://cdn-icons-png.flaticon.com/512/2082/2082691.png', bg:'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=200&fit=crop'}
+                        {n:'CCTV', img:'https://cdn-icons-png.flaticon.com/512/3125/3125638.png', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
+                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -406,39 +397,13 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Car Mech', img:'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop'}, 
-                        {n:'Bike Mech', img:'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop'}, 
-                        {n:'Auto Elec', img:'https://cdn-icons-png.flaticon.com/512/2061/2061956.png', bg:'https://images.unsplash.com/photo-1635843104666-407859c6799d?w=200&fit=crop'}, 
-                        {n:'Tyres', img:'https://cdn-icons-png.flaticon.com/512/3195/3195689.png', bg:'https://images.unsplash.com/photo-1578844251758-2f71da645217?w=200&fit=crop'},
-                        {n:'Diesel', img:'https://cdn-icons-png.flaticon.com/512/3069/3069176.png', bg:'https://images.unsplash.com/photo-1626154673898-1d2f788b7709?w=200&fit=crop'}
+                        {n:'Bike Mech', img:'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Industrial</h2>
-                <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Machinery', img:'https://cdn-icons-png.flaticon.com/512/3063/3063823.png', bg:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=200&fit=crop'}, 
-                        {n:'Generator', img:'https://cdn-icons-png.flaticon.com/512/3256/3256215.png', bg:'https://images.unsplash.com/photo-1565514020176-883a9924e223?w=200&fit=crop'}, 
-                        {n:'Boiler', img:'https://cdn-icons-png.flaticon.com/512/3135/3135728.png', bg:'https://images.unsplash.com/photo-1598965637213-92c2dae72e18?w=200&fit=crop'}, 
-                        {n:'HVAC', img:'https://cdn-icons-png.flaticon.com/512/1792/1792198.png', bg:'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&fit=crop'},
-                        {n:'Solar', img:'https://cdn-icons-png.flaticon.com/512/3159/3159310.png', bg:'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&fit=crop'},
-                        {n:'Fire Safety', img:'https://cdn-icons-png.flaticon.com/512/2897/2897408.png', bg:'https://images.unsplash.com/photo-1615817812975-c0883273e979?w=200&fit=crop'}
-                    ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
+                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -451,16 +416,13 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
                         {n:'Pest Ctrl', img:'https://cdn-icons-png.flaticon.com/512/2364/2364539.png', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop'}, 
-                        {n:'Locksmith', img:'https://cdn-icons-png.flaticon.com/512/3065/3065961.png', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop'}, 
-                        {n:'Glass Fit', img:'https://cdn-icons-png.flaticon.com/512/3132/3132763.png', bg:'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&fit=crop'}, 
-                        {n:'False Ceiling', img:'https://cdn-icons-png.flaticon.com/512/3354/3354121.png', bg:'https://images.unsplash.com/photo-1628434522967-0c7cb9d9e793?w=200&fit=crop'},
-                        {n:'UPVC Win', img:'https://cdn-icons-png.flaticon.com/512/2942/2942055.png', bg:'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=200&fit=crop'}
+                        {n:'Grass Cutting', img:'https://cdn-icons-png.flaticon.com/512/3065/3065961.png', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop'}
                     ]">
                         <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all group-hover:shadow-lg group-hover:scale-110 group-hover:-translate-y-1">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <img :src="s.img" class="w-8 h-8 relative z-10 animate-float-fast drop-shadow-sm">
+                                <img :src="s.img" class="w-8 h-8 relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm">
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -494,3 +456,4 @@
 
 </body>
 </html>
+
