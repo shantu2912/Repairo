@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Dashboard — FixZen Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-gold': '#A07D54',
+                        'brand-olive': '#5D5646',
+                        'surface': '#111110',
+                        'surface-2': '#1a1917',
+                        'surface-3': '#222120',
+                        'surface-4': '#2a2927',
+                        'border': '#2e2d2b',
+                        'text-dim': '#6b6a68',
+                        'text-muted': '#9b9895',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['Syne', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #111110;
+            color: #e8e6e3;
+            min-height: 100vh;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1917; }
+        ::-webkit-scrollbar-thumb { background: #3a3835; border-radius: 2px; }
+
+        /* Stat cards */
+        .stat-card {
+            background: #1a1917;
+            border: 1px solid #2e2d2b;
+            border-radius: 20px;
+            transition: border-color 0.2s;
+        }
+        .stat-card:hover { border-color: #4a4845; }
+
+        /* Feedback card */
+        .feedback-card {
+            background: #1a1917;
+            border: 1px solid #2e2d2b;
+            border-radius: 20px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .feedback-card:hover {
+            border-color: #A07D54;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        /* Star colors */
+        .star-5 { color: #22c55e; }
+        .star-4 { color: #84cc16; }
+        .star-3 { color: #eab308; }
+        .star-2 { color: #f97316; }
+        .star-1 { color: #ef4444; }
+
+        /* Rating badge */
+        .badge-5 { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+        .badge-4 { background: rgba(132,204,22,0.12); color: #a3e635; border: 1px solid rgba(132,204,22,0.2); }
+        .badge-3 { background: rgba(234,179,8,0.12); color: #fbbf24; border: 1px solid rgba(234,179,8,0.2); }
+        .badge-2 { background: rgba(249,115,22,0.12); color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+        .badge-1 { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+
+        /* Filter pill */
+        .filter-pill {
+            border: 1px solid #2e2d2b;
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b6a68;
+            background: #1a1917;
+            white-space: nowrap;
+        }
+        .filter-pill:hover { border-color: #5a5855; color: #e8e6e3; }
+        .filter-pill.active { background: #A07D54; border-color: #A07D54; color: white; }
+
+        /* Search input */
+        .search-input {
+            background: #1a1917;
+            border: 1px solid #2e2d2b;
+            border-radius: 12px;
+            color: #e8e6e3;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: #A07D54; }
+        .search-input::placeholder { color: #4a4845; }
+
+        /* Detail modal */
+        .modal-bg {
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+        }
+        .modal-card {
+            background: #1a1917;
+            border: 1px solid #2e2d2b;
+            border-radius: 28px;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-up { animation: fadeUp 0.4s ease forwards; }
+        .fade-in { animation: fadeIn 0.3s ease forwards; }
+
+        /* Stagger */
+        .card-anim { opacity: 0; animation: fadeUp 0.4s ease forwards; }
+
+        /* Gold bar */
+        .rating-bar-fill { background: linear-gradient(90deg, #A07D54, #c9a050); border-radius: 4px; transition: width 0.8s ease; }
+
+        /* Avatar fallback */
+        .avatar { background: linear-gradient(135deg, #5D5646, #A07D54); }
+
+        /* Tag chip */
+        .tag { background: #222120; border: 1px solid #2e2d2b; border-radius: 999px; padding: 3px 10px; font-size: 10px; font-weight: 700; color: #9b9895; }
+
+        /* Skeleton */
+        @keyframes skeleton { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+        .skeleton { background: #222120; border-radius: 8px; animation: skeleton 1.4s ease infinite; }
+
+        /* Scrollable pills row */
+        .pills-row { overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+        .pills-row::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+
+<body x-data="dashboardApp()" x-init="init()">
+
+    <!-- ============ HEADER ============ -->
+    <header class="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-brand-gold flex items-center justify-center shadow-lg flex-shrink-0">
+                    <i class="fa-solid fa-wand-magic-sparkles text-white text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-display text-lg font-extrabold text-white leading-none">FixZen</h1>
+                    <p class="text-[10px] text-text-dim font-bold uppercase tracking-widest leading-none mt-0.5">Feedback Dashboard</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Search -->
+                <div class="relative hidden sm:block">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-dim text-xs"></i>
+                    <input x-model="search" type="text" placeholder="Search customer, tech, comment…"
+                           class="search-input pl-9 pr-4 py-2.5 text-sm w-64">
+                </div>
+
+                <!-- Refresh -->
+                <button @click="init()" class="w-9 h-9 rounded-xl border border-border flex items-center justify-center text-text-dim hover:text-white hover:border-text-muted transition-all active:scale-90">
+                    <i class="fa-solid fa-rotate-right text-sm" :class="loading ? 'fa-spin' : ''"></i>
+                </button>
+
+                <!-- Live indicator -->
+                <div class="flex items-center gap-2 px-3 py-2 rounded-xl border border-border">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span class="text-[10px] font-bold text-text-muted uppercase tracking-wider hidden sm:block">Live</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-5 py-6">
+
+        <!-- ============ STAT CARDS ============ -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-7">
+
+            <!-- Total Reviews -->
+            <div class="stat-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[10px] font-black text-text-dim uppercase tracking-widest">Total Reviews</span>
+                    <div class="w-8 h-8 rounded-xl bg-surface-3 flex items-center justify-center">
+                        <i class="fa-solid fa-comment-dots text-brand-gold text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-display font-extrabold text-white" x-text="stats.total || '—'"></p>
+                <p class="text-xs text-text-dim mt-1 font-medium">All time</p>
+            </div>
+
+            <!-- Average Rating -->
+            <div class="stat-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[10px] font-black text-text-dim uppercase tracking-widest">Avg Rating</span>
+                    <div class="w-8 h-8 rounded-xl bg-surface-3 flex items-center justify-center">
+                        <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+                    </div>
+                </div>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-display font-extrabold text-white" x-text="stats.avg ? stats.avg.toFixed(1) : '—'"></p>
+                    <p class="text-text-dim text-sm mb-1">/ 5</p>
+                </div>
+                <div class="flex gap-0.5 mt-1">
+                    <template x-for="s in 5">
+                        <i class="fa-solid fa-star text-xs" :class="s <= Math.round(stats.avg || 0) ? 'text-brand-gold' : 'text-surface-4'"></i>
+                    </template>
+                </div>
+            </div>
+
+            <!-- 5 Star Count -->
+            <div class="stat-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[10px] font-black text-text-dim uppercase tracking-widest">5-Star Reviews</span>
+                    <div class="w-8 h-8 rounded-xl bg-surface-3 flex items-center justify-center">
+                        <i class="fa-solid fa-trophy text-brand-gold text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-display font-extrabold text-white" x-text="stats.fiveStar || '0'"></p>
+                <p class="text-xs text-green-500 mt-1 font-bold" x-text="stats.total ? Math.round((stats.fiveStar/stats.total)*100) + '% of total' : ''"></p>
+            </div>
+
+            <!-- Needs Attention -->
+            <div class="stat-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[10px] font-black text-text-dim uppercase tracking-widest">Low Ratings</span>
+                    <div class="w-8 h-8 rounded-xl bg-surface-3 flex items-center justify-center">
+                        <i class="fa-solid fa-triangle-exclamation text-red-400 text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-display font-extrabold text-white" x-text="stats.lowRating || '0'"></p>
+                <p class="text-xs text-red-400 mt-1 font-bold">Rating ≤ 2 stars</p>
+            </div>
+        </div>
+
+        <!-- ============ RATING DISTRIBUTION ============ -->
+        <div class="stat-card p-5 mb-7">
+            <p class="text-[10px] font-black text-text-dim uppercase tracking-widest mb-4">Rating Distribution</p>
+            <div class="space-y-2.5">
+                <template x-for="star in [5,4,3,2,1]">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1 w-14 flex-shrink-0">
+                            <span class="text-xs font-bold text-text-muted" x-text="star"></span>
+                            <i class="fa-solid fa-star text-[10px] text-brand-gold"></i>
+                        </div>
+                        <div class="flex-1 h-2 bg-surface-4 rounded-full overflow-hidden">
+                            <div class="h-full rating-bar-fill"
+                                 :style="`width: ${stats.total ? (stats.distribution[star]||0)/stats.total*100 : 0}%`"></div>
+                        </div>
+                        <span class="text-xs font-bold text-text-dim w-6 text-right" x-text="stats.distribution[star] || 0"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- ============ FILTERS + SEARCH (mobile) ============ -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-5">
+            <!-- Mobile search -->
+            <div class="relative sm:hidden">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-dim text-xs"></i>
+                <input x-model="search" type="text" placeholder="Search…" class="search-input pl-9 pr-4 py-2.5 text-sm w-full">
+            </div>
+
+            <!-- Filter pills -->
+            <div class="pills-row flex gap-2 flex-1">
+                <button @click="filter = 'all'" class="filter-pill" :class="filter === 'all' ? 'active' : ''">All</button>
+                <button @click="filter = '5'" class="filter-pill" :class="filter === '5' ? 'active' : ''">⭐ 5 Star</button>
+                <button @click="filter = '4'" class="filter-pill" :class="filter === '4' ? 'active' : ''">⭐ 4 Star</button>
+                <button @click="filter = '3'" class="filter-pill" :class="filter === '3' ? 'active' : ''">⭐ 3 Star</button>
+                <button @click="filter = 'low'" class="filter-pill" :class="filter === 'low' ? 'active' : ''">🔴 Low (≤2)</button>
+                <button @click="filter = 'no-comment'" class="filter-pill" :class="filter === 'no-comment' ? 'active' : ''">No Comment</button>
+            </div>
+
+            <!-- Sort -->
+            <select x-model="sort" class="search-input px-4 py-2.5 text-sm font-bold text-text-muted flex-shrink-0 cursor-pointer">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="highest">Highest Rating</option>
+                <option value="lowest">Lowest Rating</option>
+            </select>
+        </div>
+
+        <!-- Results count -->
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-xs text-text-dim font-bold">
+                Showing <span class="text-white" x-text="filteredFeedback.length"></span> of <span x-text="feedbackList.length"></span> reviews
+            </p>
+            <p x-show="search" class="text-xs text-brand-gold font-bold">
+                Filtered by: "<span x-text="search"></span>"
+            </p>
+        </div>
+
+        <!-- ============ SKELETON LOADING ============ -->
+        <div x-show="loading" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <template x-for="i in 6">
+                <div class="feedback-card p-5" style="cursor:default">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="skeleton w-12 h-12 rounded-xl flex-shrink-0"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton h-3 w-2/3 rounded"></div>
+                            <div class="skeleton h-2.5 w-1/2 rounded"></div>
+                        </div>
+                        <div class="skeleton h-6 w-12 rounded-full"></div>
+                    </div>
+                    <div class="skeleton h-2.5 w-full rounded mb-2"></div>
+                    <div class="skeleton h-2.5 w-4/5 rounded mb-4"></div>
+                    <div class="border-t border-border pt-4">
+                        <div class="skeleton h-3 w-1/3 rounded"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- ============ EMPTY STATE ============ -->
+        <div x-show="!loading && filteredFeedback.length === 0" class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-surface-2 flex items-center justify-center mx-auto mb-4 border border-border">
+                <i class="fa-solid fa-inbox text-text-dim text-2xl"></i>
+            </div>
+            <p class="font-bold text-text-muted text-lg mb-1">No feedback found</p>
+            <p class="text-text-dim text-sm">Try changing your filters or search term</p>
+        </div>
+
+        <!-- ============ FEEDBACK GRID ============ -->
+        <div x-show="!loading" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <template x-for="(item, idx) in filteredFeedback" :key="item.id">
+                <div @click="openDetail(item)"
+                     class="feedback-card p-5 card-anim"
+                     :style="`animation-delay: ${Math.min(idx * 0.05, 0.4)}s`">
+
+                    <!-- Top row: Customer + Rating badge -->
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <!-- Customer avatar -->
+                            <div class="w-11 h-11 rounded-xl avatar flex items-center justify-center text-white font-extrabold text-base flex-shrink-0 shadow-lg">
+                                <span x-text="(item.job?.customer_name || 'C').charAt(0).toUpperCase()"></span>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-extrabold text-white text-sm truncate" x-text="item.job?.customer_name || 'Anonymous'"></p>
+                                <p class="text-[10px] text-text-dim font-medium truncate" x-text="item.job?.category || 'Service'"></p>
+                            </div>
+                        </div>
+
+                        <!-- Rating badge -->
+                        <div class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-xs"
+                             :class="`badge-${item.rating}`">
+                            <i class="fa-solid fa-star text-[10px]"></i>
+                            <span x-text="item.rating"></span>
+                        </div>
+                    </div>
+
+                    <!-- Stars visual -->
+                    <div class="flex gap-0.5 mb-3">
+                        <template x-for="s in 5">
+                            <i class="fa-solid fa-star text-sm"
+                               :class="s <= item.rating ? `star-${item.rating}` : 'text-surface-4'"></i>
+                        </template>
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-4 min-h-[40px]">
+                        <p x-show="item.cleanComment" class="text-sm text-text-muted leading-relaxed line-clamp-2 italic"
+                           x-text="'❝ ' + item.cleanComment + ' ❞'"></p>
+                        <p x-show="!item.cleanComment" class="text-xs text-surface-4 font-medium italic">No written comment</p>
+                    </div>
+
+                    <!-- Tags -->
+                    <div x-show="item.tags.length > 0" class="flex flex-wrap gap-1.5 mb-4">
+                        <template x-for="tag in item.tags.slice(0,3)">
+                            <span class="tag" x-text="tag"></span>
+                        </template>
+                        <span x-show="item.tags.length > 3" class="tag" x-text="'+' + (item.tags.length - 3) + ' more'"></span>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="border-t border-border pt-4">
+                        <div class="flex items-center justify-between">
+                            <!-- Technician info -->
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg overflow-hidden bg-surface-3 flex-shrink-0">
+                                    <img x-show="item.technician?.image_url"
+                                         :src="item.technician?.image_url"
+                                         class="w-full h-full object-cover">
+                                    <div x-show="!item.technician?.image_url"
+                                         class="w-full h-full flex items-center justify-center text-xs font-bold text-text-dim"
+                                         x-text="(item.technician?.name || 'T').charAt(0)"></div>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-text-muted" x-text="item.technician?.name || 'Unassigned'"></p>
+                                    <p class="text-[9px] text-text-dim" x-text="item.technician?.phone || ''"></p>
+                                </div>
+                            </div>
+
+                            <!-- Date -->
+                            <p class="text-[10px] text-text-dim font-medium flex-shrink-0"
+                               x-text="formatDate(item.created_at)"></p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+    </div>
+
+    <!-- ============ DETAIL MODAL ============ -->
+    <div x-show="selectedItem"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-bg fade-in"
+         @click.self="selectedItem = null"
+         style="display:none;">
+
+        <div x-show="selectedItem" class="modal-card w-full max-w-lg max-h-[90vh] overflow-y-auto fade-up">
+
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-surface-2 border-b border-border px-6 py-4 flex items-center justify-between rounded-t-[28px]">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-comment-dots text-brand-gold text-sm"></i>
+                    <span class="font-display font-extrabold text-white">Review Detail</span>
+                </div>
+                <button @click="selectedItem = null"
+                        class="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-text-dim hover:text-white hover:border-text-muted transition-all">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6">
+
+                <!-- Rating Hero -->
+                <div class="text-center py-4">
+                    <div class="flex justify-center gap-1.5 mb-3">
+                        <template x-for="s in 5">
+                            <i class="fa-solid fa-star text-3xl"
+                               :class="s <= (selectedItem?.rating || 0) ? `star-${selectedItem?.rating}` : 'text-surface-4'"></i>
+                        </template>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full font-black text-sm"
+                         :class="`badge-${selectedItem?.rating}`">
+                        <span x-text="['','Poor','Fair','Good','Excellent','Incredible!'][selectedItem?.rating || 0]"></span>
+                        <span>·</span>
+                        <span x-text="selectedItem?.rating + ' / 5 Stars'"></span>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div x-show="selectedItem?.tags?.length > 0">
+                    <p class="text-[10px] font-black text-text-dim uppercase tracking-widest mb-2">Tags</p>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="tag in selectedItem?.tags">
+                            <span class="bg-surface-3 border border-border text-text-muted text-xs font-bold px-3 py-1 rounded-full" x-text="tag"></span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Comment -->
+                <div x-show="selectedItem?.cleanComment">
+                    <p class="text-[10px] font-black text-text-dim uppercase tracking-widest mb-2">Customer Comment</p>
+                    <div class="bg-surface-3 border border-border rounded-2xl p-4">
+                        <p class="text-sm text-text-muted leading-relaxed italic" x-text="'❝ ' + (selectedItem?.cleanComment || '') + ' ❞'"></p>
+                    </div>
+                </div>
+
+                <!-- Customer Details -->
+                <div>
+                    <p class="text-[10px] font-black text-text-dim uppercase tracking-widest mb-3">Customer</p>
+                    <div class="bg-surface-3 border border-border rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl avatar flex items-center justify-center text-white font-extrabold text-lg flex-shrink-0">
+                                <span x-text="(selectedItem?.job?.customer_name || 'C').charAt(0).toUpperCase()"></span>
+                            </div>
+                            <div>
+                                <p class="font-extrabold text-white" x-text="selectedItem?.job?.customer_name || 'Anonymous'"></p>
+                                <p class="text-xs text-text-dim" x-text="selectedItem?.job?.category || 'Service'"></p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-border">
+                            <div>
+                                <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Phone</p>
+                                <p class="text-sm font-bold text-text-muted" x-text="selectedItem?.job?.phone || '—'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Date</p>
+                                <p class="text-sm font-bold text-text-muted" x-text="formatDate(selectedItem?.created_at)"></p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Service</p>
+                                <p class="text-sm font-bold text-text-muted" x-text="selectedItem?.job?.category || '—'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Amount</p>
+                                <p class="text-sm font-bold text-text-muted" x-text="selectedItem?.job?.original_price ? '₹' + selectedItem.job.original_price : '—'"></p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Address</p>
+                                <p class="text-sm font-bold text-text-muted leading-snug" x-text="selectedItem?.job?.location || '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technician Details -->
+                <div>
+                    <p class="text-[10px] font-black text-text-dim uppercase tracking-widest mb-3">Technician</p>
+                    <div class="bg-surface-3 border border-border rounded-2xl p-4">
+                        <div x-show="selectedItem?.technician">
+                            <div class="flex items-center gap-4 mb-4">
+                                <!-- Tech avatar -->
+                                <div class="w-16 h-16 rounded-2xl overflow-hidden bg-surface-4 flex-shrink-0 border border-border">
+                                    <img x-show="selectedItem?.technician?.image_url"
+                                         :src="selectedItem?.technician?.image_url"
+                                         class="w-full h-full object-cover">
+                                    <div x-show="!selectedItem?.technician?.image_url"
+                                         class="w-full h-full flex items-center justify-center font-extrabold text-2xl text-text-dim avatar"
+                                         x-text="(selectedItem?.technician?.name || 'T').charAt(0)"></div>
+                                </div>
+                                <div>
+                                    <p class="font-extrabold text-white text-base" x-text="selectedItem?.technician?.name || '—'"></p>
+                                    <p class="text-xs text-text-dim mb-2" x-text="selectedItem?.technician?.experience ? selectedItem.technician.experience + ' Years Experience' : ''"></p>
+                                    <!-- Tech rating -->
+                                    <div class="flex items-center gap-1.5 bg-surface-4 rounded-lg px-2 py-1 w-fit">
+                                        <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+                                        <span class="text-xs font-extrabold text-white" x-text="selectedItem?.technician?.rating || '—'"></span>
+                                        <span class="text-[9px] text-text-dim">overall</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+                                <div>
+                                    <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Phone</p>
+                                    <a :href="'tel:' + selectedItem?.technician?.phone"
+                                       class="text-sm font-bold text-brand-gold hover:underline"
+                                       x-text="selectedItem?.technician?.phone || '—'"></a>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Category</p>
+                                    <p class="text-sm font-bold text-text-muted" x-text="selectedItem?.technician?.category || selectedItem?.job?.category || '—'"></p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Job ID</p>
+                                    <p class="text-xs font-bold text-text-dim font-mono" x-text="selectedItem?.job_id?.slice(0,12) + '…'"></p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] text-text-dim uppercase tracking-widest font-bold mb-0.5">Scheduled</p>
+                                    <p class="text-sm font-bold text-text-muted" x-text="selectedItem?.job?.scheduled_time ? formatDate(selectedItem.job.scheduled_time) : '—'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="!selectedItem?.technician" class="text-center py-4">
+                            <i class="fa-solid fa-user-slash text-text-dim text-2xl mb-2"></i>
+                            <p class="text-sm text-text-dim font-medium">No technician data available</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex gap-3 pt-2">
+                    <a x-show="selectedItem?.technician?.phone"
+                       :href="'tel:' + selectedItem?.technician?.phone"
+                       class="flex-1 py-3 rounded-2xl border border-border text-text-muted font-bold text-sm flex items-center justify-center gap-2 hover:border-text-muted hover:text-white transition-all">
+                        <i class="fa-solid fa-phone text-xs"></i> Call Tech
+                    </a>
+                    <a x-show="selectedItem?.technician?.phone"
+                       :href="'https://wa.me/91' + selectedItem?.technician?.phone" target="_blank"
+                       class="flex-1 py-3 rounded-2xl bg-green-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-500 transition-all shadow-lg">
+                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function dashboardApp() {
+            return {
+                loading: true,
+                feedbackList: [],
+                selectedItem: null,
+                filter: 'all',
+                sort: 'newest',
+                search: '',
+                stats: {
+                    total: 0, avg: 0, fiveStar: 0, lowRating: 0,
+                    distribution: { 1:0, 2:0, 3:0, 4:0, 5:0 }
+                },
+
+                async init() {
+                    this.loading = true;
+                    try {
+                        // 1. Fetch all feedback
+                        const { data: feedbackRows, error } = await sb
+                            .from('feedback')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+
+                        if (error) { console.error(error); this.loading = false; return; }
+                        if (!feedbackRows?.length) { this.loading = false; return; }
+
+                        // 2. Collect unique job_ids and technician_ids
+                        const jobIds = [...new Set(feedbackRows.map(f => f.job_id).filter(Boolean))];
+                        const techIds = [...new Set(feedbackRows.map(f => f.technician_id).filter(Boolean))];
+
+                        // 3. Batch fetch jobs
+                        let jobsMap = {};
+                        if (jobIds.length) {
+                            const { data: jobs } = await sb
+                                .from('jobs')
+                                .select('id, customer_name, phone, category, location, original_price, scheduled_time, user_id')
+                                .in('id', jobIds);
+                            (jobs || []).forEach(j => jobsMap[j.id] = j);
+                        }
+
+                        // 4. Batch fetch technicians
+                        let techMap = {};
+                        if (techIds.length) {
+                            const { data: techs } = await sb
+                                .from('technicians')
+                                .select('id, name, phone, image_url, rating, experience, category')
+                                .in('id', techIds);
+                            (techs || []).forEach(t => techMap[t.id] = t);
+                        }
+
+                        // 5. Enrich feedback rows
+                        this.feedbackList = feedbackRows.map(f => {
+                            const parsed = this.parseComment(f.comment || '');
+                            return {
+                                ...f,
+                                job: jobsMap[f.job_id] || null,
+                                technician: techMap[f.technician_id] || null,
+                                tags: parsed.tags,
+                                cleanComment: parsed.comment,
+                            };
+                        });
+
+                        // 6. Compute stats
+                        this.computeStats();
+
+                    } catch (err) {
+                        console.error('Dashboard error:', err);
+                    }
+                    this.loading = false;
+                },
+
+                parseComment(raw) {
+                    // Format: "[Tag1, Tag2] written comment" or just "written comment"
+                    const tagMatch = raw.match(/^\[([^\]]+)\]\s*(.*)/s);
+                    if (tagMatch) {
+                        const tags = tagMatch[1].split(',').map(t => t.trim()).filter(Boolean);
+                        const comment = tagMatch[2].trim();
+                        return { tags, comment };
+                    }
+                    return { tags: [], comment: raw.trim() };
+                },
+
+                computeStats() {
+                    const list = this.feedbackList;
+                    const dist = { 1:0, 2:0, 3:0, 4:0, 5:0 };
+                    let total = 0, sum = 0, fiveStar = 0, lowRating = 0;
+
+                    list.forEach(f => {
+                        const r = f.rating;
+                        if (r >= 1 && r <= 5) {
+                            dist[r] = (dist[r] || 0) + 1;
+                            total++;
+                            sum += r;
+                            if (r === 5) fiveStar++;
+                            if (r <= 2) lowRating++;
+                        }
+                    });
+
+                    this.stats = {
+                        total,
+                        avg: total ? sum / total : 0,
+                        fiveStar,
+                        lowRating,
+                        distribution: dist
+                    };
+                },
+
+                get filteredFeedback() {
+                    let list = [...this.feedbackList];
+
+                    // Filter by rating
+                    if (this.filter === 'low') list = list.filter(f => f.rating <= 2);
+                    else if (this.filter === 'no-comment') list = list.filter(f => !f.cleanComment);
+                    else if (['5','4','3','2','1'].includes(this.filter)) {
+                        list = list.filter(f => f.rating === parseInt(this.filter));
+                    }
+
+                    // Search
+                    if (this.search.trim()) {
+                        const q = this.search.toLowerCase();
+                        list = list.filter(f =>
+                            (f.job?.customer_name || '').toLowerCase().includes(q) ||
+                            (f.technician?.name || '').toLowerCase().includes(q) ||
+                            (f.cleanComment || '').toLowerCase().includes(q) ||
+                            (f.job?.category || '').toLowerCase().includes(q) ||
+                            f.tags.some(t => t.toLowerCase().includes(q))
+                        );
+                    }
+
+                    // Sort
+                    if (this.sort === 'oldest') list.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                    else if (this.sort === 'highest') list.sort((a,b) => b.rating - a.rating);
+                    else if (this.sort === 'lowest') list.sort((a,b) => a.rating - b.rating);
+                    else list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)); // newest
+
+                    return list;
+                },
+
+                openDetail(item) {
+                    this.selectedItem = item;
+                },
+
+                formatDate(str) {
+                    if (!str) return '—';
+                    const d = new Date(str);
+                    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                }
+            };
+        }
+    </script>
+</body>
+</html>
