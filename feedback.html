@@ -142,17 +142,6 @@
             box-shadow: 0 8px 40px rgba(93,86,70,0.1);
         }
 
-        /* Tip amount button */
-        .tip-btn {
-            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .tip-btn.selected {
-            background: #5D5646;
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 4px 14px rgba(93,86,70,0.3);
-        }
-
         /* Progress dots */
         .dot { transition: all 0.3s ease; }
         .dot.active { background: #A07D54; width: 24px; border-radius: 4px; }
@@ -333,44 +322,53 @@
                 </div>
             </div>
 
-            <!-- ---- STEP 3: TIP + SUBMIT ---- -->
+            <!-- ---- STEP 3: REVIEW SUMMARY + SUBMIT ---- -->
             <div x-show="step === 3" class="card rounded-[2rem] p-6 mb-4 step-enter">
                 <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 3 of 3</p>
-                <h3 class="text-lg font-extrabold text-brand-olive mb-1">Appreciate the effort?</h3>
-                <p class="text-xs text-brand-dark/40 font-medium mb-5">100% of tips go directly to your partner</p>
+                <h3 class="text-lg font-extrabold text-brand-olive mb-4">Confirm & Submit</h3>
 
-                <!-- Tip options -->
-                <div class="grid grid-cols-4 gap-2 mb-3">
-                    <template x-for="amount in [0, 20, 50, 100]">
-                        <button @click="tip = amount"
-                                class="tip-btn py-3 rounded-xl border font-extrabold text-xs transition-all active:scale-90"
-                                :class="tip === amount ? 'selected border-transparent' : 'bg-white border-brand-olive/10 text-brand-olive'"
-                                x-text="amount === 0 ? 'Skip' : '₹' + amount">
-                        </button>
-                    </template>
-                </div>
+                <!-- Full review summary -->
+                <div class="bg-brand-cream/70 rounded-2xl p-4 mb-5 border border-brand-gold/15 space-y-3">
 
-                <div x-show="tip > 0" class="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-heart text-brand-green text-sm"></i>
-                    <p class="text-xs font-bold text-brand-green">You're adding ₹<span x-text="tip"></span> tip — thank you for your kindness!</p>
-                </div>
+                    <!-- Service info -->
+                    <div class="flex items-center gap-3 pb-3 border-b border-brand-olive/10">
+                        <div class="w-10 h-10 rounded-xl bg-brand-olive flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-screwdriver-wrench text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-brand-dark" x-text="jobData?.category || 'Service'"></p>
+                            <p class="text-[10px] text-brand-dark/40">FixZen Verified Partner</p>
+                        </div>
+                    </div>
 
-                <!-- Summary box -->
-                <div class="bg-brand-cream/70 rounded-2xl p-4 mb-5 border border-brand-gold/10">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest">Your Rating</span>
-                        <div class="flex gap-0.5">
-                            <template x-for="s in 5">
-                                <i class="fa-solid fa-star text-xs" :class="s <= rating ? 'text-brand-gold' : 'text-gray-200'"></i>
+                    <!-- Star rating row -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest">Rating</span>
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex gap-0.5">
+                                <template x-for="s in 5">
+                                    <i class="fa-solid fa-star text-sm" :class="s <= rating ? 'text-brand-gold' : 'text-gray-200'"></i>
+                                </template>
+                            </div>
+                            <span class="text-xs font-extrabold text-brand-olive" x-text="getRatingLabel(rating)"></span>
+                        </div>
+                    </div>
+
+                    <!-- Tags row -->
+                    <div x-show="selectedTags.length > 0">
+                        <p class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest mb-1.5">Highlights</p>
+                        <div class="flex flex-wrap gap-1">
+                            <template x-for="tag in selectedTags">
+                                <span class="bg-brand-olive/10 text-brand-olive text-[9px] font-bold px-2.5 py-1 rounded-full" x-text="tag"></span>
                             </template>
                         </div>
                     </div>
-                    <div x-show="selectedTags.length > 0" class="flex flex-wrap gap-1 mb-2">
-                        <template x-for="tag in selectedTags">
-                            <span class="bg-brand-olive/10 text-brand-olive text-[9px] font-bold px-2 py-0.5 rounded-full" x-text="tag"></span>
-                        </template>
+
+                    <!-- Comment row -->
+                    <div x-show="comment">
+                        <p class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest mb-1">Your Note</p>
+                        <p class="text-xs text-brand-dark/60 italic leading-snug" x-text="'❝ ' + comment.slice(0, 80) + (comment.length > 80 ? '…' : '') + ' ❞'"></p>
                     </div>
-                    <p x-show="comment" class="text-xs text-brand-dark/50 italic leading-snug" x-text="'&ldquo;' + comment.slice(0, 60) + (comment.length > 60 ? '...' : '') + '&rdquo;'"></p>
                 </div>
 
                 <div class="flex gap-3">
@@ -468,7 +466,6 @@
                 rating: 0,
                 comment: '',
                 selectedTags: [],
-                tip: 0,
                 loading: false,
                 submitted: false,
 
@@ -483,7 +480,7 @@
                     try {
                         const { data, error } = await sb
                             .from('jobs')
-                            .select('id, status, category, customer_name, feedback_provided')
+                            .select('id, status, category, customer_name, feedback_provided, technician_id, user_id')
                             .eq('id', jobId)
                             .single();
 
@@ -586,7 +583,8 @@
                         job_id: jobId,
                         rating: this.rating,
                         comment: combinedFeedback,
-                        tip_amount: this.tip
+                        technician_id: this.jobData?.technician_id || null,
+                        user_id: this.jobData?.user_id || null
                     }]);
 
                     if (error) {
