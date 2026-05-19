@@ -8,9 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <script>
         tailwind.config = {
@@ -19,11 +18,9 @@
                     colors: {
                         'brand-olive': '#5D5646',
                         'brand-gold': '#A07D54',
-                        'brand-cream': '#EEEAE2',
-                        'brand-dark': '#4D4C4B'
-                    },
-                    boxShadow: {
-                        'super-float': '0 20px 50px rgba(93, 86, 70, 0.15)',
+                        'brand-cream': '#F5F1E8',
+                        'brand-dark': '#2D2B29',
+                        'brand-green': '#3D9E6E',
                     }
                 }
             }
@@ -31,96 +28,428 @@
     </script>
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #EEEAE2; color: #4D4C4B; overflow: hidden; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
-        .tag-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #F5F1E8;
+            color: #2D2B29;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Decorative background */
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: absolute; top: -120px; right: -120px;
+            width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(160,125,84,0.13) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .bg-pattern::after {
+            content: '';
+            position: absolute; bottom: -80px; left: -80px;
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(93,86,70,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .dot-grid {
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(93,86,70,0.07) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Star rating */
+        .star-btn { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+        .star-btn:active { transform: scale(0.85); }
+        .star-btn.active { transform: scale(1.15); }
+        .star-icon { transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); filter: drop-shadow(0 0 0px #A07D54); }
+        .star-icon.lit { color: #A07D54; filter: drop-shadow(0 0 8px rgba(160,125,84,0.6)); }
+
+        /* Tag chips */
+        .tag-chip {
+            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            cursor: pointer;
+        }
+        .tag-chip:active { transform: scale(0.93); }
+        .tag-chip.selected {
+            background: #5D5646;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(93,86,70,0.25);
+        }
+
+        /* Slide animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(2deg); }
+            66% { transform: translateY(-5px) rotate(-2deg); }
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .slide-up { animation: slideUp 0.5s ease forwards; }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        .float-anim { animation: float 4s ease-in-out infinite; }
+
+        .step-enter { animation: slideUp 0.4s ease forwards; }
+
+        /* Gold shimmer button */
+        .shimmer-btn {
+            background: linear-gradient(110deg, #A07D54 40%, #c9a87a 50%, #A07D54 60%);
+            background-size: 200% auto;
+            animation: shimmer 2.5s linear infinite;
+        }
+
+        /* Confetti piece */
+        .confetti-piece {
+            position: fixed;
+            width: 10px; height: 10px;
+            top: -20px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Not completed state */
+        @keyframes pendingPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(160,125,84,0.3); }
+            50% { box-shadow: 0 0 0 16px rgba(160,125,84,0); }
+        }
+        .pending-pulse { animation: pendingPulse 2s ease infinite; }
+
+        /* Card glass */
+        .card {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 8px 40px rgba(93,86,70,0.1);
+        }
+
+        /* Tip amount button */
+        .tip-btn {
+            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .tip-btn.selected {
+            background: #5D5646;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 14px rgba(93,86,70,0.3);
+        }
+
+        /* Progress dots */
+        .dot { transition: all 0.3s ease; }
+        .dot.active { background: #A07D54; width: 24px; border-radius: 4px; }
     </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen p-4" x-data="feedbackApp()">
+<body x-data="feedbackApp()" x-init="init()">
 
-    <div x-show="!submitted" 
-         class="w-full max-w-md glass-card rounded-[3rem] p-8 shadow-super-float animate__animated animate__fadeInUp">
-        
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-brand-olive text-white rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3 shadow-lg">
-                <i class="fa-solid fa-wand-magic-sparkles text-2xl"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold text-brand-olive tracking-tight">How was FixZen?</h1>
-            <p class="text-xs font-bold text-brand-gold uppercase tracking-[0.2em] mt-1">Service Feedback</p>
+    <!-- Background -->
+    <div class="bg-pattern"><div class="dot-grid"></div></div>
+
+    <!-- Confetti container -->
+    <div id="confetti-container"></div>
+
+    <!-- ===================== LOADING STATE ===================== -->
+    <div x-show="pageLoading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-brand-cream">
+        <div class="w-16 h-16 rounded-2xl bg-brand-olive flex items-center justify-center mb-5 float-anim">
+            <i class="fa-solid fa-wand-magic-sparkles text-2xl text-white"></i>
         </div>
-
-        <div x-show="step === 1" class="animate__animated animate__fadeIn">
-            <div class="flex justify-between items-center mb-10 px-2">
-                <template x-for="i in 5">
-                    <button @click="rating = i" class="group relative transition-all duration-300 active:scale-90">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center transition-all"
-                             :class="i <= rating ? 'bg-brand-gold text-white shadow-md' : 'bg-white text-brand-olive/30 border border-brand-olive/10'">
-                            <i :class="getEmoji(i)" class="text-xl"></i>
-                        </div>
-                        <span x-show="rating === i" 
-                              class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-black text-brand-gold whitespace-nowrap uppercase tracking-tighter"
-                              x-text="getLabel(i)"></span>
-                    </button>
-                </template>
-            </div>
-
-            <div x-show="rating >= 3" class="flex flex-wrap justify-center gap-2 mb-8 animate__animated animate__fadeIn">
-                <template x-for="tag in availableTags">
-                    <button @click="toggleTag(tag)" 
-                            :class="selectedTags.includes(tag) ? 'bg-brand-olive text-white scale-105' : 'bg-white text-brand-olive border border-brand-olive/5'"
-                            class="px-4 py-2 rounded-full text-[11px] font-extrabold transition-all shadow-sm">
-                        <span x-text="tag"></span>
-                    </button>
-                </template>
-            </div>
-
-            <button @click="step = 2" :disabled="rating === 0" 
-                    class="w-full py-4 bg-brand-olive text-white rounded-2xl font-extrabold shadow-lg disabled:opacity-20 transition-all active:scale-95 uppercase tracking-widest text-xs">
-                Next Step
-            </button>
-        </div>
-
-        <div x-show="step === 2" class="animate__animated animate__fadeIn">
-            <textarea x-model="comment" 
-                      placeholder="Write a small note for the partner..."
-                      class="w-full h-32 bg-white/50 border border-brand-olive/5 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-gold outline-none mb-4 resize-none"></textarea>
-            
-            <button @click="submitReview" 
-                    :disabled="loading"
-                    class="w-full py-4 bg-brand-gold text-white rounded-2xl font-extrabold shadow-lg transition-all active:scale-95 uppercase tracking-widest text-xs">
-                <span x-show="!loading">Finish & Reward Partner</span>
-                <i x-show="loading" class="fa-solid fa-circle-notch animate-spin"></i>
-            </button>
-            <button @click="step = 1" class="w-full mt-4 text-[10px] font-bold text-brand-olive/40 uppercase">Go Back</button>
+        <div class="flex gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style="animation-delay:0s"></span>
+            <span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style="animation-delay:0.15s"></span>
+            <span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style="animation-delay:0.3s"></span>
         </div>
     </div>
 
-    <div x-show="submitted" 
-         class="fixed inset-0 z-[500] bg-brand-olive flex items-center justify-center p-6 text-center"
-         x-transition:enter="transition ease-out duration-500"
-         x-transition:enter-start="opacity-0 scale-110"
-         x-transition:enter-end="opacity-100 scale-100">
-        
-        <div class="relative">
-            <div class="w-24 h-24 bg-brand-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_50px_rgba(160,125,84,0.5)] animate__animated animate__backInDown">
-                <i class="fa-solid fa-coins text-4xl text-white"></i>
+    <!-- ===================== JOB NOT COMPLETED GATE ===================== -->
+    <div x-show="!pageLoading && !jobCompleted && !submitted"
+         class="fixed inset-0 z-40 flex items-center justify-center p-6">
+        <div class="card rounded-[2.5rem] p-8 w-full max-w-sm text-center slide-up">
+
+            <!-- Animated clock icon -->
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <div class="w-24 h-24 rounded-full bg-amber-50 border-4 border-brand-gold/30 flex items-center justify-center pending-pulse">
+                    <i class="fa-regular fa-clock text-4xl text-brand-gold"></i>
+                </div>
+                <div class="absolute -top-1 -right-1 w-8 h-8 bg-brand-olive rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-hourglass-half text-xs text-white"></i>
+                </div>
             </div>
-            
-            <h2 class="text-3xl font-black text-white mb-2 tracking-tight">Success!</h2>
-            <p class="text-brand-cream/60 text-sm max-w-[200px] mx-auto leading-relaxed">Your review helped the partner earn bonus tokens.</p>
-            
-            <button @click="window.location.href='index.html'" 
-                    class="mt-10 px-8 py-3 bg-white text-brand-olive rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-gold hover:text-white transition-colors">
-                Back to Home
+
+            <h2 class="text-2xl font-extrabold text-brand-olive mb-2 tracking-tight">Work in Progress</h2>
+            <p class="text-sm text-brand-dark/60 leading-relaxed mb-2">Your expert is still working on the job. We'll unlock your feedback form once the service is marked <span class="font-bold text-brand-green">Completed</span>.</p>
+
+            <!-- Status badge -->
+            <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2 mt-2 mb-6">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span class="text-xs font-bold text-amber-700 uppercase tracking-wider" x-text="jobStatus ? jobStatus.replace('_',' ') : 'Pending'"></span>
+            </div>
+
+            <p class="text-[11px] text-brand-dark/40 mb-6">You'll receive a notification when your job is complete and you can share your experience.</p>
+
+            <button @click="window.location.href='index.html'"
+                    class="w-full py-3.5 rounded-2xl bg-brand-olive text-white font-bold text-sm tracking-wide hover:bg-brand-gold transition-all active:scale-95 shadow-lg">
+                <i class="fa-solid fa-house mr-2"></i> Back to Home
+            </button>
+        </div>
+    </div>
+
+    <!-- ===================== MAIN FEEDBACK FORM ===================== -->
+    <div x-show="!pageLoading && jobCompleted && !submitted"
+         class="relative z-10 min-h-screen flex flex-col items-center justify-center p-5 py-10">
+
+        <div class="w-full max-w-sm slide-up">
+
+            <!-- Header -->
+            <div class="text-center mb-7">
+                <div class="relative w-20 h-20 mx-auto mb-4">
+                    <div class="w-20 h-20 bg-brand-olive rounded-[1.5rem] rotate-6 flex items-center justify-center shadow-xl">
+                        <i class="fa-solid fa-star text-brand-gold text-3xl"></i>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-brand-gold rounded-full flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+                <h1 class="text-[1.6rem] font-extrabold text-brand-olive tracking-tight leading-tight">
+                    How did we do?
+                </h1>
+                <p class="text-xs text-brand-gold font-bold uppercase tracking-[0.2em] mt-1.5">Share Your Experience</p>
+
+                <!-- Service info pill -->
+                <div x-show="jobData" class="inline-flex items-center gap-2 bg-white/70 border border-brand-gold/20 rounded-full px-4 py-1.5 mt-3 shadow-sm">
+                    <i class="fa-solid fa-screwdriver-wrench text-brand-gold text-xs"></i>
+                    <span class="text-xs font-semibold text-brand-dark" x-text="jobData?.category || 'Service'"></span>
+                </div>
+            </div>
+
+            <!-- Progress dots -->
+            <div class="flex justify-center gap-2 mb-6">
+                <div class="dot h-2 rounded-full bg-brand-gold" :class="step >= 1 ? 'active' : 'w-2 bg-brand-gold/30'"></div>
+                <div class="dot h-2 rounded-full" :class="step >= 2 ? 'active bg-brand-gold' : 'w-2 bg-brand-gold/30'"></div>
+                <div class="dot h-2 rounded-full" :class="step >= 3 ? 'active bg-brand-gold' : 'w-2 bg-brand-gold/30'"></div>
+            </div>
+
+            <!-- ---- STEP 1: STAR RATING ---- -->
+            <div x-show="step === 1" class="card rounded-[2rem] p-6 mb-4 step-enter">
+
+                <p class="text-center text-sm font-bold text-brand-dark/60 mb-5 uppercase tracking-widest text-[10px]">Tap to rate</p>
+
+                <!-- Stars -->
+                <div class="flex justify-center gap-3 mb-3">
+                    <template x-for="i in 5" :key="i">
+                        <button @click="setRating(i)" class="star-btn" :class="rating === i ? 'active' : ''">
+                            <i class="fa-solid fa-star text-4xl star-icon transition-all"
+                               :class="i <= rating ? 'lit' : 'text-gray-200'"></i>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Rating label -->
+                <div class="h-8 flex items-center justify-center mb-6">
+                    <div x-show="rating > 0" class="pop-in flex items-center gap-2">
+                        <span class="text-2xl" x-text="getRatingEmoji(rating)"></span>
+                        <span class="text-base font-extrabold text-brand-olive" x-text="getRatingLabel(rating)"></span>
+                    </div>
+                    <p x-show="rating === 0" class="text-xs text-brand-dark/30 font-medium">No rating yet</p>
+                </div>
+
+                <!-- Quick tags (show after rating) -->
+                <div x-show="rating > 0" class="mb-6">
+                    <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest text-center mb-3">What stood out?</p>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <template x-for="tag in getTagsForRating()" :key="tag.label">
+                            <button @click="toggleTag(tag.label)"
+                                    class="tag-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border"
+                                    :class="selectedTags.includes(tag.label) ? 'selected' : 'bg-white text-brand-olive border-brand-olive/10 shadow-sm'">
+                                <span x-text="tag.icon"></span>
+                                <span x-text="tag.label"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <button @click="step = 2" :disabled="rating === 0"
+                        class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg"
+                        :class="rating > 0 ? 'shimmer-btn text-white' : 'bg-gray-100 text-gray-300 cursor-not-allowed'">
+                    Continue &nbsp;<i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+
+            <!-- ---- STEP 2: COMMENT ---- -->
+            <div x-show="step === 2" class="card rounded-[2rem] p-6 mb-4 step-enter">
+                <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 2 of 3</p>
+                <h3 class="text-lg font-extrabold text-brand-olive mb-4">Tell us more</h3>
+
+                <!-- Partner card -->
+                <div class="flex items-center gap-3 bg-brand-cream/60 rounded-2xl p-3 mb-4 border border-brand-gold/10">
+                    <div class="w-12 h-12 rounded-xl bg-brand-olive flex items-center justify-center shadow-md flex-shrink-0">
+                        <i class="fa-solid fa-user-tie text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-black text-brand-dark" x-text="jobData?.customer_name ? 'Your Expert' : 'Your Expert'">Your Expert</p>
+                        <p class="text-[10px] text-brand-dark/40 font-medium" x-text="jobData?.category || 'Service Partner'"></p>
+                    </div>
+                    <div class="ml-auto flex">
+                        <template x-for="s in rating">
+                            <i class="fa-solid fa-star text-brand-gold text-[10px]"></i>
+                        </template>
+                    </div>
+                </div>
+
+                <textarea x-model="comment"
+                          placeholder="Share what you loved, or what could be better…"
+                          rows="4"
+                          class="w-full bg-brand-cream/50 border border-brand-olive/10 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-gold/50 outline-none resize-none font-medium placeholder:text-brand-dark/30 mb-4"></textarea>
+
+                <!-- Character count -->
+                <p class="text-[10px] text-brand-dark/30 text-right mb-4" x-text="comment.length + ' characters'"></p>
+
+                <div class="flex gap-3">
+                    <button @click="step = 1" class="w-12 h-12 rounded-xl border border-brand-olive/15 bg-white text-brand-olive flex items-center justify-center flex-shrink-0 hover:bg-brand-cream transition-all active:scale-90">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                    </button>
+                    <button @click="step = 3"
+                            class="flex-1 py-3.5 shimmer-btn text-white rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg">
+                        Next &nbsp;<i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ---- STEP 3: TIP + SUBMIT ---- -->
+            <div x-show="step === 3" class="card rounded-[2rem] p-6 mb-4 step-enter">
+                <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 3 of 3</p>
+                <h3 class="text-lg font-extrabold text-brand-olive mb-1">Appreciate the effort?</h3>
+                <p class="text-xs text-brand-dark/40 font-medium mb-5">100% of tips go directly to your partner</p>
+
+                <!-- Tip options -->
+                <div class="grid grid-cols-4 gap-2 mb-3">
+                    <template x-for="amount in [0, 20, 50, 100]">
+                        <button @click="tip = amount"
+                                class="tip-btn py-3 rounded-xl border font-extrabold text-xs transition-all active:scale-90"
+                                :class="tip === amount ? 'selected border-transparent' : 'bg-white border-brand-olive/10 text-brand-olive'"
+                                x-text="amount === 0 ? 'Skip' : '₹' + amount">
+                        </button>
+                    </template>
+                </div>
+
+                <div x-show="tip > 0" class="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-heart text-brand-green text-sm"></i>
+                    <p class="text-xs font-bold text-brand-green">You're adding ₹<span x-text="tip"></span> tip — thank you for your kindness!</p>
+                </div>
+
+                <!-- Summary box -->
+                <div class="bg-brand-cream/70 rounded-2xl p-4 mb-5 border border-brand-gold/10">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest">Your Rating</span>
+                        <div class="flex gap-0.5">
+                            <template x-for="s in 5">
+                                <i class="fa-solid fa-star text-xs" :class="s <= rating ? 'text-brand-gold' : 'text-gray-200'"></i>
+                            </template>
+                        </div>
+                    </div>
+                    <div x-show="selectedTags.length > 0" class="flex flex-wrap gap-1 mb-2">
+                        <template x-for="tag in selectedTags">
+                            <span class="bg-brand-olive/10 text-brand-olive text-[9px] font-bold px-2 py-0.5 rounded-full" x-text="tag"></span>
+                        </template>
+                    </div>
+                    <p x-show="comment" class="text-xs text-brand-dark/50 italic leading-snug" x-text="'&ldquo;' + comment.slice(0, 60) + (comment.length > 60 ? '...' : '') + '&rdquo;'"></p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button @click="step = 2" class="w-12 h-12 rounded-xl border border-brand-olive/15 bg-white text-brand-olive flex items-center justify-center flex-shrink-0 hover:bg-brand-cream transition-all active:scale-90">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                    </button>
+                    <button @click="submitReview()" :disabled="loading"
+                            class="flex-1 py-3.5 shimmer-btn text-white rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50">
+                        <span x-show="!loading"><i class="fa-solid fa-paper-plane mr-2"></i>Submit Review</span>
+                        <i x-show="loading" class="fa-solid fa-circle-notch fa-spin"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer note -->
+            <p class="text-center text-[10px] text-brand-dark/30 font-medium mt-2">
+                <i class="fa-solid fa-lock mr-1"></i>Your feedback is private & secure
+            </p>
+
+        </div>
+    </div>
+
+    <!-- ===================== SUCCESS SCREEN ===================== -->
+    <div x-show="submitted"
+         class="fixed inset-0 z-[500] flex flex-col items-center justify-center p-6 text-center overflow-hidden"
+         style="display:none;">
+
+        <!-- Layered background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-olive via-[#4a4436] to-[#2d2b29]"></div>
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px); background-size: 28px 28px;"></div>
+        <div class="absolute top-0 right-0 w-80 h-80 rounded-full" style="background: radial-gradient(circle, rgba(160,125,84,0.25) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full" style="background: radial-gradient(circle, rgba(160,125,84,0.15) 0%, transparent 70%); transform: translate(-30%, 30%);"></div>
+
+        <div class="relative z-10 pop-in">
+            <!-- Trophy icon with glow -->
+            <div class="relative mx-auto mb-6 w-28 h-28">
+                <div class="absolute inset-0 rounded-full bg-brand-gold/20 blur-xl scale-150"></div>
+                <div class="w-28 h-28 rounded-full bg-gradient-to-br from-brand-gold to-[#c9a050] flex items-center justify-center shadow-2xl relative">
+                    <i class="fa-solid fa-trophy text-5xl text-white drop-shadow-lg"></i>
+                </div>
+                <!-- Sparkles -->
+                <div class="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <i class="fa-solid fa-star text-xs text-brand-gold"></i>
+                </div>
+                <div class="absolute -bottom-1 -left-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <i class="fa-solid fa-star text-[8px] text-brand-gold"></i>
+                </div>
+            </div>
+
+            <h2 class="text-4xl font-extrabold text-white mb-2 tracking-tight">Thank You!</h2>
+            <p class="text-brand-cream/70 text-sm max-w-[220px] mx-auto leading-relaxed mb-2">
+                Your review just earned your partner a <span class="text-brand-gold font-bold">bonus reward</span>.
+            </p>
+
+            <!-- Stars display -->
+            <div class="flex justify-center gap-1.5 mb-4">
+                <template x-for="s in 5">
+                    <i class="fa-solid fa-star text-lg" :class="s <= rating ? 'text-brand-gold' : 'text-white/20'"></i>
+                </template>
+            </div>
+
+            <!-- Coins earned card -->
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 mb-8 inline-block">
+                <p class="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Reward Granted</p>
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-coins text-brand-gold text-xl"></i>
+                    <span class="text-2xl font-black text-white" x-text="rating * 10 + ' Tokens'"></span>
+                </div>
+            </div>
+
+            <button @click="window.location.href='index.html'"
+                    class="w-full max-w-[280px] py-4 bg-white text-brand-olive rounded-2xl font-extrabold text-sm uppercase tracking-widest hover:bg-brand-gold hover:text-white transition-all active:scale-95 shadow-xl">
+                <i class="fa-solid fa-house mr-2"></i>Back to Home
             </button>
         </div>
     </div>
 
     <script>
         function feedbackApp() {
-            // Configuration using your Supabase credentials
             const sb = supabase.createClient(
                 "https://kzxdxnxgouthsywbsnvl.supabase.co",
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
@@ -130,20 +459,92 @@
             const jobId = urlParams.get('job_id');
 
             return {
+                // State
+                pageLoading: true,
+                jobCompleted: false,
+                jobStatus: null,
+                jobData: null,
                 step: 1,
                 rating: 0,
                 comment: '',
                 selectedTags: [],
+                tip: 0,
                 loading: false,
                 submitted: false,
-                availableTags: ['Fast Arrival', 'Professional', 'Clean Work', 'Polite', 'Genuine Parts'],
 
-                getEmoji(i) {
-                    return ['fa-face-frown', 'fa-face-meh', 'fa-face-smile', 'fa-face-laugh-beam', 'fa-face-grin-stars'][i-1];
+                async init() {
+                    if (!jobId) {
+                        this.pageLoading = false;
+                        this.jobStatus = 'unknown';
+                        return;
+                    }
+
+                    // Fetch job status from Supabase
+                    try {
+                        const { data, error } = await sb
+                            .from('jobs')
+                            .select('id, status, category, customer_name, feedback_provided')
+                            .eq('id', jobId)
+                            .single();
+
+                        if (error || !data) {
+                            this.jobStatus = 'not_found';
+                            this.pageLoading = false;
+                            return;
+                        }
+
+                        this.jobData = data;
+                        this.jobStatus = data.status;
+
+                        // Allow feedback only if job is completed
+                        // Also block if feedback already given
+                        this.jobCompleted = (data.status === 'completed') && !data.feedback_provided;
+
+                    } catch (err) {
+                        console.error(err);
+                        this.jobStatus = 'error';
+                    }
+
+                    this.pageLoading = false;
                 },
 
-                getLabel(i) {
-                    return ['Poor', 'Fair', 'Good', 'Excellent', 'Incredible'][i-1];
+                setRating(i) {
+                    this.rating = i;
+                    if (navigator.vibrate) navigator.vibrate(30);
+                },
+
+                getRatingEmoji(i) {
+                    return ['😞', '😕', '😊', '😄', '🤩'][i - 1] || '';
+                },
+
+                getRatingLabel(i) {
+                    return ['Poor', 'Fair', 'Good', 'Excellent', 'Incredible!'][i - 1] || '';
+                },
+
+                getTagsForRating() {
+                    if (this.rating >= 4) {
+                        return [
+                            { icon: '⚡', label: 'Fast Arrival' },
+                            { icon: '👔', label: 'Professional' },
+                            { icon: '✨', label: 'Clean Work' },
+                            { icon: '😊', label: 'Polite' },
+                            { icon: '🔧', label: 'Genuine Parts' },
+                            { icon: '💯', label: 'Worth Every Rupee' },
+                        ];
+                    } else if (this.rating === 3) {
+                        return [
+                            { icon: '⏱️', label: 'On Time' },
+                            { icon: '👍', label: 'Decent Work' },
+                            { icon: '📞', label: 'Good Communication' },
+                        ];
+                    } else {
+                        return [
+                            { icon: '⏰', label: 'Late Arrival' },
+                            { icon: '🔁', label: 'Needs Redo' },
+                            { icon: '📵', label: 'Poor Communication' },
+                            { icon: '💸', label: 'Overcharged' },
+                        ];
+                    }
                 },
 
                 toggleTag(tag) {
@@ -151,6 +552,25 @@
                         this.selectedTags = this.selectedTags.filter(t => t !== tag);
                     } else {
                         this.selectedTags.push(tag);
+                        if (navigator.vibrate) navigator.vibrate(20);
+                    }
+                },
+
+                launchConfetti() {
+                    const colors = ['#A07D54', '#5D5646', '#c9a050', '#EEEAE2', '#fff'];
+                    const container = document.getElementById('confetti-container');
+                    for (let i = 0; i < 60; i++) {
+                        const piece = document.createElement('div');
+                        piece.className = 'confetti-piece';
+                        piece.style.left = Math.random() * 100 + 'vw';
+                        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        piece.style.width = (Math.random() * 8 + 6) + 'px';
+                        piece.style.height = (Math.random() * 8 + 6) + 'px';
+                        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                        piece.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                        piece.style.animationDelay = (Math.random() * 0.8) + 's';
+                        container.appendChild(piece);
+                        setTimeout(() => piece.remove(), 4000);
                     }
                 },
 
@@ -158,30 +578,32 @@
                     if (!jobId) return alert("Error: No Job ID found.");
                     this.loading = true;
 
-                    // Combine tags with comment
-                    const combinedFeedback = this.selectedTags.length > 0 
+                    const combinedFeedback = this.selectedTags.length > 0
                         ? `[${this.selectedTags.join(', ')}] ${this.comment}`
                         : this.comment;
 
                     const { error } = await sb.from('feedback').insert([{
                         job_id: jobId,
                         rating: this.rating,
-                        comment: combinedFeedback
+                        comment: combinedFeedback,
+                        tip_amount: this.tip
                     }]);
 
                     if (error) {
                         alert(error.message);
                         this.loading = false;
-                    } else {
-                        // Mark job as feedback given
-                        await sb.from('jobs').update({ feedback_provided: true }).eq('id', jobId);
-                        
-                        this.loading = false;
-                        this.submitted = true;
-                        
-                        // Haptic feedback for mobile users
-                        if (navigator.vibrate) navigator.vibrate(200);
+                        return;
                     }
+
+                    // Mark job feedback as provided
+                    await sb.from('jobs').update({ feedback_provided: true }).eq('id', jobId);
+
+                    this.loading = false;
+                    this.submitted = true;
+
+                    // Celebrations
+                    this.launchConfetti();
+                    if (navigator.vibrate) navigator.vibrate([100, 60, 100, 60, 200]);
                 }
             }
         }
