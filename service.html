@@ -116,8 +116,6 @@
     service:null,
     selectedSubs:[],
     showAgreement:false,
-    showBill:false,
-    bookedJobId:null,
     agreed:false,
     loading:true,
     bookingLoading:false,
@@ -442,15 +440,11 @@
             // Clean up camera if still running
             this.stopCamera();
             
-            // --- SAVE THE STICKY NOTE FOR THE CART BUTTON ---
+            // Save active job for cart button
             localStorage.setItem('fixzen_active_job', insertedJob.id);
             
-            // Store job ID and show bill screen
-            this.bookedJobId = insertedJob.id;
-            this.showBill = true;
-            
-            // Haptic feedback
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            // Redirect to tracking page
+            window.location.href = 'success.html?job_id=' + insertedJob.id;
 
         } catch (err) {
             console.error(err);
@@ -712,91 +706,6 @@
         </div>
     </div>
 
-    <!-- ✅ BILL SUMMARY SCREEN (shown after booking confirmed) -->
-    <div x-show="showBill"
-         class="fixed inset-0 z-[80] bg-brand-cream flex flex-col overflow-y-auto"
-         x-transition:enter="transition ease-out duration-500"
-         x-transition:enter-start="opacity-0 translate-y-8"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         style="display:none;">
-
-        <div class="flex-1 p-6 pb-44">
-
-            <!-- Header -->
-            <div class="text-center mb-8 pt-6">
-                <div class="w-20 h-20 bg-brand-green rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate__animated animate__bounceIn">
-                    <i class="fa-solid fa-check text-white text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-extrabold text-brand-olive tracking-tight">Booking Confirmed!</h1>
-                <p class="text-xs text-brand-gold font-bold uppercase tracking-widest mt-1">Your expert is on the way</p>
-            </div>
-
-            <!-- Bill Card -->
-            <div class="bg-white rounded-3xl shadow-glass p-5 mb-4">
-                <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-                    <div class="w-10 h-10 bg-brand-olive/10 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-receipt text-brand-olive"></i>
-                    </div>
-                    <div>
-                        <p class="font-extrabold text-brand-dark text-sm" x-text="service?.name"></p>
-                        <p class="text-[10px] text-brand-dark/40 font-medium uppercase tracking-wider">Invoice Summary</p>
-                    </div>
-                </div>
-
-                <div class="space-y-3 mb-4">
-                    <template x-for="sub in selectedSubs">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-sm font-semibold text-brand-dark" x-text="sub.n"></p>
-                                <p class="text-[10px] text-brand-dark/40" x-text="sub.d"></p>
-                            </div>
-                            <span class="text-sm font-bold text-brand-olive">₹<span x-text="sub.p"></span></span>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="border-t border-dashed border-gray-200 pt-4 flex justify-between items-center">
-                    <span class="font-extrabold text-brand-olive text-sm uppercase tracking-wide">Total Estimate</span>
-                    <span class="text-2xl font-black text-brand-olive">₹<span x-text="total"></span></span>
-                </div>
-            </div>
-
-            <!-- Booking Details -->
-            <div class="bg-white rounded-3xl shadow-glass p-5 space-y-3">
-                <p class="text-[10px] font-black text-brand-olive uppercase tracking-widest mb-1">Booking Details</p>
-                <div class="flex items-center gap-3 text-sm">
-                    <i class="fa-solid fa-user text-brand-gold w-4 text-center"></i>
-                    <span class="font-medium text-brand-dark" x-text="customerName"></span>
-                </div>
-                <div class="flex items-center gap-3 text-sm">
-                    <i class="fa-solid fa-phone text-brand-gold w-4 text-center"></i>
-                    <span class="font-medium text-brand-dark" x-text="phone"></span>
-                </div>
-                <div class="flex items-center gap-3 text-sm">
-                    <i class="fa-solid fa-location-dot text-brand-gold w-4 text-center"></i>
-                    <span class="font-medium text-brand-dark leading-tight" x-text="address"></span>
-                </div>
-                <div class="flex items-center gap-3 text-sm">
-                    <i class="fa-solid fa-calendar text-brand-gold w-4 text-center"></i>
-                    <span class="font-medium text-brand-dark" x-text="date + ' at ' + time"></span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Bottom Action Bar -->
-        <div class="fixed bottom-0 w-full bg-white/95 backdrop-blur-xl border-t border-brand-beige/50 p-5 rounded-t-[28px] shadow-up space-y-3">
-            <button @click="window.location.href = 'feedback.html?job_id=' + bookedJobId"
-                    class="w-full py-4 bg-brand-gold text-white rounded-2xl font-extrabold shadow-lg active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2">
-                <i class="fa-solid fa-star"></i>
-                Rate Your Experience
-            </button>
-            <button @click="window.location.href = 'success.html?job_id=' + bookedJobId"
-                    class="w-full text-[10px] font-bold text-brand-dark/40 uppercase tracking-widest py-1">
-                Skip — Track My Job
-            </button>
-        </div>
-    </div>
 
 </body>
 </html>
