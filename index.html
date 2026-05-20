@@ -1,10 +1,3 @@
-Here is the clean, efficient, and complete code for your `index.html` page.
-
-I understand your scenario perfectly now: if a customer leaves the tracking flow while a technician is **Assigned/Route**, **Arrived**, or **In Progress**, they need to be brought right back to `success.html` to track the job and provide the OTP code so the technician isn't left locked out.
-
-To achieve this cleanly, I added a **real-time Supabase snapshot query** inside `checkUser()` that triggers immediately upon page load to retrieve any running jobs, and I upgraded your floating alert banner into a high-urgency action notification drawer that guides them back to the active state instantly.
-
-```html
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -20,7 +13,7 @@ To achieve this cleanly, I added a **real-time Supabase snapshot query** inside 
         .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
         .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght=400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -483,21 +476,26 @@ To achieve this cleanly, I added a **real-time Supabase snapshot query** inside 
         </div>
 
         <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
-            <div class="fixed bottom-24 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50 animate__animated animate__pulse animate__infinite">
-                <div class="bg-gradient-to-r from-brand-olive to-gray-900 rounded-2xl p-4 shadow-super-float border-2 border-brand-gold/60 flex flex-col gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="relative flex h-11 w-11 items-center justify-center bg-white/10 rounded-xl border border-white/20">
-                            <span class="animate-ping absolute inline-flex h-6 w-6 rounded-full bg-brand-green opacity-75"></span>
-                            <i class="fa-solid text-xl text-brand-green" :class="currentJobStatus === 'arrived' ? 'fa-door-open animate-bounce' : 'fa-truck-ramp-box animate-pulse'"></i>
+            <div class="fixed bottom-24 left-4 right-4 z-50 animate__animated animate__pulse animate__infinite">
+                <div class="bg-gradient-to-r from-brand-olive via-[#453F33] to-brand-dark rounded-3xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-2 border-brand-gold/60 flex flex-col gap-3.5 backdrop-blur-md">
+                    <div class="flex items-center gap-3.5">
+                        <div class="relative flex h-12 w-12 items-center justify-center bg-white/10 rounded-2xl border border-white/20 flex-shrink-0 shadow-inner">
+                            <span class="animate-ping absolute inline-flex h-7 w-7 rounded-full bg-brand-green opacity-75"></span>
+                            <i class="fa-solid text-xl text-brand-green relative z-10" :class="currentJobStatus === 'arrived' ? 'fa-door-open animate-bounce' : 'fa-truck-ramp-box animate-pulse'"></i>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="text-white text-xs font-black tracking-wide uppercase" x-text="currentJobStatus === 'arrived' ? 'Expert Has Arrived!' : 'Expert Is Assigned'"></h4>
-                            <p class="text-brand-cream/80 text-[10px] font-bold mt-0.5" x-text="currentJobStatus === 'arrived' ? 'Your provider is waiting at your door. Tap to provide job OTP.' : 'Technician is locked waiting for verification. Return to live screen.'"></p>
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+                                <h4 class="text-white text-xs font-black tracking-widest uppercase truncate" x-text="currentJobStatus === 'arrived' ? 'Expert Has Arrived!' : 'Expert Is Assigned'"></h4>
+                            </div>
+                            <p class="text-brand-cream/90 text-[11px] font-medium mt-1 leading-relaxed break-words pr-1" x-text="currentJobStatus === 'arrived' ? 'Your provider is waiting at your door. Please tap below to share your secure verification OTP.' : 'Your service expert has been locked into your route. Tap below to track their arrival and provide code setup.'"></p>
                         </div>
                     </div>
                     
-                    <button @click="handleCartNavigation()" class="w-full py-2.5 rounded-xl bg-brand-gold text-white font-extrabold text-xs shadow-md tracking-wider uppercase hover:bg-white hover:text-brand-dark transition-all flex items-center justify-center gap-2">
-                        <span>Open Active Booking Screen</span> <i class="fa-solid fa-key text-xs"></i>
+                    <button @click="handleCartNavigation()" class="w-full py-3 rounded-2xl bg-brand-gold text-white font-extrabold text-xs shadow-md tracking-wider uppercase hover:bg-white hover:text-brand-dark hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 outline-none border-none cursor-pointer">
+                        <span>Open Active Booking Screen</span> 
+                        <i class="fa-solid fa-arrow-right-to-bracket text-xs animate-pulse"></i>
                     </button>
                 </div>
             </div>
@@ -527,5 +525,3 @@ To achieve this cleanly, I added a **real-time Supabase snapshot query** inside 
 
 </body>
 </html>
-
-```
