@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -28,7 +29,7 @@
         // --- MASTER SERVICE DATABASE ---
         const servicesDB = {
             "electrician": { 
-                name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800",
+                name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
                 desc: "Certified electricians for wiring, appliance installation, and repairs.",
                 subs: [
                     {n:"Visit & Inspection", p:250, d:"Diagnosis charge (Waived if service taken)"},
@@ -113,346 +114,320 @@
 
 <body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
      x-data="{
-    service:null,
-    selectedSubs:[],
-    showAgreement:false,
-    agreed:false,
-    loading:true,
-    bookingLoading:false,
-    fetchingLocation: false,
-    showCamera: false,
-    cameraStream: null,
+        service:null,
+        selectedSubs:[],
+        showAgreement:false,
+        agreed:false,
+        loading:true,
+        bookingLoading:false,
+        fetchingLocation: false,
+        showCamera: false,
+        cameraStream: null,
 
-    customerName:'',
-    phone:'',
-    address:'',
-    date:'',
-    time:'',
-    minTime: '',
-    minDate: '',
+        customerName:'',
+        phone:'',
+        address:'',
+        date:'',
+        time:'',
+        minTime: '',
+        minDate: '',
 
-    lat:null,
-    lng:null,
+        lat:null,
+        lng:null,
 
-    photoFile:null,
-    photoPreview:null,
+        photoFile:null,
+        photoPreview:null,
 
-    init() {
-        const params = new URLSearchParams(window.location.search);
-        let rawId = params.get('id');
-        if (!rawId) { window.location.href = 'index.html'; return; }
-        
-        let id = rawId.toLowerCase().trim();
-        
-        this.service = servicesDB[id] || servicesDB['default'];
-        if(!servicesDB[id]) this.service.name = rawId; 
-
-        // Set minimum date (today)
-        const today = new Date();
-        this.minDate = today.toISOString().split('T')[0];
-        
-        // Set default date to tomorrow (as before)
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        this.date = tomorrow.toISOString().split('T')[0];
-        
-        // Set default time to current time + 30 minutes
-        this.setDefaultTime();
-        
-        setTimeout(() => this.loading = false, 400);
-        
-        // Set up video element reference
-        this.$watch('showCamera', (value) => {
-            if (value) {
-                this.startCamera();
-            } else {
-                this.stopCamera();
-            }
-        });
-    },
-
-    setDefaultTime() {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + 30); // Add 30 minutes
-        
-        // Round to nearest 30 minutes
-        const minutes = now.getMinutes();
-        const roundedMinutes = Math.ceil(minutes / 30) * 30;
-        now.setMinutes(roundedMinutes);
-        now.setSeconds(0);
-        now.setMilliseconds(0);
-        
-        // Format time as HH:MM
-        const hours = now.getHours().toString().padStart(2, '0');
-        const mins = now.getMinutes().toString().padStart(2, '0');
-        this.time = `${hours}:${mins}`;
-        
-        // Update min time for today
-        this.updateMinTime();
-    },
-
-    updateMinTime() {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + 30);
-        const hours = now.getHours().toString().padStart(2, '0');
-        const mins = now.getMinutes().toString().padStart(2, '0');
-        this.minTime = `${hours}:${mins}`;
-    },
-
-    // Validate if selected date/time is in the past
-    isDateTimeValid() {
-        if (!this.date || !this.time) return false;
-        
-        const selectedDateTime = new Date(`${this.date}T${this.time}`);
-        const now = new Date();
-        const minDateTime = new Date(now.getTime() + 30 * 60000); // Now + 30 minutes
-        
-        return selectedDateTime >= minDateTime;
-    },
-
-    // Get validation error message
-    getDateTimeError() {
-        if (!this.date || !this.time) return 'Please select date and time';
-        if (!this.isDateTimeValid()) {
-            return 'Selected time must be at least 30 minutes from now';
-        }
-        return '';
-    },
-
-    toggleSub(sub) {
-        const index = this.selectedSubs.findIndex(s => s.n === sub.n);
-        if (index > -1) {
-            this.selectedSubs.splice(index, 1);
-        } else {
-            this.selectedSubs.push(sub);
-        }
-    },
-
-    get total() {
-        return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
-    },
-
-    openAgreement() {
-        if (this.selectedSubs.length === 0) return;
-        this.showAgreement = true;
-    },
-
-    // Handle photo selection from gallery
-    handlePhotoSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            this.photoFile = file;
-            this.photoPreview = URL.createObjectURL(file);
-        }
-    },
-
-    // Start camera for live photo
-    async startCamera() {
-        try {
-            this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' }, 
-                audio: false 
-            });
+        async init() {
+            const params = new URLSearchParams(window.location.search);
+            let rawId = params.get('id');
+            if (!rawId) { window.location.href = 'index.html'; return; }
             
-            // Wait for DOM to update
-            setTimeout(() => {
-                const video = document.getElementById('liveCamera');
-                if (video && this.cameraStream) {
-                    video.srcObject = this.cameraStream;
-                    video.play();
+            let id = rawId.toLowerCase().trim();
+            this.service = servicesDB[id] || servicesDB['default'];
+            if(!servicesDB[id]) this.service.name = rawId; 
+
+            const today = new Date();
+            this.minDate = today.toISOString().split('T')[0];
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            this.date = tomorrow.toISOString().split('T')[0];
+            
+            this.setDefaultTime();
+            
+            // Check for active logged-in user profile sessions
+            if (window.sb) {
+                const { data: { user } } = await window.sb.auth.getUser();
+                if (user) {
+                    // Check for existing uncompleted pipelines to prevent active locking
+                    const { data: existingJobs } = await window.sb
+                        .from('jobs')
+                        .select('id, status')
+                        .eq('user_id', user.id)
+                        .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started'])
+                        .order('created_at', { ascending: false });
+
+                    if (existingJobs && existingJobs.length > 0) {
+                        console.log('Redirecting user to active tracking state instance:', existingJobs[0].id);
+                        localStorage.setItem('active_job_id', existingJobs[0].id);
+                        window.location.href = `success.html?job_id=${existingJobs[0].id}`;
+                        return;
+                    }
                 }
-            }, 100);
-        } catch (err) {
-            alert('Unable to access camera. Please check permissions.');
-            console.error('Camera error:', err);
-            this.showCamera = false;
-        }
-    },
-
-    // Stop camera
-    stopCamera() {
-        if (this.cameraStream) {
-            this.cameraStream.getTracks().forEach(track => track.stop());
-            this.cameraStream = null;
-        }
-    },
-
-    // Capture photo from camera
-    capturePhoto() {
-        const video = document.getElementById('liveCamera');
-        const canvas = document.getElementById('photoCanvas');
-        
-        if (video && canvas) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            }
             
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            setTimeout(() => this.loading = false, 400);
             
-            // Convert canvas to file
-            canvas.toBlob((blob) => {
-                const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            this.$watch('showCamera', (value) => {
+                if (value) { this.startCamera(); } else { this.stopCamera(); }
+            });
+        },
+
+        setDefaultTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 30); 
+            
+            const minutes = now.getMinutes();
+            const roundedMinutes = Math.ceil(minutes / 30) * 30;
+            now.setMinutes(roundedMinutes);
+            now.setSeconds(0);
+            now.setMilliseconds(0);
+            
+            const hours = now.getHours().toString().padStart(2, '0');
+            const mins = now.getMinutes().toString().padStart(2, '0');
+            this.time = `${hours}:${mins}`;
+            
+            this.updateMinTime();
+        },
+
+        updateMinTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 30);
+            const hours = now.getHours().toString().padStart(2, '0');
+            const mins = now.getMinutes().toString().padStart(2, '0');
+            this.minTime = `${hours}:${mins}`;
+        },
+
+        isDateTimeValid() {
+            if (!this.date || !this.time) return false;
+            const selectedDateTime = new Date(`${this.date}T${this.time}`);
+            const now = new Date();
+            const minDateTime = new Date(now.getTime() + 30 * 60000); 
+            return selectedDateTime >= minDateTime;
+        },
+
+        getDateTimeError() {
+            if (!this.date || !this.time) return 'Please select date and time';
+            if (!this.isDateTimeValid()) { return 'Selected time must be at least 30 minutes from now'; }
+            return '';
+        },
+
+        toggleSub(sub) {
+            const index = this.selectedSubs.findIndex(s => s.n === sub.n);
+            if (index > -1) {
+                this.selectedSubs.splice(index, 1);
+            } else {
+                this.selectedSubs.push(sub);
+            }
+        },
+
+        get total() {
+            return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
+        },
+
+        openAgreement() {
+            if (this.selectedSubs.length === 0) return;
+            this.showAgreement = true;
+        },
+
+        handlePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
                 this.photoFile = file;
-                this.photoPreview = URL.createObjectURL(blob);
-                this.showCamera = false; // Close camera after capture
-            }, 'image/jpeg', 0.9);
-        }
-    },
+                this.photoPreview = URL.createObjectURL(file);
+            }
+        },
 
-    // Clear selected photo
-    clearPhoto() {
-        if (this.photoPreview) {
-            URL.revokeObjectURL(this.photoPreview);
-        }
-        this.photoFile = null;
-        this.photoPreview = null;
-    },
-
-    // --- FETCH GPS LOCATION FUNCTION ---
-    async fetchGPS() {
-        this.fetchingLocation = true;
-        
-        if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser.');
-            this.fetchingLocation = false;
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                this.lat = position.coords.latitude;
-                this.lng = position.coords.longitude;
+        async startCamera() {
+            try {
+                this.cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: false 
+                });
                 
-                try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
-                    const data = await response.json();
-                    if(data && data.display_name) {
-                        let addressParts = data.display_name.split(',');
-                        this.address = addressParts.slice(0, 3).join(',').trim();
-                    } else {
+                setTimeout(() => {
+                    const video = document.getElementById('liveCamera');
+                    if (video && this.cameraStream) {
+                        video.srcObject = this.cameraStream;
+                        video.play();
+                    }
+                }, 100);
+            } catch (err) {
+                alert('Unable to access camera. Please check permissions.');
+                this.showCamera = false;
+            }
+        },
+
+        stopCamera() {
+            if (this.cameraStream) {
+                this.cameraStream.getTracks().forEach(track => track.stop());
+                this.cameraStream = null;
+            }
+        },
+
+        capturePhoto() {
+            const video = document.getElementById('liveCamera');
+            const canvas = document.getElementById('photoCanvas');
+            
+            if (video && canvas) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob((blob) => {
+                    const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    this.photoFile = file;
+                    this.photoPreview = URL.createObjectURL(blob);
+                    this.showCamera = false; 
+                }, 'image/jpeg', 0.9);
+            }
+        },
+
+        clearPhoto() {
+            if (this.photoPreview) { URL.revokeObjectURL(this.photoPreview); }
+            this.photoFile = null;
+            this.photoPreview = null;
+        },
+
+        async fetchGPS() {
+            this.fetchingLocation = true;
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                this.fetchingLocation = false;
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    this.lat = position.coords.latitude;
+                    this.lng = position.coords.longitude;
+                    
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
+                        const data = await response.json();
+                        if(data && data.display_name) {
+                            let addressParts = data.display_name.split(',');
+                            this.address = addressParts.slice(0, 3).join(',').trim();
+                        } else {
+                            this.address = 'GPS Location Captured';
+                        }
+                    } catch (error) {
                         this.address = 'GPS Location Captured';
                     }
-                } catch (error) {
-                    this.address = 'GPS Location Captured';
+                    this.fetchingLocation = false;
+                },
+                (error) => {
+                    alert('Unable to retrieve your location. Please check browser permissions.');
+                    this.fetchingLocation = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        },
+
+        async confirmBooking() {
+            try {
+                if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+                if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+                if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+                if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+                if (!this.date) { alert('Please select a date.'); return; }
+                if (!this.time) { alert('Please select a time.'); return; }
+                if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
+
+                this.bookingLoading = true;
+                if (!window.sb) { alert('System Offline'); this.bookingLoading = false; return; }
+
+                const { data: { user } } = await window.sb.auth.getUser();
+                if (!user) {
+                    alert('Please Log In to book!');
+                    sessionStorage.setItem('redirect_to', window.location.href);
+                    window.location.href = 'loginuser.html';
+                    return;
                 }
+
+                // SECURE STEP RUNTIME PROTECTION CHECK
+                const { data: blockJobs } = await window.sb
+                    .from('jobs')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
+
+                if (blockJobs && blockJobs.length > 0) {
+                    alert('You already have an active service booking under development!');
+                    localStorage.setItem('active_job_id', blockJobs[0].id);
+                    window.location.href = `success.html?job_id=${blockJobs[0].id}`;
+                    return;
+                }
+
+                const firstService = this.selectedSubs[0];
+                const scheduledDateTime = `${this.date}T${this.time}:00`;
+
+                const jobPayload = {
+                    user_id: user.id,
+                    category: this.service?.name || 'General Service',
+                    device: firstService?.n || 'General Service',
+                    issue: firstService?.d || 'Service requested via app',
+                    customer_name: this.customerName,
+                    location: this.address,
+                    phone: this.phone,
+                    status: 'pending',
+                    urgent: false,
+                    latitude: this.lat || null,
+                    longitude: this.lng || null,
+                    scheduled_time: scheduledDateTime,
+                    original_price: this.total,
+                    discounted_price: this.total
+                };
+
+                const { data: insertedJob, error: jobError } = await window.sb
+                    .from('jobs')
+                    .insert([jobPayload])
+                    .select()
+                    .single();
+
+                if (jobError) { alert('Job Error: ' + jobError.message); this.bookingLoading = false; return; }
+
+                const bookingPayload = {
+                    user_id: user.id,
+                    service_name: this.service?.name || 'General Service',
+                    variant_name: firstService?.n || 'Service',
+                    price: this.total,
+                    date: this.date,
+                    time: this.time, 
+                    address: this.address,
+                    phone: this.phone
+                };
+
+                const { error: bookingError } = await window.sb.from('bookings').insert([bookingPayload]);
+                if (bookingError) { alert('Booking Error: ' + bookingError.message); this.bookingLoading = false; return; }
+
+                this.bookingLoading = false;
+                this.showAgreement = false;
+                this.stopCamera();
                 
-                this.fetchingLocation = false;
-            },
-            (error) => {
-                alert('Unable to retrieve your location. Please check browser permissions.');
-                this.fetchingLocation = false;
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-    },
+                localStorage.setItem('active_job_id', insertedJob.id);
+                window.location.href = 'success.html?job_id=' + insertedJob.id;
 
-    // --- CONFIRM BOOKING FUNCTION (Updated with sticky note) ---
-    async confirmBooking() {
-        try {
-            if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-            if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-            if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-            if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-            if (!this.date) { alert('Please select a date.'); return; }
-            if (!this.time) { alert('Please select a time.'); return; }
-            
-            // Validate date/time is not in the past
-            if (!this.isDateTimeValid()) {
-                alert('Please select a time at least 30 minutes from now.');
-                return;
-            }
-
-            this.bookingLoading = true;
-
-            if (!window.sb) {
-                alert('System Offline');
+            } catch (err) {
+                console.error(err);
+                alert('Unexpected Error: ' + err.message);
                 this.bookingLoading = false;
-                return;
             }
-
-            const { data: { user } } = await window.sb.auth.getUser();
-            if (!user) {
-                alert('Please Log In to book!');
-                sessionStorage.setItem('redirect_to', window.location.href);
-                window.location.href = 'loginuser.html';
-                return;
-            }
-
-            const firstService = this.selectedSubs[0];
-
-            // Combine date and time for database storage
-            const scheduledDateTime = `${this.date}T${this.time}:00`;
-
-            // 1. SAVE TO JOBS TABLE (WITH TIME)
-            const jobPayload = {
-                category: this.service?.name || 'General Service',
-                device: firstService?.n || 'General Service',
-                issue: firstService?.d || 'Service requested via app',
-                customer_name: this.customerName,
-                location: this.address,
-                phone: this.phone,
-                status: 'pending',
-                urgent: false,
-                latitude: this.lat || null,
-                longitude: this.lng || null,
-                scheduled_time: scheduledDateTime,
-                original_price: this.total,
-                discounted_price: this.total
-            };
-
-            const { data: insertedJob, error: jobError } = await window.sb
-                .from('jobs')
-                .insert([jobPayload])
-                .select()
-                .single();
-
-            if (jobError) {
-                alert('Job Error: ' + jobError.message);
-                this.bookingLoading = false;
-                return;
-            }
-
-            // 2. SAVE TO BOOKINGS TABLE (WITH TIME)
-            const bookingPayload = {
-                user_id: user.id,
-                service_name: this.service?.name || 'General Service',
-                variant_name: firstService?.n || 'Service',
-                price: this.total,
-                date: this.date,
-                time: this.time, // Add time field
-                address: this.address,
-                phone: this.phone
-            };
-
-            const { error: bookingError } = await window.sb
-                .from('bookings')
-                .insert([bookingPayload]);
-
-            if (bookingError) {
-                alert('Booking Error: ' + bookingError.message);
-                this.bookingLoading = false;
-                return;
-            }
-
-            this.bookingLoading = false;
-            this.showAgreement = false;
-            
-            // Clean up camera if still running
-            this.stopCamera();
-            
-            // Save active job for cart button
-            localStorage.setItem('fixzen_active_job', insertedJob.id);
-            
-            // Redirect to tracking page
-            window.location.href = 'success.html?job_id=' + insertedJob.id;
-
-        } catch (err) {
-            console.error(err);
-            alert('Unexpected Error: ' + err.message);
-            this.bookingLoading = false;
         }
-    }
-}">
+    }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
@@ -542,7 +517,6 @@
         
         <div class="relative w-full h-full flex flex-col">
             <video id="liveCamera" class="w-full h-full object-cover"></video>
-            
             <canvas id="photoCanvas" class="hidden"></canvas>
             
             <div class="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-6">
@@ -561,12 +535,7 @@
                     <i class="fa-solid fa-images"></i>
                 </button>
             </div>
-            
-            <input type="file" 
-                   id="cameraGalleryInput"
-                   accept="image/*" 
-                   @change="handlePhotoSelect"
-                   class="hidden">
+            <input type="file" id="cameraGalleryInput" accept="image/*" @change="handlePhotoSelect" class="hidden">
         </div>
     </div>
 
@@ -583,7 +552,6 @@
             </div>
             
             <div class="space-y-3 mb-4">
-
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-user text-brand-gold"></i>
                     <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
@@ -600,8 +568,7 @@
                     <span x-text="fetchingLocation ? 'Pinpointing Location...' : '📍 Fetch Current GPS Location'"></span>
                 </button>
 
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
-                     :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3" :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
                     <i class="fa-solid fa-location-dot text-brand-gold" :class="lat ? 'text-brand-green' : ''"></i>
                     <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
@@ -611,18 +578,11 @@
                     <input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3"
-                     :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3" :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
                     <i class="fa-solid fa-clock text-brand-gold"></i>
                     <div class="flex-1">
-                        <input type="time" 
-                               x-model="time" 
-                               :min="date === minDate ? minTime : ''"
-                               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
-                        <p x-show="!isDateTimeValid() && date && time" 
-                           class="text-[10px] text-brand-red mt-1">
-                            ⚠️ Please select a time at least 30 minutes from now
-                        </p>
+                        <input type="time" x-model="time" :min="date === minDate ? minTime : ''" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
+                        <p x-show="!isDateTimeValid() && date && time" class="text-[10px] text-brand-red mt-1">⚠️ Please select a time at least 30 minutes from now</p>
                     </div>
                 </div>
 
@@ -634,41 +594,22 @@
                     
                     <div class="flex flex-col gap-3">
                         <div class="flex gap-2">
-                            <button type="button" 
-                                    @click="showCamera = true; showAgreement = false;"
-                                    class="flex-1 py-3 rounded-xl bg-brand-gold/10 border-2 border-brand-gold/30 text-brand-gold text-sm font-bold hover:bg-brand-gold/20 transition-colors flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-video"></i>
-                                <span>Live Camera</span>
+                            <button type="button" @click="showCamera = true; showAgreement = false;" class="flex-1 py-3 rounded-xl bg-brand-gold/10 border-2 border-brand-gold/30 text-brand-gold text-sm font-bold hover:bg-brand-gold/20 transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-video"></i><span>Live Camera</span>
                             </button>
-                            
-                            <button type="button" 
-                                    @click="document.getElementById('galleryInput').click()"
-                                    class="flex-1 py-3 rounded-xl bg-gray-100 border-2 border-gray-200 text-brand-dark text-sm font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-images"></i>
-                                <span>Gallery</span>
+                            <button type="button" @click="document.getElementById('galleryInput').click()" class="flex-1 py-3 rounded-xl bg-gray-100 border-2 border-gray-200 text-brand-dark text-sm font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-images"></i><span>Gallery</span>
                             </button>
                         </div>
-                        
-                        <input type="file" 
-                               id="galleryInput"
-                               accept="image/*" 
-                               @change="handlePhotoSelect"
-                               class="hidden">
+                        <input type="file" id="galleryInput" accept="image/*" @change="handlePhotoSelect" class="hidden">
                         
                         <div x-show="photoPreview" class="relative mt-2 rounded-lg overflow-hidden border border-gray-200">
                             <img :src="photoPreview" class="w-full h-32 object-cover">
-                            <button @click="clearPhoto" 
-                                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors">
-                                <i class="fa-solid fa-times text-sm"></i>
-                            </button>
+                            <button @click="clearPhoto" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"><i class="fa-solid fa-times text-sm"></i></button>
                         </div>
-                        
-                        <p class="text-[10px] text-gray-400 text-center">
-                            Take a live photo or upload from gallery (not saved to database)
-                        </p>
+                        <p class="text-[10px] text-gray-400 text-center">Take a live photo or upload from gallery (not saved to database)</p>
                     </div>
                 </div>
-
             </div>
 
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4 border border-brand-beige/50 max-h-32 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed scrollbar-thin">
@@ -691,21 +632,14 @@
 
             <div class="flex gap-3">
                 <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm">Cancel</button>
-                <button @click="confirmBooking()" 
-                        :disabled="!agreed || bookingLoading || !isDateTimeValid()"
-                        class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                <button @click="confirmBooking()" :disabled="!agreed || bookingLoading || !isDateTimeValid()" class="flex-1 py-3.5 rounded-xl bg-brand-gold text-white font-bold shadow-lg hover:bg-brand-olive transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
                     <span x-show="!bookingLoading">Confirm Booking</span>
                     <i x-show="bookingLoading" class="fa-solid fa-circle-notch fa-spin"></i>
                 </button>
             </div>
-            
-            <p x-show="!isDateTimeValid() && date && time" 
-               class="text-center text-xs text-brand-red mt-2">
-                ⚠️ Please select a valid future time (minimum 30 minutes from now)
-            </p>
+            <p x-show="!isDateTimeValid() && date && time" class="text-center text-xs text-brand-red mt-2">⚠️ Please select a valid future time (minimum 30 minutes from now)</p>
         </div>
     </div>
-
-
 </body>
 </html>
+
