@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -13,7 +14,7 @@
         .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
         .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght=400;600;700&display=swap" rel="stylesheet">
     <script src="i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,7 +66,7 @@
             }
         }
     </script>
-</head> head
+</head>
 
 <body class="bg-gray-200 text-brand-dark antialiased"
       x-data="{ 
@@ -79,7 +80,7 @@
 
           masterList: [
               {n:'Carpenter', cat:'Home', icon:'🪚'}, 
-              {n:'Plumber', cat:'Home', icon:'𚚰'}, 
+              {n:'Plumber', cat:'Home', icon:'🚰'}, 
               {n:'Electrician', cat:'Home', icon:'⚡'}, 
               {n:'Painter', cat:'Home', icon:'🎨'}, 
               {n:'Mason', cat:'Home', icon:'🧱'}, 
@@ -108,6 +109,42 @@
               if (user) {
                   const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
                   this.user = profile || { full_name: 'Valued Customer', phone: user.phone };
+                  
+                  // Now that we have the authenticated user, check Supabase for active jobs instantly
+                  await this.checkActiveJobsFromDatabase(user.id);
+              }
+          },
+
+          // LIVE REAL-TIME DATABASE ORDER CHECKER
+          async checkActiveJobsFromDatabase(userId) {
+              try {
+                  console.log('Scanning database for uncompleted orders linked to user:', userId);
+                  
+                  // Query the jobs table looking for any rows belonging to this user that are NOT completed/cancelled
+                  const { data: activeJobs, error } = await window.sb
+                      .from('jobs')
+                      .select('id, status')
+                      .eq('user_id', userId)
+                      .in('status', ['pending', 'accepted', 'searching', 'assigned', 'arrived', 'started'])
+                      .order('created_at', { ascending: false });
+
+                  if (error) throw error;
+
+                  if (activeJobs && activeJobs.length > 0) {
+                      // Found an active order running in the database! Lock its ID into runtime memory
+                      this.currentActiveJobId = activeJobs[0].id;
+                      localStorage.setItem('active_job_id', this.currentActiveJobId);
+                      console.log('Database tracking validation complete. Active Job Locked:', this.currentActiveJobId);
+                  } else {
+                      // No active jobs running in the background database
+                      this.currentActiveJobId = null;
+                      localStorage.removeItem('active_job_id');
+                      console.log('No uncompleted orders discovered in database sync.');
+                  }
+              } catch (err) {
+                  console.error('Error synchronizing active tracking sessions:', err.message);
+                  // Local Cache Fallback if network request drops
+                  this.currentActiveJobId = localStorage.getItem('active_job_id');
               }
           },
 
@@ -126,13 +163,12 @@
               }
           },
 
-          // PREVENTING ASYNC CHAIN BLOCKING FOR DYNAMIC CAPTURE HANDLER
+          // REFACTOR: Bulletproof Click Routing Action Interceptor
           handleCartNavigation() {
-              const directStoredId = localStorage.getItem('active_job_id');
-              console.log('Real-time handler verification token read out:', directStoredId);
+              console.log('Cart Interaction Triggered. Redirect target evaluation:', this.currentActiveJobId);
               
-              if (directStoredId && directStoredId !== 'null' && directStoredId !== '') {
-                  window.location.href = `success.html?job_id=${directStoredId}`;
+              if (this.currentActiveJobId && this.currentActiveJobId !== 'null' && this.currentActiveJobId !== '') {
+                  window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
               } else {
                   this.navigate('bookings.html');
               }
@@ -142,6 +178,7 @@
           if (sessionStorage.getItem('introShown')) { loading = false; } 
           else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
           
+          // Seed initial token cache context instantly during template compile phase
           this.currentActiveJobId = localStorage.getItem('active_job_id');
 
           let attempts = 0;
@@ -449,15 +486,15 @@
                     <div class="flex items-center gap-3">
                         <div class="relative flex h-10 w-10 items-center justify-center bg-white/10 rounded-xl">
                             <span class="animate-ping absolute inline-flex h-6 w-6 rounded-full bg-brand-green opacity-40"></span>
-                            <i class="fa-solid fa-truck-ramp-box text-brand-green text-lg"></i>
+                            <i class="fa-solid fa-truck-fast text-brand-green text-lg animate-pulse"></i>
                         </div>
                         <div>
-                            <h4 class="text-white text-xs font-extrabold tracking-wide uppercase">Booking In Progress</h4>
-                            <p class="text-brand-cream/70 text-[10px] font-medium mt-0.5">You backed out of an active live session</p>
+                            <h4 class="text-white text-xs font-extrabold tracking-wide uppercase">Active Order Found</h4>
+                            <p class="text-brand-cream/70 text-[10px] font-medium mt-0.5">Tap track to return to your mapping screen</p>
                         </div>
                     </div>
                     <button @click="handleCartNavigation()" class="px-4 py-2 rounded-xl bg-brand-gold text-white font-bold text-xs shadow-md shadow-amber-900/40 hover:bg-white hover:text-brand-dark transition-all whitespace-nowrap">
-                        Resume Live <i class="fa-solid fa-arrow-right ml-1"></i>
+                        Track Live <i class="fa-solid fa-arrow-right ml-1"></i>
                     </button>
                 </div>
             </div>
@@ -467,7 +504,7 @@
             <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-around items-center shadow-super-float">
                 <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
                 
-                <button @click="handleCartNavigation()" class="relative w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors border-none bg-transparent outline-none">
+                <button @click="handleCartNavigation()" class="relative w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors border-none bg-transparent outline-none cursor-pointer">
                     <i class="fa-solid fa-calendar-check text-xl"></i>
                     <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
                         <span class="absolute top-2 right-2 flex h-2 w-2">
@@ -487,3 +524,4 @@
 
 </body>
 </html>
+
