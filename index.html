@@ -35,7 +35,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3', 'brand-red': '#EF4444' },
+                    colors: { 'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#EEEAE2', 'brand-dark': '#4D4C4B', 'brand-beige': '#DFD4C3', 'brand-red': '#EF4444', 'brand-green': '#10B981' },
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
                     boxShadow: { 'super-float': '0 30px 60px -15px rgba(93, 86, 70, 0.25)', 'neon': '0 0 20px rgba(160, 125, 84, 0.4)' },
                     animation: {
@@ -65,7 +65,7 @@
             }
         }
     </script>
-</head>
+</head> head
 
 <body class="bg-gray-200 text-brand-dark antialiased"
       x-data="{ 
@@ -78,23 +78,23 @@
           currentActiveJobId: null,
 
           masterList: [
-              {n:'Carpenter', cat:'Home', icon:'fa-hammer'}, 
-              {n:'Plumber', cat:'Home', icon:'fa-faucet-drip'}, 
-              {n:'Electrician', cat:'Home', icon:'fa-bolt'}, 
-              {n:'Painter', cat:'Home', icon:'fa-paint-roller'}, 
-              {n:'Mason', cat:'Home', icon:'fa-trowel-bricks'}, 
-              {n:'Welder', cat:'Home', icon:'fa-fire-burner'},
-              {n:'AC Tech', cat:'Appliance', icon:'fa-snowflake'}, 
-              {n:'Fridge', cat:'Appliance', icon:'fa-temperature-arrow-down'}, 
-              {n:'Washing M.', cat:'Appliance', icon:'fa-shirt'}, 
-              {n:'Microwave', cat:'Appliance', icon:'fa-stopwatch'}, 
-              {n:'RO Filter', cat:'Appliance', icon:'fa-glass-water'},
-              {n:'TV / LED', cat:'Electronics', icon:'fa-tv'}, 
-              {n:'CCTV', cat:'Electronics', icon:'fa-video'}, 
-              {n:'Car Mech', cat:'Auto', icon:'fa-car'}, 
-              {n:'Bike Mech', cat:'Auto', icon:'fa-motorcycle'}, 
-              {n:'Pest Ctrl', cat:'Other', icon:'fa-bug'}, 
-              {n:'Grass Cutting', cat:'Other', icon:'fa-scissors'}
+              {n:'Carpenter', cat:'Home', icon:'🪚'}, 
+              {n:'Plumber', cat:'Home', icon:'𚚰'}, 
+              {n:'Electrician', cat:'Home', icon:'⚡'}, 
+              {n:'Painter', cat:'Home', icon:'🎨'}, 
+              {n:'Mason', cat:'Home', icon:'🧱'}, 
+              {n:'Welder', cat:'Home', icon:'🔥'},
+              {n:'AC Tech', cat:'Appliance', icon:'❄️'}, 
+              {n:'Fridge', cat:'Appliance', icon:'🧊'}, 
+              {n:'Washing M.', cat:'Appliance', icon:'🧼'}, 
+              {n:'Microwave', cat:'Appliance', icon:'⏲️'}, 
+              {n:'RO Filter', cat:'Appliance', icon:'💧'},
+              {n:'TV / LED', cat:'Electronics', icon:'📺'}, 
+              {n:'CCTV', cat:'Electronics', icon:'📹'}, 
+              {n:'Car Mech', cat:'Auto', icon:'🚗'}, 
+              {n:'Bike Mech', cat:'Auto', icon:'🏍️'}, 
+              {n:'Pest Ctrl', cat:'Other', icon:'🪲'}, 
+              {n:'Grass Cutting', cat:'Other', icon:'🏡'}
           ],
 
           get filteredServices() {
@@ -126,9 +126,10 @@
               }
           },
 
+          // PREVENTING ASYNC CHAIN BLOCKING FOR DYNAMIC CAPTURE HANDLER
           handleCartNavigation() {
               const directStoredId = localStorage.getItem('active_job_id');
-              console.log('Real-time button click checked token value:', directStoredId);
+              console.log('Real-time handler verification token read out:', directStoredId);
               
               if (directStoredId && directStoredId !== 'null' && directStoredId !== '') {
                   window.location.href = `success.html?job_id=${directStoredId}`;
@@ -162,7 +163,6 @@
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
             </svg>
             <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
-            
             <p class="text-brand-gold text-[11px] font-bold tracking-[0.35em] uppercase mt-2 opacity-0 animate-sub-text-slide" style="animation-delay: 2.8s;">WE FIX, YOU RELAX</p>
         </div>
     </div>
@@ -209,10 +209,10 @@
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
                 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
                 
-                <a href="#" @click.prevent="handleCartNavigation()" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
+                <button @click="handleCartNavigation()" class="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors text-left group bg-transparent border-none outline-none">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? 'LIVE TRACKING' : 'MY BOOKINGS'"></span>
-                </a>
+                </button>
                 <a href="admin.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-chart-line"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">ADMIN DASHBOARD</span>
@@ -229,7 +229,7 @@
                     <span class="text-sm font-bold text-brand-dark tracking-wide">PRIVACY POLICY</span>
                 </a>
                 <a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
-                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
+                    <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
                     <span class="text-sm font-bold text-brand-dark tracking-wide">TERMS & POLICY</span>
                 </a>
             </nav>
@@ -255,7 +255,7 @@
             
             <img src="fixzen.png" alt="FixZen" class="pointer-events-auto h-8 object-contain drop-shadow-lg">
 
-            <button @click="handleCartNavigation()" class="relative pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white">
+            <button @click="handleCartNavigation()" class="relative pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white outline-none border-none">
                 <i class="fa-solid fa-cart-shopping text-lg"></i>
                 
                 <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
@@ -312,8 +312,8 @@
                     
                     <template x-for="result in filteredServices">
                         <div @click="navigate('service.html?id=' + result.n)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer border-b border-brand-cream last:border-0 transition-colors group">
-                            <div class="w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-colors">
-                                <i :class="`fa-solid ${result.icon}`"></i>
+                            <div class="text-2xl w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center group-hover:scale-110 transition-transform select-none">
+                                <span x-text="result.icon"></span>
                             </div>
                             <div>
                                 <p class="font-bold text-sm text-brand-dark" x-text="result.n"></p>
@@ -343,18 +343,18 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Construction & Home</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Carpenter', img:'https://cdn-icons-png.flaticon.com/512/2991/2991138.png', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop', icon:'fa-hammer'}, 
-                        {n:'Plumber', img:'https://cdn-icons-png.flaticon.com/512/1045/1045163.png', bg:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&fit=crop', icon:'fa-faucet-drip'}, 
-                        {n:'Electrician', img:'https://cdn-icons-png.flaticon.com/512/2933/2933190.png', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop', icon:'fa-bolt'}, 
-                        {n:'Painter', img:'https://cdn-icons-png.flaticon.com/512/2972/2972106.png', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop', icon:'fa-paint-roller'}, 
-                        {n:'Mason', img:'https://cdn-icons-png.flaticon.com/512/1839/1839274.png', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop', icon:'fa-trowel-bricks'}, 
-                        {n:'Welder', img:'https://cdn-icons-png.flaticon.com/512/3233/3233302.png', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop', icon:'fa-fire-burner'}
+                        {n:'Carpenter', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop', icon:'🪚'}, 
+                        {n:'Plumber', bg:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&fit=crop', icon:'🚰'}, 
+                        {n:'Electrician', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop', icon:'⚡'}, 
+                        {n:'Painter', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop', icon:'🎨'}, 
+                        {n:'Mason', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop', icon:'🧱'}, 
+                        {n:'Welder', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop', icon:'🔥'}
                     ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                                <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -366,17 +366,17 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Appliance Repair</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'AC Tech', img:'https://cdn-icons-png.flaticon.com/512/2366/2366050.png', bg:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&fit=crop', icon:'fa-snowflake'}, 
-                        {n:'Fridge', img:'https://cdn-icons-png.flaticon.com/512/2402/2402248.png', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop', icon:'fa-temperature-arrow-down'}, 
-                        {n:'Washing M.', img:'https://cdn-icons-png.flaticon.com/512/2251/2251998.png', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop', icon:'fa-shirt'}, 
-                        {n:'Microwave', img:'https://cdn-icons-png.flaticon.com/512/2928/2928827.png', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop', icon:'fa-stopwatch'},
-                        {n:'RO Filter', img:'https://cdn-icons-png.flaticon.com/512/3143/3143643.png', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop', icon:'fa-glass-water'}
+                        {n:'AC Tech', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop', icon:'❄️'}, 
+                        {n:'Fridge', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop', icon:'🧊'}, 
+                        {n:'Washing M.', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop', icon:'🧼'}, 
+                        {n:'Microwave', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop', icon:'⏲️'},
+                        {n:'RO Filter', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop', icon:'💧'}
                     ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                                <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -388,14 +388,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'TV / LED', img:'https://cdn-icons-png.flaticon.com/512/3273/3273444.png', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop', icon:'fa-tv'},
-                        {n:'CCTV', img:'https://cdn-icons-png.flaticon.com/512/3125/3125638.png', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop', icon:'fa-video'}
+                        {n:'TV / LED', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop', icon:'📺'},
+                        {n:'CCTV', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop', icon:'📹'}
                     ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                                <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -407,14 +407,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Automobile</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Car Mech', img:'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop', icon:'fa-car'}, 
-                        {n:'Bike Mech', img:'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop', icon:'fa-motorcycle'}
+                        {n:'Car Mech', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop', icon:'🚗'}, 
+                        {n:'Bike Mech', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop', icon:'🏍️'}
                     ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                                <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -426,14 +426,14 @@
                 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Other Services</h2>
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in [
-                        {n:'Pest Ctrl', img:'https://cdn-icons-png.flaticon.com/512/2364/2364539.png', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop', icon:'fa-bug'}, 
-                        {n:'Grass Cutting', img:'https://cdn-icons-png.flaticon.com/512/3065/3065961.png', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop', icon:'fa-soap'}
+                        {n:'Pest Ctrl', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop', icon:'🪲'}, 
+                        {n:'Grass Cutting', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop', icon:'🏡'}
                     ]">
-                        <div class="group relative flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-transform duration-100" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center text-brand-olive relative overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
+                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
                                 <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
-                                <i :class="`fa-solid ${s.icon}`" class="text-xl relative z-10 text-brand-olive group-hover:text-white transform duration-300 group-hover:rotate-12 group-hover:scale-110"></i>
+                                <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
                             <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
                         </div>
@@ -443,11 +443,31 @@
 
         </div>
 
+        <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
+            <div class="fixed bottom-24 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50 animate__animated animate__slideInUp">
+                <div class="bg-gradient-to-r from-brand-olive to-gray-800 rounded-2xl p-4 shadow-2xl border border-brand-gold/30 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex h-10 w-10 items-center justify-center bg-white/10 rounded-xl">
+                            <span class="animate-ping absolute inline-flex h-6 w-6 rounded-full bg-brand-green opacity-40"></span>
+                            <i class="fa-solid fa-truck-ramp-box text-brand-green text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-xs font-extrabold tracking-wide uppercase">Booking In Progress</h4>
+                            <p class="text-brand-cream/70 text-[10px] font-medium mt-0.5">You backed out of an active live session</p>
+                        </div>
+                    </div>
+                    <button @click="handleCartNavigation()" class="px-4 py-2 rounded-xl bg-brand-gold text-white font-bold text-xs shadow-md shadow-amber-900/40 hover:bg-white hover:text-brand-dark transition-all whitespace-nowrap">
+                        Resume Live <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+
         <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
             <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-around items-center shadow-super-float">
                 <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
                 
-                <a href="#" @click.prevent="handleCartNavigation()" class="relative w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors">
+                <button @click="handleCartNavigation()" class="relative w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors border-none bg-transparent outline-none">
                     <i class="fa-solid fa-calendar-check text-xl"></i>
                     <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
                         <span class="absolute top-2 right-2 flex h-2 w-2">
@@ -455,7 +475,7 @@
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
                     </template>
-                </a>
+                </button>
                 
                 <button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors outline-none">
                     <i :class="user ? 'fa-solid fa-user text-brand-olive' : 'fa-regular fa-user'" class="text-xl"></i>
