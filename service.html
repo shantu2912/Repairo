@@ -156,11 +156,9 @@
             
             this.setDefaultTime();
             
-            // Check for active logged-in user profile sessions
             if (window.sb) {
                 const { data: { user } } = await window.sb.auth.getUser();
                 if (user) {
-                    // Check for existing uncompleted pipelines to prevent active locking
                     const { data: existingJobs } = await window.sb
                         .from('jobs')
                         .select('id, status')
@@ -338,6 +336,9 @@
         },
 
         async confirmBooking() {
+            // Guard safety check to block rapid clicks from processing double entries
+            if (this.bookingLoading) return;
+
             try {
                 if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
                 if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
@@ -358,7 +359,6 @@
                     return;
                 }
 
-                // SECURE STEP RUNTIME PROTECTION CHECK
                 const { data: blockJobs } = await window.sb
                     .from('jobs')
                     .select('id')
@@ -392,27 +392,14 @@
                     discounted_price: this.total
                 };
 
+                // Single execution handler into your core operations table to completely prevent duplicate workflows.
                 const { data: insertedJob, error: jobError } = await window.sb
                     .from('jobs')
                     .insert([jobPayload])
                     .select()
                     .single();
 
-                if (jobError) { alert('Job Error: ' + jobError.message); this.bookingLoading = false; return; }
-
-                const bookingPayload = {
-                    user_id: user.id,
-                    service_name: this.service?.name || 'General Service',
-                    variant_name: firstService?.n || 'Service',
-                    price: this.total,
-                    date: this.date,
-                    time: this.time, 
-                    address: this.address,
-                    phone: this.phone
-                };
-
-                const { error: bookingError } = await window.sb.from('bookings').insert([bookingPayload]);
-                if (bookingError) { alert('Booking Error: ' + bookingError.message); this.bookingLoading = false; return; }
+                if (jobError) { alert('Booking Error: ' + jobError.message); this.bookingLoading = false; return; }
 
                 this.bookingLoading = false;
                 this.showAgreement = false;
@@ -642,4 +629,3 @@
     </div>
 </body>
 </html>
-
