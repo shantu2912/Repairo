@@ -2,20 +2,21 @@
 <html lang="en" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FixZen Pro | Active Job - Technician View</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#5D5646">
+<title>FixZen Pro | Active Job - Technician Console</title>
 
-<!-- Tailwind -->
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+<!-- Font Awesome 6 (Free) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Chart.js for ETA visualization -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
 tailwind.config = {
@@ -26,32 +27,44 @@ tailwind.config = {
         'brand-gold': '#A07D54',
         'brand-cream': '#F8F5F0',
         'brand-dark': '#2D2B28',
-        'brand-beige': '#DFD4C3'
+        'brand-beige': '#DFD4C3',
+        'success': '#10B981',
+        'warning': '#F59E0B',
+        'danger': '#EF4444',
+        'info': '#3B82F6'
+      },
+      fontFamily: {
+        'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'serif-italic': ['Playfair Display', 'serif']
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-ring': 'pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'slide-up': 'slideUp 0.3s ease-out',
-        'slide-down': 'slideDown 0.2s ease-out',
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-        'bounce-gentle': 'bounceGentle 1s ease-in-out infinite'
+        'fade-in': 'fadeIn 0.2s ease-out',
+        'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
+        'glow-pulse': 'glowPulse 2s ease-in-out infinite'
       },
       keyframes: {
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' }
+        pulseRing: {
+          '0%': { boxShadow: '0 0 0 0 rgba(160,125,84,0.4)' },
+          '70%': { boxShadow: '0 0 0 6px rgba(160,125,84,0)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(160,125,84,0)' }
         },
-        slideDown: {
-          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' }
         },
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' }
         },
-        bounceGentle: {
+        bounceSubtle: {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' }
+          '50%': { transform: 'translateY(-3px)' }
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' }
         }
       }
     }
@@ -60,281 +73,299 @@ tailwind.config = {
 </script>
 
 <style>
-body{background:#F8F5F0;color:#2D2B28;font-family:'Plus Jakarta Sans',sans-serif}
-.glass-card{
-  background:rgba(255,255,255,.95);
-  backdrop-filter:blur(18px);
-  border:1px solid rgba(255,255,255,0.5);
-  box-shadow:0 15px 35px rgba(93,86,70,.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+* {
+  -webkit-tap-highlight-color: transparent;
 }
-.glass-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(93,86,70,.12);
+
+body { 
+  background: #F8F5F0;
+  background-image: radial-gradient(circle at 10% 20%, rgba(160,125,84,0.03) 0%, transparent 60%);
+  font-family: 'Inter', system-ui, sans-serif;
 }
-.progress-ring {
-  transition: stroke-dashoffset 0.35s;
-  transform: rotate(-90deg);
-  transform-origin: 50% 50%;
-}
-.status-badge {
+
+.glass-card {
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: 0 8px 32px rgba(93,86,70,0.06);
   transition: all 0.2s ease;
 }
-.btn-primary {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+.btn-touch {
+  transition: transform 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1), background 0.2s;
 }
-.btn-primary:active {
+.btn-touch:active {
   transform: scale(0.97);
 }
+
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.5s linear infinite;
 }
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-.live-pulse {
+
+.status-live-dot {
   position: relative;
+  padding-left: 12px;
 }
-.live-pulse::before {
+.status-live-dot::before {
   content: '';
   position: absolute;
+  left: 0;
   top: 50%;
-  left: -8px;
   transform: translateY(-50%);
   width: 8px;
   height: 8px;
   background-color: #10b981;
   border-radius: 50%;
-  animation: pulse-live 1.5s ease-in-out infinite;
+  animation: livePulse 1.2s ease-in-out infinite;
 }
-@keyframes pulse-live {
-  0% { opacity: 1; transform: translateY(-50%) scale(0.8); }
-  70% { opacity: 0.3; transform: translateY(-50%) scale(1.2); }
-  100% { opacity: 1; transform: translateY(-50%) scale(0.8); }
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+  50% { opacity: 0.4; transform: translateY(-50%) scale(0.8); }
 }
-.eta-bar {
+
+.progress-fill {
   background: linear-gradient(90deg, #A07D54, #5D5646);
-  transition: width 0.5s ease-out;
+  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
-::-webkit-scrollbar {
-  width: 4px;
+
+.custom-scroll::-webkit-scrollbar {
+  width: 3px;
 }
-::-webkit-scrollbar-track {
+.custom-scroll::-webkit-scrollbar-track {
   background: #DFD4C3;
   border-radius: 10px;
 }
-::-webkit-scrollbar-thumb {
+.custom-scroll::-webkit-scrollbar-thumb {
   background: #A07D54;
   border-radius: 10px;
+}
+
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
 }
 </style>
 </head>
 
-<body class="min-h-screen pb-28">
+<body class="min-h-screen pb-24 safe-bottom">
 
-<!-- HEADER with enhanced gradient -->
-<header class="sticky top-0 z-50 bg-brand-cream/90 backdrop-blur-md border-b border-brand-beige/50 shadow-sm">
-  <div class="max-w-md mx-auto px-5 py-4">
+<!-- HEADER - Premium Glassmorphism -->
+<header class="sticky top-0 z-50 bg-brand-cream/85 backdrop-blur-xl border-b border-brand-beige/40 shadow-sm">
+  <div class="max-w-md mx-auto px-5 py-3.5">
     <div class="flex items-center justify-between">
-      <div>
-        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-black flex items-center gap-1">
-          <i class="fa-regular fa-clock text-[8px]"></i>
-          Active Job (Locked)
-        </p>
-        <h1 class="font-serif italic text-xl text-brand-olive">
-          Technician Work Mode
-        </h1>
+      <div class="flex flex-col">
+        <div class="flex items-center gap-1.5">
+          <i class="fas fa-wrench text-brand-gold text-[10px]"></i>
+          <p class="text-[9px] uppercase tracking-wider text-brand-gold font-black">Active Job · Locked</p>
+        </div>
+        <h1 class="font-serif-italic text-lg text-brand-olive leading-tight">Technician Work Mode</h1>
       </div>
-      <button onclick="if(confirm('Exit job? You will need to re-accept.')) { localStorage.removeItem('locked_job_id'); window.location.href='techniciandashboard.html'; }" 
-              class="text-brand-olive/50 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50">
-        <i class="fa-solid fa-times text-lg"></i>
+      <button id="exitJobBtn" class="text-brand-dark/30 hover:text-red-500 transition-all p-2 rounded-full hover:bg-red-50 active:scale-95">
+        <i class="fas fa-sign-out-alt text-base"></i>
       </button>
     </div>
   </div>
 </header>
 
-<main class="max-w-md mx-auto p-6 space-y-5">
+<main class="max-w-md mx-auto p-5 space-y-5">
 
-  <!-- LOADING SKELETON -->
-  <div id="loading" class="space-y-4">
-    <div class="glass-card p-6 rounded-[2.5rem]">
-      <div class="skeleton h-3 w-24 rounded mb-3"></div>
-      <div class="skeleton h-8 w-40 rounded mb-2"></div>
-      <div class="skeleton h-4 w-full rounded"></div>
-      <div class="skeleton h-10 w-32 rounded-full mt-3"></div>
+  <!-- LOADING SKELETON - Enhanced -->
+  <div id="loading" class="space-y-5 animate-fade-in">
+    <div class="glass-card p-6 rounded-2xl">
+      <div class="skeleton h-2.5 w-20 rounded-full mb-4"></div>
+      <div class="skeleton h-7 w-36 rounded-lg mb-2"></div>
+      <div class="skeleton h-4 w-full rounded mb-3"></div>
+      <div class="skeleton h-5 w-28 rounded-full"></div>
     </div>
-    <div class="glass-card p-6 rounded-[2.5rem]">
+    <div class="glass-card p-6 rounded-2xl">
       <div class="skeleton h-4 w-32 rounded mb-4"></div>
-      <div class="skeleton h-12 w-full rounded-xl mb-3"></div>
-      <div class="skeleton h-12 w-full rounded-xl"></div>
+      <div class="skeleton h-10 w-full rounded-xl mb-2"></div>
+      <div class="skeleton h-10 w-full rounded-xl"></div>
+    </div>
+    <div class="text-center py-6">
+      <i class="fas fa-circle-notch fa-spin text-brand-gold/50 text-xl"></i>
+      <p class="text-xs text-brand-dark/40 mt-2">Syncing job details...</p>
     </div>
   </div>
 
-  <!-- JOB CARD -->
-  <div id="jobBox" class="hidden animate-slide-up">
+  <!-- MAIN JOB CARD - Hidden until loaded -->
+  <div id="jobBox" class="hidden space-y-5">
 
-    <!-- Main Job Info Card -->
-    <div class="glass-card p-6 rounded-[2.5rem] border-l-4 border-brand-gold">
-      
-      <!-- Category with icon -->
-      <div class="flex items-center justify-between">
-        <span id="category" class="text-[10px] font-black text-brand-gold uppercase tracking-wider px-2 py-0.5 bg-brand-gold/10 rounded-full"></span>
-        <span id="statusBadge" class="status-badge px-2 py-1 text-[9px] font-bold rounded-full bg-blue-100 text-blue-700 shadow-sm">
-          <i class="fa-solid fa-play text-[8px] mr-1"></i> In Progress
-        </span>
+    <!-- Job Header Card -->
+    <div class="glass-card p-5 rounded-2xl border-l-[3px] border-brand-gold shadow-sm">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <span id="category" class="text-[9px] font-black text-brand-gold uppercase tracking-wider bg-brand-gold/10 px-2 py-0.5 rounded-full"></span>
+            <span id="statusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-blue-100 text-blue-700">
+              <i class="fas fa-play text-[7px]"></i>
+              <span>In Progress</span>
+            </span>
+          </div>
+          <h2 id="device" class="text-xl font-extrabold text-brand-olive flex items-center gap-2">
+            <i class="fas fa-microchip text-brand-gold/70 text-sm"></i>
+            <span class="break-words"></span>
+          </h2>
+          <p id="issue" class="text-sm text-brand-dark/60 mt-1.5 leading-relaxed"></p>
+          <p id="jobIdRef" class="text-[9px] font-mono text-brand-dark/30 mt-2 flex items-center gap-1">
+            <i class="fas fa-barcode"></i> <span></span>
+          </p>
+        </div>
       </div>
-
-      <!-- Device Name -->
-      <h2 id="device" class="text-2xl font-extrabold text-brand-olive mt-3 flex items-center gap-2">
-        <i class="fa-solid fa-tools text-brand-gold text-lg"></i>
-        <span></span>
-      </h2>
-
-      <!-- Issue Description -->
-      <p id="issue" class="text-sm italic text-brand-dark/60 mt-2 leading-relaxed"></p>
-
-      <!-- Job ID reference -->
-      <p class="text-[9px] text-brand-dark/30 mt-2 font-mono" id="jobIdRef"></p>
     </div>
 
-    <!-- Customer Section -->
-    <div class="glass-card p-6 rounded-[2.5rem]">
+    <!-- Customer Details Card -->
+    <div class="glass-card p-5 rounded-2xl">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-md">
-          <i class="fa-regular fa-user text-sm"></i>
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-md">
+          <i class="fas fa-user-astronaut text-sm"></i>
         </div>
         <div>
-          <p class="text-[9px] uppercase tracking-widest text-brand-gold font-bold">Customer Details</p>
-          <p id="customer" class="text-base font-extrabold text-brand-dark"></p>
+          <p class="text-[8px] uppercase tracking-wider text-brand-gold font-bold">Customer</p>
+          <p id="customer" class="text-base font-extrabold text-brand-dark leading-tight"></p>
         </div>
       </div>
 
-      <!-- Contact buttons row -->
-      <div class="flex gap-3 mb-4">
-        <a id="callBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold text-center transition-all flex items-center justify-center gap-2 btn-primary">
-          <i class="fa-solid fa-phone-alt text-xs"></i> Call
+      <!-- Contact Actions Row -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <a id="callBtn" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+          <i class="fas fa-phone-alt text-xs"></i> Call
         </a>
-        <a id="smsBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-bold text-center transition-all flex items-center justify-center gap-2 btn-primary">
-          <i class="fa-regular fa-message text-xs"></i> Message
+        <a id="smsBtn" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+          <i class="fas fa-comment-dots text-xs"></i> Message
         </a>
       </div>
 
-      <!-- Location with map preview -->
-      <div class="bg-brand-beige/20 rounded-xl p-3 mb-4">
-        <div class="flex items-start gap-2">
-          <i class="fa-solid fa-location-dot text-brand-gold mt-0.5"></i>
+      <!-- Address Section -->
+      <div class="bg-brand-beige/15 rounded-xl p-3.5 border border-brand-beige/30">
+        <div class="flex gap-2">
+          <i class="fas fa-map-pin text-brand-gold text-sm mt-0.5"></i>
           <div class="flex-1">
-            <p class="text-[10px] font-bold text-brand-gold uppercase">Service Address</p>
-            <p id="location" class="text-sm text-brand-dark font-medium leading-relaxed"></p>
+            <p class="text-[9px] font-bold text-brand-gold uppercase tracking-wider">Service Address</p>
+            <p id="location" class="text-sm text-brand-dark font-medium leading-relaxed mt-0.5"></p>
           </div>
         </div>
       </div>
 
-      <!-- Navigation Button -->
-      <button id="routeBtn" class="w-full bg-brand-olive hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold transition-all btn-primary flex items-center justify-center gap-2 shadow-md">
-        <i class="fa-solid fa-map-location-dot"></i> Navigate to Customer
+      <!-- Navigation Trigger -->
+      <button id="routeBtn" class="w-full mt-4 bg-brand-olive hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+        <i class="fas fa-location-dot"></i> Navigate (Turn-by-Turn)
       </button>
     </div>
 
-    <!-- LIVE ETA PANEL with visual progress -->
-    <div class="glass-card p-5 rounded-[2.5rem] overflow-hidden">
+    <!-- Live ETA Intelligence Panel -->
+    <div class="glass-card p-4 rounded-2xl overflow-hidden border border-brand-beige/40">
       <div class="flex items-center justify-between mb-3">
-        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-bold flex items-center gap-1">
-          <span class="live-pulse relative pl-2">Live Route Status</span>
+        <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold flex items-center gap-1 status-live-dot">
+          Live Route Intelligence
         </p>
-        <span class="text-[8px] text-brand-dark/40">
-          <i class="fa-regular fa-satellite"></i> Real-time GPS
+        <span class="text-[7px] text-brand-dark/40 bg-white/50 px-2 py-0.5 rounded-full">
+          <i class="fas fa-satellite-dish"></i> GPS RT
         </span>
       </div>
 
-      <!-- Distance & ETA Cards -->
+      <!-- Metrics Grid -->
       <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="bg-brand-cream rounded-xl p-3 text-center">
-          <i class="fa-solid fa-road text-brand-gold text-sm mb-1"></i>
-          <p class="text-[9px] text-brand-dark/50">Distance</p>
-          <p id="distanceText" class="text-lg font-extrabold text-brand-olive">-- km</p>
+        <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
+          <i class="fas fa-road text-brand-gold text-sm mb-1.5 block"></i>
+          <p class="text-[8px] text-brand-dark/50 uppercase">Distance</p>
+          <p id="distanceText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
         </div>
-        <div class="bg-brand-cream rounded-xl p-3 text-center">
-          <i class="fa-regular fa-hourglass-half text-brand-gold text-sm mb-1"></i>
-          <p class="text-[9px] text-brand-dark/50">ETA</p>
-          <p id="etaText" class="text-lg font-extrabold text-brand-olive">-- min</p>
+        <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
+          <i class="fas fa-hourglass-half text-brand-gold text-sm mb-1.5 block"></i>
+          <p class="text-[8px] text-brand-dark/50 uppercase">ETA</p>
+          <p id="etaText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
         </div>
       </div>
 
-      <!-- Progress bar for ETA visualization -->
-      <div class="mt-2">
-        <div class="flex justify-between text-[8px] text-brand-dark/40 mb-1">
-          <span>Departure</span>
-          <span>Halfway</span>
-          <span>Arrival</span>
+      <!-- ETA Progress Visualization -->
+      <div class="mt-1">
+        <div class="flex justify-between text-[7px] text-brand-dark/40 mb-1 px-1">
+          <span><i class="fas fa-flag-checkered"></i> Start</span>
+          <span><i class="fas fa-chart-line"></i> Progress</span>
+          <span><i class="fas fa-location-dot"></i> Arrival</span>
         </div>
         <div class="h-1.5 bg-brand-beige/50 rounded-full overflow-hidden">
-          <div id="etaProgressBar" class="eta-bar h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          <div id="etaProgressBar" class="progress-fill h-full rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
       </div>
 
-      <p class="text-[9px] text-brand-dark/40 mt-3 text-center flex items-center justify-center gap-1">
-        <i class="fa-regular fa-compass"></i> Updates every 10 seconds
-      </p>
+      <div class="flex items-center justify-between mt-3 pt-2 border-t border-brand-beige/30">
+        <div class="flex items-center gap-1.5">
+          <i class="fas fa-clock text-[9px] text-brand-gold/60"></i>
+          <span id="lastUpdateTime" class="text-[8px] text-brand-dark/40">Waiting for GPS</span>
+        </div>
+        <button id="refreshLocationBtn" class="text-[9px] text-brand-gold hover:text-brand-olive transition flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
+          <i class="fas fa-sync-alt text-[8px]"></i> Refresh
+        </button>
+      </div>
     </div>
 
-    <!-- PAYMENT QR SECTION -->
-    <div class="glass-card p-5 rounded-[2.5rem] text-center">
+    <!-- Payment QR Section - Enhanced with security note -->
+    <div class="glass-card p-5 rounded-2xl text-center">
       <div class="flex items-center justify-center gap-2 mb-2">
-        <i class="fa-solid fa-qrcode text-brand-gold text-lg"></i>
-        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-bold">Customer Payment</p>
+        <div class="w-6 h-6 rounded-full bg-brand-gold/10 flex items-center justify-center">
+          <i class="fas fa-qrcode text-brand-gold text-xs"></i>
+        </div>
+        <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Secure Payment</p>
       </div>
       
       <div class="relative inline-block mx-auto">
-        <img src="gpay-qr.jpeg" class="w-40 mx-auto rounded-xl border-2 border-brand-beige shadow-md" onerror="this.src='https://placehold.co/200x200/e8e0d5/A07D54?text=GPay+QR'">
-        <div class="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-lg">
-          <i class="fa-solid fa-check"></i>
+        <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" 
+             onerror="this.onerror=null;this.src='https://placehold.co/200x200/F8F5F0/A07D54?text=SCAN+QR';this.alt='Payment QR'">
+        <div class="absolute -top-1.5 -right-1.5 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] shadow-md">
+          <i class="fas fa-shield-alt"></i>
         </div>
       </div>
       
-      <p class="text-[11px] font-semibold text-amber-600 mt-3 flex items-center justify-center gap-1">
-        <i class="fa-solid fa-circle-exclamation"></i> Collect payment before completing job
-      </p>
+      <div class="mt-3 flex items-center justify-center gap-1.5 text-amber-700 bg-amber-50 inline-flex px-3 py-1 rounded-full mx-auto">
+        <i class="fas fa-exclamation-triangle text-[8px]"></i>
+        <p class="text-[9px] font-semibold">Collect payment before completing job</p>
+      </div>
       
       <div class="mt-3 flex justify-center gap-2">
-        <span class="text-[8px] bg-gray-100 px-2 py-1 rounded-full">UPI</span>
-        <span class="text-[8px] bg-gray-100 px-2 py-1 rounded-full">Card</span>
-        <span class="text-[8px] bg-gray-100 px-2 py-1 rounded-full">Cash</span>
+        <span class="text-[7px] bg-gray-100 px-2 py-1 rounded-full">UPI</span>
+        <span class="text-[7px] bg-gray-100 px-2 py-1 rounded-full">Card</span>
+        <span class="text-[7px] bg-gray-100 px-2 py-1 rounded-full">Cash</span>
       </div>
     </div>
 
-    <!-- ACTION BUTTONS with enhanced styling -->
+    <!-- Primary Action Buttons -->
     <div class="space-y-3">
-      <button id="arrivedBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all btn-primary flex items-center justify-center gap-2 shadow-md">
-        <i class="fa-solid fa-flag-checkered"></i> Mark Arrived at Location
+      <button id="arrivedBtn" class="w-full bg-info hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-sm">
+        <i class="fas fa-flag-checkered"></i> Mark Arrived at Location
       </button>
 
-      <button id="completeBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 rounded-xl font-black uppercase tracking-wider transition-all btn-primary flex items-center justify-center gap-2 shadow-lg">
-        <i class="fa-solid fa-circle-check"></i> Complete Job & Unlock
+      <button id="completeBtn" class="w-full bg-gradient-to-r from-success to-emerald-600 hover:from-emerald-600 hover:to-green-700 text-white py-3.5 rounded-xl font-black tracking-wide transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+        <i class="fas fa-circle-check"></i> Complete Job & Unlock
       </button>
       
-      <p class="text-center text-[9px] text-brand-dark/40 mt-2">
-        <i class="fa-regular fa-clock"></i> Job will be locked until completion
+      <p class="text-center text-[8px] text-brand-dark/40 flex items-center justify-center gap-2">
+        <i class="fas fa-lock"></i> Job locked until completion
+        <i class="fas fa-shield-alt"></i> Secure session
       </p>
     </div>
-
   </div>
-
 </main>
 
-<!-- Floating back button for quick navigation -->
-<button onclick="if(confirm('Exit this job? You can re-enter from dashboard.')) { localStorage.removeItem('locked_job_id'); window.location.href='techniciandashboard.html'; }" 
-        class="fixed bottom-6 left-6 z-40 bg-white/90 backdrop-blur rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-brand-beige hover:bg-red-50 transition-all">
-  <i class="fa-solid fa-arrow-left text-brand-olive"></i>
-</button>
-
-<!-- Font Awesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<!-- Floating Quick Actions -->
+<div class="fixed bottom-5 right-5 z-40 flex flex-col gap-2">
+  <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-brand-beige hover:bg-brand-gold/10 transition-all active:scale-95">
+    <i class="fas fa-headset text-brand-olive text-sm"></i>
+  </button>
+</div>
 
 <script>
+// Supabase Client (unchanged credentials)
 const sb = supabase.createClient(
   "https://kzxdxnxgouthsywbsnvl.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
@@ -347,45 +378,48 @@ if (!jobId) {
 }
 
 let jobData = null;
-let watchId = null;
 let etaInterval = null;
-let lastDistanceKm = 0;
+let destCoordsCache = null;
+let lastGeocodeTime = 0;
 
+// Geolocation Promise with enhanced accuracy
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject("Geolocation not supported");
+      reject(new Error("Geolocation not supported"));
       return;
     }
     navigator.geolocation.getCurrentPosition(
       pos => resolve({
         lat: pos.coords.latitude,
-        lng: pos.coords.longitude
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy
       }),
-      err => reject(err.message),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      err => reject(new Error(err.message)),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 3000 }
     );
   });
 }
 
-// Haversine formula for accurate distance calculation
+// Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
             Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
 }
 
-// Geocode address using Nominatim (OpenStreetMap - free, no API key)
+// Geocode using OpenStreetMap Nominatim
 async function geocodeAddress(address) {
+  if (!address) return null;
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
-      { headers: { 'User-Agent': 'FixZenPro/1.0' } }
+      { headers: { 'User-Agent': 'FixZenPro/2.0' } }
     );
     const data = await response.json();
     if (data && data.length > 0) {
@@ -401,102 +435,117 @@ async function geocodeAddress(address) {
   }
 }
 
-let destCoordsCache = null;
-let lastGeocodeAttempt = 0;
-
+// Update ETA and Distance with Smart Estimation
 async function updateDistanceAndETA() {
   if (!jobData || !jobData.location) return;
 
   try {
     const current = await getCurrentLocation();
     
-    // Geocode destination (cache for 10 minutes)
+    // Refresh geocoding every 10 minutes
     const now = Date.now();
-    if (!destCoordsCache || (now - lastGeocodeAttempt) > 600000) {
-      lastGeocodeAttempt = now;
+    if (!destCoordsCache || (now - lastGeocodeTime) > 600000) {
+      lastGeocodeTime = now;
       destCoordsCache = await geocodeAddress(jobData.location);
     }
     
     if (destCoordsCache) {
       const distanceKm = calculateDistance(current.lat, current.lng, destCoordsCache.lat, destCoordsCache.lng);
-      lastDistanceKm = distanceKm;
       
-      // Average speed: 30 km/h in city, 50 km/h on highway (adjust based on distance)
-      let avgSpeedKmh = 30;
-      if (distanceKm > 10) avgSpeedKmh = 50;
-      else if (distanceKm > 5) avgSpeedKmh = 40;
+      // Smart speed profile
+      let avgSpeed = 28; // km/h urban default
+      if (distanceKm > 12) avgSpeed = 48;
+      else if (distanceKm > 5) avgSpeed = 38;
       
-      const etaHours = distanceKm / avgSpeedKmh;
-      const etaMinutes = Math.round(etaHours * 60);
+      const etaMinutes = Math.max(1, Math.round((distanceKm / avgSpeed) * 60));
       
-      // Update UI
-      document.getElementById("distanceText").innerHTML = distanceKm < 0.1 ? 
-        `<span class="text-green-600"><i class="fa-solid fa-location-dot"></i> ${(distanceKm * 1000).toFixed(0)} m</span>` : 
-        `${distanceKm.toFixed(1)} km`;
+      // Format distance display
+      const distanceElem = document.getElementById("distanceText");
+      if (distanceKm < 0.15) {
+        distanceElem.innerHTML = `<span class="text-success"><i class="fas fa-location-dot text-xs"></i> ${Math.round(distanceKm * 1000)} m</span>`;
+      } else {
+        distanceElem.innerHTML = `${distanceKm.toFixed(1)} km`;
+      }
       
-      if (etaMinutes <= 1 && distanceKm < 0.2) {
-        document.getElementById("etaText").innerHTML = `<span class="text-green-600"><i class="fa-regular fa-circle-check"></i> Arriving now</span>`;
+      // Format ETA
+      const etaElem = document.getElementById("etaText");
+      if (distanceKm < 0.1) {
+        etaElem.innerHTML = `<span class="text-success"><i class="fas fa-hourglass-end"></i> Arrived</span>`;
+        document.getElementById("etaProgressBar").style.width = "100%";
       } else if (etaMinutes < 60) {
-        document.getElementById("etaText").innerHTML = `${etaMinutes} min${etaMinutes !== 1 ? 's' : ''}`;
+        etaElem.innerHTML = `${etaMinutes} min`;
+        // Progress based on typical max 30km
+        const progress = Math.min(95, (1 - Math.min(1, distanceKm / 25)) * 100);
+        document.getElementById("etaProgressBar").style.width = `${progress}%`;
       } else {
         const hours = Math.floor(etaMinutes / 60);
         const mins = etaMinutes % 60;
-        document.getElementById("etaText").innerHTML = `${hours}h ${mins}m`;
+        etaElem.innerHTML = `${hours}h ${mins}m`;
+        document.getElementById("etaProgressBar").style.width = `${Math.min(80, (1 - Math.min(1, distanceKm / 40)) * 80)}%`;
       }
       
-      // Update progress bar (based on typical max distance of 50km)
-      const maxExpectedDistance = 50;
-      const progressPercent = Math.min(100, (distanceKm / maxExpectedDistance) * 100);
-      const progressBar = document.getElementById("etaProgressBar");
-      if (progressBar) {
-        progressBar.style.width = `${Math.min(100, (1 - Math.min(1, distanceKm / 10)) * 100)}%`;
+      // Update last update timestamp
+      const timeElem = document.getElementById("lastUpdateTime");
+      if (timeElem) {
+        timeElem.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
       }
       
-      // If very close, show arrival status
-      if (distanceKm < 0.1) {
-        document.getElementById("statusBadge").innerHTML = '<i class="fa-solid fa-location-dot text-[8px] mr-1"></i> Near Location';
-        document.getElementById("statusBadge").className = "status-badge px-2 py-1 text-[9px] font-bold rounded-full bg-green-100 text-green-700 shadow-sm";
+      // Auto-update status badge if very close
+      if (distanceKm < 0.12) {
+        const badge = document.getElementById("statusBadge");
+        if (badge && !badge.innerHTML.includes("Nearby")) {
+          badge.innerHTML = '<i class="fas fa-map-marker-alt text-[7px] mr-1"></i> Nearby';
+          badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-green-100 text-green-700";
+        }
       }
     } else {
-      document.getElementById("distanceText").innerHTML = "📍 Use navigation";
+      document.getElementById("distanceText").innerHTML = "📍 Use Nav";
       document.getElementById("etaText").innerHTML = "Open Maps";
     }
   } catch (err) {
-    console.warn("ETA Error:", err);
-    document.getElementById("distanceText").innerHTML = '<span class="text-amber-600"><i class="fa-regular fa-compass"></i> Enable GPS</span>';
-    document.getElementById("etaText").innerHTML = "Location off";
+    console.warn("ETA update:", err);
+    document.getElementById("distanceText").innerHTML = '<span class="text-warning"><i class="fas fa-compass"></i> GPS off</span>';
+    document.getElementById("etaText").innerHTML = "Enable location";
   }
 }
 
-function openRoute(location) {
-  if (!location) return alert("Customer location missing");
-  const encoded = encodeURIComponent(location);
+// Open Navigation with Current Location
+function openNavigation(location) {
+  if (!location) {
+    alert("Customer location not available");
+    return;
+  }
   
-  // Try to get current location for turn-by-turn with current position
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => {
         const origin = `${pos.coords.latitude},${pos.coords.longitude}`;
-        window.open(
-          `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encoded}&travelmode=driving`,
-          '_blank'
-        );
+        window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encodeURIComponent(location)}&travelmode=driving`, '_blank');
       },
       () => {
-        window.open(
-          `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`,
-          '_blank'
-        );
-      }
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}&travelmode=driving`, '_blank');
+      },
+      { timeout: 3000 }
     );
   } else {
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`,
-      '_blank'
-    );
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`, '_blank');
   }
 }
 
+// Manual Refresh Handler
+function manualRefresh() {
+  const btn = document.getElementById("refreshLocationBtn");
+  if (btn) {
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating';
+    updateDistanceAndETA().finally(() => {
+      btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+    });
+  } else {
+    updateDistanceAndETA();
+  }
+}
+
+// Load Job Data from Supabase
 async function loadJob() {
   const { data, error } = await sb
     .from("jobs")
@@ -505,7 +554,7 @@ async function loadJob() {
     .single();
 
   if (error || !data) {
-    alert("Job not found. Redirecting to dashboard.");
+    alert("Job not found or session expired.");
     localStorage.removeItem("locked_job_id");
     window.location.href = "techniciandashboard.html";
     return;
@@ -513,154 +562,141 @@ async function loadJob() {
 
   jobData = data;
 
-  // Populate all fields
-  document.getElementById("category").innerText = data.category || "General Service";
-  document.getElementById("device").innerHTML = `<span>${data.device || "Service Request"}</span>`;
+  // Populate UI
+  document.getElementById("category").innerText = data.category || "Service";
+  document.getElementById("device").querySelector("span").innerText = data.device || "Work Order";
   document.getElementById("issue").innerText = data.issue || "No issue description provided";
-  document.getElementById("customer").innerText = data.customer_name || "Customer";
+  document.getElementById("customer").innerText = data.customer_name || "Valued Customer";
   document.getElementById("location").innerText = data.location || "Address not specified";
-  document.getElementById("jobIdRef").innerHTML = `<i class="fa-regular fa-hashtag"></i> JOB-${data.id.toString().slice(-6).toUpperCase()}`;
+  document.getElementById("jobIdRef").querySelector("span").innerText = `JOB-${data.id.slice(-8).toUpperCase()}`;
   
-  // Set call and SMS links
-  const phoneNumber = data.phone || "";
-  document.getElementById("callBtn").href = "tel:" + phoneNumber;
-  document.getElementById("smsBtn").href = phoneNumber ? `sms:${phoneNumber}` : "#";
-  if (!phoneNumber) {
-    document.getElementById("smsBtn").style.opacity = "0.5";
-    document.getElementById("smsBtn").style.pointerEvents = "none";
+  const phone = data.phone || "";
+  const callBtn = document.getElementById("callBtn");
+  const smsBtn = document.getElementById("smsBtn");
+  
+  if (phone) {
+    callBtn.href = `tel:${phone}`;
+    smsBtn.href = `sms:${phone}`;
+  } else {
+    callBtn.style.opacity = "0.5";
+    smsBtn.style.opacity = "0.5";
+    callBtn.style.pointerEvents = "none";
+    smsBtn.style.pointerEvents = "none";
   }
-
-  // Route button
-  document.getElementById("routeBtn").onclick = () => openRoute(data.location);
-
-  // Status badge logic
-  const badge = document.getElementById("statusBadge");
+  
+  // Status badge update
   if (data.status === "arrived") {
-    badge.innerHTML = '<i class="fa-solid fa-flag-checkered text-[8px] mr-1"></i> Arrived at Location';
-    badge.className = "status-badge px-2 py-1 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700 shadow-sm";
-  } else if (data.status === "in_progress") {
-    badge.innerHTML = '<i class="fa-solid fa-play text-[8px] mr-1"></i> En Route';
-    badge.className = "status-badge px-2 py-1 text-[9px] font-bold rounded-full bg-blue-100 text-blue-700 shadow-sm";
+    const badge = document.getElementById("statusBadge");
+    badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
+    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
   }
-
-  // Hide loading, show content
+  
+  document.getElementById("routeBtn").onclick = () => openNavigation(data.location);
+  
+  // Hide loading & show content
   document.getElementById("loading").style.display = "none";
   document.getElementById("jobBox").classList.remove("hidden");
+  document.getElementById("jobBox").style.animation = "slideUp 0.3s ease-out";
   
-  // Start live ETA tracking
+  // Start live tracking
   await updateDistanceAndETA();
   if (etaInterval) clearInterval(etaInterval);
   etaInterval = setInterval(updateDistanceAndETA, 10000);
 }
 
-// Mark Arrived button
+// Mark Arrived Handler
 document.getElementById("arrivedBtn").onclick = async () => {
   if (!jobData) return;
-  
-  // Confirm arrival
-  if (!confirm("Confirm you have arrived at the customer's location?")) return;
+  if (!confirm("Confirm you have arrived at customer's location?")) return;
   
   const btn = document.getElementById("arrivedBtn");
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
   btn.disabled = true;
   
   try {
-    const { error } = await sb
-      .from("jobs")
-      .update({
-        status: "arrived",
-        arrived_at: new Date().toISOString()
-      })
-      .eq("id", jobId);
+    await sb.from("jobs").update({
+      status: "arrived",
+      arrived_at: new Date().toISOString()
+    }).eq("id", jobId);
     
-    if (error) throw error;
-    
-    // Update UI
     const badge = document.getElementById("statusBadge");
-    badge.innerHTML = '<i class="fa-solid fa-flag-checkered text-[8px] mr-1"></i> Arrived at Location';
-    badge.className = "status-badge px-2 py-1 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700 shadow-sm";
+    badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
+    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
     
-    btn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Arrival Confirmed';
-    btn.className = "w-full bg-purple-600 text-white py-4 rounded-xl font-bold transition-all btn-primary flex items-center justify-center gap-2 shadow-md";
-    
-    // Optional: Play success sound/vibration
-    if (navigator.vibrate) navigator.vibrate(200);
-    
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Arrival Confirmed';
     setTimeout(() => {
-      btn.innerHTML = originalText;
+      btn.innerHTML = originalHtml;
       btn.disabled = false;
-    }, 2000);
+    }, 1800);
     
-    alert("✅ Arrival marked! You can now complete the job after service.");
+    if (navigator.vibrate) navigator.vibrate(100);
+    alert("✅ Arrival marked!");
   } catch (err) {
-    console.error(err);
-    alert("Failed to update status: " + err.message);
-    btn.innerHTML = originalText;
+    alert("Error: " + err.message);
+    btn.innerHTML = originalHtml;
     btn.disabled = false;
   }
 };
 
-// Complete Job button
+// Complete Job Handler
 document.getElementById("completeBtn").onclick = async () => {
   if (!jobData) return;
   
-  // Confirm payment collection
-  const paymentConfirmed = confirm("⚠️ Have you collected payment from the customer?\n\nPress OK to confirm payment received and complete the job.");
+  const paymentConfirmed = confirm("⚠️ IMPORTANT: Have you collected full payment?\n\nPress OK to confirm payment received and complete the job.");
   if (!paymentConfirmed) return;
   
-  const BASE = {
-    "Carpenter": 800,
-    "Plumber": 600,
-    "Electrician": 600,
-    "Painter": 600,
-    "Mason": 600,
-    "Welder": 600,
-    "Roofer": 600,
-    "AC Tech": 600
+  const BASE_FEES = {
+    "Carpenter": 800, "Plumber": 600, "Electrician": 600,
+    "Painter": 600, "Mason": 600, "Welder": 600, "Roofer": 600, "AC Tech": 600
   };
+  const fee = BASE_FEES[jobData.category] || 450;
   
-  const fee = BASE[jobData.category] ?? 400;
   const btn = document.getElementById("completeBtn");
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finalizing...';
   btn.disabled = true;
   
   try {
-    const { error } = await sb
-      .from("jobs")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        technician_fee: fee
-      })
-      .eq("id", jobId);
-    
-    if (error) throw error;
+    await sb.from("jobs").update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+      technician_fee: fee
+    }).eq("id", jobId);
     
     localStorage.removeItem("locked_job_id");
-    
-    // Clear interval
     if (etaInterval) clearInterval(etaInterval);
     
-    alert("✅ Job Completed Successfully!\n\nThank you for your service.");
+    alert(`✅ Job Completed!\n\nTechnician Fee: ₹${fee}\nThank you for your service.`);
     window.location.href = "techniciandashboard.html";
   } catch (err) {
-    console.error(err);
-    alert("Failed to complete job: " + err.message);
-    btn.innerHTML = originalText;
+    alert("Completion failed: " + err.message);
+    btn.innerHTML = originalHtml;
     btn.disabled = false;
   }
 };
 
-// Start loading the job
+// Exit Job Handler
+document.getElementById("exitJobBtn").onclick = () => {
+  if (confirm("Exit this job? You'll need to re-accept from dashboard.")) {
+    localStorage.removeItem("locked_job_id");
+    window.location.href = "techniciandashboard.html";
+  }
+};
+
+document.getElementById("supportFloatBtn").onclick = () => {
+  alert("📞 Support: 1800-FIXZEN\nAvailable 24/7 for technicians.");
+};
+
+document.getElementById("refreshLocationBtn").onclick = manualRefresh;
+
+// Initialize
 loadJob();
 
-// Cleanup interval on page unload
+// Cleanup on unload
 window.addEventListener("beforeunload", () => {
   if (etaInterval) clearInterval(etaInterval);
 });
 </script>
-
 </body>
 </html>
