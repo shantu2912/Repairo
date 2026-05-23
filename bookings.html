@@ -1,10 +1,4 @@
-The error message **"Cannot read properties of undefined (reading 'getUser')"** is the key. It means the `supabase.auth` connection is missing, likely because of a variable naming conflict (using `supabase` for both the library and the client) or the library loading order.
 
-I have written a **completely robust, fixed version**. I renamed the client to `sb` (to avoid conflicts) and added a "System Check" to guarantee it works.
-
-### 📂 File: `bookings.html` (Paste this code)
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
