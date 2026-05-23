@@ -70,14 +70,28 @@
             <form @submit.prevent="submitTechnician($data)" class="space-y-5">
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Full Name</label>
-                    <input type="text" id="regName" class="premium-input" placeholder="e.g. Rahul Sharma" required>
+                    <input 
+                        type="text"
+                        id="regName"
+                        class="premium-input"
+                        placeholder="e.g. Rahul Sharma"
+                        pattern="[A-Za-z ]{3,40}"
+                        title="Only letters allowed"
+                    required>
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Mobile Number</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">+91</span>
-                        <input type="tel" id="regPhone" class="premium-input pl-14" placeholder="9876543210" maxlength="10" required>
+                        <input 
+                            type="tel"
+                            id="regPhone"
+                            class="premium-input pl-14"
+                            placeholder="9876543210"
+                            maxlength="10"
+                            pattern="[6-9]{1}[0-9]{9}"
+                            required>
                     </div>
                 </div>
                 
@@ -99,12 +113,24 @@
                     <div class="select-wrapper">
                        <select id="regCategory" class="premium-input" required>
     <option value="" disabled selected>Select Specialization</option>
-    <option value="AC Repair">AC Repair</option>
-    <option value="Refrigerator">Refrigerator</option>
+    <option value="AC Tech">AC Tech</option>
+    <option value="Fridge">Fridge</option>
     <option value="Washing Machine">Washing Machine</option>
-    <option value="RO Water Purifier">RO Water Purifier</option>
-    <option value="Geyser">Geyser</option>
-    <option value="Television">Television</option>
+    <option value="RO filter">RO filter</option>
+    <option value="Carpenter">Carpenter</option>
+    <option value="Plumber">Plumber</option>
+    <option value="Electrician">Electrician</option>
+    <option value="TV/LED">TV/LED</option>
+    <option value="CCTV">CCTV</option>
+    <option value="Mason">Mason</option>
+    <option value="Welder">Welder</option>
+    <option value="Painter">Painter</option>
+    <option value="Car Mech">Car Mech</option>
+    <option value="Bike Mech">Bike Mech</option>
+    <option value="Pest Ctrl">Pest Ctrl</option>
+    <option value="Microwave">Microwave</option>
+    <option value="Grass Cutting">Grass Cutting</option>
+    
 </select>
                     </div>
                 </div>
@@ -116,13 +142,26 @@
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Aadhaar</label>
-                        <input type="text" id="regAadhaar" class="premium-input" placeholder="12 Digits" maxlength="12" required>
+                        <input 
+                            type="text"
+                            id="regAadhaar"
+                            class="premium-input"
+                            placeholder="12 Digits"
+                            maxlength="12"
+                            pattern="[0-9]{12}"
+                            required>
                     </div>
                 </div>
 
                 <div class="space-y-1 pb-2">
                     <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Service Area</label>
-                    <input type="text" id="regArea" class="premium-input" placeholder="City or Locality" required>
+                    <input 
+                        type="text"
+                        id="regArea"
+                        class="premium-input"
+                        placeholder="City or Locality"
+                        pattern="[A-Za-z ]{3,40}"
+                        required>
                 </div>
 
                 <button type="submit" class="btn-gold group relative overflow-hidden" :disabled="isSubmitting">
@@ -143,41 +182,94 @@
     </div>
 
     <script>
-        const supabaseUrl = "https://kzxdxnxgouthsywbsnvl.supabase.co";
-        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag";
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = "https://kzxdxnxgouthsywbsnvl.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag";
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function submitTechnician(state) {
-            state.isSubmitting = true;
-            try {
-                const { error } = await _supabase.from('technicians').insert([{
-                    name: document.getElementById('regName').value,
-                    phone: "+91" + document.getElementById('regPhone').value,
-                    username: document.getElementById('regUsername').value,
-                    password: document.getElementById('regPassword').value,
-                    category: document.getElementById('regCategory').value,
-                    experience: parseFloat(document.getElementById('regExp').value),
-                    aadhaar: document.getElementById('regAadhaar').value,
-                    area: document.getElementById('regArea').value,
-                    status: 'pending'
-                }]);
+async function submitTechnician(state) {
 
-                if (error) throw error;
-                state.isSuccess = true;
-            } catch (err) {
-                alert("Database Error: " + err.message);
-            } finally {
-                state.isSubmitting = false;
-            }
-        }
-    </script>
-    <script>
-window.addEventListener("DOMContentLoaded", () => {
-const savedLang = localStorage.getItem("preferred_language") || "en";
-if (typeof setLanguage === "function") {
-setLanguage(savedLang);
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const username = document.getElementById('regUsername').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+    const category = document.getElementById('regCategory').value;
+    const experience = document.getElementById('regExp').value.trim();
+    const aadhaar = document.getElementById('regAadhaar').value.trim();
+    const area = document.getElementById('regArea').value.trim();
+
+    // FULL NAME VALIDATION
+    if (!/^[A-Za-z ]{3,40}$/.test(name)) {
+        alert("Enter valid full name");
+        return;
+    }
+
+    // PHONE VALIDATION
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+        alert("Enter valid 10 digit mobile number");
+        return;
+    }
+
+    // USERNAME VALIDATION
+    if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
+        alert("Username should be 4-20 characters");
+        return;
+    }
+
+    // PASSWORD VALIDATION
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters");
+        return;
+    }
+
+    // EXPERIENCE VALIDATION
+    if (experience < 0 || experience > 50) {
+        alert("Enter valid experience");
+        return;
+    }
+
+    // AADHAAR VALIDATION
+    if (!/^\d{12}$/.test(aadhaar)) {
+        alert("Aadhaar must be 12 digits");
+        return;
+    }
+
+    // SERVICE AREA VALIDATION
+    if (!/^[A-Za-z ]{3,40}$/.test(area)) {
+        alert("Enter valid service area");
+        return;
+    }
+
+    state.isSubmitting = true;
+
+    try {
+
+        const { error } = await _supabase
+        .from('technicians')
+        .insert([{
+            name: name,
+            phone: "+91" + phone,
+            username: username,
+            password: password,
+            category: category,
+            experience: parseFloat(experience),
+            aadhaar: aadhaar,
+            area: area,
+            status: 'pending'
+        }]);
+
+        if (error) throw error;
+
+        state.isSuccess = true;
+
+    } catch (err) {
+
+        alert("Database Error: " + err.message);
+
+    } finally {
+
+        state.isSubmitting = false;
+    }
 }
-});
 </script>
 </body>
 </html>
