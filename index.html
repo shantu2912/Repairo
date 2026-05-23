@@ -12,9 +12,9 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
         .fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -78,13 +78,60 @@
           currentActiveJobId: null,
           currentJobStatus: '',
 
+          // --- TRANSLATION LOGIC EMBEDDED DIRECTLY ---
+          lang: localStorage.getItem('fixzen_lang') || 'en',
+          t: {
+              en: {
+                  'Top Rated': 'Top Rated', 'Expert Electricians': 'Expert Electricians', 'Summer Sale': 'Summer Sale', 'Deep Cleaning': 'Deep Cleaning',
+                  'Search for': 'Search for', 'Construction & Home': 'Construction & Home', 'Appliance Repair': 'Appliance Repair',
+                  'Electronics & IT': 'Electronics & IT', 'Automobile': 'Automobile', 'Other Services': 'Other Services',
+                  'HOME': 'HOME', 'Utility': 'Utility', 'LIVE TRACKING': 'LIVE TRACKING', 'MY BOOKINGS': 'MY BOOKINGS',
+                  'CONTACT US': 'CONTACT US', 'Legal': 'Legal', 'PRIVACY POLICY': 'PRIVACY POLICY', 'TERMS & POLICY': 'TERMS & POLICY',
+                  'For Experts': 'For Experts', 'REGISTER AS TECHNICIAN': 'REGISTER AS TECHNICIAN', 'TECHNICIAN LOGIN': 'TECHNICIAN LOGIN',
+                  'Log Out': 'Log Out', 'Log In': 'Log In', 'Guest User': 'Guest User', 'Please Log In': 'Please Log In', 'Home': 'Home',
+                  'Carpenter': 'Carpenter', 'Plumber': 'Plumber', 'Electrician': 'Electrician', 'Painter': 'Painter', 'Mason': 'Mason', 'Welder': 'Welder',
+                  'AC Tech': 'AC Tech', 'Fridge': 'Fridge', 'Washing M.': 'Washing M.', 'Microwave': 'Microwave', 'RO Filter': 'RO Filter',
+                  'TV / LED': 'TV / LED', 'CCTV': 'CCTV', 'Car Mech': 'Car Mech', 'Bike Mech': 'Bike Mech', 'Pest Ctrl': 'Pest Ctrl', 'Grass Cutting': 'Grass Cutting',
+                  'Home_cat': 'Home', 'Appliance': 'Appliance', 'Electronics': 'Electronics', 'Auto': 'Auto', 'Other': 'Other'
+              },
+              hi: {
+                  'Top Rated': 'शीर्ष रेटेड', 'Expert Electricians': 'विशेषज्ञ इलेक्ट्रीशियन', 'Summer Sale': 'ग्रीष्मकालीन सेल', 'Deep Cleaning': 'डीप क्लीनिंग',
+                  'Search for': 'खोजें', 'Construction & Home': 'निर्माण और घर', 'Appliance Repair': 'उपकरण मरम्मत',
+                  'Electronics & IT': 'इलेक्ट्रॉनिक्स और आईटी', 'Automobile': 'ऑटोमोबाइल', 'Other Services': 'अन्य सेवाएं',
+                  'HOME': 'होम', 'Utility': 'उपयोगिता', 'LIVE TRACKING': 'लाइव ट्रैकिंग', 'MY BOOKINGS': 'मेरी बुकिंग',
+                  'CONTACT US': 'संपर्क करें', 'Legal': 'कानूनी', 'PRIVACY POLICY': 'गोपनीयता नीति', 'TERMS & POLICY': 'नियम और नीति',
+                  'For Experts': 'विशेषज्ञों के लिए', 'REGISTER AS TECHNICIAN': 'तकनीशियन के रूप में रजिस्टर करें', 'TECHNICIAN LOGIN': 'तकनीशियन लॉगिन',
+                  'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथि उपयोगकर्ता', 'Please Log In': 'कृपया लॉग इन करें', 'Home': 'होम',
+                  'Carpenter': 'बढ़ई', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रीशियन', 'Painter': 'पेंटर', 'Mason': 'राजमिस्त्री', 'Welder': 'वेल्डर',
+                  'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वाशिंग मशीन', 'Microwave': 'माइक्रोवेव', 'RO Filter': 'आरओ फ़िल्टर',
+                  'TV / LED': 'टीवी / एलईडी', 'CCTV': 'सीसीटीवी', 'Car Mech': 'कार मैकेनिक', 'Bike Mech': 'बाइक मैकेनिक', 'Pest Ctrl': 'कीट नियंत्रण', 'Grass Cutting': 'घास काटना',
+                  'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑटो', 'Other': 'अन्य'
+              },
+              mr: {
+                  'Top Rated': 'सर्वाधिक रेटेड', 'Expert Electricians': 'तज्ञ इलेक्ट्रिशियन', 'Summer Sale': 'उन्हाळी सेल', 'Deep Cleaning': 'डीप क्लिनिंग',
+                  'Search for': 'शोधा', 'Construction & Home': 'बांधकाम आणि घर', 'Appliance Repair': 'उपकरण दुरुस्ती',
+                  'Electronics & IT': 'इलेक्ट्रॉनिक्स आणि आयटी', 'Automobile': 'ऑटोमोबाईल', 'Other Services': 'इतर सेवा',
+                  'HOME': 'होम', 'Utility': 'उपयुक्तता', 'LIVE TRACKING': 'लाइव्ह ट्रॅकिंग', 'MY BOOKINGS': 'माझे बुकिंग',
+                  'CONTACT US': 'संपर्क साधा', 'Legal': 'कायदेशीर', 'PRIVACY POLICY': 'गोपनीयता धोरण', 'TERMS & POLICY': 'अटी आणि धोरण',
+                  'For Experts': 'तज्ञांसाठी', 'REGISTER AS TECHNICIAN': 'तंत्रज्ञ म्हणून नोंदणी करा', 'TECHNICIAN LOGIN': 'तंत्रज्ञ लॉगिन',
+                  'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथी वापरकर्ता', 'Please Log In': 'कृपया लॉग इन करा', 'Home': 'होम',
+                  'Carpenter': 'सुतार', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रिशियन', 'Painter': 'पेंटर', 'Mason': 'गवंडी', 'Welder': 'वेल्डर',
+                  'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वॉशिंग मशीन', 'Microwave': 'मायक्रोवेव्ह', 'RO Filter': 'आरओ फिल्टर',
+                  'TV / LED': 'टीव्ही / एलईडी', 'CCTV': 'सीसीटीव्ही', 'Car Mech': 'कार मेकॅनिक', 'Bike Mech': 'बाईक मेकॅनिक', 'Pest Ctrl': 'कीटक नियंत्रण', 'Grass Cutting': 'गवत कापणे',
+                  'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑटो', 'Other': 'इतर'
+              }
+          },
+          tx(key) { return this.t[this.lang]?.[key] || key; },
+          setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
+          // ----------------------------------------------------
+
           masterList: [
-              {n:'Carpenter', cat:'Home', icon:'🪚'}, 
-              {n:'Plumber', cat:'Home', icon:'🚰'}, 
-              {n:'Electrician', cat:'Home', icon:'⚡'}, 
-              {n:'Painter', cat:'Home', icon:'🎨'}, 
-              {n:'Mason', cat:'Home', icon:'🧱'}, 
-              {n:'Welder', cat:'Home', icon:'🔥'},
+              {n:'Carpenter', cat:'Home_cat', icon:'🪚'}, 
+              {n:'Plumber', cat:'Home_cat', icon:'🚰'}, 
+              {n:'Electrician', cat:'Home_cat', icon:'⚡'}, 
+              {n:'Painter', cat:'Home_cat', icon:'🎨'}, 
+              {n:'Mason', cat:'Home_cat', icon:'🧱'}, 
+              {n:'Welder', cat:'Home_cat', icon:'🔥'},
               {n:'AC Tech', cat:'Appliance', icon:'❄️'}, 
               {n:'Fridge', cat:'Appliance', icon:'🧊'}, 
               {n:'Washing M.', cat:'Appliance', icon:'🧼'}, 
@@ -100,7 +147,10 @@
 
           get filteredServices() {
               if (this.searchQuery === '') return [];
-              return this.masterList.filter(item => item.n.toLowerCase().includes(this.searchQuery.toLowerCase()));
+              return this.masterList.filter(item => 
+                  item.n.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                  this.tx(item.n).toLowerCase().includes(this.searchQuery.toLowerCase())
+              );
           },
 
           async checkUser() {
@@ -109,17 +159,12 @@
               if (user) {
                   const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
                   this.user = profile || { full_name: 'Valued Customer', phone: user.phone };
-                  
-                  // Instantly poll active pipeline data mapping matching user signature bounds
                   await this.checkActiveJobsFromDatabase(user.id);
               }
           },
 
-          // LIVE REAL-TIME BACKEND LIFECYCLE QUERY LOOKUP ENGINE
           async checkActiveJobsFromDatabase(userId) {
               try {
-                  console.log('Querying real-time database state for pending jobs:', userId);
-                  
                   const { data: activeJobs, error } = await window.sb
                       .from('jobs')
                       .select('id, status')
@@ -133,14 +178,12 @@
                       this.currentActiveJobId = activeJobs[0].id;
                       this.currentJobStatus = activeJobs[0].status;
                       localStorage.setItem('active_job_id', this.currentActiveJobId);
-                      console.log('Active Tracking Found:', this.currentActiveJobId, 'Status:', this.currentJobStatus);
                   } else {
                       this.currentActiveJobId = null;
                       this.currentJobStatus = '';
                       localStorage.removeItem('active_job_id');
                   }
               } catch (err) {
-                  console.error('Network sync dropped fallback to storage parameters:', err.message);
                   this.currentActiveJobId = localStorage.getItem('active_job_id');
               }
           },
@@ -160,9 +203,7 @@
               }
           },
 
-          // DIRECT REDIRECTION ENGINE FOR EXPLICIT LIFE FLOW RETENTION
           handleCartNavigation() {
-              console.log('Evaluating dynamic routing targets:', this.currentActiveJobId);
               if (this.currentActiveJobId && this.currentActiveJobId !== 'null' && this.currentActiveJobId !== '') {
                   window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
               } else {
@@ -199,6 +240,7 @@
         </div>
     </div>
 
+    <!-- SIDEBAR -->
     <div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
         <div class="absolute inset-0 bg-brand-olive/40 backdrop-blur-md transition-opacity" @click="sidebarOpen = false"></div>
         <aside class="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col border-r border-white/50"
@@ -215,8 +257,8 @@
                         <img :src="user ? 'https://ui-avatars.com/api/?background=A07D54&color=fff&name=' + user.full_name : 'https://i.pravatar.cc/150?img=3'" class="w-full h-full rounded-full object-cover">
                     </div>
                     <div class="relative z-10">
-                        <p class="text-white font-bold text-sm" x-text="user ? user.full_name : 'Guest User'"></p>
-                        <p class="text-brand-beige text-xs" x-text="user ? user.phone : 'Please Log In'"></p>
+                        <p class="text-white font-bold text-sm" x-text="user ? user.full_name : tx('Guest User')"></p>
+                        <p class="text-brand-beige text-xs" x-text="user ? user.phone : tx('Please Log In')"></p>
                     </div>
                 </div>
             </div>
@@ -224,63 +266,60 @@
             <nav class="flex-1 overflow-y-auto py-2 hide-scroll">
                 <a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">HOME</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('HOME')"></span>
                 </a>
                 
-               
-                
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('Utility')"></p>
                 
                 <button @click="handleCartNavigation()" class="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors text-left group bg-transparent border-none outline-none">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? 'LIVE TRACKING' : 'MY BOOKINGS'"></span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? tx('LIVE TRACKING') : tx('MY BOOKINGS')"></span>
                 </button>
                
                 <a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">CONTACT US</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('CONTACT US')"></span>
                 </a>
 
                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Legal</p>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('Legal')"></p>
                 <a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">PRIVACY POLICY</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('PRIVACY POLICY')"></span>
                 </a>
                 <a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">TERMS & POLICY</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('TERMS & POLICY')"></span>
                 </a>
-            </nav>
 
-
-             <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">For Experts</p>
+                 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
+                <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('For Experts')"></p>
                 <a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">REGISTER AS TECHNICIAN</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('REGISTER AS TECHNICIAN')"></span>
                 </a>
                 <a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-colors group">
                     <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
-                    <span class="text-sm font-bold text-brand-dark tracking-wide">TECHNICIAN LOGIN</span>
+                    <span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('TECHNICIAN LOGIN')"></span>
                 </a>
+            </nav>
 
             <div class="p-6 bg-brand-cream/30">
                 <template x-if="user">
-                    <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center">Log Out</button>
+                    <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white uppercase tracking-widest block text-center" x-text="tx('Log Out')"></button>
                 </template>
                 <template x-if="!user">
-                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center">Log In</a>
+                    <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white uppercase tracking-widest block text-center" x-text="tx('Log In')"></a>
                 </template>
             </div>
         </aside>
     </div>
 
-    <div class="max-w-md mx-auto min-h-screen bg-brand-cream relative shadow-2xl overflow-hidden pb-32" x-show="!loading">
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="max-w-md mx-auto min-h-screen bg-brand-cream relative shadow-2xl overflow-hidden pb-40" x-show="!loading">
 
         <header class="absolute top-0 w-full z-[60] px-5 py-4 flex justify-between items-center pointer-events-none">
-            
             <button @click="sidebarOpen = true" class="pointer-events-auto bg-black/30 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/50 transition-colors shadow-lg text-white">
                 <i class="fa-solid fa-bars text-lg"></i>
             </button>
@@ -289,7 +328,6 @@
 
             <button @click="handleCartNavigation()" class="relative pointer-events-auto bg-brand-gold/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg text-white outline-none border-none">
                 <i class="fa-solid fa-cart-shopping text-lg"></i>
-                
                 <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
                     <span class="absolute -top-1 -right-1 flex h-3 w-3">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -305,8 +343,8 @@
             <div class="absolute inset-0" x-show="slideIndex === 2"><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div>
             <div class="absolute bottom-24 left-6 right-6">
-                <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Top Rated</span>
-                <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="slideIndex===0 ? 'Expert Electricians' : (slideIndex===1 ? 'Summer Sale' : 'Deep Cleaning')"></h2>
+                <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider" x-text="tx('Top Rated')"></span>
+                <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="slideIndex===0 ? tx('Expert Electricians') : (slideIndex===1 ? tx('Summer Sale') : tx('Deep Cleaning'))"></h2>
             </div>
         </div>
 
@@ -316,12 +354,12 @@
                      <div class="w-12 h-12 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-magnifying-glass"></i></div>
                      <div class="flex-1 h-12 relative flex items-center">
                          <div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
-                             <span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span>
+                             <span class="text-brand-dark/40 text-sm font-medium mr-1" x-text="tx('Search for')"></span>
                              <div class="relative h-5 w-32 overflow-hidden">
                                  <div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
-                                     <div class="h-5 flex items-center">AC Repair</div>
-                                     <div class="h-5 flex items-center">Plumbing</div>
-                                     <div class="h-5 flex items-center">Cleaning</div>
+                                     <div class="h-5 flex items-center" x-text="tx('AC Tech')"></div>
+                                     <div class="h-5 flex items-center" x-text="tx('Plumber')"></div>
+                                     <div class="h-5 flex items-center" x-text="tx('Deep Cleaning')"></div>
                                  </div>
                              </div>
                          </div>
@@ -348,148 +386,109 @@
                                 <span x-text="result.icon"></span>
                             </div>
                             <div>
-                                <p class="font-bold text-sm text-brand-dark" x-text="result.n"></p>
-                                <p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text="result.cat"></p>
+                                <p class="font-bold text-sm text-brand-dark" x-text="tx(result.n)"></p>
+                                <p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text="tx(result.cat)"></p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold"></i>
                         </div>
                     </template>
-
-                    <div x-show="filteredServices.length === 0" class="p-6 text-center">
-                        <i class="fa-solid fa-face-frown-open text-2xl text-brand-dark/20 mb-2"></i>
-                        <p class="text-sm text-brand-dark/50 font-medium">No service found matching "<span x-text="searchQuery"></span>"</p>
-                        <p class="text-[10px] text-brand-dark/30 mt-1">Try "AC", "Clean", or "Repair"</p>
-                    </div>
                 </div>
             </div>
-
         </div>
 
         <div class="pb-12 space-y-8 mt-6">
-            
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Construction & Home</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" x-text="tx('Construction & Home')"></h2>
                 <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Carpenter', bg:'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&fit=crop', icon:'🪚'}, 
-                        {n:'Plumber', bg:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&fit=crop', icon:'🚰'}, 
-                        {n:'Electrician', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop', icon:'⚡'}, 
-                        {n:'Painter', bg:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&fit=crop', icon:'🎨'}, 
-                        {n:'Mason', bg:'https://images.unsplash.com/photo-1590486803833-1c5dc8ce84ac?w=200&fit=crop', icon:'🧱'}, 
-                        {n:'Welder', bg:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&fit=crop', icon:'🔥'}
-                    ]">
+                    <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Appliance Repair</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" x-text="tx('Appliance Repair')"></h2>
                 <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'AC Tech', bg:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&fit=crop', icon:'❄️'}, 
-                        {n:'Fridge', bg:'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200&fit=crop', icon:'🧊'}, 
-                        {n:'Washing M.', bg:'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=200&fit=crop', icon:'🧼'}, 
-                        {n:'Microwave', bg:'https://images.unsplash.com/photo-1585659722983-3a67528e5764?w=200&fit=crop', icon:'⏲️'},
-                        {n:'RO Filter', bg:'https://images.unsplash.com/photo-1542013936693-884638332954?w=200&fit=crop', icon:'💧'}
-                    ]">
+                    <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Electronics & IT</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" x-text="tx('Electronics & IT')"></h2>
                 <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'TV / LED', bg:'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&fit=crop', icon:'📺'},
-                        {n:'CCTV', bg:'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=200&fit=crop', icon:'📹'}
-                    ]">
+                    <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Automobile</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" x-text="tx('Automobile')"></h2>
                 <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Car Mech', bg:'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=200&fit=crop', icon:'🚗'}, 
-                        {n:'Bike Mech', bg:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=200&fit=crop', icon:'🏍️'}
-                    ]">
+                    <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
             </div>
 
             <div class="px-6 animate__animated animate__fadeInUp">
-                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3">Other Services</h2>
+                <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3" x-text="tx('Other Services')"></h2>
                 <div class="grid grid-cols-4 gap-3">
-                    <template x-for="s in [
-                        {n:'Pest Ctrl', bg:'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=200&fit=crop', icon:'🪲'}, 
-                        {n:'Grass Cutting', bg:'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=200&fit=crop', icon:'🏡'}
-                    ]">
+                    <template x-for="s in masterList.filter(item => item.cat === 'Other')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
-                                <img :src="s.bg" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div class="absolute inset-0 bg-brand-gold/80 opacity-0 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="s.n"></span>
+                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
             </div>
-
         </div>
 
         <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
-            <div class="fixed bottom-24 left-4 right-4 z-50 animate__animated animate__pulse animate__infinite">
+            <div class="fixed bottom-[130px] left-4 right-4 z-40 animate__animated animate__pulse animate__infinite">
                 <div class="bg-gradient-to-r from-brand-olive via-[#453F33] to-brand-dark rounded-3xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-2 border-brand-gold/60 flex flex-col gap-3.5 backdrop-blur-md">
                     <div class="flex items-center gap-3.5">
                         <div class="relative flex h-12 w-12 items-center justify-center bg-white/10 rounded-2xl border border-white/20 flex-shrink-0 shadow-inner">
                             <span class="animate-ping absolute inline-flex h-7 w-7 rounded-full bg-brand-green opacity-75"></span>
                             <i class="fa-solid text-xl text-brand-green relative z-10" :class="currentJobStatus === 'arrived' ? 'fa-door-open animate-bounce' : 'fa-truck-ramp-box animate-pulse'"></i>
                         </div>
-                        
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5">
                                 <span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
                                 <h4 class="text-white text-xs font-black tracking-widest uppercase truncate" x-text="currentJobStatus === 'arrived' ? 'Expert Has Arrived!' : 'Expert Is Assigned'"></h4>
                             </div>
-                            <p class="text-brand-cream/90 text-[11px] font-medium mt-1 leading-relaxed break-words pr-1" x-text="currentJobStatus === 'arrived' ? 'Your provider is waiting at your door. Please tap below to share your secure verification OTP.' : 'Your service expert has been locked into your route. Tap below to track their arrival and provide code setup.'"></p>
                         </div>
                     </div>
-                    
-                    <button @click="handleCartNavigation()" class="w-full py-3 rounded-2xl bg-brand-gold text-white font-extrabold text-xs shadow-md tracking-wider uppercase hover:bg-white hover:text-brand-dark hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 outline-none border-none cursor-pointer">
+                    <button @click="handleCartNavigation()" class="w-full py-3 rounded-2xl bg-brand-gold text-white font-extrabold text-xs shadow-md tracking-wider uppercase hover:bg-white hover:text-brand-dark transition-all duration-200 flex items-center justify-center gap-2 outline-none border-none cursor-pointer">
                         <span>Open Active Booking Screen</span> 
                         <i class="fa-solid fa-arrow-right-to-bracket text-xs animate-pulse"></i>
                     </button>
@@ -497,9 +496,19 @@
             </div>
         </template>
 
+        <!-- FLOATING LANGUAGE SWITCHER (ABOVE BOTTOM NAV) -->
+        <div class="fixed bottom-[85px] left-1/2 transform -translate-x-1/2 z-50 flex justify-center w-full max-w-sm pointer-events-none">
+             <div class="bg-white/90 backdrop-blur-md border border-brand-beige/50 rounded-full p-1 flex shadow-[0_10px_30px_rgba(0,0,0,0.15)] pointer-events-auto gap-1">
+                <button @click="setLang('en')" :class="lang==='en'?'bg-brand-olive text-white':'text-brand-olive hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all tracking-wider">ENG</button>
+                <button @click="setLang('hi')" :class="lang==='hi'?'bg-brand-olive text-white':'text-brand-olive hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all tracking-wider deva">हिंदी</button>
+                <button @click="setLang('mr')" :class="lang==='mr'?'bg-brand-olive text-white':'text-brand-olive hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all tracking-wider deva">मराठी</button>
+             </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
         <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
             <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-around items-center shadow-super-float">
-                <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold">Home</span></a>
+                <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold" x-text="tx('Home')"></span></a>
                 
                 <button @click="handleCartNavigation()" class="relative w-12 h-12 flex items-center justify-center text-brand-dark/50 hover:text-brand-gold transition-colors border-none bg-transparent outline-none cursor-pointer">
                     <i class="fa-solid fa-calendar-check text-xl"></i>
