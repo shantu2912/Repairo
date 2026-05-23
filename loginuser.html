@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FixZen - Premium Access</title>
     
+    <!-- 1. LOAD EXTERNAL SCRIPTS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="i18n.js"></script> <!-- Your central language file -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- 2. LOAD STYLES -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
@@ -65,7 +69,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Language Selector Styles */
         .lang-btn {
             flex: 1; padding: 0.75rem 0.5rem; border-radius: 1rem;
             border: 2px solid #DFD4C3; background: white;
@@ -78,7 +81,6 @@
         .lang-btn .lang-native { display: block; font-size: 1rem; margin-bottom: 2px; }
         .lang-btn .lang-sub { display: block; font-size: 0.55rem; opacity: 0.7; letter-spacing: 0.05em; text-transform: uppercase; }
 
-        /* Devanagari text rendering */
         .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
     </style>
 </head>
@@ -91,119 +93,22 @@ x-data="{
   loading: false,
   message: '',
   showPassword: false,
-  lang: localStorage.getItem('fixzen_lang') || 'en',
   form: { name:'', phone:'', user:'', pass:'', otp:'' },
+  
+  // ─── LANGUAGE INTEGRATION ────────────────────────────────────
+  lang: FixZenI18n.getSavedLang(),
 
-  // ─── TRANSLATIONS ────────────────────────────────────────────
-  t: {
-    en: {
-      tagline: 'Premium Home Care',
-      choose_lang: 'Choose Your Language',
-      lang_continue: 'CONTINUE',
-      welcome: 'Welcome to FixZen',
-      create_account: 'Create Account',
-      login: 'Login',
-      full_name: 'Full Name',
-      username: 'Username',
-      password: 'Password',
-      mobile: 'Mobile Number',
-      send_otp: 'Send Verification',
-      check_account: 'Check Account',
-      sign_in: 'Sign In',
-      already_member: 'Already a member? Sign In',
-      new_user: 'New User? Create Account',
-      verify_title: 'Verify Mobile',
-      code_sent: 'Code sent to +91',
-      enter_otp: '000000',
-      verify_btn: 'Verify & Join',
-      change_details: 'Change Details',
-      name_placeholder: 'Rahul Sharma',
-      user_placeholder: 'username',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'ENTER VALID PHONE NUMBER',
-      err_exists: 'ACCOUNT ALREADY EXISTS',
-      err_not_found: 'NO ACCOUNT FOUND',
-      err_otp: 'ENTER VALID OTP',
-      err_pass: 'ENTER PASSWORD',
-      err_login: 'INVALID LOGIN CREDENTIALS',
-      welcome_back: 'Welcome Back'
-    },
-    hi: {
-      tagline: 'प्रीमियम होम केयर',
-      choose_lang: 'अपनी भाषा चुनें',
-      lang_continue: 'आगे बढ़ें',
-      welcome: 'FixZen में आपका स्वागत है',
-      create_account: 'नया खाता बनाएं',
-      login: 'लॉगिन करें',
-      full_name: 'पूरा नाम',
-      username: 'उपयोगकर्ता नाम',
-      password: 'पासवर्ड',
-      mobile: 'मोबाइल नंबर',
-      send_otp: 'OTP भेजें',
-      check_account: 'खाता जांचें',
-      sign_in: 'साइन इन करें',
-      already_member: 'पहले से सदस्य हैं? साइन इन करें',
-      new_user: 'नए उपयोगकर्ता? खाता बनाएं',
-      verify_title: 'मोबाइल सत्यापित करें',
-      code_sent: 'कोड भेजा गया +91',
-      enter_otp: '000000',
-      verify_btn: 'सत्यापित करें और जुड़ें',
-      change_details: 'विवरण बदलें',
-      name_placeholder: 'राहुल शर्मा',
-      user_placeholder: 'उपयोगकर्ता नाम',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'मान्य फ़ोन नंबर दर्ज करें',
-      err_exists: 'खाता पहले से मौजूद है',
-      err_not_found: 'कोई खाता नहीं मिला',
-      err_otp: 'मान्य OTP दर्ज करें',
-      err_pass: 'पासवर्ड दर्ज करें',
-      err_login: 'लॉगिन जानकारी गलत है',
-      welcome_back: 'वापसी पर स्वागत है'
-    },
-    mr: {
-      tagline: 'प्रीमियम होम केअर',
-      choose_lang: 'तुमची भाषा निवडा',
-      lang_continue: 'पुढे जा',
-      welcome: 'FixZen मध्ये स्वागत आहे',
-      create_account: 'नवीन खाते तयार करा',
-      login: 'लॉगिन करा',
-      full_name: 'पूर्ण नाव',
-      username: 'वापरकर्ता नाव',
-      password: 'पासवर्ड',
-      mobile: 'मोबाइल नंबर',
-      send_otp: 'OTP पाठवा',
-      check_account: 'खाते तपासा',
-      sign_in: 'साइन इन करा',
-      already_member: 'आधीच सदस्य आहात? साइन इन करा',
-      new_user: 'नवीन वापरकर्ता? खाते तयार करा',
-      verify_title: 'मोबाइल सत्यापित करा',
-      code_sent: 'कोड पाठवला +91',
-      enter_otp: '000000',
-      verify_btn: 'सत्यापित करा आणि सामील व्हा',
-      change_details: 'तपशील बदला',
-      name_placeholder: 'राहुल शर्मा',
-      user_placeholder: 'वापरकर्ता नाव',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'वैध फोन नंबर टाका',
-      err_exists: 'खाते आधीपासून अस्तित्वात आहे',
-      err_not_found: 'खाते सापडले नाही',
-      err_otp: 'वैध OTP टाका',
-      err_pass: 'पासवर्ड टाका',
-      err_login: 'चुकीची लॉगिन माहिती',
-      welcome_back: 'पुन्हा स्वागत आहे'
-    }
+  // Helper: Gets translated string from the external i18n.js file
+  tx(key) { 
+    return FixZenI18n.translations[this.lang]?.[key] || key; 
   },
 
-  // Helper: get translated string
-  tx(key) { return (this.t[this.lang] || this.t['en'])[key] || key; },
-
+  // Updates UI and saves choice to browser
   setLang(l) {
     this.lang = l;
-    localStorage.setItem('fixzen_lang', l);
+    FixZenI18n.setLang(l);
   },
+  // ─────────────────────────────────────────────────────────────
 
   proceedFromLang() {
     this.step = 'choose';
@@ -224,7 +129,8 @@ x-data="{
     try {
       const phone = this.normalizePhone();
 
-      const { data: existingUser, error } = await supabase
+      // FIXED: Using window.supabase
+      const { data: existingUser, error } = await window.supabase
         .from('profiles')
         .select('id')
         .eq('phone', phone)
@@ -239,7 +145,7 @@ x-data="{
           return;
         }
 
-        const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
+        const { error: otpError } = await window.supabase.auth.signInWithOtp({ phone });
         if (otpError) throw otpError;
 
         this.step = 'otp';
@@ -267,15 +173,13 @@ x-data="{
     this.loading = true;
     this.message = '';
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await window.supabase.auth.signInWithPassword({
         phone: this.normalizePhone(),
         password: this.form.pass
       });
       if (error) throw error;
 
-      // Save language preference to profile
       await this.saveLangToProfile();
-
       window.location.href = 'index.html';
     } catch {
       this.message = this.tx('err_login');
@@ -295,7 +199,7 @@ x-data="{
     try {
       const phone = this.normalizePhone();
 
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { data, error } = await window.supabase.auth.verifyOtp({
         phone,
         token: this.form.otp,
         type: 'sms'
@@ -305,7 +209,7 @@ x-data="{
       const user = data.user;
       if (!user) throw new Error('USER NOT FOUND');
 
-      const { data: alreadyExists } = await supabase
+      const { data: alreadyExists } = await window.supabase
         .from('profiles')
         .select('id')
         .eq('phone', phone)
@@ -316,14 +220,14 @@ x-data="{
         return;
       }
 
-      await supabase.auth.updateUser({ password: this.form.pass });
+      await window.supabase.auth.updateUser({ password: this.form.pass });
 
-      const { error: profileError } = await supabase.from('profiles').insert({
+      const { error: profileError } = await window.supabase.from('profiles').insert({
         id: user.id,
         full_name: this.form.name,
         username: this.form.user,
         phone,
-        preferred_lang: this.lang   // ← Save language on signup
+        preferred_lang: this.lang
       });
 
       if (profileError) {
@@ -339,16 +243,15 @@ x-data="{
     }
   },
 
-  // Save language to existing profile on login
   async saveLangToProfile() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await window.supabase.auth.getUser();
       if (user) {
-        await supabase.from('profiles')
+        await window.supabase.from('profiles')
           .update({ preferred_lang: this.lang })
           .eq('id', user.id);
       }
-    } catch(e) { /* non-critical */ }
+    } catch(e) {}
   }
 }"
 >
@@ -357,6 +260,7 @@ x-data="{
 
     <!-- LOGO -->
     <div class="text-center mb-8">
+        <!-- Make sure fixzen.png is in the same folder -->
         <img src="fixzen.png" alt="FixZen" class="w-20 h-20 rounded-full mx-auto mb-4 shadow-xl border-2 border-white object-cover">
         <h1 class="text-3xl font-extrabold tracking-[0.2em] text-brand-olive uppercase">FixZen</h1>
         <p class="text-[10px] font-bold text-brand-gold/60 uppercase tracking-[0.3em] mt-1 deva" x-text="tx('tagline')"></p>
@@ -373,17 +277,14 @@ x-data="{
             <p class="text-[10px] text-brand-dark/40 font-bold uppercase tracking-widest">Select / चुनें / निवडा</p>
 
             <div class="flex gap-3 mt-4">
-                <!-- English -->
                 <button @click="setLang('en')" :class="lang==='en' ? 'active' : ''" class="lang-btn">
                     <span class="lang-native">🇬🇧 Eng</span>
                     <span class="lang-sub">English</span>
                 </button>
-                <!-- Hindi -->
                 <button @click="setLang('hi')" :class="lang==='hi' ? 'active' : ''" class="lang-btn">
                     <span class="lang-native deva">हिंदी</span>
                     <span class="lang-sub">Hindi</span>
                 </button>
-                <!-- Marathi -->
                 <button @click="setLang('mr')" :class="lang==='mr' ? 'active' : ''" class="lang-btn">
                     <span class="lang-native deva">मराठी</span>
                     <span class="lang-sub">Marathi</span>
@@ -398,7 +299,6 @@ x-data="{
 
         <!-- ── STEP 2: CHOOSE LOGIN OR SIGNUP ── -->
         <div x-show="step==='choose'" x-cloak class="space-y-4 text-center">
-            <!-- Small lang switcher at top -->
             <div class="flex justify-center gap-2 mb-4">
                 <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
                     class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all">EN</button>
@@ -415,7 +315,6 @@ x-data="{
 
         <!-- ── STEP 3: AUTH FORM ── -->
         <div x-show="step==='auth'" x-cloak>
-            <!-- Mini lang switcher -->
             <div class="flex justify-end gap-2 mb-4">
                 <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
                     class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all">EN</button>
@@ -506,7 +405,7 @@ x-data="{
 
     <!-- Footer note -->
     <p class="text-center text-[10px] text-brand-olive/30 font-bold mt-6 uppercase tracking-widest">
-        FixZen © 2025
+        FixZen © 2026
     </p>
 </div>
 
