@@ -3,15 +3,15 @@
 // ======================================================
 
 window.FixZenI18n = {
-  // 1. Get the saved language, default to English
+  // 1. Get the saved language from previous visits, default to English
   getSavedLang: function() {
     return localStorage.getItem('fixzen_lang') || 'en';
   },
 
-  // 2. Save the language to the browser and instantly translate
+  // 2. Save the new language choice and instantly translate the screen
   setLang: function(lang) {
     localStorage.setItem('fixzen_lang', lang);
-    this.translatePage(); // Triggers update on non-Alpine pages
+    this.translatePage();
   },
 
   // 3. The Translator Engine (for standard HTML pages)
@@ -26,7 +26,7 @@ window.FixZenI18n = {
       const translatedText = this.translations[lang]?.[key];
 
       if (translatedText) {
-        // If it's an input box, translate the placeholder. Otherwise, replace inner text.
+        // If it's an input box, translate the placeholder. Otherwise, replace text.
         if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
           el.placeholder = translatedText;
         } else {
@@ -269,13 +269,29 @@ window.FixZenI18n = {
 };
 
 // ======================================================
-// AUTO LOAD ON EVERY PAGE
+// AUTO LOAD & DROPDOWN WIRING
 // ======================================================
-// When any HTML page loads, this runs the translation engine instantly
 window.addEventListener('DOMContentLoaded', () => {
-  // A small timeout ensures that Alpine.js (if present) initializes first, 
-  // preventing conflicts before the vanilla translator checks for standard tags.
+  // A small timeout ensures Alpine.js (if present) initializes first, 
+  // preventing conflicts before the vanilla translator takes over.
   setTimeout(() => {
+    
+    // 1. Translate the page automatically on load
     FixZenI18n.translatePage();
+    
+    // 2. Find the dropdown if it exists on this specific page
+    const switcher = document.getElementById("global-lang-switcher");
+    
+    if (switcher) {
+        // Make sure the dropdown shows the currently saved language
+        switcher.value = FixZenI18n.getSavedLang();
+        
+        // Listen for the user picking a new language
+        switcher.addEventListener("change", (event) => {
+            const newLang = event.target.value;
+            // This updates localStorage AND instantly translates the screen
+            FixZenI18n.setLang(newLang); 
+        });
+    }
   }, 50);
 });
