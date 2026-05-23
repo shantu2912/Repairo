@@ -8,14 +8,38 @@ window.FixZenI18n = {
     return localStorage.getItem('fixzen_lang') || 'en';
   },
 
-  // 2. Save the language to the browser
+  // 2. Save the language to the browser and instantly translate
   setLang: function(lang) {
     localStorage.setItem('fixzen_lang', lang);
+    this.translatePage(); // Triggers update on non-Alpine pages
   },
 
-  // 3. The Master Dictionary (Usable on all pages)
+  // 3. The Translator Engine (for standard HTML pages)
+  translatePage: function() {
+    const lang = this.getSavedLang();
+    
+    // Find every element on the page that has a data-i18n attribute
+    const elements = document.querySelectorAll("[data-i18n]");
+
+    elements.forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      const translatedText = this.translations[lang]?.[key];
+
+      if (translatedText) {
+        // If it's an input box, translate the placeholder. Otherwise, replace inner text.
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+          el.placeholder = translatedText;
+        } else {
+          el.innerText = translatedText;
+        }
+      }
+    });
+  },
+
+  // 4. The Complete Master Dictionary
   translations: {
     en: {
+      // -- ALPINE.JS AUTH PAGE KEYS --
       tagline: 'Premium Home Care',
       choose_lang: 'Choose Your Language',
       lang_continue: 'CONTINUE',
@@ -47,14 +71,51 @@ window.FixZenI18n = {
       err_pass: 'ENTER PASSWORD',
       err_login: 'INVALID LOGIN CREDENTIALS',
       welcome_back: 'Welcome Back',
-      
-      // Dashboard Extras
-      active_jobs: "Active Jobs",
-      earnings: "Earnings",
-      accept: "Accept",
-      reject: "Reject"
+
+      // -- DASHBOARD & REGISTER KEYS --
+      "Your Username": "Your Username",
+      "Your Password": "Your Password",
+      "LOGIN": "LOGIN",
+      "Enter username and password": "Enter username and password",
+      "Invalid username or password": "Invalid username or password",
+      "Active Jobs": "Active Jobs",
+      "Earnings": "Earnings",
+      "Today": "Today",
+      "Available for Jobs": "Available for Jobs",
+      "Loading jobs…": "Loading jobs…",
+      "No active jobs": "No active jobs",
+      "Accept": "Accept",
+      "Reject": "Reject",
+      "Mark Arrived": "Mark Arrived",
+      "Complete Job": "Complete Job",
+      "Call Customer": "Call Customer",
+      "Open in Maps": "Open in Maps",
+      "New Job Arrived": "New Job Arrived",
+      "Join FixZenix": "Join FixZenix",
+      "Fill in your details to get jobs and start earning": "Fill in your details to get jobs and start earning",
+      "Full Name": "Full Name",
+      "Mobile Number": "Mobile Number",
+      "Username": "Username",
+      "Password": "Password",
+      "Specialization": "Specialization",
+      "Experience": "Experience",
+      "Aadhaar": "Aadhaar",
+      "Service Area": "Service Area",
+      "Select Specialization": "Select Specialization",
+      "AC Repair": "AC Repair",
+      "Refrigerator": "Refrigerator",
+      "Washing Machine": "Washing Machine",
+      "RO Water Purifier": "RO Water Purifier",
+      "Geyser": "Geyser",
+      "Television": "Television",
+      "Submit Application": "Submit Application",
+      "Registering...": "Registering...",
+      "Application Sent!": "Application Sent!",
+      "Return to Home": "Return to Home"
     },
+
     hi: {
+      // -- ALPINE.JS AUTH PAGE KEYS --
       tagline: 'प्रीमियम होम केयर',
       choose_lang: 'अपनी भाषा चुनें',
       lang_continue: 'आगे बढ़ें',
@@ -86,14 +147,51 @@ window.FixZenI18n = {
       err_pass: 'पासवर्ड दर्ज करें',
       err_login: 'लॉगिन जानकारी गलत है',
       welcome_back: 'वापसी पर स्वागत है',
-      
-      // Dashboard Extras
-      active_jobs: "सक्रिय कार्य",
-      earnings: "कमाई",
-      accept: "स्वीकार करें",
-      reject: "अस्वीकार करें"
+
+      // -- DASHBOARD & REGISTER KEYS --
+      "Your Username": "आपका यूजरनेम",
+      "Your Password": "आपका पासवर्ड",
+      "LOGIN": "लॉगिन",
+      "Enter username and password": "यूजरनेम और पासवर्ड डालें",
+      "Invalid username or password": "गलत यूजरनेम या पासवर्ड",
+      "Active Jobs": "सक्रिय कार्य",
+      "Earnings": "कमाई",
+      "Today": "आज",
+      "Available for Jobs": "काम के लिए उपलब्ध",
+      "Loading jobs…": "कार्य लोड हो रहे हैं…",
+      "No active jobs": "कोई सक्रिय कार्य नहीं",
+      "Accept": "स्वीकार करें",
+      "Reject": "अस्वीकार करें",
+      "Mark Arrived": "पहुँच गया",
+      "Complete Job": "कार्य पूर्ण करें",
+      "Call Customer": "ग्राहक को कॉल करें",
+      "Open in Maps": "मैप में खोलें",
+      "New Job Arrived": "नया कार्य आया है",
+      "Join FixZenix": "FixZenix से जुड़ें",
+      "Fill in your details to get jobs and start earning": "काम पाने और कमाई शुरू करने के लिए अपनी जानकारी भरें",
+      "Full Name": "पूरा नाम",
+      "Mobile Number": "मोबाइल नंबर",
+      "Username": "यूजरनेम",
+      "Password": "पासवर्ड",
+      "Specialization": "विशेषज्ञता",
+      "Experience": "अनुभव",
+      "Aadhaar": "आधार",
+      "Service Area": "सेवा क्षेत्र",
+      "Select Specialization": "विशेषज्ञता चुनें",
+      "AC Repair": "एसी रिपेयर",
+      "Refrigerator": "रेफ्रिजरेटर",
+      "Washing Machine": "वॉशिंग मशीन",
+      "RO Water Purifier": "आरओ वॉटर प्यूरिफायर",
+      "Geyser": "गीजर",
+      "Television": "टेलीविजन",
+      "Submit Application": "आवेदन जमा करें",
+      "Registering...": "रजिस्टर हो रहा है...",
+      "Application Sent!": "आवेदन भेज दिया गया!",
+      "Return to Home": "होम पर जाएं"
     },
+
     mr: {
+      // -- ALPINE.JS AUTH PAGE KEYS --
       tagline: 'प्रीमियम होम केअर',
       choose_lang: 'तुमची भाषा निवडा',
       lang_continue: 'पुढे जा',
@@ -125,12 +223,59 @@ window.FixZenI18n = {
       err_pass: 'पासवर्ड टाका',
       err_login: 'चुकीची लॉगिन माहिती',
       welcome_back: 'पुन्हा स्वागत आहे',
-      
-      // Dashboard Extras
-      active_jobs: "सक्रिय कामे",
-      earnings: "कमाई",
-      accept: "स्वीकारा",
-      reject: "नकार द्या"
+
+      // -- DASHBOARD & REGISTER KEYS --
+      "Your Username": "तुमचे युजरनेम",
+      "Your Password": "तुमचा पासवर्ड",
+      "LOGIN": "लॉगिन",
+      "Enter username and password": "युजरनेम आणि पासवर्ड टाका",
+      "Invalid username or password": "चुकीचे युजरनेम किंवा पासवर्ड",
+      "Active Jobs": "सक्रिय कामे",
+      "Earnings": "कमाई",
+      "Today": "आज",
+      "Available for Jobs": "कामासाठी उपलब्ध",
+      "Loading jobs…": "कामे लोड होत आहेत…",
+      "No active jobs": "सध्या कोणतेही काम नाही",
+      "Accept": "स्वीकारा",
+      "Reject": "नकार द्या",
+      "Mark Arrived": "पोहोचलो",
+      "Complete Job": "काम पूर्ण करा",
+      "Call Customer": "ग्राहकाला कॉल करा",
+      "Open in Maps": "मॅपमध्ये उघडा",
+      "New Job Arrived": "नवीन काम आले आहे",
+      "Join FixZenix": "FixZenix मध्ये सामील व्हा",
+      "Fill in your details to get jobs and start earning": "काम मिळवण्यासाठी आणि कमाई सुरू करण्यासाठी माहिती भरा",
+      "Full Name": "पूर्ण नाव",
+      "Mobile Number": "मोबाईल नंबर",
+      "Username": "युजरनेम",
+      "Password": "पासवर्ड",
+      "Specialization": "विशेषता",
+      "Experience": "अनुभव",
+      "Aadhaar": "आधार",
+      "Service Area": "सेवा क्षेत्र",
+      "Select Specialization": "विशेषता निवडा",
+      "AC Repair": "एसी रिपेअर",
+      "Refrigerator": "फ्रिज",
+      "Washing Machine": "वॉशिंग मशीन",
+      "RO Water Purifier": "आरओ वॉटर प्युरिफायर",
+      "Geyser": "गीझर",
+      "Television": "टीव्ही",
+      "Submit Application": "अर्ज सबमिट करा",
+      "Registering...": "नोंदणी सुरू आहे...",
+      "Application Sent!": "अर्ज पाठवला गेला!",
+      "Return to Home": "होम वर जा"
     }
   }
 };
+
+// ======================================================
+// AUTO LOAD ON EVERY PAGE
+// ======================================================
+// When any HTML page loads, this runs the translation engine instantly
+window.addEventListener('DOMContentLoaded', () => {
+  // A small timeout ensures that Alpine.js (if present) initializes first, 
+  // preventing conflicts before the vanilla translator checks for standard tags.
+  setTimeout(() => {
+    FixZenI18n.translatePage();
+  }, 50);
+});
