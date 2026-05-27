@@ -111,29 +111,102 @@
           setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
 
           masterList: [
-              // HOME — illustrated/photorealistic icons (same style as screenshot)
-              { n:'Carpenter',     cat:'Home_cat',    img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-carpenter-professions-justicon-lineal-color-justicon.png' },
-              { n:'Plumber',       cat:'Home_cat',    img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-plumber-professions-justicon-lineal-color-justicon.png' },
-              { n:'Electrician',   cat:'Home_cat',    img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-electrician-professions-justicon-lineal-color-justicon.png' },
-              { n:'Painter',       cat:'Home_cat',    img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-painter-professions-justicon-lineal-color-justicon.png' },
-              { n:'Mason',         cat:'Home_cat',    img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-mason-professions-justicon-lineal-color-justicon.png' },
-              { n:'Welder',        cat:'Home_cat',    img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-welder-professions-justicon-lineal-color-justicon.png' },
-              // APPLIANCE
-              { n:'AC Tech',       cat:'Appliance',   img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-air-conditioner-smarthome-justicon-lineal-color-justicon.png' },
-              { n:'Fridge',        cat:'Appliance',   img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-fridge-smarthome-justicon-lineal-color-justicon.png' },
-              { n:'Washing M.',    cat:'Appliance',   img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-washing-machine-smarthome-justicon-lineal-color-justicon.png' },
-              { n:'Microwave',     cat:'Appliance',   img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-microwave-smarthome-justicon-lineal-color-justicon.png' },
-              { n:'RO Filter',     cat:'Appliance',   img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-water-filter-smarthome-justicon-lineal-color-justicon.png' },
-              // ELECTRONICS
-              { n:'TV / LED',      cat:'Electronics', img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-smart-tv-smarthome-justicon-lineal-color-justicon.png' },
-              { n:'CCTV',          cat:'Electronics', img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-cctv-smarthome-justicon-lineal-color-justicon.png' },
-              // AUTO
-              { n:'Car Mech',      cat:'Auto',        img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-car-service-car-service-justicon-lineal-color-justicon.png' },
-              { n:'Bike Mech',     cat:'Auto',        img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-motorcycle-transportation-justicon-lineal-color-justicon.png' },
-              // OTHER
-              { n:'Pest Ctrl',     cat:'Other',       img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-pest-control-cleaning-justicon-lineal-color-justicon.png' },
-              { n:'Grass Cutting', cat:'Other',       img:'https://img.icons8.com/external-justicon-lineal-color-justicon/512/external-lawn-mower-garden-justicon-lineal-color-justicon.png' }
-          ],
+
+    // HOME
+    {
+        n:'Carpenter',
+        cat:'Home_cat',
+        img:'https://cdn-icons-png.flaticon.com/512/2942/2942813.png'
+    },
+    {
+        n:'Plumber',
+        cat:'Home_cat',
+        img:'https://cdn-icons-png.flaticon.com/512/2017/2017996.png'
+    },
+    {
+        n:'Electrician',
+        cat:'Home_cat',
+        img:'https://cdn-icons-png.flaticon.com/512/2491/2491934.png'
+    },
+    {
+        n:'Painter',
+        cat:'Home_cat',
+        img:'https://cdn-icons-png.flaticon.com/512/3050/3050525.png'
+    },
+    {
+        n:'Mason',
+        cat:'Home_cat',
+        img:'https://cdn-icons-png.flaticon.com/512/1995/1995470.png'
+    },
+    {
+        n:'Welder',
+        cat:'Home_cat',
+        img:'https://cdn-icons-png.flaticon.com/512/921/921347.png'
+    },
+
+    // APPLIANCE
+    {
+        n:'AC Tech',
+        cat:'Appliance',
+        img:'https://cdn-icons-png.flaticon.com/512/1046/1046857.png'
+    },
+    {
+        n:'Fridge',
+        cat:'Appliance',
+        img:'https://cdn-icons-png.flaticon.com/512/3659/3659899.png'
+    },
+    {
+        n:'Washing M.',
+        cat:'Appliance',
+        img:'https://cdn-icons-png.flaticon.com/512/1046/1046847.png'
+    },
+    {
+        n:'Microwave',
+        cat:'Appliance',
+        img:'https://cdn-icons-png.flaticon.com/512/3659/3659804.png'
+    },
+    {
+        n:'RO Filter',
+        cat:'Appliance',
+        img:'https://cdn-icons-png.flaticon.com/512/2921/2921822.png'
+    },
+
+    // ELECTRONICS
+    {
+        n:'TV / LED',
+        cat:'Electronics',
+        img:'https://cdn-icons-png.flaticon.com/512/1041/1041916.png'
+    },
+    {
+        n:'CCTV',
+        cat:'Electronics',
+        img:'https://cdn-icons-png.flaticon.com/512/149/149852.png'
+    },
+
+    // AUTO
+    {
+        n:'Car Mech',
+        cat:'Auto',
+        img:'https://cdn-icons-png.flaticon.com/512/1995/1995479.png'
+    },
+    {
+        n:'Bike Mech',
+        cat:'Auto',
+        img:'https://cdn-icons-png.flaticon.com/512/741/741407.png'
+    },
+
+    // OTHER
+    {
+        n:'Pest Ctrl',
+        cat:'Other',
+        img:'https://cdn-icons-png.flaticon.com/512/616/616554.png'
+    },
+    {
+        n:'Grass Cutting',
+        cat:'Other',
+        img:'https://cdn-icons-png.flaticon.com/512/427/427735.png'
+    }
+],
 
           get filteredServices() {
               if (this.searchQuery === '') return [];
@@ -372,7 +445,12 @@
                         <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3] border border-[#efe7dc] shadow-[0_8px_25px_rgba(0,0,0,0.08)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)] group-hover:scale-105">
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
-                                <img :src="s.img" class="w-11 h-11 object-contain relative z-10 drop-shadow-[0_6px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-110">
+                                <img 
+                                    :src="s.img"
+                                    class="w-12 h-12 object-contain drop-shadow-lg"
+                                    loading="lazy"
+                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565547.png'"
+                                >
                             </div>
                             <span class="mt-2 text-[12px] font-semibold text-center leading-tight text-brand-dark tracking-tight w-[78px]" x-text="tx(s.n)"></span>
                         </div>
@@ -388,7 +466,12 @@
                         <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3] border border-[#efe7dc] shadow-[0_8px_25px_rgba(0,0,0,0.08)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)] group-hover:scale-105">
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
-                                <img :src="s.img" class="w-11 h-11 object-contain relative z-10 drop-shadow-[0_6px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-110">
+                                <img 
+                                    :src="s.img"
+                                    class="w-12 h-12 object-contain drop-shadow-lg"
+                                    loading="lazy"
+                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565547.png'"
+                                >
                             </div>
                             <span class="mt-2 text-[12px] font-semibold text-center leading-tight text-brand-dark tracking-tight w-[78px]" x-text="tx(s.n)"></span>
                         </div>
@@ -404,7 +487,12 @@
                         <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3] border border-[#efe7dc] shadow-[0_8px_25px_rgba(0,0,0,0.08)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)] group-hover:scale-105">
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
-                                <img :src="s.img" class="w-11 h-11 object-contain relative z-10 drop-shadow-[0_6px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-110">
+                                <img 
+                                    :src="s.img"
+                                    class="w-12 h-12 object-contain drop-shadow-lg"
+                                    loading="lazy"
+                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565547.png'"
+                                >
                             </div>
                             <span class="mt-2 text-[12px] font-semibold text-center leading-tight text-brand-dark tracking-tight w-[78px]" x-text="tx(s.n)"></span>
                         </div>
@@ -420,7 +508,12 @@
                         <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3] border border-[#efe7dc] shadow-[0_8px_25px_rgba(0,0,0,0.08)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)] group-hover:scale-105">
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
-                                <img :src="s.img" class="w-11 h-11 object-contain relative z-10 drop-shadow-[0_6px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-110">
+                                <img 
+                                    :src="s.img"
+                                    class="w-12 h-12 object-contain drop-shadow-lg"
+                                    loading="lazy"
+                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565547.png'"
+                                >
                             </div>
                             <span class="mt-2 text-[12px] font-semibold text-center leading-tight text-brand-dark tracking-tight w-[78px]" x-text="tx(s.n)"></span>
                         </div>
@@ -436,8 +529,12 @@
                         <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
                             <div class="w-[74px] h-[74px] rounded-[24px] bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3] border border-[#efe7dc] shadow-[0_8px_25px_rgba(0,0,0,0.08)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)] group-hover:scale-105">
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
-                                <img :src="s.img" class="w-11 h-11 object-contain relative z-10 drop-shadow-[0_6px_10px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-110">
-                            </div>
+                                <img 
+    :src="s.img"
+    class="w-12 h-12 object-contain drop-shadow-lg"
+    loading="lazy"
+    onerror="this.src='https://cdn-icons-png.flaticon.com/512/565/565547.png'"
+>
                             <span class="mt-2 text-[12px] font-semibold text-center leading-tight text-brand-dark tracking-tight w-[78px]" x-text="tx(s.n)"></span>
                         </div>
                     </template>
