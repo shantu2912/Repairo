@@ -126,24 +126,34 @@
           // ----------------------------------------------------
 
           masterList: [
-              {n:'Carpenter', cat:'Home_cat', icon:'🪚'}, 
-              {n:'Plumber', cat:'Home_cat', icon:'🚰'}, 
-              {n:'Electrician', cat:'Home_cat', icon:'⚡'}, 
-              {n:'Painter', cat:'Home_cat', icon:'🎨'}, 
-              {n:'Mason', cat:'Home_cat', icon:'🧱'}, 
-              {n:'Welder', cat:'Home_cat', icon:'🔥'},
-              {n:'AC Tech', cat:'Appliance', icon:'❄️'}, 
-              {n:'Fridge', cat:'Appliance', icon:'🧊'}, 
-              {n:'Washing M.', cat:'Appliance', icon:'🧼'}, 
-              {n:'Microwave', cat:'Appliance', icon:'⏲️'}, 
-              {n:'RO Filter', cat:'Appliance', icon:'💧'},
-              {n:'TV / LED', cat:'Electronics', icon:'📺'}, 
-              {n:'CCTV', cat:'Electronics', icon:'📹'}, 
-              {n:'Car Mech', cat:'Auto', icon:'🚗'}, 
-              {n:'Bike Mech', cat:'Auto', icon:'🏍️'}, 
-              {n:'Pest Ctrl', cat:'Other', icon:'🪲'}, 
-              {n:'Grass Cutting', cat:'Other', icon:'🏡'}
-          ],
+
+    // HOME
+    {n:'Carpenter', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/drill.png'},
+    {n:'Plumber', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/plumbing.png'},
+    {n:'Electrician', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/lightning-bolt.png'},
+    {n:'Painter', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/paint-palette.png'},
+    {n:'Mason', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/bricks.png'},
+    {n:'Welder', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/welding-mask.png'},
+
+    // APPLIANCE
+    {n:'AC Tech', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/air-conditioner.png'},
+    {n:'Fridge', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/fridge.png'},
+    {n:'Washing M.', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/washing-machine.png'},
+    {n:'Microwave', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/microwave.png'},
+    {n:'RO Filter', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/water-filter.png'},
+
+    // ELECTRONICS
+    {n:'TV / LED', cat:'Electronics', img:'https://img.icons8.com/3d-fluency/94/tv.png'},
+    {n:'CCTV', cat:'Electronics', img:'https://img.icons8.com/3d-fluency/94/security-camera.png'},
+
+    // AUTO
+    {n:'Car Mech', cat:'Auto', img:'https://img.icons8.com/3d-fluency/94/car.png'},
+    {n:'Bike Mech', cat:'Auto', img:'https://img.icons8.com/3d-fluency/94/motorcycle.png'},
+
+    // OTHER
+    {n:'Pest Ctrl', cat:'Other', img:'https://img.icons8.com/3d-fluency/94/bug.png'},
+    {n:'Grass Cutting', cat:'Other', img:'https://img.icons8.com/3d-fluency/94/lawn-mower.png'}
+],
 
           get filteredServices() {
               if (this.searchQuery === '') return [];
@@ -233,9 +243,9 @@
         </div>
         <div class="relative z-10 flex flex-col items-center">
             <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZEN</text>
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZENIX</text>
             </svg>
-            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZEN</h1>
+            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZENIX</h1>
             <p class="text-brand-gold text-[11px] font-bold tracking-[0.35em] uppercase mt-2 opacity-0 animate-sub-text-slide" style="animation-delay: 2.8s;">WE FIX, YOU RELAX</p>
         </div>
     </div>
@@ -383,7 +393,8 @@
                     <template x-for="result in filteredServices">
                         <div @click="navigate('service.html?id=' + result.n)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer border-b border-brand-cream last:border-0 transition-colors group">
                             <div class="text-2xl w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center group-hover:scale-110 transition-transform select-none">
-                                <span x-text="result.icon"></span>
+                                <img :src="result.img"
+                                 class="w-7 h-7 object-contain drop-shadow-lg">
                             </div>
                             <div>
                                 <p class="font-bold text-sm text-brand-dark" x-text="tx(result.n)"></p>
@@ -402,11 +413,11 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
+                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
-                            </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
+                               <img :src="s.img"
+     class="w-9 h-9 relative z-10 object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
+                           <span class="text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
@@ -417,11 +428,11 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
+                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
+                            <span class="text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
@@ -432,11 +443,11 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
+                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
+                           <span class="text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
@@ -447,11 +458,11 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
+                           class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
+                            <span class="text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
@@ -462,11 +473,11 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Other')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            <div class="w-14 h-14 rounded-2xl bg-white border border-brand-beige/40 shadow-sm flex items-center justify-center relative overflow-hidden transition-shadow group-hover:shadow-lg">
+                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
-                            <span class="text-[10px] font-bold text-brand-olive text-center leading-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
+                           <span class="text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
                 </div>
