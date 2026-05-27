@@ -413,10 +413,10 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
+                            <div class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                <img :src="s.img"
-     class="w-9 h-9 relative z-10 object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
+                                 class="w-9 h-9 relative z-10 object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
                            <span class="text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold" x-text="tx(s.n)"></span>
                         </div>
                     </template>
@@ -428,7 +428,7 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
+                            <div class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
@@ -443,7 +443,7 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
+                           <div class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
@@ -458,7 +458,7 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                           class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
+                          <div class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
@@ -473,7 +473,7 @@
                 <div class="grid grid-cols-4 gap-3">
                     <template x-for="s in masterList.filter(item => item.cat === 'Other')">
                         <div class="group flex flex-col items-center gap-2 cursor-pointer p-1 rounded-2xl active:scale-95 transition-all duration-300 hover:-translate-y-1" @click="navigate('service.html?id='+s.n)">
-                            class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]"
+                          <div  class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-white to-[#f3efe8] border border-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.12)] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
                                 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <span class="text-3xl relative z-10 transform duration-300 group-hover:rotate-12 group-hover:scale-110 select-none" x-text="s.icon"></span>
                             </div>
