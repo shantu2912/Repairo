@@ -132,20 +132,19 @@
     {n:'Plumber', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/plumbing.png'},
     {n:'Electrician', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/lightning-bolt.png'},
     {n:'Painter', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/paint-palette.png'},
-    {n:'Mason', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/bricks.png'},
-    {n:'Welder', cat:'Home_cat', img:'https://img.icons8.com/3d-fluency/94/welding-mask.png'},
+   {n:'Mason', cat:'Home_cat', img:'https://cdn-icons-png.flaticon.com/512/2942/2942789.png'},
+    {n:'Welder', cat:'Home_cat', img:'https://cdn-icons-png.flaticon.com/512/3063/3063822.png'},
 
     // APPLIANCE
     {n:'AC Tech', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/air-conditioner.png'},
     {n:'Fridge', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/fridge.png'},
     {n:'Washing M.', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/washing-machine.png'},
     {n:'Microwave', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/microwave.png'},
-    {n:'RO Filter', cat:'Appliance', img:'https://img.icons8.com/3d-fluency/94/water-filter.png'},
+   {n:'RO Filter', cat:'Appliance', img:'https://cdn-icons-png.flaticon.com/512/1046/1046857.png'},
 
     // ELECTRONICS
     {n:'TV / LED', cat:'Electronics', img:'https://img.icons8.com/3d-fluency/94/tv.png'},
-    {n:'CCTV', cat:'Electronics', img:'https://img.icons8.com/3d-fluency/94/security-camera.png'},
-
+    {n:'CCTV', cat:'Electronics', img:'https://cdn-icons-png.flaticon.com/512/3659/3659899.png'},
     // AUTO
     {n:'Car Mech', cat:'Auto', img:'https://img.icons8.com/3d-fluency/94/car.png'},
     {n:'Bike Mech', cat:'Auto', img:'https://img.icons8.com/3d-fluency/94/motorcycle.png'},
@@ -410,228 +409,228 @@
         <!-- ALL SERVICE SECTIONS -->
 <div class="pb-12 space-y-8 mt-6">
 
-    <!-- HOME -->
-    <div class="px-6 animate__animated animate__fadeInUp">
-        <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
-            x-text="tx('Construction & Home')"></h2>
+    <!-- CONSTRUCTION & HOME -->
+<div class="px-6 animate__animated animate__fadeInUp">
+    <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
+        x-text="tx('Construction & Home')"></h2>
 
-        <div class="grid grid-cols-4 gap-y-5 gap-x-3">
+    <div class="grid grid-cols-4 gap-y-5 gap-x-3">
 
-            <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
+        <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
 
-                <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
-                     @click="navigate('service.html?id='+s.n)">
+            <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
+                 @click="navigate('service.html?id='+s.n)">
+
+                <!-- ICON CARD -->
+                <div class="w-[74px] h-[74px] rounded-[24px]
+                            bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3]
+                            border border-[#efe7dc]
+                            shadow-[0_8px_25px_rgba(0,0,0,0.08)]
+                            flex items-center justify-center
+                            relative overflow-hidden
+                            transition-all duration-300
+                            group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)]
+                            group-hover:scale-105">
+
+                    <!-- Glow -->
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300
+                                bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
 
                     <!-- ICON -->
-                    <div class="w-16 h-16 rounded-[22px]
-                                bg-gradient-to-br from-white to-[#f3efe8]
-                                border border-white/70
-                                shadow-[0_10px_30px_rgba(0,0,0,0.12)]
-                                flex items-center justify-center
-                                relative overflow-hidden
-                                transition-all duration-300
-                                group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-
-                        <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                        <img :src="s.img"
-                             class="w-9 h-9 relative z-10 object-contain
-                                    drop-shadow-xl transition-transform duration-300
-                                    group-hover:scale-110">
-                    </div>
-
-                    <!-- TEXT -->
-                    <span class="mt-2 min-h-[28px]
-                                 text-[10px] sm:text-[11px]
-                                 font-semibold text-brand-olive
-                                 text-center leading-tight tracking-tight
-                                 transition-colors group-hover:text-brand-gold"
-                          x-text="tx(s.n)">
-                    </span>
-
+                    <img :src="s.img"
+                         class="w-11 h-11 object-contain relative z-10
+                                drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]
+                                transition-transform duration-300
+                                group-hover:scale-110">
                 </div>
 
-            </template>
+                <!-- TEXT -->
+                <span class="mt-2 text-[12px] font-semibold text-center leading-tight
+                             text-brand-dark tracking-tight w-[78px]"
+                      x-text="tx(s.n)">
+                </span>
 
-        </div>
+            </div>
+
+        </template>
+
     </div>
+</div>
 
-    <!-- APPLIANCE -->
-    <div class="px-6 animate__animated animate__fadeInUp">
-        <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
-            x-text="tx('Appliance Repair')"></h2>
+<!-- APPLIANCE -->
+<div class="px-6 animate__animated animate__fadeInUp">
+    <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
+        x-text="tx('Appliance Repair')"></h2>
 
-        <div class="grid grid-cols-4 gap-y-5 gap-x-3">
+    <div class="grid grid-cols-4 gap-y-5 gap-x-3">
 
-            <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
+        <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
 
-                <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
-                     @click="navigate('service.html?id='+s.n)">
+            <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
+                 @click="navigate('service.html?id='+s.n)">
 
-                    <div class="w-16 h-16 rounded-[22px]
-                                bg-gradient-to-br from-white to-[#f3efe8]
-                                border border-white/70
-                                shadow-[0_10px_30px_rgba(0,0,0,0.12)]
-                                flex items-center justify-center
-                                relative overflow-hidden
-                                transition-all duration-300
-                                group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+                <div class="w-[74px] h-[74px] rounded-[24px]
+                            bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3]
+                            border border-[#efe7dc]
+                            shadow-[0_8px_25px_rgba(0,0,0,0.08)]
+                            flex items-center justify-center
+                            relative overflow-hidden
+                            transition-all duration-300
+                            group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)]
+                            group-hover:scale-105">
 
-                        <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300
+                                bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
 
-                        <img :src="s.img"
-                             class="w-9 h-9 relative z-10 object-contain
-                                    drop-shadow-xl transition-transform duration-300
-                                    group-hover:scale-110">
-                    </div>
-
-                    <span class="mt-2 min-h-[28px]
-                                 text-[10px] sm:text-[11px]
-                                 font-semibold text-brand-olive
-                                 text-center leading-tight tracking-tight
-                                 transition-colors group-hover:text-brand-gold"
-                          x-text="tx(s.n)">
-                    </span>
-
+                    <img :src="s.img"
+                         class="w-11 h-11 object-contain relative z-10
+                                drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]
+                                transition-transform duration-300
+                                group-hover:scale-110">
                 </div>
 
-            </template>
+                <span class="mt-2 text-[12px] font-semibold text-center leading-tight
+                             text-brand-dark tracking-tight w-[78px]"
+                      x-text="tx(s.n)">
+                </span>
 
-        </div>
+            </div>
+
+        </template>
+
     </div>
+</div>
 
-    <!-- ELECTRONICS -->
-    <div class="px-6 animate__animated animate__fadeInUp">
-        <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
-            x-text="tx('Electronics & IT')"></h2>
+<!-- ELECTRONICS -->
+<div class="px-6 animate__animated animate__fadeInUp">
+    <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
+        x-text="tx('Electronics & IT')"></h2>
 
-        <div class="grid grid-cols-4 gap-y-5 gap-x-3">
+    <div class="grid grid-cols-4 gap-y-5 gap-x-3">
 
-            <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
+        <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
 
-                <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
-                     @click="navigate('service.html?id='+s.n)">
+            <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
+                 @click="navigate('service.html?id='+s.n)">
 
-                    <div class="w-16 h-16 rounded-[22px]
-                                bg-gradient-to-br from-white to-[#f3efe8]
-                                border border-white/70
-                                shadow-[0_10px_30px_rgba(0,0,0,0.12)]
-                                flex items-center justify-center
-                                relative overflow-hidden
-                                transition-all duration-300
-                                group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+                <div class="w-[74px] h-[74px] rounded-[24px]
+                            bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3]
+                            border border-[#efe7dc]
+                            shadow-[0_8px_25px_rgba(0,0,0,0.08)]
+                            flex items-center justify-center
+                            relative overflow-hidden
+                            transition-all duration-300
+                            group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)]
+                            group-hover:scale-105">
 
-                        <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300
+                                bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
 
-                        <img :src="s.img"
-                             class="w-9 h-9 relative z-10 object-contain
-                                    drop-shadow-xl transition-transform duration-300
-                                    group-hover:scale-110">
-                    </div>
-
-                    <span class="mt-2 min-h-[28px]
-                                 text-[10px] sm:text-[11px]
-                                 font-semibold text-brand-olive
-                                 text-center leading-tight tracking-tight
-                                 transition-colors group-hover:text-brand-gold"
-                          x-text="tx(s.n)">
-                    </span>
-
+                    <img :src="s.img"
+                         class="w-11 h-11 object-contain relative z-10
+                                drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]
+                                transition-transform duration-300
+                                group-hover:scale-110">
                 </div>
 
-            </template>
+                <span class="mt-2 text-[12px] font-semibold text-center leading-tight
+                             text-brand-dark tracking-tight w-[78px]"
+                      x-text="tx(s.n)">
+                </span>
 
-        </div>
+            </div>
+
+        </template>
+
     </div>
+</div>
 
-    <!-- AUTOMOBILE -->
-    <div class="px-6 animate__animated animate__fadeInUp">
-        <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
-            x-text="tx('Automobile')"></h2>
+<!-- AUTOMOBILE -->
+<div class="px-6 animate__animated animate__fadeInUp">
+    <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
+        x-text="tx('Automobile')"></h2>
 
-        <div class="grid grid-cols-4 gap-y-5 gap-x-3">
+    <div class="grid grid-cols-4 gap-y-5 gap-x-3">
 
-            <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
+        <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
 
-                <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
-                     @click="navigate('service.html?id='+s.n)">
+            <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
+                 @click="navigate('service.html?id='+s.n)">
 
-                    <div class="w-16 h-16 rounded-[22px]
-                                bg-gradient-to-br from-white to-[#f3efe8]
-                                border border-white/70
-                                shadow-[0_10px_30px_rgba(0,0,0,0.12)]
-                                flex items-center justify-center
-                                relative overflow-hidden
-                                transition-all duration-300
-                                group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+                <div class="w-[74px] h-[74px] rounded-[24px]
+                            bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3]
+                            border border-[#efe7dc]
+                            shadow-[0_8px_25px_rgba(0,0,0,0.08)]
+                            flex items-center justify-center
+                            relative overflow-hidden
+                            transition-all duration-300
+                            group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)]
+                            group-hover:scale-105">
 
-                        <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300
+                                bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
 
-                        <img :src="s.img"
-                             class="w-9 h-9 relative z-10 object-contain
-                                    drop-shadow-xl transition-transform duration-300
-                                    group-hover:scale-110">
-                    </div>
-
-                    <span class="mt-2 min-h-[28px]
-                                 text-[10px] sm:text-[11px]
-                                 font-semibold text-brand-olive
-                                 text-center leading-tight tracking-tight
-                                 transition-colors group-hover:text-brand-gold"
-                          x-text="tx(s.n)">
-                    </span>
-
+                    <img :src="s.img"
+                         class="w-11 h-11 object-contain relative z-10
+                                drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]
+                                transition-transform duration-300
+                                group-hover:scale-110">
                 </div>
 
-            </template>
+                <span class="mt-2 text-[12px] font-semibold text-center leading-tight
+                             text-brand-dark tracking-tight w-[78px]"
+                      x-text="tx(s.n)">
+                </span>
 
-        </div>
+            </div>
+
+        </template>
+
     </div>
+</div>
 
-    <!-- OTHER -->
-    <div class="px-6 animate__animated animate__fadeInUp">
-        <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
-            x-text="tx('Other Services')"></h2>
+<!-- OTHER SERVICES -->
+<div class="px-6 animate__animated animate__fadeInUp">
+    <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
+        x-text="tx('Other Services')"></h2>
 
-        <div class="grid grid-cols-4 gap-y-5 gap-x-3">
+    <div class="grid grid-cols-4 gap-y-5 gap-x-3">
 
-            <template x-for="s in masterList.filter(item => item.cat === 'Other')">
+        <template x-for="s in masterList.filter(item => item.cat === 'Other')">
 
-                <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
-                     @click="navigate('service.html?id='+s.n)">
+            <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
+                 @click="navigate('service.html?id='+s.n)">
 
-                    <div class="w-16 h-16 rounded-[22px]
-                                bg-gradient-to-br from-white to-[#f3efe8]
-                                border border-white/70
-                                shadow-[0_10px_30px_rgba(0,0,0,0.12)]
-                                flex items-center justify-center
-                                relative overflow-hidden
-                                transition-all duration-300
-                                group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+                <div class="w-[74px] h-[74px] rounded-[24px]
+                            bg-gradient-to-br from-white via-[#faf7f2] to-[#f3ede3]
+                            border border-[#efe7dc]
+                            shadow-[0_8px_25px_rgba(0,0,0,0.08)]
+                            flex items-center justify-center
+                            relative overflow-hidden
+                            transition-all duration-300
+                            group-hover:shadow-[0_15px_35px_rgba(160,125,84,0.18)]
+                            group-hover:scale-105">
 
-                        <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300
+                                bg-gradient-to-br from-[#A07D54]/10 to-transparent"></div>
 
-                        <img :src="s.img"
-                             class="w-9 h-9 relative z-10 object-contain
-                                    drop-shadow-xl transition-transform duration-300
-                                    group-hover:scale-110">
-                    </div>
-
-                    <span class="mt-2 min-h-[28px]
-                                 text-[10px] sm:text-[11px]
-                                 font-semibold text-brand-olive
-                                 text-center leading-tight tracking-tight
-                                 transition-colors group-hover:text-brand-gold"
-                          x-text="tx(s.n)">
-                    </span>
-
+                    <img :src="s.img"
+                         class="w-11 h-11 object-contain relative z-10
+                                drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]
+                                transition-transform duration-300
+                                group-hover:scale-110">
                 </div>
 
-            </template>
+                <span class="mt-2 text-[12px] font-semibold text-center leading-tight
+                             text-brand-dark tracking-tight w-[78px]"
+                      x-text="tx(s.n)">
+                </span>
 
-        </div>
+            </div>
+
+        </template>
+
     </div>
-
 </div>
 
         <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
