@@ -4,114 +4,388 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FixZen - Premium Access</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; position: static !important; }
+        .skiptranslate { font-family: 'Plus Jakarta Sans', sans-serif !important; display: none !important;}
+        iframe.goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        
+        #google_translate_element select {
+            width: 100%; background-color: transparent !important; color: #A07D54 !important;
+            font-size: 10px !important; font-weight: 800 !important; text-transform: uppercase !important;
+            padding: 4px 8px !important; border: none !important; outline: none !important; cursor: pointer !important;
+        }
+        .goog-te-gadget { color: transparent !important; font-size: 0px !important; }
+        .goog-te-gadget .goog-te-combo { margin: 0 !important; }
+    </style>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,mr',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F8F5F0',
+                        'brand-dark': '#2D2B28', 'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'], 
+                        serif: ['"Playfair Display"', 'serif'] 
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         [x-cloak] { display: none !important; }
-        .fixzen-input { width: 100%; padding: 0.875rem 1.25rem; border-radius: 0.75rem; border: 1px solid #E5E7EB; background: #F9FAFB; font-size: 0.875rem; font-weight: 600; outline: none; }
-        .btn-primary { width: 100%; padding: 1rem; border-radius: 0.75rem; background-color: #A07D54; color: white; font-weight: 800; text-transform: uppercase; }
-        .btn-google { width: 100%; padding: 1rem; border-radius: 0.75rem; background-color: white; border: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
-        .otp-box { width: 100%; text-align: center; letter-spacing: 0.5em; font-size: 1.5rem; border: 2px dashed #A07D54; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid white; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; }
+        body { background-color: #F8F5F0; font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif; }
+
+        .fixzen-input {
+            width: 100%; padding: 0.875rem 1.25rem; border-radius: 0.75rem;
+            border: 1px solid #E5E7EB; background: #F9FAFB;
+            font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.3s ease;
+            color: #374151;
+        }
+        .fixzen-input:focus { border-color: #A07D54; background: white; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1); }
+        .input-label {
+            display: block; font-size: 0.75rem; font-weight: 700; color: #4B5563; margin-bottom: 0.5rem;
+        }
+        
+        .btn-primary {
+            width: 100%; padding: 1rem; border-radius: 0.75rem; background-color: #A07D54;
+            color: white; font-weight: 800; font-size: 0.875rem; text-transform: uppercase;
+            letter-spacing: 0.05em; transition: all 0.3s ease; display: flex;
+            align-items: center; justify-content: center; gap: 0.5rem; border: none; outline: none;
+        }
+        .btn-primary:hover { background-color: #8a6a45; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(160, 125, 84, 0.3); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .btn-google {
+            width: 100%; padding: 1rem; border-radius: 0.75rem; background-color: white;
+            border: 1px solid #E5E7EB; color: #374151; font-weight: 700; font-size: 0.875rem;
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+            transition: all 0.3s ease; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-google:hover { background-color: #F9FAFB; border-color: #D1D5DB; }
+        .btn-google:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .otp-box {
+            width: 100%; text-align: center; letter-spacing: 0.5em; font-size: 1.5rem;
+            border: 2px dashed #A07D54; background: rgba(160, 125, 84, 0.05);
+        }
+        
+        .loader {
+            border: 2px solid #f3f3f3; border-top: 2px solid white;
+            border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
     </style>
 </head>
 
 <body class="min-h-screen flex items-center justify-center font-sans bg-gray-50"
 x-data="{
-    view: 'login',
-    authMethod: 'phone',
-    step: 'form',
-    loading: false,
-    message: '',
-    form: { phone: '', otp: '' },
+  view: 'login', // Default to login (Welcome Back)
+  authMethod: 'phone', // Default to phone access
+  step: 'form', // 'form' or 'otp'
+  loading: false,
+  message: '',
+  form: { name: '', phone: '', otp: '' },
 
-    async loginWithGoogle() {
-        this.loading = true;
-        try {
-            const provider = new window.GoogleAuthProvider();
-            await window.signInWithPopup(window.auth, provider);
-            window.location.href = 'index.html';
-        } catch (err) { this.message = err.message; } finally { this.loading = false; }
-    },
+  // --- VALIDATION HELPERS ---
+  validatePhone(phone) {
+    const re = /^\d{10}$/; // Matches exactly 10 digits
+    return re.test(String(phone).trim());
+  },
 
-    async sendOtp() {
-        if (this.form.phone.length < 10) { this.message = 'ENTER VALID 10-DIGIT NUMBER'; return; }
-        this.loading = true;
-        try {
-            window.recaptchaVerifier = new window.RecaptchaVerifier(window.auth, 'recaptcha-container', { 'size': 'invisible' });
-            window.confirmationResult = await window.signInWithPhoneNumber(window.auth, '+91' + this.form.phone, window.recaptchaVerifier);
-            this.step = 'otp';
-        } catch (err) { this.message = err.message; } finally { this.loading = false; }
-    },
+  normalizePhone(phoneStr) {
+    return '+91' + phoneStr.trim();
+  },
 
-    async verifyOtp() {
-        this.loading = true;
-        try {
-            await window.confirmationResult.confirm(this.form.otp);
-            window.location.href = 'index.html';
-        } catch (err) { this.message = 'INVALID OTP'; } finally { this.loading = false; }
+  // --- GOOGLE OAUTH LOGIN/SIGNUP ---
+  async loginWithGoogle() {
+    this.loading = true;
+    this.message = '';
+    try {
+      const { data, error } = await window.supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/index.html' }
+      });
+      if (error) throw error;
+    } catch (err) {
+      this.message = err.message;
+      this.loading = false;
     }
-}">
+  },
 
-<div class="w-full max-w-md px-4 py-8">
-    <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-gray-100">
+  // --- MOBILE OTP LOGIN FLOW (No Password) ---
+  async sendLoginOtp() {
+    this.message = '';
+    
+    if (!this.validatePhone(this.form.phone)) {
+      this.message = 'ENTER VALID 10-DIGIT PHONE NUMBER';
+      return;
+    }
+
+    this.loading = true;
+    try {
+      const phone = this.normalizePhone(this.form.phone);
+
+      // 1. Check if user already exists
+      const { data: existingUser, error } = await window.supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!existingUser) {
+        this.message = 'ACCOUNT NOT FOUND. PLEASE CREATE AN ACCOUNT.';
+        this.loading = false;
+        return;
+      }
+
+      // 2. Send OTP
+      const { error: otpError } = await window.supabase.auth.signInWithOtp({ phone });
+      if (otpError) throw otpError;
+
+      this.step = 'otp';
+    } catch (err) {
+      this.message = err.message;
+    } finally {
+      this.loading = false;
+    }
+  },
+
+  // --- MOBILE OTP SIGNUP FLOW (No Password) ---
+  async sendSignupOtp() {
+    this.message = '';
+    
+    if (!this.form.name.trim()) {
+        this.message = 'PLEASE ENTER YOUR FULL NAME';
+        return;
+    }
+    
+    if (!this.validatePhone(this.form.phone)) {
+      this.message = 'ENTER VALID 10-DIGIT PHONE NUMBER';
+      return;
+    }
+
+    this.loading = true;
+    try {
+      const phone = this.normalizePhone(this.form.phone);
+
+      // 1. Check if user already exists
+      const { data: existingUser, error } = await window.supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (existingUser) {
+        this.message = 'ACCOUNT ALREADY EXISTS. PLEASE SIGN IN.';
+        this.loading = false;
+        return;
+      }
+
+      // 2. Send OTP
+      const { error: otpError } = await window.supabase.auth.signInWithOtp({ phone });
+      if (otpError) throw otpError;
+
+      this.step = 'otp';
+    } catch (err) {
+      this.message = err.message;
+    } finally {
+      this.loading = false;
+    }
+  },
+
+  // --- VERIFY OTP (Handles both Login and Signup) ---
+  async verifyOtp() {
+    if (!this.form.otp || this.form.otp.length !== 6) {
+      this.message = 'ENTER VALID 6-DIGIT OTP';
+      return;
+    }
+
+    this.loading = true;
+    this.message = '';
+    try {
+      const phone = this.normalizePhone(this.form.phone);
+
+      const { data, error } = await window.supabase.auth.verifyOtp({
+        phone, token: this.form.otp, type: 'sms'
+      });
+      if (error) throw error;
+
+      const user = data.user;
+      if (!user) throw new Error('USER NOT FOUND');
+
+      // If they are in the Signup flow, we must insert their Profile Name into the database
+      if (this.view === 'signup') {
+          const { error: profileError } = await window.supabase.from('profiles').insert({
+            id: user.id, full_name: this.form.name, phone
+          });
+          if (profileError) throw profileError;
+      }
+
+      window.location.href = 'index.html';
+    } catch (err) {
+      this.message = err.message;
+    } finally {
+      this.loading = false;
+    }
+  }
+}"
+>
+
+<div class="w-full max-w-md animate__animated animate__fadeIn px-4 py-8">
+
+    <div class="absolute top-4 right-4 z-50">
+        <div id="google_translate_element"></div>
+    </div>
+
+    <div class="bg-white p-8 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-100">
+        
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold uppercase tracking-tight">FixZen Access</h1>
+            <img src="fixzen.png" alt="FixZen" class="w-16 h-16 rounded-full mx-auto mb-3 shadow-md object-cover">
+            <h1 class="text-3xl font-extrabold text-brand-dark uppercase tracking-tight deva" x-text="view === 'login' ? 'WELCOME BACK' : 'JOIN US'"></h1>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 deva" x-text="view === 'login' ? 'SIGN IN TO CONTINUE YOUR JOURNEY' : 'CREATE ACCOUNT TO GET STARTED'"></p>
         </div>
 
-        <div id="recaptcha-container"></div>
-
-        <div x-show="step === 'form'">
-            <div class="flex gap-2 mb-6">
-                <button @click="authMethod = 'google'" :class="authMethod === 'google' ? 'bg-amber-700 text-white' : 'bg-gray-200'" class="flex-1 py-2 rounded-lg text-xs font-bold uppercase">Google</button>
-                <button @click="authMethod = 'phone'" :class="authMethod === 'phone' ? 'bg-amber-700 text-white' : 'bg-gray-200'" class="flex-1 py-2 rounded-lg text-xs font-bold uppercase">Phone</button>
+        <div x-show="step === 'form'" x-cloak>
+            
+            <div class="bg-gray-100 p-1.5 rounded-xl flex items-center justify-between mb-8 shadow-inner">
+                <button @click="authMethod = 'google'; message=''" 
+                        :class="authMethod === 'google' ? 'bg-brand-gold text-white shadow-md' : 'text-gray-500 hover:text-gray-700'" 
+                        class="flex-1 py-3 text-[11px] font-extrabold uppercase tracking-wider rounded-lg transition-all duration-300 deva"
+                        x-text="view === 'login' ? 'GOOGLE ACCESS' : 'GOOGLE SIGNUP'">
+                </button>
+                <button @click="authMethod = 'phone'; message=''" 
+                        :class="authMethod === 'phone' ? 'bg-brand-gold text-white shadow-md' : 'text-gray-500 hover:text-gray-700'" 
+                        class="flex-1 py-3 text-[11px] font-extrabold uppercase tracking-wider rounded-lg transition-all duration-300 deva"
+                        x-text="view === 'login' ? 'PHONE ACCESS' : 'PHONE SIGNUP'">
+                </button>
             </div>
 
             <template x-if="authMethod === 'google'">
-                <button @click="loginWithGoogle()" class="btn-google">Continue with Google</button>
+                <div class="animate__animated animate__fadeIn">
+                    <button @click="loginWithGoogle()" class="btn-google deva" :disabled="loading">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                        <span x-text="loading ? 'Connecting...' : 'Continue with Google'"></span>
+                        <div x-show="loading" class="loader border-t-gray-500 border-gray-200 ml-2"></div>
+                    </button>
+                </div>
             </template>
 
             <template x-if="authMethod === 'phone'">
-                <div class="space-y-4">
-                    <input type="tel" x-model="form.phone" maxlength="10" class="fixzen-input" placeholder="Enter 10-digit Phone">
-                    <button @click="sendOtp()" class="btn-primary" x-text="loading ? 'Sending...' : 'Send OTP'"></button>
+                <div class="space-y-5 animate__animated animate__fadeIn">
+                    
+                    <template x-if="view === 'signup'">
+                        <div class="space-y-5">
+                            <div>
+                                <label class="input-label deva">Full Name</label>
+                                <input type="text" x-model="form.name" class="fixzen-input deva" placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="input-label deva">Phone Number</label>
+                                <div class="flex">
+                                    <div class="bg-gray-200 border border-r-0 border-gray-200 rounded-l-xl px-4 flex items-center justify-center text-gray-500 font-bold text-sm">+91</div>
+                                    <input type="tel" x-model="form.phone" maxlength="10" class="fixzen-input !rounded-l-none !border-l-0" placeholder="9823060308">
+                                </div>
+                            </div>
+                            <button @click="sendSignupOtp()" class="btn-primary mt-2 shadow-lg deva" :disabled="loading">
+                                <span x-text="loading ? 'Sending OTP...' : 'Send OTP'"></span>
+                                <div x-show="loading" class="loader"></div>
+                            </button>
+                        </div>
+                    </template>
+
+                    <template x-if="view === 'login'">
+                        <div class="space-y-5">
+                            <div>
+                                <label class="input-label deva">Phone Number</label>
+                                <div class="flex">
+                                    <div class="bg-gray-200 border border-r-0 border-gray-200 rounded-l-xl px-4 flex items-center justify-center text-gray-500 font-bold text-sm">+91</div>
+                                    <input type="tel" x-model="form.phone" maxlength="10" class="fixzen-input !rounded-l-none !border-l-0" placeholder="9823060308">
+                                </div>
+                            </div>
+                            <button @click="sendLoginOtp()" class="btn-primary mt-2 shadow-lg deva" :disabled="loading">
+                                <span x-text="loading ? 'Requesting...' : 'Get OTP'"></span>
+                                <div x-show="loading" class="loader"></div>
+                            </button>
+                        </div>
+                    </template>
+
                 </div>
             </template>
+
+            <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-5 deva"></p>
+
+            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                <button @click="view = (view === 'login' ? 'signup' : 'login'); message=''" class="text-[11px] font-bold text-gray-500 uppercase tracking-widest deva group outline-none">
+                    <span x-text="view === 'login' ? 'NEW HERE?' : 'ALREADY REGISTERED?'"></span>
+                    <span class="text-brand-gold group-hover:underline ml-1" x-text="view === 'login' ? 'CREATE ACCOUNT' : 'SIGN IN'"></span>
+                </button>
+            </div>
         </div>
 
-        <div x-show="step === 'otp'" x-cloak class="space-y-4">
-            <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" placeholder="000000">
-            <button @click="verifyOtp()" class="btn-primary" x-text="loading ? 'Verifying...' : 'Verify'"></button>
+        <div x-show="step === 'otp'" x-cloak class="text-center animate__animated animate__fadeIn">
+            <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
+                <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
+            </div>
+            <h2 class="font-serif italic text-2xl text-brand-dark mb-2 deva">Verify Mobile</h2>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-8 deva">
+                <span>Code sent to +91</span> <span x-text="form.phone"></span>
+            </p>
+
+            <div class="space-y-6">
+                <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" placeholder="000000">
+                <button @click="verifyOtp()" class="btn-primary deva" :disabled="loading">
+                    <span x-text="loading ? 'Verifying...' : 'Verify & Continue'"></span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
+                <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-2 deva"></p>
+                <button @click="step='form'; message=''" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-brand-gold deva outline-none">
+                    Change Number
+                </button>
+            </div>
         </div>
 
-        <p x-text="message" class="text-red-500 text-[10px] font-bold text-center mt-4"></p>
     </div>
+    
+    <p class="text-center text-[10px] text-gray-400 font-bold mt-6 uppercase tracking-widest">
+        FixZen © 2026
+    </p>
+
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-    // 1. ADD YOUR KEYS HERE
-   const firebaseConfig = {
-  apiKey: "AIzaSyAENmRPNObOBw0QJy8P5PmUpvehOKmWvpk",
-  authDomain: "fixzenix.firebaseapp.com",
-  projectId: "fixzenix",
-  storageBucket: "fixzenix.firebasestorage.app",
-  messagingSenderId: "957694304403",
-  appId: "1:957694304403:web:3f836f45741ab5163e6d66",
-  measurementId: "G-0YSJ9KPVRF"
-};
-
-    const app = initializeApp(firebaseConfig);
-    window.auth = getAuth(app);
-    window.signInWithPopup = signInWithPopup;
-    window.GoogleAuthProvider = GoogleAuthProvider;
-    window.RecaptchaVerifier = RecaptchaVerifier;
-    window.signInWithPhoneNumber = signInWithPhoneNumber;
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient(
+      'https://kzxdxnxgouthsywbsnvl.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+    )
+    window.supabase = supabase;
 </script>
+
 </body>
 </html>
