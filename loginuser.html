@@ -1,422 +1,843 @@
 <!DOCTYPE html>
+
 <html lang="en" class="scroll-smooth">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>FixZen - Premium Access</title>
+
     
+
     <!-- 1. LOAD EXTERNAL SCRIPTS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="i18n.js"></script> <!-- Your central language file -->
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     
+
     <!-- 2. LOAD STYLES -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
+
+
     <script>
+
         tailwind.config = {
+
             darkMode: 'class',
+
             theme: {
+
                 extend: {
+
                     colors: {
+
                         'brand-olive': '#5D5646',
+
                         'brand-gold': '#A07D54',
+
                         'brand-cream': '#F8F5F0',
+
                         'brand-dark': '#2D2B28',
+
                         'brand-beige': '#DFD4C3'
+
                     },
+
                     fontFamily: { 
+
                         sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'], 
+
                         serif: ['"Playfair Display"', 'serif'] 
+
                     }
+
                 }
+
             }
+
         }
+
     </script>
 
+
+
     <style>
+
         [x-cloak] { display: none !important; }
+
         body { background-color: #F8F5F0; font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif; }
 
+
+
         .fixzen-input {
+
             width: 100%; padding: 1rem 1.25rem; border-radius: 1.2rem;
+
             border: 2px solid #DFD4C3; background: white;
+
             font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.3s ease;
+
             font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
+
         }
+
         .fixzen-input:focus { border-color: #A07D54; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1); }
+
         .input-label {
+
             display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+
             letter-spacing: 0.1em; color: #A07D54; margin-bottom: 0.5rem; margin-left: 0.5rem;
+
         }
+
         .otp-box {
+
             width: 100%; text-align: center; letter-spacing: 0.5em; font-size: 1.5rem;
+
             border: 2px dashed #A07D54; background: rgba(160, 125, 84, 0.05);
+
         }
+
         .btn-primary {
+
             width: 100%; padding: 1.1rem; border-radius: 1.2rem; background-color: #5D5646;
+
             color: white; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
+
             letter-spacing: 0.15em; transition: all 0.3s ease; display: flex;
+
             align-items: center; justify-content: center; gap: 0.5rem;
+
             font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
+
         }
+
         .btn-primary:hover { background-color: #4a4537; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(93,86,70,0.3); }
+
         .loader {
+
             border: 2px solid #f3f3f3; border-top: 2px solid #A07D54;
+
             border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite;
+
         }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+
+
         .lang-btn {
+
             flex: 1; padding: 0.75rem 0.5rem; border-radius: 1rem;
+
             border: 2px solid #DFD4C3; background: white;
+
             font-weight: 700; font-size: 0.8rem; transition: all 0.25s ease;
+
             cursor: pointer; text-align: center; color: #5D5646;
+
             font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+
         }
+
         .lang-btn:hover { border-color: #A07D54; background: rgba(160,125,84,0.05); }
+
         .lang-btn.active { border-color: #5D5646; background: #5D5646; color: white; }
+
         .lang-btn .lang-native { display: block; font-size: 1rem; margin-bottom: 2px; }
+
         .lang-btn .lang-sub { display: block; font-size: 0.55rem; opacity: 0.7; letter-spacing: 0.05em; text-transform: uppercase; }
 
+
+
         .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
+
     </style>
+
 </head>
 
+
+
 <body
+
 class="min-h-screen flex items-center justify-center font-sans"
+
 x-data="{
+
   step: 'lang',
+
   isNewUser: false,
+
   loading: false,
+
   message: '',
+
   showPassword: false,
+
   form: { name:'', phone:'', user:'', pass:'', otp:'' },
+
   
+
   // ─── LANGUAGE INTEGRATION ────────────────────────────────────
+
   lang: FixZenI18n.getSavedLang(),
 
+
+
   // Helper: Gets translated string from the external i18n.js file
+
   tx(key) { 
+
     return FixZenI18n.translations[this.lang]?.[key] || key; 
+
   },
+
+
 
   // Updates UI and saves choice to browser
+
   setLang(l) {
+
     this.lang = l;
+
     FixZenI18n.setLang(l);
+
   },
+
   // ─────────────────────────────────────────────────────────────
 
+
+
   proceedFromLang() {
+
     this.step = 'choose';
+
   },
+
+
 
   normalizePhone() {
+
     return '+91' + this.form.phone.trim();
+
   },
+
+
 
   async handleAction() {
+
     this.message = '';
+
     if (!this.form.phone || this.form.phone.length !== 10) {
+
       this.message = this.tx('err_phone');
+
       return;
+
     }
 
+
+
     this.loading = true;
+
     try {
+
       const phone = this.normalizePhone();
+
+
 
       // FIXED: Using window.supabase
+
       const { data: existingUser, error } = await window.supabase
+
         .from('profiles')
+
         .select('id')
+
         .eq('phone', phone)
+
         .maybeSingle();
 
+
+
       if (error) throw error;
+
+
 
       if (this.isNewUser) {
+
         if (existingUser) {
+
           this.message = this.tx('err_exists');
+
           this.loading = false;
+
           return;
+
         }
+
+
 
         const { error: otpError } = await window.supabase.auth.signInWithOtp({ phone });
+
         if (otpError) throw otpError;
 
+
+
         this.step = 'otp';
+
       } else {
+
         if (!existingUser) {
+
           this.message = this.tx('err_not_found');
+
           this.loading = false;
+
           return;
+
         }
+
         this.showPassword = true;
+
       }
+
     } catch (err) {
+
       this.message = err.message;
+
     } finally {
+
       this.loading = false;
+
     }
+
   },
+
+
 
   async loginWithPassword() {
+
     if (!this.form.pass || this.form.pass.length < 6) {
+
       this.message = this.tx('err_pass');
+
       return;
+
     }
 
+
+
     this.loading = true;
+
     this.message = '';
+
     try {
+
       const { error } = await window.supabase.auth.signInWithPassword({
+
         phone: this.normalizePhone(),
+
         password: this.form.pass
+
       });
+
       if (error) throw error;
+
+
 
       await this.saveLangToProfile();
+
       window.location.href = 'index.html';
+
     } catch {
+
       this.message = this.tx('err_login');
+
     } finally {
+
       this.loading = false;
+
     }
+
   },
 
+
+
   async verifyOtp() {
+
     if (!this.form.otp || this.form.otp.length !== 6) {
+
       this.message = this.tx('err_otp');
+
       return;
+
     }
 
+
+
     this.loading = true;
+
     this.message = '';
+
     try {
+
       const phone = this.normalizePhone();
 
+
+
       const { data, error } = await window.supabase.auth.verifyOtp({
+
         phone,
+
         token: this.form.otp,
+
         type: 'sms'
+
       });
+
       if (error) throw error;
 
+
+
       const user = data.user;
+
       if (!user) throw new Error('USER NOT FOUND');
 
+
+
       const { data: alreadyExists } = await window.supabase
+
         .from('profiles')
+
         .select('id')
+
         .eq('phone', phone)
+
         .maybeSingle();
 
+
+
       if (alreadyExists) {
+
         this.message = this.tx('err_exists');
+
         return;
+
       }
+
+
 
       await window.supabase.auth.updateUser({ password: this.form.pass });
 
+
+
       const { error: profileError } = await window.supabase.from('profiles').insert({
+
         id: user.id,
+
         full_name: this.form.name,
+
         username: this.form.user,
+
         phone,
+
         preferred_lang: this.lang
+
       });
 
+
+
       if (profileError) {
+
         this.message = this.tx('err_exists');
+
         return;
+
       }
+
+
 
       window.location.href = 'index.html';
+
     } catch (err) {
+
       this.message = err.message;
+
     } finally {
+
       this.loading = false;
+
     }
+
   },
 
+
+
   async saveLangToProfile() {
+
     try {
+
       const { data: { user } } = await window.supabase.auth.getUser();
+
       if (user) {
+
         await window.supabase.from('profiles')
+
           .update({ preferred_lang: this.lang })
+
           .eq('id', user.id);
+
       }
+
     } catch(e) {}
+
   }
+
 }"
+
 >
+
+
 
 <div class="w-full max-w-md animate__animated animate__fadeIn px-4">
 
+
+
     <!-- LOGO -->
+
     <div class="text-center mb-8">
+
         <!-- Make sure fixzen.png is in the same folder -->
+
         <img src="fixzen.png" alt="FixZen" class="w-20 h-20 rounded-full mx-auto mb-4 shadow-xl border-2 border-white object-cover">
+
         <h1 class="text-3xl font-extrabold tracking-[0.2em] text-brand-olive uppercase">FixZen</h1>
+
         <p class="text-[10px] font-bold text-brand-gold/60 uppercase tracking-[0.3em] mt-1 deva" x-text="tx('tagline')"></p>
+
     </div>
+
+
 
     <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white">
 
+
+
         <!-- ── STEP 1: LANGUAGE SELECTION ── -->
+
         <div x-show="step==='lang'" class="space-y-6 text-center">
+
             <div class="w-12 h-12 bg-brand-cream rounded-full flex items-center justify-center mx-auto mb-2">
+
                 <i class="fa-solid fa-language text-brand-gold text-xl"></i>
+
             </div>
+
             <h2 class="font-serif italic text-2xl text-brand-olive deva" x-text="tx('choose_lang')"></h2>
+
             <p class="text-[10px] text-brand-dark/40 font-bold uppercase tracking-widest">Select / चुनें / निवडा</p>
 
+
+
             <div class="flex gap-3 mt-4">
+
                 <button @click="setLang('en')" :class="lang==='en' ? 'active' : ''" class="lang-btn">
+
                     <span class="lang-native">🇬🇧 Eng</span>
+
                     <span class="lang-sub">English</span>
+
                 </button>
+
                 <button @click="setLang('hi')" :class="lang==='hi' ? 'active' : ''" class="lang-btn">
+
                     <span class="lang-native deva">हिंदी</span>
+
                     <span class="lang-sub">Hindi</span>
+
                 </button>
+
                 <button @click="setLang('mr')" :class="lang==='mr' ? 'active' : ''" class="lang-btn">
+
                     <span class="lang-native deva">मराठी</span>
+
                     <span class="lang-sub">Marathi</span>
+
                 </button>
+
             </div>
+
+
 
             <button @click="proceedFromLang()" class="btn-primary mt-2">
+
                 <i class="fa-solid fa-arrow-right"></i>
+
                 <span class="deva" x-text="tx('lang_continue')"></span>
+
             </button>
+
         </div>
+
+
 
         <!-- ── STEP 2: CHOOSE LOGIN OR SIGNUP ── -->
+
         <div x-show="step==='choose'" x-cloak class="space-y-4 text-center">
+
             <div class="flex justify-center gap-2 mb-4">
+
                 <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
+
                     class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all">EN</button>
+
                 <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
+
                     class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">हि</button>
+
                 <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
+
                     class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">म</button>
+
             </div>
+
+
 
             <h2 class="font-serif italic text-2xl text-brand-olive mb-6 deva" x-text="tx('welcome')"></h2>
+
             <button @click="isNewUser=true; step='auth'; showPassword=false" class="btn-primary deva" x-text="tx('create_account')"></button>
+
             <button @click="isNewUser=false; step='auth'; showPassword=false" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
+
         </div>
 
+
+
         <!-- ── STEP 3: AUTH FORM ── -->
+
         <div x-show="step==='auth'" x-cloak>
+
             <div class="flex justify-end gap-2 mb-4">
+
                 <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
+
                     class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all">EN</button>
+
                 <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
+
                     class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">हि</button>
+
                 <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
+
                     class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">म</button>
+
             </div>
 
+
+
             <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-8 deva"
+
                 x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
 
+
+
             <div class="space-y-4">
+
                 <template x-if="isNewUser">
+
                     <div class="space-y-4">
+
                         <div>
+
                             <label class="input-label deva" x-text="tx('full_name')"></label>
+
                             <input type="text" x-model="form.name" class="fixzen-input deva" :placeholder="tx('name_placeholder')">
+
                         </div>
+
                         <div>
+
                             <label class="input-label deva" x-text="tx('username')"></label>
+
                             <input type="text" x-model="form.user" class="fixzen-input" :placeholder="tx('user_placeholder')">
+
                         </div>
+
                         <div>
+
                             <label class="input-label deva" x-text="tx('password')"></label>
+
                             <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
+
                         </div>
+
                     </div>
+
                 </template>
 
+
+
                 <div x-show="showPassword && !isNewUser">
+
                     <label class="input-label deva" x-text="tx('password')"></label>
+
                     <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
+
                 </div>
+
+
 
                 <div>
+
                     <label class="input-label deva" x-text="tx('mobile')"></label>
+
                     <div class="relative">
+
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-xs">+91</span>
+
                         <input type="tel" x-model="form.phone" class="fixzen-input pl-12" :placeholder="tx('phone_placeholder')">
+
                     </div>
+
                 </div>
 
+
+
                 <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg deva" :disabled="loading">
+
                     <span x-show="!loading" x-text="isNewUser ? tx('send_otp') : tx('check_account')"></span>
+
                     <div x-show="loading" class="loader"></div>
+
                 </button>
 
+
+
                 <button x-show="showPassword && !isNewUser" @click="loginWithPassword()" class="btn-primary mt-4 shadow-lg deva" :disabled="loading">
+
                     <span x-show="!loading" x-text="tx('sign_in')"></span>
+
                     <div x-show="loading" class="loader"></div>
+
                 </button>
+
+
 
                 <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-4 deva"></p>
 
+
+
                 <div class="mt-6 pt-6 border-t border-brand-beige/30 text-center">
+
                     <button @click="step='choose'; message=''; showPassword=false" class="text-xs font-bold text-brand-gold hover:underline tracking-widest deva">
+
                         <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
+
                     </button>
+
                 </div>
+
             </div>
+
         </div>
+
+
 
         <!-- ── STEP 4: OTP VERIFICATION ── -->
+
         <div x-show="step==='otp'" x-cloak class="text-center">
+
             <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
+
                 <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
+
             </div>
+
             <h2 class="font-serif italic text-2xl text-brand-olive mb-2 deva" x-text="tx('verify_title')"></h2>
+
             <p class="text-[10px] font-bold text-brand-dark/40 uppercase tracking-widest mb-8 deva">
+
                 <span x-text="tx('code_sent')"></span> <span x-text="form.phone"></span>
+
             </p>
 
+
+
             <div class="space-y-6">
+
                 <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" :placeholder="tx('enter_otp')">
+
                 <button @click="verifyOtp()" class="btn-primary bg-brand-gold deva" :disabled="loading">
+
                     <span x-show="!loading" x-text="tx('verify_btn')"></span>
+
                     <div x-show="loading" class="loader"></div>
+
                 </button>
+
                 <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-2 deva"></p>
+
                 <button @click="step='auth'; message=''" class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest hover:text-brand-gold deva"
+
                     x-text="tx('change_details')">
+
                 </button>
+
             </div>
+
         </div>
+
+
 
     </div>
 
+
+
     <!-- Footer note -->
+
     <p class="text-center text-[10px] text-brand-olive/30 font-bold mt-6 uppercase tracking-widest">
+
         FixZen © 2026
+
     </p>
+
 </div>
 
+
+
 <script type="module">
+
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
     const supabase = createClient(
+
       'https://kzxdxnxgouthsywbsnvl.supabase.co',
+
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+
     )
+
     window.supabase = supabase;
+
 </script>
 
+
+
 </body>
+
 </html>
