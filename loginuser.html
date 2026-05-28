@@ -103,19 +103,14 @@
 
 <body class="min-h-screen flex items-center justify-center font-sans bg-gray-50"
 x-data="{
-  view: 'signup', // Sets default view
-  authMethod: 'phone', // Sets default to phone access tab
+  view: 'login', // Default to login (Welcome Back)
+  authMethod: 'phone', // Default to phone access
   step: 'form', // 'form' or 'otp'
   loading: false,
   message: '',
-  form: { identifier: '', name: '', phone: '', pass: '', otp: '' },
+  form: { name: '', phone: '', otp: '' },
 
   // --- VALIDATION HELPERS ---
-  validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  },
-  
   validatePhone(phone) {
     const re = /^\d{10}$/; // Matches exactly 10 digits
     return re.test(String(phone).trim());
@@ -141,49 +136,46 @@ x-data="{
     }
   },
 
-  // --- EMAIL OR MOBILE PASSWORD LOGIN ---
-  async loginWithPassword() {
-    let identifier = this.form.identifier.trim();
+  // --- MOBILE OTP LOGIN FLOW (No Password) ---
+  async sendLoginOtp() {
+    this.message = '';
     
-    if (!identifier || !this.form.pass) {
-      this.message = 'PLEASE ENTER ALL CREDENTIALS';
+    if (!this.validatePhone(this.form.phone)) {
+      this.message = 'ENTER VALID 10-DIGIT PHONE NUMBER';
       return;
     }
 
-    // Smart Validation
-    let isEmail = identifier.includes('@');
-    if (isEmail) {
-        if (!this.validateEmail(identifier)) {
-            this.message = 'INVALID EMAIL FORMAT';
-            return;
-        }
-    } else {
-        if (!this.validatePhone(identifier)) {
-            this.message = 'ENTER VALID 10-DIGIT PHONE NUMBER';
-            return;
-        }
-    }
-
     this.loading = true;
-    this.message = '';
-    
     try {
-      let credentials = isEmail 
-        ? { email: identifier, password: this.form.pass }
-        : { phone: this.normalizePhone(identifier), password: this.form.pass };
+      const phone = this.normalizePhone(this.form.phone);
 
-      const { error } = await window.supabase.auth.signInWithPassword(credentials);
+      // 1. Check if user already exists
+      const { data: existingUser, error } = await window.supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
       if (error) throw error;
+      if (!existingUser) {
+        this.message = 'ACCOUNT NOT FOUND. PLEASE CREATE AN ACCOUNT.';
+        this.loading = false;
+        return;
+      }
 
-      window.location.href = 'index.html';
+      // 2. Send OTP
+      const { error: otpError } = await window.supabase.auth.signInWithOtp({ phone });
+      if (otpError) throw otpError;
+
+      this.step = 'otp';
     } catch (err) {
-      this.message = 'INVALID LOGIN CREDENTIALS';
+      this.message = err.message;
     } finally {
       this.loading = false;
     }
   },
 
-  // --- MOBILE OTP SIGNUP FLOW ---
+  // --- MOBILE OTP SIGNUP FLOW (No Password) ---
   async sendSignupOtp() {
     this.message = '';
     
@@ -201,6 +193,7 @@ x-data="{
     try {
       const phone = this.normalizePhone(this.form.phone);
 
+      // 1. Check if user already exists
       const { data: existingUser, error } = await window.supabase
         .from('profiles')
         .select('id')
@@ -209,11 +202,12 @@ x-data="{
 
       if (error) throw error;
       if (existingUser) {
-        this.message = 'ACCOUNT ALREADY EXISTS. PLEASE LOGIN.';
+        this.message = 'ACCOUNT ALREADY EXISTS. PLEASE SIGN IN.';
         this.loading = false;
         return;
       }
 
+      // 2. Send OTP
       const { error: otpError } = await window.supabase.auth.signInWithOtp({ phone });
       if (otpError) throw otpError;
 
@@ -225,6 +219,7 @@ x-data="{
     }
   },
 
+  // --- VERIFY OTP (Handles both Login and Signup) ---
   async verifyOtp() {
     if (!this.form.otp || this.form.otp.length !== 6) {
       this.message = 'ENTER VALID 6-DIGIT OTP';
@@ -244,11 +239,13 @@ x-data="{
       const user = data.user;
       if (!user) throw new Error('USER NOT FOUND');
 
-      const { error: profileError } = await window.supabase.from('profiles').insert({
-        id: user.id, full_name: this.form.name, phone
-      });
-
-      if (profileError) throw profileError;
+      // If they are in the Signup flow, we must insert their Profile Name into the database
+      if (this.view === 'signup') {
+          const { error: profileError } = await window.supabase.from('profiles').insert({
+            id: user.id, full_name: this.form.name, phone
+          });
+          if (profileError) throw profileError;
+      }
 
       window.location.href = 'index.html';
     } catch (err) {
@@ -293,7 +290,7 @@ x-data="{
                 <div class="animate__animated animate__fadeIn">
                     <button @click="loginWithGoogle()" class="btn-google deva" :disabled="loading">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                        <span x-text="loading ? 'Connecting...' : (view === 'login' ? 'Continue with Google' : 'Sign up with Google')"></span>
+                        <span x-text="loading ? 'Connecting...' : 'Continue with Google'"></span>
                         <div x-show="loading" class="loader border-t-gray-500 border-gray-200 ml-2"></div>
                     </button>
                 </div>
@@ -325,15 +322,14 @@ x-data="{
                     <template x-if="view === 'login'">
                         <div class="space-y-5">
                             <div>
-                                <label class="input-label deva">Email or Mobile Number</label>
-                                <input type="text" x-model="form.identifier" class="fixzen-input" placeholder="name@email.com or 9823060308">
+                                <label class="input-label deva">Phone Number</label>
+                                <div class="flex">
+                                    <div class="bg-gray-200 border border-r-0 border-gray-200 rounded-l-xl px-4 flex items-center justify-center text-gray-500 font-bold text-sm">+91</div>
+                                    <input type="tel" x-model="form.phone" maxlength="10" class="fixzen-input !rounded-l-none !border-l-0" placeholder="9823060308">
+                                </div>
                             </div>
-                            <div>
-                                <label class="input-label deva">Password</label>
-                                <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
-                            </div>
-                            <button @click="loginWithPassword()" class="btn-primary mt-2 shadow-lg deva" :disabled="loading">
-                                <span x-text="loading ? 'Signing In...' : 'Sign In'"></span>
+                            <button @click="sendLoginOtp()" class="btn-primary mt-2 shadow-lg deva" :disabled="loading">
+                                <span x-text="loading ? 'Requesting...' : 'Get OTP'"></span>
                                 <div x-show="loading" class="loader"></div>
                             </button>
                         </div>
@@ -364,12 +360,12 @@ x-data="{
             <div class="space-y-6">
                 <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" placeholder="000000">
                 <button @click="verifyOtp()" class="btn-primary deva" :disabled="loading">
-                    <span x-text="loading ? 'Verifying...' : 'Verify & Join'"></span>
+                    <span x-text="loading ? 'Verifying...' : 'Verify & Continue'"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
                 <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-2 deva"></p>
                 <button @click="step='form'; message=''" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-brand-gold deva outline-none">
-                    Change Details
+                    Change Number
                 </button>
             </div>
         </div>
