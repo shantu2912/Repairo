@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- GOOGLE TRANSLATE STYLES & SCRIPT -->
     <style>
         html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; position: static !important; }
         .skiptranslate { font-family: 'Plus Jakarta Sans', sans-serif !important; display: none !important;}
@@ -77,6 +76,7 @@
             align-items: center; justify-content: center; gap: 0.5rem; border: none; outline: none;
         }
         .btn-primary:hover { background-color: #8a6a45; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(160, 125, 84, 0.3); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
         
         .btn-google {
             width: 100%; padding: 1rem; border-radius: 0.75rem; background-color: white;
@@ -85,6 +85,7 @@
             transition: all 0.3s ease; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .btn-google:hover { background-color: #F9FAFB; border-color: #D1D5DB; }
+        .btn-google:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .otp-box {
             width: 100%; text-align: center; letter-spacing: 0.5em; font-size: 1.5rem;
@@ -102,12 +103,23 @@
 
 <body class="min-h-screen flex items-center justify-center font-sans bg-gray-50"
 x-data="{
-  view: 'login', // 'login' or 'signup'
-  authMethod: 'google', // 'google' or 'phone'
+  view: 'signup', // Sets default view
+  authMethod: 'phone', // Sets default to phone access tab
   step: 'form', // 'form' or 'otp'
   loading: false,
   message: '',
   form: { identifier: '', name: '', phone: '', pass: '', otp: '' },
+
+  // --- VALIDATION HELPERS ---
+  validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  },
+  
+  validatePhone(phone) {
+    const re = /^\d{10}$/; // Matches exactly 10 digits
+    return re.test(String(phone).trim());
+  },
 
   normalizePhone(phoneStr) {
     return '+91' + phoneStr.trim();
@@ -131,18 +143,34 @@ x-data="{
 
   // --- EMAIL OR MOBILE PASSWORD LOGIN ---
   async loginWithPassword() {
-    if (!this.form.identifier || !this.form.pass) {
+    let identifier = this.form.identifier.trim();
+    
+    if (!identifier || !this.form.pass) {
       this.message = 'PLEASE ENTER ALL CREDENTIALS';
       return;
     }
 
+    // Smart Validation
+    let isEmail = identifier.includes('@');
+    if (isEmail) {
+        if (!this.validateEmail(identifier)) {
+            this.message = 'INVALID EMAIL FORMAT';
+            return;
+        }
+    } else {
+        if (!this.validatePhone(identifier)) {
+            this.message = 'ENTER VALID 10-DIGIT PHONE NUMBER';
+            return;
+        }
+    }
+
     this.loading = true;
     this.message = '';
+    
     try {
-      let isEmail = this.form.identifier.includes('@');
       let credentials = isEmail 
-        ? { email: this.form.identifier.trim(), password: this.form.pass }
-        : { phone: this.normalizePhone(this.form.identifier), password: this.form.pass };
+        ? { email: identifier, password: this.form.pass }
+        : { phone: this.normalizePhone(identifier), password: this.form.pass };
 
       const { error } = await window.supabase.auth.signInWithPassword(credentials);
       if (error) throw error;
@@ -158,8 +186,14 @@ x-data="{
   // --- MOBILE OTP SIGNUP FLOW ---
   async sendSignupOtp() {
     this.message = '';
-    if (!this.form.phone || this.form.phone.length !== 10 || !this.form.name) {
-      this.message = 'ENTER NAME AND VALID 10-DIGIT PHONE NUMBER';
+    
+    if (!this.form.name.trim()) {
+        this.message = 'PLEASE ENTER YOUR FULL NAME';
+        return;
+    }
+    
+    if (!this.validatePhone(this.form.phone)) {
+      this.message = 'ENTER VALID 10-DIGIT PHONE NUMBER';
       return;
     }
 
@@ -193,7 +227,7 @@ x-data="{
 
   async verifyOtp() {
     if (!this.form.otp || this.form.otp.length !== 6) {
-      this.message = 'ENTER VALID OTP';
+      this.message = 'ENTER VALID 6-DIGIT OTP';
       return;
     }
 
@@ -228,25 +262,20 @@ x-data="{
 
 <div class="w-full max-w-md animate__animated animate__fadeIn px-4 py-8">
 
-    <!-- SUBTLE TRANSLATE WIDGET -->
     <div class="absolute top-4 right-4 z-50">
         <div id="google_translate_element"></div>
     </div>
 
-    <!-- MAIN CARD -->
     <div class="bg-white p-8 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-100">
         
-        <!-- LOGO & HEADER -->
         <div class="text-center mb-8">
             <img src="fixzen.png" alt="FixZen" class="w-16 h-16 rounded-full mx-auto mb-3 shadow-md object-cover">
             <h1 class="text-3xl font-extrabold text-brand-dark uppercase tracking-tight deva" x-text="view === 'login' ? 'WELCOME BACK' : 'JOIN US'"></h1>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 deva" x-text="view === 'login' ? 'SIGN IN TO CONTINUE YOUR JOURNEY' : 'CREATE ACCOUNT TO GET STARTED'"></p>
         </div>
 
-        <!-- ── FORM FLOW ── -->
         <div x-show="step === 'form'" x-cloak>
             
-            <!-- THE TOGGLE PILL -->
             <div class="bg-gray-100 p-1.5 rounded-xl flex items-center justify-between mb-8 shadow-inner">
                 <button @click="authMethod = 'google'; message=''" 
                         :class="authMethod === 'google' ? 'bg-brand-gold text-white shadow-md' : 'text-gray-500 hover:text-gray-700'" 
@@ -260,21 +289,19 @@ x-data="{
                 </button>
             </div>
 
-            <!-- GOOGLE AUTH VIEW -->
             <template x-if="authMethod === 'google'">
                 <div class="animate__animated animate__fadeIn">
                     <button @click="loginWithGoogle()" class="btn-google deva" :disabled="loading">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                        <span x-text="view === 'login' ? 'Continue with Google' : 'Sign up with Google'"></span>
+                        <span x-text="loading ? 'Connecting...' : (view === 'login' ? 'Continue with Google' : 'Sign up with Google')"></span>
+                        <div x-show="loading" class="loader border-t-gray-500 border-gray-200 ml-2"></div>
                     </button>
                 </div>
             </template>
 
-            <!-- PHONE/EMAIL AUTH VIEW -->
             <template x-if="authMethod === 'phone'">
                 <div class="space-y-5 animate__animated animate__fadeIn">
                     
-                    <!-- SIGNUP FIELDS -->
                     <template x-if="view === 'signup'">
                         <div class="space-y-5">
                             <div>
@@ -285,17 +312,16 @@ x-data="{
                                 <label class="input-label deva">Phone Number</label>
                                 <div class="flex">
                                     <div class="bg-gray-200 border border-r-0 border-gray-200 rounded-l-xl px-4 flex items-center justify-center text-gray-500 font-bold text-sm">+91</div>
-                                    <input type="tel" x-model="form.phone" class="fixzen-input !rounded-l-none !border-l-0" placeholder="9823060308">
+                                    <input type="tel" x-model="form.phone" maxlength="10" class="fixzen-input !rounded-l-none !border-l-0" placeholder="9823060308">
                                 </div>
                             </div>
                             <button @click="sendSignupOtp()" class="btn-primary mt-2 shadow-lg deva" :disabled="loading">
-                                <span x-show="!loading">Send OTP</span>
+                                <span x-text="loading ? 'Sending OTP...' : 'Send OTP'"></span>
                                 <div x-show="loading" class="loader"></div>
                             </button>
                         </div>
                     </template>
 
-                    <!-- LOGIN FIELDS -->
                     <template x-if="view === 'login'">
                         <div class="space-y-5">
                             <div>
@@ -307,7 +333,7 @@ x-data="{
                                 <input type="password" x-model="form.pass" class="fixzen-input" placeholder="••••••••">
                             </div>
                             <button @click="loginWithPassword()" class="btn-primary mt-2 shadow-lg deva" :disabled="loading">
-                                <span x-show="!loading">Sign In</span>
+                                <span x-text="loading ? 'Signing In...' : 'Sign In'"></span>
                                 <div x-show="loading" class="loader"></div>
                             </button>
                         </div>
@@ -318,16 +344,14 @@ x-data="{
 
             <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-5 deva"></p>
 
-            <!-- FOOTER TOGGLE -->
             <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-                <button @click="view = (view === 'login' ? 'signup' : 'login'); message=''" class="text-[11px] font-bold text-gray-500 uppercase tracking-widest deva group">
+                <button @click="view = (view === 'login' ? 'signup' : 'login'); message=''" class="text-[11px] font-bold text-gray-500 uppercase tracking-widest deva group outline-none">
                     <span x-text="view === 'login' ? 'NEW HERE?' : 'ALREADY REGISTERED?'"></span>
                     <span class="text-brand-gold group-hover:underline ml-1" x-text="view === 'login' ? 'CREATE ACCOUNT' : 'SIGN IN'"></span>
                 </button>
             </div>
         </div>
 
-        <!-- ── OTP VERIFICATION FLOW ── -->
         <div x-show="step === 'otp'" x-cloak class="text-center animate__animated animate__fadeIn">
             <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
                 <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
@@ -340,17 +364,21 @@ x-data="{
             <div class="space-y-6">
                 <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" placeholder="000000">
                 <button @click="verifyOtp()" class="btn-primary deva" :disabled="loading">
-                    <span x-show="!loading">Verify & Join</span>
+                    <span x-text="loading ? 'Verifying...' : 'Verify & Join'"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
                 <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-2 deva"></p>
-                <button @click="step='form'; message=''" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-brand-gold deva">
+                <button @click="step='form'; message=''" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-brand-gold deva outline-none">
                     Change Details
                 </button>
             </div>
         </div>
 
     </div>
+    
+    <p class="text-center text-[10px] text-gray-400 font-bold mt-6 uppercase tracking-widest">
+        FixZen © 2026
+    </p>
 
 </div>
 
