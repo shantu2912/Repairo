@@ -144,7 +144,7 @@
                 <div x-show="isNewUser" class="space-y-4" x-collapse>
                     <div>
                         <label class="input-label deva" x-text="tx('full_name')"></label>
-                        <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length > 2 && !errors.name}" :placeholder="tx('name_placeholder')">
+                        <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length >= 3 && !errors.name}" :placeholder="tx('name_placeholder')">
                         <p x-show="errors.name" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('msg_name_req')"></p>
                     </div>
                     
@@ -224,7 +224,7 @@
                     err_phone: 'Must be a 10-digit Indian number starting with 6-9', err_exists: 'Mobile number already registered',
                     err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets and numbers only (No spaces)',
                     err_not_found: 'Account not found with this number', err_pass: 'Password must be at least 6 characters long',
-                    err_login: 'Incorrect password. Please try again.', msg_name_req: 'Enter alphabets only (Min 3 letters, no numbers)',
+                    err_login: 'Incorrect mobile or password. Please try again.', msg_name_req: 'Enter letters only (Min 3 characters, no numbers)',
                     welcome_back: 'Welcome Back'
                 },
                 hi: {
@@ -236,7 +236,7 @@
                     err_phone: '6-9 से शुरू होने वाला 10-अंकीय भारतीय नंबर दर्ज करें', err_exists: 'यह मोबाइल नंबर पहले से पंजीकृत है',
                     err_user_exists: 'यह उपयोगकर्ता नाम पहले से मौजूद है', err_user_format: 'केवल अक्षरों और अंकों का प्रयोग करें (स्पेस न दें)',
                     err_not_found: 'इस नंबर के साथ कोई खाता नहीं मिला', err_pass: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
-                    err_login: 'गलत पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'केवल अक्षर दर्ज करें (न्यूनतम 3 अक्षर, संख्याएं नहीं)',
+                    err_login: 'गलत मोबाइल नंबर या पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'केवल अक्षर दर्ज करें (न्यूनतम 3 अक्षर, संख्याएं नहीं)',
                     welcome_back: 'वापसी पर स्वागत है'
                 },
                 mr: {
@@ -247,8 +247,8 @@
                     name_placeholder: 'राहुल शर्मा', user_placeholder: 'वापरकर्ता नाव', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
                     err_phone: '6-9 ने सुरू होणारा वैध 10-अंकीय भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
                     err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
-                    err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
-                    err_login: 'चुकीचा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
+                    err_not_found: 'या नंबरसह खाते असावे', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
+                    err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
                     welcome_back: 'पुन्हा स्वागत आहे'
                 }
             },
@@ -270,14 +270,14 @@
                 let val = this.form[field] || '';
 
                 if (field === 'name') {
-                    // Strips out any numeric input digits automatically to protect inputs
+                    // STRIKES OUT INTERPOLATED NUMERIC DATA INSTANTLY
                     this.form.name = val.replace(/[^a-zA-Z\s]/g, '');
                     this.errors.name = this.form.name.trim().length > 0 && this.form.name.trim().length < 3;
                 }
 
                 if (field === 'phone') {
                     const digits = this.form.phone.replace(/\D/g, '');
-                    this.form.phone = digits; // Block non-numbers completely
+                    this.form.phone = digits; 
                     if (digits.length > 0) {
                         const firstDigit = parseInt(digits[0]);
                         this.errors.phone = firstDigit < 6 || isNaN(firstDigit) || (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits));
@@ -321,7 +321,7 @@
 
                 this.loading = true;
                 const phone = this.normalizePhone();
-                // FIXED COMPLIANT RFC TOP-LEVEL DOMAIN RESOLUTION LAYER
+                // RFC COMPLIANT DOMAIN MAPPING FOR INTERNAL DRIVER AUTO-PASS
                 const mockEmail = `fixzen_${cleanPhone}@fixzenapp.com`;
 
                 try {
