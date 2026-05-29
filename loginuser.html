@@ -9,7 +9,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&family=Noto+Sans+Devanagari:wght=400;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -75,7 +75,6 @@
         }
         .lang-btn:hover { border-color: #A07D54; background: rgba(160,125,84,0.05); }
         .lang-btn.active { border-color: #5D5646; background: #5D5646; color: white; }
-
         .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
     </style>
 </head>
@@ -145,7 +144,7 @@
                 <div x-show="isNewUser" class="space-y-4" x-collapse>
                     <div>
                         <label class="input-label deva" x-text="tx('full_name')"></label>
-                        <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length > 0 && !errors.name}" :placeholder="tx('name_placeholder')">
+                        <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length > 2 && !errors.name}" :placeholder="tx('name_placeholder')">
                         <p x-show="errors.name" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('msg_name_req')"></p>
                     </div>
                     
@@ -225,7 +224,7 @@
                     err_phone: 'Must be a 10-digit Indian number starting with 6-9', err_exists: 'Mobile number already registered',
                     err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets and numbers only (No spaces)',
                     err_not_found: 'Account not found with this number', err_pass: 'Password must be at least 6 characters long',
-                    err_login: 'Incorrect password. Please try again.', msg_name_req: 'Please enter your full profile name',
+                    err_login: 'Incorrect password. Please try again.', msg_name_req: 'Enter alphabets only (Min 3 letters, no numbers)',
                     welcome_back: 'Welcome Back'
                 },
                 hi: {
@@ -237,7 +236,7 @@
                     err_phone: '6-9 से शुरू होने वाला 10-अंकीय भारतीय नंबर दर्ज करें', err_exists: 'यह मोबाइल नंबर पहले से पंजीकृत है',
                     err_user_exists: 'यह उपयोगकर्ता नाम पहले से मौजूद है', err_user_format: 'केवल अक्षरों और अंकों का प्रयोग करें (स्पेस न दें)',
                     err_not_found: 'इस नंबर के साथ कोई खाता नहीं मिला', err_pass: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
-                    err_login: 'गलत पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'कृपया अपना पूरा नाम दर्ज करें',
+                    err_login: 'गलत पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'केवल अक्षर दर्ज करें (न्यूनतम 3 अक्षर, संख्याएं नहीं)',
                     welcome_back: 'वापसी पर स्वागत है'
                 },
                 mr: {
@@ -246,10 +245,10 @@
                     full_name: 'पूर्ण नाव', username: 'वापरकर्ता नाव', password: 'पासवर्ड', mobile: 'मोबाइल नंबर',
                     sign_in: 'साइन इन करा', already_member: 'आधीच सदस्य आहात? साइन इन करा', new_user: 'नवीन वापरकर्ता? खाते तयार करा',
                     name_placeholder: 'राहुल शर्मा', user_placeholder: 'वापरकर्ता नाव', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
-                    err_phone: '6-9 ने सुरू होणारा वैध 10-अंकी भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
+                    err_phone: '6-9 ने सुरू होणारा वैध 10-अंकीय भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
                     err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
                     err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
-                    err_login: 'चुकीचा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'कृपया तुमचे पूर्ण नाव प्रविष्ट करा',
+                    err_login: 'चुकीचा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
                     welcome_back: 'पुन्हा स्वागत आहे'
                 }
             },
@@ -265,14 +264,20 @@
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
-            // REAL-TIME INSTANT KEYSTROKE LIVE INLINE FIELD VALIDATOR
+            // REAL-TIME KEYSTROKE LIVE INLINE FIELD VALIDATOR
             validateField(field) {
                 this.message = '';
-                const val = (this.form[field] || '').trim();
+                let val = this.form[field] || '';
+
+                if (field === 'name') {
+                    // Strips out any numeric input digits automatically to protect inputs
+                    this.form.name = val.replace(/[^a-zA-Z\s]/g, '');
+                    this.errors.name = this.form.name.trim().length > 0 && this.form.name.trim().length < 3;
+                }
 
                 if (field === 'phone') {
                     const digits = this.form.phone.replace(/\D/g, '');
-                    // Instantly catches character input faults or invalid leading digits
+                    this.form.phone = digits; // Block non-numbers completely
                     if (digits.length > 0) {
                         const firstDigit = parseInt(digits[0]);
                         this.errors.phone = firstDigit < 6 || isNaN(firstDigit) || (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits));
@@ -285,17 +290,13 @@
                     this.errors.pass = this.form.pass.length > 0 && this.form.pass.length < 6;
                 }
 
-                if (this.isNewUser) {
-                    if (field === 'name') {
-                        this.errors.name = this.form.name.length > 0 && val.length === 0;
-                    }
-                    if (field === 'user') {
-                        if (val.length > 0) {
-                            const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
-                            this.errors.user = !alphaNumericRegex.test(val);
-                        } else {
-                            this.errors.user = false;
-                        }
+                if (this.isNewUser && field === 'user') {
+                    const cleanUser = this.form.user.trim();
+                    if (cleanUser.length > 0) {
+                        const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                        this.errors.user = !alphaNumericRegex.test(cleanUser);
+                    } else {
+                        this.errors.user = false;
                     }
                 }
             },
@@ -304,12 +305,11 @@
                 const cleanPhone = this.form.phone.trim();
                 const indianPhoneRegex = /^[6-9]\d{9}$/;
 
-                // Explicit validation verification snapshot scan before dispatching payloads
                 this.errors.phone = !indianPhoneRegex.test(cleanPhone);
                 this.errors.pass = !this.form.pass || this.form.pass.length < 6;
                 
                 if (this.isNewUser) {
-                    this.errors.name = !this.form.name.trim();
+                    this.errors.name = !this.form.name.trim() || this.form.name.trim().length < 3;
                     const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
                     this.errors.user = !alphaNumericRegex.test(this.form.user.trim());
                 }
@@ -321,11 +321,11 @@
 
                 this.loading = true;
                 const phone = this.normalizePhone();
-                const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
+                // FIXED COMPLIANT RFC TOP-LEVEL DOMAIN RESOLUTION LAYER
+                const mockEmail = `fixzen_${cleanPhone}@fixzenapp.com`;
 
                 try {
                     if (this.isNewUser) {
-                        // Public Sheet Conflict Resolution Assertions
                         const { data: phoneUser } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -352,7 +352,6 @@
                             return;
                         }
 
-                        // Execute standard secure authorization row allocation
                         const { data: authData, error: signupError } = await window.supabase.auth.signUp({
                             email: mockEmail,
                             password: this.form.pass,
@@ -380,7 +379,6 @@
                         window.location.href = 'index.html';
 
                     } else {
-                        // Sign-in pipeline execution layer
                         const { error: loginError } = await window.supabase.auth.signInWithPassword({
                             email: mockEmail,
                             password: this.form.pass
@@ -398,7 +396,7 @@
                     }
                 } catch (err) {
                     this.message = err.message;
-                } final {
+                } finally {
                     this.loading = false;
                 }
             },
