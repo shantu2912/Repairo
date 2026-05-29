@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -40,10 +39,13 @@
         .fixzen-input {
             width: 100%; padding: 1rem 1.25rem; border-radius: 1.2rem;
             border: 2px solid #DFD4C3; background: white;
-            font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.3s ease;
+            font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
         }
         .fixzen-input:focus { border-color: #A07D54; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1); }
+        .fixzen-input.error { border-color: #EF4444; background-color: #FEF2F2; }
+        .fixzen-input.success { border-color: #10B981; }
+        
         .input-label {
             display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
             letter-spacing: 0.1em; color: #A07D54; margin-bottom: 0.5rem; margin-left: 0.5rem;
@@ -51,11 +53,13 @@
         .btn-primary {
             width: 100%; padding: 1.1rem; border-radius: 1.2rem; background-color: #5D5646;
             color: white; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
-            letter-spacing: 0.15em; transition: all 0.3s ease; display: flex;
-            align-items: center; justify-content: center; gap: 0.5rem;
+            letter-spacing: 0.15em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex;
+            align-items: center; justify-content: center; gap: 0.5rem; display: flex;
             font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
         }
-        .btn-primary:hover { background-color: #4a4537; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(93,86,70,0.3); }
+        .btn-primary:hover:not(:disabled) { background-color: #4a4537; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(93,86,70,0.3); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
         .loader {
             border: 2px solid #f3f3f3; border-top: 2px solid #A07D54;
             border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite;
@@ -71,8 +75,6 @@
         }
         .lang-btn:hover { border-color: #A07D54; background: rgba(160,125,84,0.05); }
         .lang-btn.active { border-color: #5D5646; background: #5D5646; color: white; }
-        .lang-btn .lang-native { display: block; font-size: 1rem; margin-bottom: 2px; }
-        .lang-btn .lang-sub { display: block; font-size: 0.55rem; opacity: 0.7; letter-spacing: 0.05em; text-transform: uppercase; }
 
         .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
     </style>
@@ -126,8 +128,8 @@
             </div>
 
             <h2 class="font-serif italic text-2xl text-brand-olive mb-6 deva" x-text="tx('welcome')"></h2>
-            <button @click="isNewUser=true; step='auth'; showPassword=false; message=''" class="btn-primary deva" x-text="tx('create_account')"></button>
-            <button @click="isNewUser=false; step='auth'; showPassword=false; message=''" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
+            <button @click="isNewUser=true; step='auth'; resetErrors()" class="btn-primary deva" x-text="tx('create_account')"></button>
+            <button @click="isNewUser=false; step='auth'; resetErrors()" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
         </div>
 
         <div x-show="step==='auth'" x-cloak>
@@ -137,33 +139,36 @@
                 <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">म</button>
             </div>
 
-            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-8 deva" x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
+            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-6 deva" x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
 
             <div class="space-y-4">
-                <template x-if="isNewUser">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="input-label deva" x-text="tx('full_name')"></label>
-                            <input type="text" x-model="form.name" class="fixzen-input deva" :placeholder="tx('name_placeholder')">
-                        </div>
-                        <div>
-                            <label class="input-label deva" x-text="tx('username')"></label>
-                            <input type="text" x-model="form.user" class="fixzen-input" :placeholder="tx('user_placeholder')">
-                        </div>
+                <div x-show="isNewUser" class="space-y-4" x-collapse>
+                    <div>
+                        <label class="input-label deva" x-text="tx('full_name')"></label>
+                        <input type="text" x-model="form.name" @input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name}" :placeholder="tx('name_placeholder')">
+                        <p x-show="errors.name" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('msg_name_req')"></p>
                     </div>
-                </template>
-
-                <div>
-                    <label class="input-label deva" x-text="tx('mobile')"></label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-xs">+91</span>
-                        <input type="tel" x-model="form.phone" class="fixzen-input pl-12" :placeholder="tx('phone_placeholder')">
+                    
+                    <div>
+                        <label class="input-label deva" x-text="tx('username')"></label>
+                        <input type="text" x-model="form.user" @input="validateField('user')" class="fixzen-input" :class="{'error': errors.user}" :placeholder="tx('user_placeholder')">
+                        <p x-show="errors.user" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_user_format')"></p>
                     </div>
                 </div>
 
                 <div>
+                    <label class="input-label deva" x-text="tx('mobile')"></label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-sm select-none">+91</span>
+                        <input type="tel" x-model="form.phone" @input="validateField('phone')" maxlength="10" class="fixzen-input pl-14" :class="{'error': errors.phone}" :placeholder="tx('phone_placeholder')">
+                    </div>
+                    <p x-show="errors.phone" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_phone')"></p>
+                </div>
+
+                <div>
                     <label class="input-label deva" x-text="tx('password')"></label>
-                    <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
+                    <input type="password" x-model="form.pass" @input="validateField('pass')" class="fixzen-input" :class="{'error': errors.pass}" :placeholder="tx('pass_placeholder')">
+                    <p x-show="errors.pass" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_pass')"></p>
                 </div>
 
                 <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading">
@@ -171,10 +176,12 @@
                     <div x-show="loading" class="loader"></div>
                 </button>
 
-                <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-4 deva"></p>
+                <div x-show="message" class="p-3 bg-red-50 border border-red-200 rounded-xl mt-4 animate__animated animate__shakeX">
+                    <p class="text-xs text-red-600 font-bold text-center leading-normal deva" x-text="message"></p>
+                </div>
 
                 <div class="mt-6 pt-6 border-t border-brand-beige/30 text-center">
-                    <button @click="isNewUser = !isNewUser; message=''; showPassword=false;" class="text-xs font-bold text-brand-gold hover:underline tracking-widest deva">
+                    <button @click="isNewUser = !isNewUser; resetErrors();" class="text-xs font-bold text-brand-gold hover:underline tracking-widest decoration-brand-gold/30 underline-offset-4 deva">
                         <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
                     </button>
                 </div>
@@ -206,6 +213,7 @@
             message: '',
             lang: localStorage.getItem('fixzen_lang') || 'en',
             form: { name:'', phone:'', user:'', pass:'' },
+            errors: { name: false, phone: false, user: false, pass: false },
 
             t: {
                 en: {
@@ -214,10 +222,11 @@
                     full_name: 'Full Name', username: 'Username', password: 'Password', mobile: 'Mobile Number',
                     sign_in: 'Sign In', already_member: 'Already a member? Sign In', new_user: 'New User? Create Account',
                     name_placeholder: 'Rahul Sharma', user_placeholder: 'username', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
-                    err_phone: 'ENTER VALID 10-DIGIT INDIAN PHONE NUMBER', err_exists: 'ACCOUNT PHONE ALREADY EXISTS',
-                    err_user_exists: 'USERNAME ALREADY TAKEN', err_user_format: 'USERNAME MUST BE ALPHANUMERIC ONLY',
-                    err_not_found: 'NO ACCOUNT FOUND', err_pass: 'PASSWORD MUST BE AT LEAST 6 CHARACTERS',
-                    err_login: 'INVALID LOGIN CREDENTIALS', err_fields: 'PLEASE FILL ALL REQUIRED FIELDS', welcome_back: 'Welcome Back'
+                    err_phone: 'Must be a 10-digit Indian number starting with 6-9', err_exists: 'Mobile number already registered',
+                    err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets and numbers only (No spaces)',
+                    err_not_found: 'Account not found with this number', err_pass: 'Password must be at least 6 characters long',
+                    err_login: 'Incorrect password. Please try again.', msg_name_req: 'Please enter your full profile name',
+                    welcome_back: 'Welcome Back'
                 },
                 hi: {
                     tagline: 'प्रीमियम होम केयर', choose_lang: 'अपनी भाषा चुनें', lang_continue: 'आगे बढ़ें',
@@ -225,10 +234,11 @@
                     full_name: 'पूरा नाम', username: 'उपयोगकर्ता नाम', password: 'पासवर्ड', mobile: 'मोबाइल नंबर',
                     sign_in: 'साइन इन करें', already_member: 'पहले से सदस्य हैं? साइन इन करें', new_user: 'नए उपयोगकर्ता? खाता बनाएं',
                     name_placeholder: 'राहुल शर्मा', user_placeholder: 'उपयोगकर्ता नाम', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
-                    err_phone: 'कृपया सही 10-अंकीय भारतीय फ़ोन नंबर दर्ज करें', err_exists: 'यह फ़ोन नंबर पहले से पंजीकृत है',
-                    err_user_exists: 'यह उपयोगकर्ता नाम पहले से लिया गया है', err_user_format: 'उपयोगकर्ता नाम में केवल अक्षर और अंक होने चाहिए',
-                    err_not_found: 'कोई खाता नहीं मिला', err_pass: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
-                    err_login: 'लॉगिन जानकारी गलत है', err_fields: 'कृपया सभी आवश्यक फ़ील्ड भरें', welcome_back: 'वापसी पर स्वागत है'
+                    err_phone: '6-9 से शुरू होने वाला 10-अंकीय भारतीय नंबर दर्ज करें', err_exists: 'यह मोबाइल नंबर पहले से पंजीकृत है',
+                    err_user_exists: 'यह उपयोगकर्ता नाम पहले से मौजूद है', err_user_format: 'केवल अक्षरों और अंकों का प्रयोग करें (स्पेस न दें)',
+                    err_not_found: 'इस नंबर के साथ कोई खाता नहीं मिला', err_pass: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
+                    err_login: 'गलत पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'कृपया अपना पूरा नाम दर्ज करें',
+                    welcome_back: 'वापसी पर स्वागत है'
                 },
                 mr: {
                     tagline: 'प्रीमियम होम केअर', choose_lang: 'तुमची भाषा निवडा', lang_continue: 'पुढे जा',
@@ -236,10 +246,11 @@
                     full_name: 'पूर्ण नाव', username: 'वापरकर्ता नाव', password: 'पासवर्ड', mobile: 'मोबाइल नंबर',
                     sign_in: 'साइन इन करा', already_member: 'आधीच सदस्य आहात? साइन इन करा', new_user: 'नवीन वापरकर्ता? खाते तयार करा',
                     name_placeholder: 'राहुल शर्मा', user_placeholder: 'वापरकर्ता नाव', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
-                    err_phone: 'कृपया वैध 10-अंकी भारतीय फोन नंबर प्रविष्ट करा', err_exists: 'हा फोन नंबर आधीपासून नोंदणीकृत आहे',
-                    err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'वापरकर्ता नावामध्ये फक्त अक्षरे आणि अंक असावेत',
-                    err_not_found: 'खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
-                    err_login: 'चुकीची लॉगिन माहिती', err_fields: 'कृपया सर्व आवश्यक माहिती भरा', welcome_back: 'पुन्हा स्वागत आहे'
+                    err_phone: '6-9 ने सुरू होणारा वैध 10-अंकी भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
+                    err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
+                    err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
+                    err_login: 'चुकीचा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'कृपया तुमचे पूर्ण नाव प्रविष्ट करा',
+                    welcome_back: 'पुन्हा स्वागत आहे'
                 }
             },
 
@@ -247,45 +258,57 @@
             setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
             proceedFromLang() { this.step = 'choose'; },
             normalizePhone() { return '+91' + this.form.phone.trim(); },
-
-            // MAIN UNIFIED GATEWAY CONTROLLER
-            async processForm() {
+            resetErrors() {
                 this.message = '';
-                const cleanPhone = this.form.phone.trim();
+                this.errors = { name: false, phone: false, user: false, pass: false };
+            },
+
+            // REAL-TIME INLINE FIELD INTERACTIVE VALIDATOR
+            validateField(field) {
+                if (field === 'phone') {
+                    const indianPhoneRegex = /^[6-9]\d{9}$/;
+                    this.errors.phone = !indianPhoneRegex.test(this.form.phone.trim());
+                }
+                if (field === 'pass') {
+                    this.errors.pass = !this.form.pass || this.form.pass.length < 6;
+                }
+                if (this.isNewUser) {
+                    if (field === 'name') {
+                        this.errors.name = !this.form.name.trim();
+                    }
+                    if (field === 'user') {
+                        const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                        this.errors.user = !alphaNumericRegex.test(this.form.user.trim());
+                    }
+                }
+            },
+
+            // CORE VERIFICATION ENGINE HOOK
+            async processForm() {
+                this.resetErrors();
                 
-                // 1. STRICT INDIAN PHONE CORRECTION LOGIC (Validates 10-digits beginning with 6-9 range markers)
-                const indianPhoneRegex = /^[6-9]\d{9}$/;
-                if (!cleanPhone || !indianPhoneRegex.test(cleanPhone)) {
-                    this.message = this.tx('err_phone');
-                    return;
+                // Run complete validation scan across form inputs
+                this.validateField('phone');
+                this.validateField('pass');
+                if (this.isNewUser) {
+                    this.validateField('name');
+                    this.validateField('user');
                 }
 
-                if (!this.form.pass || this.form.pass.length < 6) {
-                    this.message = this.tx('err_pass');
+                // Block submission loop execution chain if error parameters evaluate true
+                if (this.errors.phone || this.errors.pass || (this.isNewUser && (this.errors.name || this.errors.user))) {
+                    this.message = 'Please correct the highlighted errors before proceeding.';
                     return;
                 }
 
                 this.loading = true;
+                const cleanPhone = this.form.phone.trim();
                 const phone = this.normalizePhone();
+                const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
 
                 try {
                     if (this.isNewUser) {
-                        // Registration validations
-                        if (!this.form.name.trim() || !this.form.user.trim()) {
-                            this.message = this.tx('err_fields');
-                            this.loading = false;
-                            return;
-                        }
-
-                        // USERNAME SYNTAX CHECKER (Validates alphanumeric format string boundaries)
-                        const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
-                        if (!alphaNumericRegex.test(this.form.user.trim())) {
-                            this.message = this.tx('err_user_format');
-                            this.loading = false;
-                            return;
-                        }
-
-                        // Duplicate Phone Check
+                        // Public Profile Duplicate Checks
                         const { data: phoneUser } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -293,12 +316,12 @@
                             .maybeSingle();
 
                         if (phoneUser) {
+                            this.errors.phone = true;
                             this.message = this.tx('err_exists');
                             this.loading = false;
                             return;
                         }
 
-                        // Duplicate Username Check
                         const { data: nameUser } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -306,13 +329,13 @@
                             .maybeSingle();
 
                         if (nameUser) {
+                            this.errors.user = true;
                             this.message = this.tx('err_user_exists');
                             this.loading = false;
                             return;
                         }
 
-                        // SECURE ANONYMOUS SIGNUP LAYER TRANSITION INTERFACE BINDING (Free user row allocation wrapper)
-                        const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
+                        // Provision Authentication Credentials Row Entry
                         const { data: authData, error: signupError } = await window.supabase.auth.signUp({
                             email: mockEmail,
                             password: this.form.pass,
@@ -340,14 +363,14 @@
                         window.location.href = 'index.html';
 
                     } else {
-                        // LOGIN CHANNEL DIRECT ENTRY
-                        const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
+                        // Existing Account Login Pipeline
                         const { error: loginError } = await window.supabase.auth.signInWithPassword({
                             email: mockEmail,
                             password: this.form.pass
                         });
 
                         if (loginError) {
+                            this.errors.pass = true;
                             this.message = this.tx('err_login');
                             this.loading = false;
                             return;
@@ -379,4 +402,3 @@
 
 </body>
 </html>
-
