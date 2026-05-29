@@ -92,7 +92,7 @@ x-data="{
   message: '',
   showPassword: false,
   lang: localStorage.getItem('fixzen_lang') || 'en',
-  form: { name:'', phone:'', pass:'' },
+  form: { name:'', phone:'', user:'', pass:'', otp:'' },
 
   // ─── TRANSLATIONS ────────────────────────────────────────────
   t: {
@@ -239,35 +239,10 @@ x-data="{
           return;
         }
 
-        if (!this.form.pass || this.form.pass.length < 6) {
-          this.message = this.tx('err_pass');
-          this.loading = false;
-          return;
-        }
+        const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
+        if (otpError) throw otpError;
 
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          phone,
-          password: this.form.pass
-        });
-        if (signUpError) throw signUpError;
-
-        const user = signUpData.user;
-        if (!user) throw new Error('USER NOT FOUND');
-
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: user.id,
-          full_name: this.form.name,
-          phone,
-          preferred_lang: this.lang
-        });
-
-        if (profileError) {
-          this.message = this.tx('err_exists');
-          this.loading = false;
-          return;
-        }
-
-        window.location.href = 'index.html';
+        this.step = 'otp';
       } else {
         if (!existingUser) {
           this.message = this.tx('err_not_found');
@@ -304,6 +279,61 @@ x-data="{
       window.location.href = 'index.html';
     } catch {
       this.message = this.tx('err_login');
+    } finally {
+      this.loading = false;
+    }
+  },
+
+  async verifyOtp() {
+    if (!this.form.otp || this.form.otp.length !== 6) {
+      this.message = this.tx('err_otp');
+      return;
+    }
+
+    this.loading = true;
+    this.message = '';
+    try {
+      const phone = this.normalizePhone();
+
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone,
+        token: this.form.otp,
+        type: 'sms'
+      });
+      if (error) throw error;
+
+      const user = data.user;
+      if (!user) throw new Error('USER NOT FOUND');
+
+      const { data: alreadyExists } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (alreadyExists) {
+        this.message = this.tx('err_exists');
+        return;
+      }
+
+      await supabase.auth.updateUser({ password: this.form.pass });
+
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: user.id,
+        full_name: this.form.name,
+        username: this.form.user,
+        phone,
+        preferred_lang: this.lang   // ← Save language on signup
+      });
+
+      if (profileError) {
+        this.message = this.tx('err_exists');
+        return;
+      }
+
+      window.location.href = 'index.html';
+    } catch (err) {
+      this.message = err.message;
     } finally {
       this.loading = false;
     }
@@ -406,6 +436,10 @@ x-data="{
                             <input type="text" x-model="form.name" class="fixzen-input deva" :placeholder="tx('name_placeholder')">
                         </div>
                         <div>
+                            <label class="input-label deva" x-text="tx('username')"></label>
+                            <input type="text" x-model="form.user" class="fixzen-input" :placeholder="tx('user_placeholder')">
+                        </div>
+                        <div>
                             <label class="input-label deva" x-text="tx('password')"></label>
                             <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
                         </div>
@@ -426,7 +460,7 @@ x-data="{
                 </div>
 
                 <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg deva" :disabled="loading">
-                    <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('check_account')"></span>
+                    <span x-show="!loading" x-text="isNewUser ? tx('send_otp') : tx('check_account')"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
 
@@ -444,6 +478,31 @@ x-data="{
                 </div>
             </div>
         </div>
+
+        <!-- ── STEP 4: OTP VERIFICATION ── -->
+        <div x-show="step==='otp'" x-cloak class="text-center">
+            <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
+                <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
+            </div>
+            <h2 class="font-serif italic text-2xl text-brand-olive mb-2 deva" x-text="tx('verify_title')"></h2>
+            <p class="text-[10px] font-bold text-brand-dark/40 uppercase tracking-widest mb-8 deva">
+                <span x-text="tx('code_sent')"></span> <span x-text="form.phone"></span>
+            </p>
+
+            <div class="space-y-6">
+                <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" :placeholder="tx('enter_otp')">
+                <button @click="verifyOtp()" class="btn-primary bg-brand-gold deva" :disabled="loading">
+                    <span x-show="!loading" x-text="tx('verify_btn')"></span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
+                <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-2 deva"></p>
+                <button @click="step='auth'; message=''" class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest hover:text-brand-gold deva"
+                    x-text="tx('change_details')">
+                </button>
+            </div>
+        </div>
+
+    </div>
 
     <!-- Footer note -->
     <p class="text-center text-[10px] text-brand-olive/30 font-bold mt-6 uppercase tracking-widest">
