@@ -236,17 +236,28 @@
           setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
       ">
 
-    <div x-show="loading" x-transition:leave="transition ease-in-out duration-1000" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-110" class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 flex items-center justify-center opacity-20">
+    <div x-show="loading" 
+         x-transition:leave="transition ease-in-out duration-1000" 
+         x-transition:leave-start="opacity-100 transform scale-100" 
+         x-transition:leave-end="opacity-0 transform scale-110" 
+         class="fixed inset-0 z-[100] bg-brand-olive flex flex-col items-center justify-center overflow-hidden">
+        
+        <div class="absolute inset-0 flex items-center justify-center opacity-20 select-none pointer-events-none">
             <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
             <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
         </div>
-        <div class="relative z-10 flex flex-col items-center">
-            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg">
+        
+        <div class="relative z-10 flex flex-col items-center justify-center text-center">
+            <svg height="80" width="300" xmlns="http://www.w3.org/2000/svg" class="select-none pointer-events-none">
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-svg-text animate-draw-text">FIXZENIX</text>
             </svg>
-            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine">FIXZENIX</h1>
-            <p class="text-brand-gold text-[11px] font-bold tracking-[0.35em] uppercase mt-2 opacity-0 animate-sub-text-slide" style="animation-delay: 2.8s;">WE FIX, YOU RELAX</p>
+            
+            <h1 class="absolute top-[2px] font-sans font-extrabold text-6xl tracking-[0.15em] fixzen-filled-text opacity-0 animate-fill-text animate-logo-shine select-none pointer-events-none">FIXZENIX</h1>
+            
+            <p class="text-brand-gold text-[11px] font-bold tracking-[0.35em] uppercase mt-4 opacity-0 animate-sub-text-slide select-none pointer-events-none" 
+               style="animation-delay: 2.8s; animation-fill-mode: forwards;">
+                WE FIX, YOU RELAX
+            </p>
         </div>
     </div>
 
