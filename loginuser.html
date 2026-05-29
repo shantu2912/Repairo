@@ -39,7 +39,7 @@
         .fixzen-input {
             width: 100%; padding: 1rem 1.25rem; border-radius: 1.2rem;
             border: 2px solid #DFD4C3; background: white;
-            font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
         }
         .fixzen-input:focus { border-color: #A07D54; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1); }
@@ -53,8 +53,8 @@
         .btn-primary {
             width: 100%; padding: 1.1rem; border-radius: 1.2rem; background-color: #5D5646;
             color: white; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
-            letter-spacing: 0.15em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex;
-            align-items: center; justify-content: center; gap: 0.5rem; display: flex;
+            letter-spacing: 0.15em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
             font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
         }
         .btn-primary:hover:not(:disabled) { background-color: #4a4537; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(93,86,70,0.3); }
@@ -145,13 +145,13 @@
                 <div x-show="isNewUser" class="space-y-4" x-collapse>
                     <div>
                         <label class="input-label deva" x-text="tx('full_name')"></label>
-                        <input type="text" x-model="form.name" @input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name}" :placeholder="tx('name_placeholder')">
+                        <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length > 0 && !errors.name}" :placeholder="tx('name_placeholder')">
                         <p x-show="errors.name" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('msg_name_req')"></p>
                     </div>
                     
                     <div>
                         <label class="input-label deva" x-text="tx('username')"></label>
-                        <input type="text" x-model="form.user" @input="validateField('user')" class="fixzen-input" :class="{'error': errors.user}" :placeholder="tx('user_placeholder')">
+                        <input type="text" x-model="form.user" x-on:input="validateField('user')" class="fixzen-input" :class="{'error': errors.user, 'success': form.user.trim().length > 0 && !errors.user}" :placeholder="tx('user_placeholder')">
                         <p x-show="errors.user" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_user_format')"></p>
                     </div>
                 </div>
@@ -160,14 +160,14 @@
                     <label class="input-label deva" x-text="tx('mobile')"></label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-sm select-none">+91</span>
-                        <input type="tel" x-model="form.phone" @input="validateField('phone')" maxlength="10" class="fixzen-input pl-14" :class="{'error': errors.phone}" :placeholder="tx('phone_placeholder')">
+                        <input type="tel" x-model="form.phone" x-on:input="validateField('phone')" maxlength="10" class="fixzen-input pl-14" :class="{'error': errors.phone, 'success': form.phone.trim().length === 10 && !errors.phone}" :placeholder="tx('phone_placeholder')">
                     </div>
                     <p x-show="errors.phone" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_phone')"></p>
                 </div>
 
                 <div>
                     <label class="input-label deva" x-text="tx('password')"></label>
-                    <input type="password" x-model="form.pass" @input="validateField('pass')" class="fixzen-input" :class="{'error': errors.pass}" :placeholder="tx('pass_placeholder')">
+                    <input type="password" x-model="form.pass" x-on:input="validateField('pass')" class="fixzen-input" :class="{'error': errors.pass, 'success': form.pass.length >= 6 && !errors.pass}" :placeholder="tx('pass_placeholder')">
                     <p x-show="errors.pass" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_pass')"></p>
                 </div>
 
@@ -258,57 +258,74 @@
             setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
             proceedFromLang() { this.step = 'choose'; },
             normalizePhone() { return '+91' + this.form.phone.trim(); },
+            
             resetErrors() {
                 this.message = '';
+                this.form = { name:'', phone:'', user:'', pass:'' };
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
-            // REAL-TIME INLINE FIELD INTERACTIVE VALIDATOR
+            // REAL-TIME INSTANT KEYSTROKE LIVE INLINE FIELD VALIDATOR
             validateField(field) {
+                this.message = '';
+                const val = (this.form[field] || '').trim();
+
                 if (field === 'phone') {
-                    const indianPhoneRegex = /^[6-9]\d{9}$/;
-                    this.errors.phone = !indianPhoneRegex.test(this.form.phone.trim());
+                    const digits = this.form.phone.replace(/\D/g, '');
+                    // Instantly catches character input faults or invalid leading digits
+                    if (digits.length > 0) {
+                        const firstDigit = parseInt(digits[0]);
+                        this.errors.phone = firstDigit < 6 || isNaN(firstDigit) || (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits));
+                    } else {
+                        this.errors.phone = false;
+                    }
                 }
+
                 if (field === 'pass') {
-                    this.errors.pass = !this.form.pass || this.form.pass.length < 6;
+                    this.errors.pass = this.form.pass.length > 0 && this.form.pass.length < 6;
                 }
+
                 if (this.isNewUser) {
                     if (field === 'name') {
-                        this.errors.name = !this.form.name.trim();
+                        this.errors.name = this.form.name.length > 0 && val.length === 0;
                     }
                     if (field === 'user') {
-                        const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
-                        this.errors.user = !alphaNumericRegex.test(this.form.user.trim());
+                        if (val.length > 0) {
+                            const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                            this.errors.user = !alphaNumericRegex.test(val);
+                        } else {
+                            this.errors.user = false;
+                        }
                     }
                 }
             },
 
-            // CORE VERIFICATION ENGINE HOOK
             async processForm() {
-                this.resetErrors();
+                const cleanPhone = this.form.phone.trim();
+                const indianPhoneRegex = /^[6-9]\d{9}$/;
+
+                // Explicit validation verification snapshot scan before dispatching payloads
+                this.errors.phone = !indianPhoneRegex.test(cleanPhone);
+                this.errors.pass = !this.form.pass || this.form.pass.length < 6;
                 
-                // Run complete validation scan across form inputs
-                this.validateField('phone');
-                this.validateField('pass');
                 if (this.isNewUser) {
-                    this.validateField('name');
-                    this.validateField('user');
+                    this.errors.name = !this.form.name.trim();
+                    const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                    this.errors.user = !alphaNumericRegex.test(this.form.user.trim());
                 }
 
-                // Block submission loop execution chain if error parameters evaluate true
                 if (this.errors.phone || this.errors.pass || (this.isNewUser && (this.errors.name || this.errors.user))) {
-                    this.message = 'Please correct the highlighted errors before proceeding.';
+                    this.message = 'Please correct the highlighted format errors before continuing.';
                     return;
                 }
 
                 this.loading = true;
-                const cleanPhone = this.form.phone.trim();
                 const phone = this.normalizePhone();
                 const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
 
                 try {
                     if (this.isNewUser) {
-                        // Public Profile Duplicate Checks
+                        // Public Sheet Conflict Resolution Assertions
                         const { data: phoneUser } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -335,7 +352,7 @@
                             return;
                         }
 
-                        // Provision Authentication Credentials Row Entry
+                        // Execute standard secure authorization row allocation
                         const { data: authData, error: signupError } = await window.supabase.auth.signUp({
                             email: mockEmail,
                             password: this.form.pass,
@@ -363,7 +380,7 @@
                         window.location.href = 'index.html';
 
                     } else {
-                        // Existing Account Login Pipeline
+                        // Sign-in pipeline execution layer
                         const { error: loginError } = await window.supabase.auth.signInWithPassword({
                             email: mockEmail,
                             password: this.form.pass
@@ -381,7 +398,7 @@
                     }
                 } catch (err) {
                     this.message = err.message;
-                } finally {
+                } final {
                     this.loading = false;
                 }
             },
