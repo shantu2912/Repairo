@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -47,10 +48,6 @@
             display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
             letter-spacing: 0.1em; color: #A07D54; margin-bottom: 0.5rem; margin-left: 0.5rem;
         }
-        .otp-box {
-            width: 100%; text-align: center; letter-spacing: 0.5em; font-size: 1.5rem;
-            border: 2px dashed #A07D54; background: rgba(160, 125, 84, 0.05);
-        }
         .btn-primary {
             width: 100%; padding: 1.1rem; border-radius: 1.2rem; background-color: #5D5646;
             color: white; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
@@ -65,7 +62,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Language Selector Styles */
         .lang-btn {
             flex: 1; padding: 0.75rem 0.5rem; border-radius: 1rem;
             border: 2px solid #DFD4C3; background: white;
@@ -78,284 +74,14 @@
         .lang-btn .lang-native { display: block; font-size: 1rem; margin-bottom: 2px; }
         .lang-btn .lang-sub { display: block; font-size: 0.55rem; opacity: 0.7; letter-spacing: 0.05em; text-transform: uppercase; }
 
-        /* Devanagari text rendering */
         .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
     </style>
 </head>
 
-<body
-class="min-h-screen flex items-center justify-center font-sans"
-x-data="{
-  step: 'lang',
-  isNewUser: false,
-  loading: false,
-  message: '',
-  showPassword: false,
-  lang: localStorage.getItem('fixzen_lang') || 'en',
-  form: { name:'', phone:'', user:'', pass:'', otp:'' },
-
-  // ─── TRANSLATIONS ────────────────────────────────────────────
-  t: {
-    en: {
-      tagline: 'Premium Home Care',
-      choose_lang: 'Choose Your Language',
-      lang_continue: 'CONTINUE',
-      welcome: 'Welcome to FixZen',
-      create_account: 'Create Account',
-      login: 'Login',
-      full_name: 'Full Name',
-      username: 'Username',
-      password: 'Password',
-      mobile: 'Mobile Number',
-      send_otp: 'Send Verification',
-      check_account: 'Check Account',
-      sign_in: 'Sign In',
-      already_member: 'Already a member? Sign In',
-      new_user: 'New User? Create Account',
-      verify_title: 'Verify Mobile',
-      code_sent: 'Code sent to +91',
-      enter_otp: '000000',
-      verify_btn: 'Verify & Join',
-      change_details: 'Change Details',
-      name_placeholder: 'Rahul Sharma',
-      user_placeholder: 'username',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'ENTER VALID PHONE NUMBER',
-      err_exists: 'ACCOUNT ALREADY EXISTS',
-      err_not_found: 'NO ACCOUNT FOUND',
-      err_otp: 'ENTER VALID OTP',
-      err_pass: 'ENTER PASSWORD',
-      err_login: 'INVALID LOGIN CREDENTIALS',
-      welcome_back: 'Welcome Back'
-    },
-    hi: {
-      tagline: 'प्रीमियम होम केयर',
-      choose_lang: 'अपनी भाषा चुनें',
-      lang_continue: 'आगे बढ़ें',
-      welcome: 'FixZen में आपका स्वागत है',
-      create_account: 'नया खाता बनाएं',
-      login: 'लॉगिन करें',
-      full_name: 'पूरा नाम',
-      username: 'उपयोगकर्ता नाम',
-      password: 'पासवर्ड',
-      mobile: 'मोबाइल नंबर',
-      send_otp: 'OTP भेजें',
-      check_account: 'खाता जांचें',
-      sign_in: 'साइन इन करें',
-      already_member: 'पहले से सदस्य हैं? साइन इन करें',
-      new_user: 'नए उपयोगकर्ता? खाता बनाएं',
-      verify_title: 'मोबाइल सत्यापित करें',
-      code_sent: 'कोड भेजा गया +91',
-      enter_otp: '000000',
-      verify_btn: 'सत्यापित करें और जुड़ें',
-      change_details: 'विवरण बदलें',
-      name_placeholder: 'राहुल शर्मा',
-      user_placeholder: 'उपयोगकर्ता नाम',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'मान्य फ़ोन नंबर दर्ज करें',
-      err_exists: 'खाता पहले से मौजूद है',
-      err_not_found: 'कोई खाता नहीं मिला',
-      err_otp: 'मान्य OTP दर्ज करें',
-      err_pass: 'पासवर्ड दर्ज करें',
-      err_login: 'लॉगिन जानकारी गलत है',
-      welcome_back: 'वापसी पर स्वागत है'
-    },
-    mr: {
-      tagline: 'प्रीमियम होम केअर',
-      choose_lang: 'तुमची भाषा निवडा',
-      lang_continue: 'पुढे जा',
-      welcome: 'FixZen मध्ये स्वागत आहे',
-      create_account: 'नवीन खाते तयार करा',
-      login: 'लॉगिन करा',
-      full_name: 'पूर्ण नाव',
-      username: 'वापरकर्ता नाव',
-      password: 'पासवर्ड',
-      mobile: 'मोबाइल नंबर',
-      send_otp: 'OTP पाठवा',
-      check_account: 'खाते तपासा',
-      sign_in: 'साइन इन करा',
-      already_member: 'आधीच सदस्य आहात? साइन इन करा',
-      new_user: 'नवीन वापरकर्ता? खाते तयार करा',
-      verify_title: 'मोबाइल सत्यापित करा',
-      code_sent: 'कोड पाठवला +91',
-      enter_otp: '000000',
-      verify_btn: 'सत्यापित करा आणि सामील व्हा',
-      change_details: 'तपशील बदला',
-      name_placeholder: 'राहुल शर्मा',
-      user_placeholder: 'वापरकर्ता नाव',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'वैध फोन नंबर टाका',
-      err_exists: 'खाते आधीपासून अस्तित्वात आहे',
-      err_not_found: 'खाते सापडले नाही',
-      err_otp: 'वैध OTP टाका',
-      err_pass: 'पासवर्ड टाका',
-      err_login: 'चुकीची लॉगिन माहिती',
-      welcome_back: 'पुन्हा स्वागत आहे'
-    }
-  },
-
-  // Helper: get translated string
-  tx(key) { return (this.t[this.lang] || this.t['en'])[key] || key; },
-
-  setLang(l) {
-    this.lang = l;
-    localStorage.setItem('fixzen_lang', l);
-  },
-
-  proceedFromLang() {
-    this.step = 'choose';
-  },
-
-  normalizePhone() {
-    return '+91' + this.form.phone.trim();
-  },
-
-  async handleAction() {
-    this.message = '';
-    if (!this.form.phone || this.form.phone.length !== 10) {
-      this.message = this.tx('err_phone');
-      return;
-    }
-
-    this.loading = true;
-    try {
-      const phone = this.normalizePhone();
-
-      const { data: existingUser, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', phone)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (this.isNewUser) {
-        if (existingUser) {
-          this.message = this.tx('err_exists');
-          this.loading = false;
-          return;
-        }
-
-        const { error: otpError } = await supabase.auth.signInWithOtp({ phone });
-        if (otpError) throw otpError;
-
-        this.step = 'otp';
-      } else {
-        if (!existingUser) {
-          this.message = this.tx('err_not_found');
-          this.loading = false;
-          return;
-        }
-        this.showPassword = true;
-      }
-    } catch (err) {
-      this.message = err.message;
-    } finally {
-      this.loading = false;
-    }
-  },
-
-  async loginWithPassword() {
-    if (!this.form.pass || this.form.pass.length < 6) {
-      this.message = this.tx('err_pass');
-      return;
-    }
-
-    this.loading = true;
-    this.message = '';
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        phone: this.normalizePhone(),
-        password: this.form.pass
-      });
-      if (error) throw error;
-
-      // Save language preference to profile
-      await this.saveLangToProfile();
-
-      window.location.href = 'index.html';
-    } catch {
-      this.message = this.tx('err_login');
-    } finally {
-      this.loading = false;
-    }
-  },
-
-  async verifyOtp() {
-    if (!this.form.otp || this.form.otp.length !== 6) {
-      this.message = this.tx('err_otp');
-      return;
-    }
-
-    this.loading = true;
-    this.message = '';
-    try {
-      const phone = this.normalizePhone();
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone,
-        token: this.form.otp,
-        type: 'sms'
-      });
-      if (error) throw error;
-
-      const user = data.user;
-      if (!user) throw new Error('USER NOT FOUND');
-
-      const { data: alreadyExists } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', phone)
-        .maybeSingle();
-
-      if (alreadyExists) {
-        this.message = this.tx('err_exists');
-        return;
-      }
-
-      await supabase.auth.updateUser({ password: this.form.pass });
-
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: user.id,
-        full_name: this.form.name,
-        username: this.form.user,
-        phone,
-        preferred_lang: this.lang   // ← Save language on signup
-      });
-
-      if (profileError) {
-        this.message = this.tx('err_exists');
-        return;
-      }
-
-      window.location.href = 'index.html';
-    } catch (err) {
-      this.message = err.message;
-    } finally {
-      this.loading = false;
-    }
-  },
-
-  // Save language to existing profile on login
-  async saveLangToProfile() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('profiles')
-          .update({ preferred_lang: this.lang })
-          .eq('id', user.id);
-      }
-    } catch(e) { /* non-critical */ }
-  }
-}"
->
+<body class="min-h-screen flex items-center justify-center font-sans" x-data="authApp()">
 
 <div class="w-full max-w-md animate__animated animate__fadeIn px-4">
 
-    <!-- LOGO -->
     <div class="text-center mb-8">
         <img src="fixzen.png" alt="FixZen" class="w-20 h-20 rounded-full mx-auto mb-4 shadow-xl border-2 border-white object-cover">
         <h1 class="text-3xl font-extrabold tracking-[0.2em] text-brand-olive uppercase">FixZen</h1>
@@ -364,7 +90,6 @@ x-data="{
 
     <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white">
 
-        <!-- ── STEP 1: LANGUAGE SELECTION ── -->
         <div x-show="step==='lang'" class="space-y-6 text-center">
             <div class="w-12 h-12 bg-brand-cream rounded-full flex items-center justify-center mx-auto mb-2">
                 <i class="fa-solid fa-language text-brand-gold text-xl"></i>
@@ -373,17 +98,14 @@ x-data="{
             <p class="text-[10px] text-brand-dark/40 font-bold uppercase tracking-widest">Select / चुनें / निवडा</p>
 
             <div class="flex gap-3 mt-4">
-                <!-- English -->
                 <button @click="setLang('en')" :class="lang==='en' ? 'active' : ''" class="lang-btn">
                     <span class="lang-native">🇬🇧 Eng</span>
                     <span class="lang-sub">English</span>
                 </button>
-                <!-- Hindi -->
                 <button @click="setLang('hi')" :class="lang==='hi' ? 'active' : ''" class="lang-btn">
                     <span class="lang-native deva">हिंदी</span>
                     <span class="lang-sub">Hindi</span>
                 </button>
-                <!-- Marathi -->
                 <button @click="setLang('mr')" :class="lang==='mr' ? 'active' : ''" class="lang-btn">
                     <span class="lang-native deva">मराठी</span>
                     <span class="lang-sub">Marathi</span>
@@ -396,37 +118,26 @@ x-data="{
             </button>
         </div>
 
-        <!-- ── STEP 2: CHOOSE LOGIN OR SIGNUP ── -->
         <div x-show="step==='choose'" x-cloak class="space-y-4 text-center">
-            <!-- Small lang switcher at top -->
             <div class="flex justify-center gap-2 mb-4">
-                <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
-                    class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all">EN</button>
-                <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
-                    class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">हि</button>
-                <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" 
-                    class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">म</button>
+                <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all">EN</button>
+                <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">हि</button>
+                <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">म</button>
             </div>
 
             <h2 class="font-serif italic text-2xl text-brand-olive mb-6 deva" x-text="tx('welcome')"></h2>
-            <button @click="isNewUser=true; step='auth'; showPassword=false" class="btn-primary deva" x-text="tx('create_account')"></button>
-            <button @click="isNewUser=false; step='auth'; showPassword=false" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
+            <button @click="isNewUser=true; step='auth'; showPassword=false; message=''" class="btn-primary deva" x-text="tx('create_account')"></button>
+            <button @click="isNewUser=false; step='auth'; showPassword=false; message=''" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
         </div>
 
-        <!-- ── STEP 3: AUTH FORM ── -->
         <div x-show="step==='auth'" x-cloak>
-            <!-- Mini lang switcher -->
             <div class="flex justify-end gap-2 mb-4">
-                <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
-                    class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all">EN</button>
-                <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
-                    class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">हि</button>
-                <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" 
-                    class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">म</button>
+                <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all">EN</button>
+                <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">हि</button>
+                <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">म</button>
             </div>
 
-            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-8 deva"
-                x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
+            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-8 deva" x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
 
             <div class="space-y-4">
                 <template x-if="isNewUser">
@@ -439,17 +150,8 @@ x-data="{
                             <label class="input-label deva" x-text="tx('username')"></label>
                             <input type="text" x-model="form.user" class="fixzen-input" :placeholder="tx('user_placeholder')">
                         </div>
-                        <div>
-                            <label class="input-label deva" x-text="tx('password')"></label>
-                            <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
-                        </div>
                     </div>
                 </template>
-
-                <div x-show="showPassword && !isNewUser">
-                    <label class="input-label deva" x-text="tx('password')"></label>
-                    <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
-                </div>
 
                 <div>
                     <label class="input-label deva" x-text="tx('mobile')"></label>
@@ -459,52 +161,28 @@ x-data="{
                     </div>
                 </div>
 
-                <button x-show="!showPassword || isNewUser" @click="handleAction()" class="btn-primary mt-4 shadow-lg deva" :disabled="loading">
-                    <span x-show="!loading" x-text="isNewUser ? tx('send_otp') : tx('check_account')"></span>
-                    <div x-show="loading" class="loader"></div>
-                </button>
+                <div>
+                    <label class="input-label deva" x-text="tx('password')"></label>
+                    <input type="password" x-model="form.pass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
+                </div>
 
-                <button x-show="showPassword && !isNewUser" @click="loginWithPassword()" class="btn-primary mt-4 shadow-lg deva" :disabled="loading">
-                    <span x-show="!loading" x-text="tx('sign_in')"></span>
+                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading">
+                    <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('sign_in')"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
 
                 <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-4 deva"></p>
 
                 <div class="mt-6 pt-6 border-t border-brand-beige/30 text-center">
-                    <button @click="step='choose'; message=''; showPassword=false" class="text-xs font-bold text-brand-gold hover:underline tracking-widest deva">
+                    <button @click="isNewUser = !isNewUser; message=''; showPassword=false;" class="text-xs font-bold text-brand-gold hover:underline tracking-widest deva">
                         <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- ── STEP 4: OTP VERIFICATION ── -->
-        <div x-show="step==='otp'" x-cloak class="text-center">
-            <div class="w-16 h-16 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold mx-auto mb-6">
-                <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
-            </div>
-            <h2 class="font-serif italic text-2xl text-brand-olive mb-2 deva" x-text="tx('verify_title')"></h2>
-            <p class="text-[10px] font-bold text-brand-dark/40 uppercase tracking-widest mb-8 deva">
-                <span x-text="tx('code_sent')"></span> <span x-text="form.phone"></span>
-            </p>
-
-            <div class="space-y-6">
-                <input type="text" x-model="form.otp" maxlength="6" class="fixzen-input otp-box" :placeholder="tx('enter_otp')">
-                <button @click="verifyOtp()" class="btn-primary bg-brand-gold deva" :disabled="loading">
-                    <span x-show="!loading" x-text="tx('verify_btn')"></span>
-                    <div x-show="loading" class="loader"></div>
-                </button>
-                <p x-show="message" x-text="message" class="text-[10px] text-red-500 font-bold text-center tracking-widest mt-2 deva"></p>
-                <button @click="step='auth'; message=''" class="text-[10px] font-bold text-brand-olive/50 uppercase tracking-widest hover:text-brand-gold deva"
-                    x-text="tx('change_details')">
-                </button>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Footer note -->
     <p class="text-center text-[10px] text-brand-olive/30 font-bold mt-6 uppercase tracking-widest">
         FixZen © 2026
     </p>
@@ -519,5 +197,186 @@ x-data="{
     window.supabase = supabase;
 </script>
 
+<script>
+    function authApp() {
+        return {
+            step: 'lang',
+            isNewUser: false,
+            loading: false,
+            message: '',
+            lang: localStorage.getItem('fixzen_lang') || 'en',
+            form: { name:'', phone:'', user:'', pass:'' },
+
+            t: {
+                en: {
+                    tagline: 'Premium Home Care', choose_lang: 'Choose Your Language', lang_continue: 'CONTINUE',
+                    welcome: 'Welcome to FixZen', create_account: 'Create Account', login: 'Login',
+                    full_name: 'Full Name', username: 'Username', password: 'Password', mobile: 'Mobile Number',
+                    sign_in: 'Sign In', already_member: 'Already a member? Sign In', new_user: 'New User? Create Account',
+                    name_placeholder: 'Rahul Sharma', user_placeholder: 'username', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
+                    err_phone: 'ENTER VALID 10-DIGIT INDIAN PHONE NUMBER', err_exists: 'ACCOUNT PHONE ALREADY EXISTS',
+                    err_user_exists: 'USERNAME ALREADY TAKEN', err_user_format: 'USERNAME MUST BE ALPHANUMERIC ONLY',
+                    err_not_found: 'NO ACCOUNT FOUND', err_pass: 'PASSWORD MUST BE AT LEAST 6 CHARACTERS',
+                    err_login: 'INVALID LOGIN CREDENTIALS', err_fields: 'PLEASE FILL ALL REQUIRED FIELDS', welcome_back: 'Welcome Back'
+                },
+                hi: {
+                    tagline: 'प्रीमियम होम केयर', choose_lang: 'अपनी भाषा चुनें', lang_continue: 'आगे बढ़ें',
+                    welcome: 'FixZen में आपका स्वागत है', create_account: 'नया खाता बनाएं', login: 'लॉगिन करें',
+                    full_name: 'पूरा नाम', username: 'उपयोगकर्ता नाम', password: 'पासवर्ड', mobile: 'मोबाइल नंबर',
+                    sign_in: 'साइन इन करें', already_member: 'पहले से सदस्य हैं? साइन इन करें', new_user: 'नए उपयोगकर्ता? खाता बनाएं',
+                    name_placeholder: 'राहुल शर्मा', user_placeholder: 'उपयोगकर्ता नाम', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
+                    err_phone: 'कृपया सही 10-अंकीय भारतीय फ़ोन नंबर दर्ज करें', err_exists: 'यह फ़ोन नंबर पहले से पंजीकृत है',
+                    err_user_exists: 'यह उपयोगकर्ता नाम पहले से लिया गया है', err_user_format: 'उपयोगकर्ता नाम में केवल अक्षर और अंक होने चाहिए',
+                    err_not_found: 'कोई खाता नहीं मिला', err_pass: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
+                    err_login: 'लॉगिन जानकारी गलत है', err_fields: 'कृपया सभी आवश्यक फ़ील्ड भरें', welcome_back: 'वापसी पर स्वागत है'
+                },
+                mr: {
+                    tagline: 'प्रीमियम होम केअर', choose_lang: 'तुमची भाषा निवडा', lang_continue: 'पुढे जा',
+                    welcome: 'FixZen मध्ये स्वागत आहे', create_account: 'नवीन खाते तयार करा', login: 'लॉगिन करा',
+                    full_name: 'पूर्ण नाव', username: 'वापरकर्ता नाव', password: 'पासवर्ड', mobile: 'मोबाइल नंबर',
+                    sign_in: 'साइन इन करा', already_member: 'आधीच सदस्य आहात? साइन इन करा', new_user: 'नवीन वापरकर्ता? खाते तयार करा',
+                    name_placeholder: 'राहुल शर्मा', user_placeholder: 'वापरकर्ता नाव', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
+                    err_phone: 'कृपया वैध 10-अंकी भारतीय फोन नंबर प्रविष्ट करा', err_exists: 'हा फोन नंबर आधीपासून नोंदणीकृत आहे',
+                    err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'वापरकर्ता नावामध्ये फक्त अक्षरे आणि अंक असावेत',
+                    err_not_found: 'खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
+                    err_login: 'चुकीची लॉगिन माहिती', err_fields: 'कृपया सर्व आवश्यक माहिती भरा', welcome_back: 'पुन्हा स्वागत आहे'
+                }
+            },
+
+            tx(key) { return (this.t[this.lang] || this.t['en'])[key] || key; },
+            setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
+            proceedFromLang() { this.step = 'choose'; },
+            normalizePhone() { return '+91' + this.form.phone.trim(); },
+
+            // MAIN UNIFIED GATEWAY CONTROLLER
+            async processForm() {
+                this.message = '';
+                const cleanPhone = this.form.phone.trim();
+                
+                // 1. STRICT INDIAN PHONE CORRECTION LOGIC (Validates 10-digits beginning with 6-9 range markers)
+                const indianPhoneRegex = /^[6-9]\d{9}$/;
+                if (!cleanPhone || !indianPhoneRegex.test(cleanPhone)) {
+                    this.message = this.tx('err_phone');
+                    return;
+                }
+
+                if (!this.form.pass || this.form.pass.length < 6) {
+                    this.message = this.tx('err_pass');
+                    return;
+                }
+
+                this.loading = true;
+                const phone = this.normalizePhone();
+
+                try {
+                    if (this.isNewUser) {
+                        // Registration validations
+                        if (!this.form.name.trim() || !this.form.user.trim()) {
+                            this.message = this.tx('err_fields');
+                            this.loading = false;
+                            return;
+                        }
+
+                        // USERNAME SYNTAX CHECKER (Validates alphanumeric format string boundaries)
+                        const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                        if (!alphaNumericRegex.test(this.form.user.trim())) {
+                            this.message = this.tx('err_user_format');
+                            this.loading = false;
+                            return;
+                        }
+
+                        // Duplicate Phone Check
+                        const { data: phoneUser } = await window.supabase
+                            .from('profiles')
+                            .select('id')
+                            .eq('phone', phone)
+                            .maybeSingle();
+
+                        if (phoneUser) {
+                            this.message = this.tx('err_exists');
+                            this.loading = false;
+                            return;
+                        }
+
+                        // Duplicate Username Check
+                        const { data: nameUser } = await window.supabase
+                            .from('profiles')
+                            .select('id')
+                            .eq('username', this.form.user.trim())
+                            .maybeSingle();
+
+                        if (nameUser) {
+                            this.message = this.tx('err_user_exists');
+                            this.loading = false;
+                            return;
+                        }
+
+                        // SECURE ANONYMOUS SIGNUP LAYER TRANSITION INTERFACE BINDING (Free user row allocation wrapper)
+                        const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
+                        const { data: authData, error: signupError } = await window.supabase.auth.signUp({
+                            email: mockEmail,
+                            password: this.form.pass,
+                            options: {
+                                data: {
+                                    full_name: this.form.name.trim(),
+                                    phone: phone
+                                }
+                            }
+                        });
+
+                        if (signupError) throw signupError;
+
+                        if (authData.user) {
+                            const { error: profileError } = await window.supabase.from('profiles').insert({
+                                id: authData.user.id,
+                                full_name: this.form.name.trim(),
+                                username: this.form.user.trim(),
+                                phone: phone,
+                                preferred_lang: this.lang
+                            });
+                            if (profileError) throw profileError;
+                        }
+
+                        window.location.href = 'index.html';
+
+                    } else {
+                        // LOGIN CHANNEL DIRECT ENTRY
+                        const mockEmail = `fixzen_${cleanPhone}@fixzen.internal`;
+                        const { error: loginError } = await window.supabase.auth.signInWithPassword({
+                            email: mockEmail,
+                            password: this.form.pass
+                        });
+
+                        if (loginError) {
+                            this.message = this.tx('err_login');
+                            this.loading = false;
+                            return;
+                        }
+
+                        await this.saveLangToProfile();
+                        window.location.href = 'index.html';
+                    }
+                } catch (err) {
+                    this.message = err.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async saveLangToProfile() {
+                try {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    if (user) {
+                        await window.supabase.from('profiles')
+                          .update({ preferred_lang: this.lang })
+                          .eq('id', user.id);
+                    }
+                } catch(e) {}
+            }
+        }
+    }
+</script>
+
 </body>
 </html>
+
