@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,7 +95,9 @@
         </template>
 
         <template x-for="item in filteredItems" :key="item.id">
-            <div class="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-100 relative overflow-hidden transition-all hover:shadow-lg">
+            <div @click="item.tech_id ? window.location.href='success.html?job_id=' + item.id : null"
+                 class="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-100 relative overflow-hidden transition-all hover:shadow-lg"
+                 :class="item.tech_id ? 'cursor-pointer border-brand-gold/30 hover:border-brand-gold/80' : ''">
                 
                 <div class="flex justify-between items-start mb-4">
                     <div class="flex gap-3">
@@ -103,13 +106,18 @@
                             <i class="fa-solid" :class="getIcon(item.category)"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-gray-900 leading-tight" x-text="item.category || 'Service'"></h3>
+                            <div class="flex items-center gap-1.5">
+                                <h3 class="font-bold text-gray-900 leading-tight" x-text="item.category || 'Service'"></h3>
+                                <template x-if="item.tech_id">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-brand-green animate-pulse" title="Technician Assigned"></span>
+                                </template>
+                            </div>
                             <p class="text-[10px] text-gray-400 font-mono mt-0.5">Job ID: <span x-text="(item.id || '').slice(0,8)"></span></p>
                         </div>
                     </div>
                     <div class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
                          :class="getStatusClasses(item.status)">
-                        <span x-text="item.status || 'Pending'"></span>
+                        <span x-text="normalizeStatusText(item.status)"></span>
                     </div>
                 </div>
 
@@ -125,7 +133,7 @@
                 </div>
 
                 <template x-if="item.technician">
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-100" @click.stop>
                         <div class="flex items-center gap-2">
                             <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
                                 <img :src="item.technician.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-full h-full object-cover">
@@ -138,16 +146,19 @@
                                 </div>
                             </div>
                         </div>
-                        <a :href="'tel:' + item.technician.phone" class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center border border-green-100 hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-phone text-xs"></i>
-                        </a>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] bg-brand-gold/10 text-brand-gold font-bold px-2 py-1 rounded-md uppercase tracking-wider">Tap card to track</span>
+                            <a :href="'tel:' + item.technician.phone" class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center border border-green-100 hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-phone text-xs"></i>
+                            </a>
+                        </div>
                     </div>
                 </template>
 
-                <template x-if="!item.tech_id && (!item.status || item.status.toLowerCase() === 'pending')">
+                <template x-if="!item.tech_id && (!item.status || item.status.toLowerCase() === 'pending' || item.status.toLowerCase() === 'searching')">
                     <div class="flex items-center gap-2 pt-3 border-t border-gray-100 text-brand-gold animate-pulse">
-                        <i class="fa-solid fa-radar text-sm"></i>
-                        <span class="text-xs font-bold">Broadcasting to experts...</span>
+                        <i class="fa-solid fa-radar text-sm animate-spin" style="animation-duration: 3s;"></i>
+                        <span class="text-xs font-bold">Broadcasting to nearest experts...</span>
                     </div>
                 </template>
 
@@ -169,20 +180,17 @@
                 async init() {
                     try {
                         if (!window.sb) { 
-                            if(!window.initSupabase()) throw new Error("Supabase client missing.");
+                            if(!window.initSupabase()) throw new Error("Supabase client mapping missing.");
                         }
 
-                        // ── LOCAL STORAGE CHECK USING MOCK SYSTEM TOKENS ──
                         const checkLogged = localStorage.getItem('local_user_logged');
                         const userPhone = localStorage.getItem('local_user_phone');
 
                         if (checkLogged !== 'true' || !userPhone) { 
-                            console.log("No authorization metrics found. Redirecting...");
                             window.location.href = 'loginuser.html'; 
                             return; 
                         }
                         
-                        // Query the profiles table directly matching this phone index
                         const { data: profile, error: profileError } = await window.sb
                             .from('profiles')
                             .select('*')
@@ -199,7 +207,7 @@
 
                         await this.fetchData(this.user.id);
 
-                        // Realtime Subscription channels
+                        // Realtime Updates listener
                         window.sb.channel('jobs-realtime')
                             .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
                                 this.fetchData(this.user.id);
@@ -217,7 +225,6 @@
                     try {
                         let allJobs = [];
 
-                        // 1. Gather jobs matching the direct unique custom identity column
                         const { data: jobsById, error: jErr } = await window.sb
                             .from('jobs')
                             .select('*')
@@ -226,7 +233,6 @@
                         if (jErr) throw jErr;
                         if (jobsById) allJobs = [...allJobs, ...jobsById];
 
-                        // 2. Fallback secondary snapshot checking raw phone strings
                         if (this.user && this.user.phone) {
                             const { data: jobsByPhone } = await window.sb
                                 .from('jobs')
@@ -235,11 +241,9 @@
                             if (jobsByPhone) allJobs = [...allJobs, ...jobsByPhone];
                         }
 
-                        // 3. De-duplicate list fields
                         const uniqueJobs = Array.from(new Map(allJobs.map(item => [item.id, item])).values());
                         uniqueJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                        // 4. Attach technician metrics context if assigned
                         this.items = await Promise.all(uniqueJobs.map(async (job) => {
                             let technician = null;
                             if (job.tech_id) {
@@ -262,7 +266,8 @@
                 },
 
                 get filteredItems() {
-                    const activeStatuses = ['pending', 'assigned', 'started', 'accepted', 'searching', 'arrived'];
+                    // Added 'in_progress' state mapping parameter inside tracking array boundaries
+                    const activeStatuses = ['pending', 'assigned', 'started', 'accepted', 'searching', 'arrived', 'in_progress'];
                     const s = (status) => (status || '').toLowerCase().trim();
                     
                     if (this.filter === 'active') {
@@ -270,6 +275,12 @@
                     } else {
                         return this.items.filter(i => !activeStatuses.includes(s(i.status)));
                     }
+                },
+
+                normalizeStatusText(status) {
+                    let s = (status || 'pending').toLowerCase().trim();
+                    if (s === 'in_progress') return 'In Progress';
+                    return status;
                 },
 
                 formatDate(dateStr) {
@@ -294,7 +305,7 @@
                 getStatusClasses(status) {
                     const s = (status || 'pending').toLowerCase().trim();
                     if(s === 'pending' || s === 'searching') return 'bg-yellow-50 text-yellow-600 border-yellow-200';
-                    if(s === 'assigned' || s === 'accepted' || s === 'arrived' || s === 'started') return 'bg-blue-50 text-blue-600 border-blue-200';
+                    if(s === 'assigned' || s === 'accepted' || s === 'arrived' || s === 'started' || s === 'in_progress') return 'bg-blue-50 text-blue-600 border-blue-200';
                     if(s === 'completed') return 'bg-green-50 text-green-600 border-green-200';
                     if(s === 'cancelled') return 'bg-red-50 text-red-600 border-red-200';
                     return 'bg-gray-50 text-gray-600';
