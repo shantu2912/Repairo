@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -247,7 +248,7 @@
                     name_placeholder: 'राहुल शर्मा', user_placeholder: 'वापरकर्ता नाव', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
                     err_phone: '6-9 ने सुरू होणारा वैध 10-अंकीय भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
                     err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
-                    err_not_found: 'या नंबरसह खाते असावे', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
+                    err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
                     err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
                     welcome_back: 'पुन्हा स्वागत आहे'
                 }
@@ -270,7 +271,7 @@
                 let val = this.form[field] || '';
 
                 if (field === 'name') {
-                    // STRIKES OUT INTERPOLATED NUMERIC DATA INSTANTLY
+                    // Strips out non-alphabet characters instantly
                     this.form.name = val.replace(/[^a-zA-Z\s]/g, '');
                     this.errors.name = this.form.name.trim().length > 0 && this.form.name.trim().length < 3;
                 }
@@ -321,7 +322,6 @@
 
                 this.loading = true;
                 const phone = this.normalizePhone();
-                // RFC COMPLIANT DOMAIN MAPPING FOR INTERNAL DRIVER AUTO-PASS
                 const mockEmail = `fixzen_${cleanPhone}@fixzenapp.com`;
 
                 try {
