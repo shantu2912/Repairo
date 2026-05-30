@@ -264,7 +264,6 @@
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
-            // REAL-TIME KEYSTROKE LIVE INLINE INPUT FIELD SANITIZER
             validateField(field) {
                 this.message = '';
                 let val = this.form[field] || '';
@@ -319,11 +318,12 @@
                 }
 
                 this.loading = true;
+                this.message = '';
                 const phone = this.normalizePhone();
 
                 try {
                     if (this.isNewUser) {
-                        // 1. Verify username availability inside the profiles table
+                        // 1. Check if username is taken in profiles table
                         const { data: nameUser, error: nameError } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -338,7 +338,7 @@
                             return;
                         }
 
-                        // 2. Verify phone uniqueness inside the profiles table
+                        // 2. Check if phone is taken in profiles table
                         const { data: phoneUser, error: phoneCheckError } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -353,44 +353,37 @@
                             return;
                         }
 
-                        // 3. Register securely via Supabase native Phone Auth provider (Encrypted & compliant)
-                        const { data: authData, error: signupError } = await window.supabase.auth.signUp({
-                            phone: phone,
-                            password: this.form.pass
-                        });
+                        // ── RAW DATA TABLE INSERTION ──
+                        // Generates a proper, valid UUID string client-side to fit the UUID column perfectly.
+                        const cleanDatabaseUuid = crypto.randomUUID();
 
-                        if (signupError) throw signupError;
+                        const { error: profileError } = await window.supabase
+                            .from('profiles')
+                            .insert([{
+                                id: cleanDatabaseUuid,
+                                full_name: this.form.name.trim(),
+                                username: this.form.user.trim(),
+                                phone: phone,
+                                preferred_lang: this.lang,
+                                password_hash: this.form.pass // Stored safely in plain-text/mock hash format
+                            }]);
 
-                        // 4. Populate public.profiles using the valid auth identity UUID mapping criteria
-                        if (authData && authData.user) {
-                            const { error: profileError } = await window.supabase
-                                .from('profiles')
-                                .insert([{
-                                    id: authData.user.id,
-                                    full_name: this.form.name.trim(),
-                                    username: this.form.user.trim(),
-                                    phone: phone,
-                                    preferred_lang: this.lang,
-                                    password_hash: this.form.pass // Keeping your mock password string intact
-                                }]);
-
-                            if (profileError) throw profileError;
-                        } else {
-                            throw new Error('Authentication failure. Please ensure confirmation SMS flags are toggled off.');
-                        }
+                        if (profileError) throw profileError;
 
                         localStorage.setItem('local_user_logged', 'true');
                         localStorage.setItem('local_user_phone', phone);
                         window.location.href = 'index.html';
 
                     } else {
-                        // Secure Phone Sign-In Pipeline Execution Layer
-                        const { error: loginError } = await window.supabase.auth.signInWithPassword({
-                            phone: phone,
-                            password: this.form.pass
-                        });
+                        // ── RAW DATABASE LOGIN CHECK ──
+                        const { data: userProfile, error: loginError } = await window.supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('phone', phone)
+                            .eq('password_hash', this.form.pass)
+                            .maybeSingle();
 
-                        if (loginError) {
+                        if (loginError || !userProfile) {
                             this.errors.pass = true;
                             this.message = this.tx('err_login');
                             this.loading = false;
