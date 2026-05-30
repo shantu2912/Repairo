@@ -119,6 +119,7 @@
         agreed:false,
         loading:true,
         bookingLoading:false,
+        fetchingLocation: false,
 
         customerName:'',
         phone:'',
@@ -127,6 +128,9 @@
         time:'',
         minTime: '',
         minDate: '',
+
+        lat:null,
+        lng:null,
 
         async init() {
             const params = new URLSearchParams(window.location.search);
@@ -225,6 +229,41 @@
             this.showAgreement = true;
         },
 
+        async fetchGPS() {
+            this.fetchingLocation = true;
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                this.fetchingLocation = false;
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    this.lat = position.coords.latitude;
+                    this.lng = position.coords.longitude;
+                    
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
+                        const data = await response.json();
+                        if(data && data.display_name) {
+                            let addressParts = data.display_name.split(',');
+                            this.address = addressParts.slice(0, 3).join(',').trim();
+                        } else {
+                            this.address = 'GPS Location Captured';
+                        }
+                    } catch (error) {
+                        this.address = 'GPS Location Captured';
+                    }
+                    this.fetchingLocation = false;
+                },
+                (error) => {
+                    alert('Unable to retrieve your location. Please check browser permissions.');
+                    this.fetchingLocation = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        },
+
         async confirmBooking() {
             if (this.bookingLoading) return;
 
@@ -243,8 +282,8 @@
                 const { data: { user } } = await window.sb.auth.getUser();
                 if (!user) {
                     alert('Please Log In to book!');
-                    sessionStorage.setItem('redirect_to', window.location.href);
-                    window.location.href = 'loginuser.html';
+                    // Redirect to login page, and append the current service URL so loginuser.html knows where to return
+                    window.location.href = `loginuser.html?redirect=${encodeURIComponent(window.location.href)}`;
                     return;
                 }
 
@@ -264,7 +303,6 @@
                 const firstService = this.selectedSubs[0];
                 const scheduledDateTime = `${this.date}T${this.time}:00`;
 
-                // Removed lat and lng dependencies to match database payload expectations
                 const jobPayload = {
                     user_id: user.id,
                     category: this.service?.name || 'General Service',
@@ -275,6 +313,8 @@
                     phone: this.phone,
                     status: 'pending',
                     urgent: false,
+                    latitude: this.lat || null,
+                    longitude: this.lng || null,
                     scheduled_time: scheduledDateTime,
                     original_price: this.total,
                     discounted_price: this.total
@@ -407,8 +447,14 @@
                     <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
-                    <i class="fa-solid fa-location-dot text-brand-gold"></i>
+                <button @click="fetchGPS()" type="button"
+                        class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-green-50 text-brand-green text-sm font-bold hover:bg-green-100 transition-colors flex justify-center items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-location-crosshairs text-lg" :class="fetchingLocation ? 'fa-spin' : ''"></i>
+                    <span x-text="fetchingLocation ? 'Pinpointing Location...' : '📍 Fetch Current GPS Location'"></span>
+                </button>
+
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3" :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
+                    <i class="fa-solid fa-location-dot text-brand-gold" :class="lat ? 'text-brand-green' : ''"></i>
                     <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
@@ -432,6 +478,7 @@
                     <li>The final price may vary slightly based on actual inspection and spare parts required.</li>
                     <li>A minimum visiting charge applies if no service is taken after diagnosis.</li>
                     <li>Cancellations within 30 mins of arrival may incur a fee.</li>
+                    <li>You authorize FixZen to share your exact GPS location with the nearest available expert.</li>
                 </ul>
             </div>
 
