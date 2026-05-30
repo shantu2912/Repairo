@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -173,17 +172,17 @@
                             if(!window.initSupabase()) throw new Error("Supabase client missing.");
                         }
 
-                        // ── LOCAL STORAGE AUTH CHECK MODULE ──
+                        // ── LOCAL STORAGE CHECK USING MOCK SYSTEM TOKENS ──
                         const checkLogged = localStorage.getItem('local_user_logged');
                         const userPhone = localStorage.getItem('local_user_phone');
 
                         if (checkLogged !== 'true' || !userPhone) { 
-                            console.log("No plain text user tokens detected, routing to login entry.");
+                            console.log("No authorization metrics found. Redirecting...");
                             window.location.href = 'loginuser.html'; 
                             return; 
                         }
                         
-                        // Grab user row directly using their phone number
+                        // Query the profiles table directly matching this phone index
                         const { data: profile, error: profileError } = await window.sb
                             .from('profiles')
                             .select('*')
@@ -193,7 +192,6 @@
                         if (profileError) throw profileError;
                         
                         if (!profile) {
-                            // Fallback descriptor context if tracking rows return clear
                             this.user = { id: 'fallback_uid', phone: userPhone };
                         } else {
                             this.user = profile;
@@ -201,7 +199,7 @@
 
                         await this.fetchData(this.user.id);
 
-                        // ── LISTEN FOR LIVE JOBS TABLE STATUS UPDATES ──
+                        // Realtime Subscription channels
                         window.sb.channel('jobs-realtime')
                             .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
                                 this.fetchData(this.user.id);
@@ -219,7 +217,7 @@
                     try {
                         let allJobs = [];
 
-                        // 1. Get Jobs directly assigned to this profile user_id
+                        // 1. Gather jobs matching the direct unique custom identity column
                         const { data: jobsById, error: jErr } = await window.sb
                             .from('jobs')
                             .select('*')
@@ -228,7 +226,7 @@
                         if (jErr) throw jErr;
                         if (jobsById) allJobs = [...allJobs, ...jobsById];
 
-                        // 2. Backup check utilizing phone sequence match
+                        // 2. Fallback secondary snapshot checking raw phone strings
                         if (this.user && this.user.phone) {
                             const { data: jobsByPhone } = await window.sb
                                 .from('jobs')
@@ -237,11 +235,11 @@
                             if (jobsByPhone) allJobs = [...allJobs, ...jobsByPhone];
                         }
 
-                        // 3. De-duplicate matches
+                        // 3. De-duplicate list fields
                         const uniqueJobs = Array.from(new Map(allJobs.map(item => [item.id, item])).values());
                         uniqueJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                        // 4. Attach Technician profiles context if active
+                        // 4. Attach technician metrics context if assigned
                         this.items = await Promise.all(uniqueJobs.map(async (job) => {
                             let technician = null;
                             if (job.tech_id) {
@@ -258,7 +256,7 @@
                     } catch (err) {
                         console.error(err);
                         this.errorMessage = "Data Load Error: " + err.message;
-                    } final {
+                    } finally {
                         this.loading = false;
                     }
                 },
@@ -306,4 +304,3 @@
     </script>
 </body>
 </html>
-
