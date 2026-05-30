@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -265,11 +264,13 @@
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
+            // REAL-TIME KEYSTROKE LIVE INLINE INPUT FIELD SANITIZER
             validateField(field) {
                 this.message = '';
                 let val = this.form[field] || '';
 
                 if (field === 'name') {
+                    // Strips numbers out instantly to protect database string schema integrity
                     this.form.name = val.replace(/[^a-zA-Z\s]/g, '');
                     this.errors.name = this.form.name.trim().length > 0 && this.form.name.trim().length < 3;
                 }
@@ -300,6 +301,7 @@
                 }
             },
 
+            // UNIFIED FORM TRANSACTION CONTROLLER METHOD
             async processForm() {
                 const cleanPhone = this.form.phone.trim();
                 const indianPhoneRegex = /^[6-9]\d{9}$/;
@@ -320,29 +322,18 @@
 
                 this.loading = true;
                 const phone = this.normalizePhone();
+                const mockEmail = `fixzen_${cleanPhone}@fixzenapp.com`;
 
                 try {
                     if (this.isNewUser) {
-                        // Check if phone already exists
-                        const { data: phoneUser } = await window.supabase
-                            .from('profiles')
-                            .select('id')
-                            .eq('phone', phone)
-                            .maybeSingle();
-
-                        if (phoneUser) {
-                            this.errors.phone = true;
-                            this.message = this.tx('err_exists');
-                            this.loading = false;
-                            return;
-                        }
-
-                        // Check if username already exists
-                        const { data: nameUser } = await window.supabase
+                        // Validate username availability prior to triggering the authorization system
+                        const { data: nameUser, error: nameError } = await window.supabase
                             .from('profiles')
                             .select('id')
                             .eq('username', this.form.user.trim())
                             .maybeSingle();
+
+                        if (nameError) throw nameError;
 
                         if (nameUser) {
                             this.errors.user = true;
@@ -351,44 +342,55 @@
                             return;
                         }
 
-                        // ── DIRECT ZERO-OTP DATABASE REGISTRATION FLOW ──
-                        // Generated random secure UUID to keep table relational sync unbroken
-                        const randomId = crypto.randomUUID();
-                        
-                        const { error: profileError } = await window.supabase.from('profiles').insert({
-                            id: randomId,
-                            full_name: this.form.name.trim(),
-                            username: this.form.user.trim(),
-                            phone: phone,
-                            preferred_lang: this.lang,
-                            password_hash: this.form.pass // Stored simply for prototype mock verification
+                        // 1. Establish the authenticated session row entry to generate a true relational system user ID
+                        const { data: authData, error: signupError } = await window.supabase.auth.signUp({
+                            email: mockEmail,
+                            password: this.form.pass,
+                            options: {
+                                data: {
+                                    full_name: this.form.name.trim(),
+                                    phone: phone
+                                }
+                            }
                         });
-                        
-                        if (profileError) throw profileError;
 
-                        // Save session identity to bypass index check guards
+                        if (signupError) throw signupError;
+
+                        // 2. Safely synchronize custom profile fields into public table sheets utilizing the matching system UUID
+                        if (authData && authData.user) {
+                            const { error: profileError } = await window.supabase.from('profiles').insert([{
+                                id: authData.user.id, // <-- Synchronizes identical user tracking ID parameters flawlessly
+                                full_name: this.form.name.trim(),
+                                username: this.form.user.trim(),
+                                phone: phone,
+                                preferred_lang: this.lang,
+                                password_hash: this.form.pass
+                            }]);
+
+                            if (profileError) throw profileError;
+                        } else {
+                            throw new Error('Could not establish profile configuration context. Verify rate settings.');
+                        }
+
                         localStorage.setItem('local_user_logged', 'true');
                         localStorage.setItem('local_user_phone', phone);
                         window.location.href = 'index.html';
 
                     } else {
-                        // ── DIRECT DATABASE LOGIN VERIFICATION ──
-                        const { data: profile, error: loginError } = await window.supabase
-                            .from('profiles')
-                            .select('*')
-                            .eq('phone', phone)
-                            .eq('password_hash', this.form.pass)
-                            .maybeSingle();
+                        // Sign-in execution loop processing channel
+                        const { error: loginError } = await window.supabase.auth.signInWithPassword({
+                            email: mockEmail,
+                            password: this.form.pass
+                        });
 
-                        if (loginError || !profile) {
+                        if (loginError) {
                             this.errors.pass = true;
                             this.message = this.tx('err_login');
                             this.loading = false;
                             return;
                         }
 
-                        localStorage.setItem('local_user_logged', 'true');
-                        localStorage.setItem('local_user_phone', phone);
+                        await this.saveLangToProfile();
                         window.location.href = 'index.html';
                     }
                 } catch (err) {
@@ -396,6 +398,17 @@
                 } finally {
                     this.loading = false;
                 }
+            },
+
+            async saveLangToProfile() {
+                try {
+                    const { data: { user } } = await window.supabase.auth.getUser();
+                    if (user) {
+                        await window.supabase.from('profiles')
+                          .update({ preferred_lang: this.lang })
+                          .eq('id', user.id);
+                    }
+                } catch(e) {}
             }
         }
     }
