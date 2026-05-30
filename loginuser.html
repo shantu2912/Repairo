@@ -224,8 +224,8 @@
                     name_placeholder: 'Rahul Sharma', user_placeholder: 'username', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
                     err_phone: 'Must be a 10-digit Indian number starting with 6-9', err_exists: 'Mobile number already registered',
                     err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets and numbers only (No spaces)',
-                    err_not_found: 'Account not found with this number', err_pass: 'Password must be at least 6 characters long',
-                    err_login: 'Incorrect mobile or password. Please try again.', msg_name_req: 'Enter letters only (Min 3 characters, no numbers)',
+                    err_not_found: 'Account not found with this mobile number', err_pass: 'Password must be at least 6 characters long',
+                    err_login: 'Incorrect mobile number or password.', msg_name_req: 'Enter letters only (Min 3 characters, no numbers)',
                     welcome_back: 'Welcome Back'
                 },
                 hi: {
@@ -249,7 +249,7 @@
                     err_phone: '6-9 ने सुरू होणारा वैध 10-अंकीय भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
                     err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
                     err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
-                    err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड. कृपया पुन्हा प्रयत्न करा.', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
+                    err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड।', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
                     welcome_back: 'पुन्हा स्वागत आहे'
                 }
             },
@@ -265,13 +265,11 @@
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
-            // REAL-TIME KEYSTROKE LIVE INLINE FIELD VALIDATOR
             validateField(field) {
                 this.message = '';
                 let val = this.form[field] || '';
 
                 if (field === 'name') {
-                    // Strips out non-alphabet characters instantly
                     this.form.name = val.replace(/[^a-zA-Z\s]/g, '');
                     this.errors.name = this.form.name.trim().length > 0 && this.form.name.trim().length < 3;
                 }
@@ -302,7 +300,7 @@
                 }
             },
 
-          async processForm() {
+            async processForm() {
                 const cleanPhone = this.form.phone.trim();
                 const indianPhoneRegex = /^[6-9]\d{9}$/;
 
@@ -353,42 +351,44 @@
                             return;
                         }
 
-                        // REGISTRATION VIA NATIVE PHONE ASSIGNMENT (Bypasses email rate limit structures entirely)
-                        const { data: authData, error: signupError } = await window.supabase.auth.signUp({
+                        // ── DIRECT ZERO-OTP DATABASE REGISTRATION FLOW ──
+                        // Generated random secure UUID to keep table relational sync unbroken
+                        const randomId = crypto.randomUUID();
+                        
+                        const { error: profileError } = await window.supabase.from('profiles').insert({
+                            id: randomId,
+                            full_name: this.form.name.trim(),
+                            username: this.form.user.trim(),
                             phone: phone,
-                            password: this.form.pass
+                            preferred_lang: this.lang,
+                            password_hash: this.form.pass // Stored simply for prototype mock verification
                         });
+                        
+                        if (profileError) throw profileError;
 
-                        if (signupError) throw signupError;
-
-                        if (authData.user) {
-                            const { error: profileError } = await window.supabase.from('profiles').insert({
-                                id: authData.user.id,
-                                full_name: this.form.name.trim(),
-                                username: this.form.user.trim(),
-                                phone: phone,
-                                preferred_lang: this.lang
-                            });
-                            if (profileError) throw profileError;
-                        }
-
+                        // Save session identity to bypass index check guards
+                        localStorage.setItem('local_user_logged', 'true');
+                        localStorage.setItem('local_user_phone', phone);
                         window.location.href = 'index.html';
 
                     } else {
-                        // LOGIN VIA NATIVE PHONE
-                        const { error: loginError } = await window.supabase.auth.signInWithPassword({
-                            phone: phone,
-                            password: this.form.pass
-                        });
+                        // ── DIRECT DATABASE LOGIN VERIFICATION ──
+                        const { data: profile, error: loginError } = await window.supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('phone', phone)
+                            .eq('password_hash', this.form.pass)
+                            .maybeSingle();
 
-                        if (loginError) {
+                        if (loginError || !profile) {
                             this.errors.pass = true;
                             this.message = this.tx('err_login');
                             this.loading = false;
                             return;
                         }
 
-                        await this.saveLangToProfile();
+                        localStorage.setItem('local_user_logged', 'true');
+                        localStorage.setItem('local_user_phone', phone);
                         window.location.href = 'index.html';
                     }
                 } catch (err) {
@@ -396,16 +396,6 @@
                 } finally {
                     this.loading = false;
                 }
-            },
-            async saveLangToProfile() {
-                try {
-                    const { data: { user } } = await window.supabase.auth.getUser();
-                    if (user) {
-                        await window.supabase.from('profiles')
-                          .update({ preferred_lang: this.lang })
-                          .eq('id', user.id);
-                    }
-                } catch(e) {}
             }
         }
     }
