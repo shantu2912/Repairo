@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -10,7 +11,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -83,7 +84,7 @@
                 name: "Deep Cleaning", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Professional home deep cleaning and sanitization.",
                 subs: [
-                    {n:"1 BHK Deep Clean", p:1100, d:"Full house floor & dusting"},
+                    {n:"1 BHK Deep Clean", p:1100, d:"Full house house & dusting"},
                     {n:"2 BHK Deep Clean", p:1430, d:"Full house floor & dusting"},
                     {n:"Kitchen Deep Clean", p:880, d:"Oil stain & chimney removal"},
                     {n:"Bathroom Cleaning", p:660, d:"Acid wash & sanitization"},
@@ -121,6 +122,7 @@
         bookingLoading:false,
         fetchingLocation: false,
 
+        user: null,
         customerName:'',
         phone:'',
         address:'',
@@ -150,22 +152,44 @@
             
             this.setDefaultTime();
             
-            if (window.sb) {
-                const { data: { user } } = await window.sb.auth.getUser();
-                if (user) {
-                    const { data: existingJobs } = await window.sb
-                        .from('jobs')
-                        .select('id, status')
-                        .eq('user_id', user.id)
-                        .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started'])
-                        .order('created_at', { ascending: false });
+            // ── UNIFIED HOOK: INITIALIZE PROFILE SNAPSHOT DIRECT FROM LOCAL STORAGE ──
+            const isLogged = localStorage.getItem('local_user_logged');
+            const storedPhone = localStorage.getItem('local_user_phone');
 
-                    if (existingJobs && existingJobs.length > 0) {
-                        console.log('Redirecting user to active tracking state instance:', existingJobs[0].id);
-                        localStorage.setItem('active_job_id', existingJobs[0].id);
-                        window.location.href = `success.html?job_id=${existingJobs[0].id}`;
-                        return;
+            if (isLogged === 'true' && storedPhone && window.sb) {
+                try {
+                    const { data: profile, error } = await window.sb
+                        .from('profiles')
+                        .select('*')
+                        .eq('phone', storedPhone.trim())
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (profile) {
+                        this.user = profile;
+                        // Automatic form box content assignment execution
+                        this.customerName = profile.full_name;
+                        this.phone = profile.phone.replace('+91', '').trim();
+                        if (profile.address) this.address = profile.address;
+
+                        // Verify if user already contains an active job state profile instance
+                        const { data: existingJobs } = await window.sb
+                            .from('jobs')
+                            .select('id, status')
+                            .eq('user_id', profile.id)
+                            .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started'])
+                            .order('created_at', { ascending: false });
+
+                        if (existingJobs && existingJobs.length > 0) {
+                            console.log('Redirecting to active tracking instance:', existingJobs[0].id);
+                            localStorage.setItem('active_job_id', existingJobs[0].id);
+                            window.location.href = `success.html?job_id=${existingJobs[0].id}`;
+                            return;
+                        }
                     }
+                } catch (err) {
+                    console.error('Error auto-populating field metadata bounds:', err.message);
                 }
             }
             
@@ -226,6 +250,13 @@
 
         openAgreement() {
             if (this.selectedSubs.length === 0) return;
+            // Kick to login if data fields return clear of identification flags
+            if (!this.user) {
+                sessionStorage.setItem('redirect_to', window.location.href);
+                alert('Please Log In to book!');
+                window.location.href = 'loginuser.html';
+                return;
+            }
             this.showAgreement = true;
         },
 
@@ -277,20 +308,12 @@
                 if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
 
                 this.bookingLoading = true;
-                if (!window.sb) { alert('System Offline'); this.bookingLoading = false; return; }
-
-                const { data: { user } } = await window.sb.auth.getUser();
-                if (!user) {
-                    alert('Please Log In to book!');
-                    // Redirect to login page, and append the current service URL so loginuser.html knows where to return
-                    window.location.href = `loginuser.html?redirect=${encodeURIComponent(window.location.href)}`;
-                    return;
-                }
+                if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
 
                 const { data: blockJobs } = await window.sb
                     .from('jobs')
                     .select('id')
-                    .eq('user_id', user.id)
+                    .eq('user_id', this.user.id)
                     .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
 
                 if (blockJobs && blockJobs.length > 0) {
@@ -304,13 +327,13 @@
                 const scheduledDateTime = `${this.date}T${this.time}:00`;
 
                 const jobPayload = {
-                    user_id: user.id,
+                    user_id: this.user.id, // Maps real stored table identity matching UUID columns perfectly
                     category: this.service?.name || 'General Service',
                     device: firstService?.n || 'General Service',
                     issue: firstService?.d || 'Service requested via app',
                     customer_name: this.customerName,
                     location: this.address,
-                    phone: this.phone,
+                    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
                     status: 'pending',
                     urgent: false,
                     latitude: this.lat || null,
@@ -340,7 +363,7 @@
                 this.bookingLoading = false;
             }
         }
-    }">
+    } border-none bg-transparent outline-none">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
@@ -444,7 +467,10 @@
 
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center gap-3">
                     <i class="fa-solid fa-phone text-brand-gold"></i>
-                    <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                    <div class="flex items-center w-full">
+                        <span class="text-sm font-semibold text-brand-dark mr-1 select-none">+91</span>
+                        <input type="tel" x-model="phone" placeholder="Enter Phone Number" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
+                    </div>
                 </div>
 
                 <button @click="fetchGPS()" type="button"
@@ -502,3 +528,4 @@
     </div>
 </body>
 </html>
+
