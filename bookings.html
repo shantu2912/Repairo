@@ -15,11 +15,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
-        // Define Client Globally as 'sb' to prevent naming conflicts
         const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
         
-        // Wait for window load to ensure library exists
         window.initSupabase = function() {
             if (window.supabase) {
                 window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -31,7 +29,6 @@
             }
         };
         
-        // Run immediately
         window.initSupabase();
 
         tailwind.config = {
@@ -172,26 +169,42 @@
 
                 async init() {
                     try {
-                        // A. Verify Library
                         if (!window.sb) { 
-                            if(!window.initSupabase()) throw new Error("Supabase library missing. Check internet connection.");
+                            if(!window.initSupabase()) throw new Error("Supabase client missing.");
                         }
 
-                        // B. Auth Check
-                        const { data: { user }, error: authError } = await window.sb.auth.getUser();
-                        if (authError || !user) { 
-                            console.log("No user found, redirecting...");
+                        // ── LOCAL STORAGE AUTH CHECK MODULE ──
+                        const checkLogged = localStorage.getItem('local_user_logged');
+                        const userPhone = localStorage.getItem('local_user_phone');
+
+                        if (checkLogged !== 'true' || !userPhone) { 
+                            console.log("No plain text user tokens detected, routing to login entry.");
                             window.location.href = 'loginuser.html'; 
                             return; 
                         }
                         
-                        this.user = user;
-                        await this.fetchData(user.id);
+                        // Grab user row directly using their phone number
+                        const { data: profile, error: profileError } = await window.sb
+                            .from('profiles')
+                            .select('*')
+                            .eq('phone', userPhone.trim())
+                            .maybeSingle();
 
-                        // C. Realtime Updates
+                        if (profileError) throw profileError;
+                        
+                        if (!profile) {
+                            // Fallback descriptor context if tracking rows return clear
+                            this.user = { id: 'fallback_uid', phone: userPhone };
+                        } else {
+                            this.user = profile;
+                        }
+
+                        await this.fetchData(this.user.id);
+
+                        // ── LISTEN FOR LIVE JOBS TABLE STATUS UPDATES ──
                         window.sb.channel('jobs-realtime')
                             .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-                                this.fetchData(user.id);
+                                this.fetchData(this.user.id);
                             })
                             .subscribe();
 
@@ -204,40 +217,39 @@
 
                 async fetchData(userId) {
                     try {
-                        // 1. Get Booking IDs
-                        const { data: bookings, error: bErr } = await window.sb
-                            .from('bookings')
-                            .select('id, price, date')
-                            .eq('user_id', userId);
-
-                        if (bErr) throw bErr;
-
                         let allJobs = [];
 
-                        // 2. Get Jobs linked to Booking IDs
-                        if (bookings && bookings.length > 0) {
-                            const bookingIds = bookings.map(b => b.id);
-                            const { data: jobsByBooking } = await window.sb.from('jobs').select('*').in('booking_id', bookingIds);
-                            if (jobsByBooking) allJobs = [...allJobs, ...jobsByBooking];
-                        }
+                        // 1. Get Jobs directly assigned to this profile user_id
+                        const { data: jobsById, error: jErr } = await window.sb
+                            .from('jobs')
+                            .select('*')
+                            .eq('user_id', userId);
 
-                        // 3. (Backup) Get Jobs by Phone if ID link fails
-                        // First get profile phone
-                        const { data: profile } = await window.sb.from('profiles').select('phone').eq('id', userId).single();
-                        if (profile && profile.phone) {
-                            const { data: jobsByPhone } = await window.sb.from('jobs').select('*').eq('phone', profile.phone);
+                        if (jErr) throw jErr;
+                        if (jobsById) allJobs = [...allJobs, ...jobsById];
+
+                        // 2. Backup check utilizing phone sequence match
+                        if (this.user && this.user.phone) {
+                            const { data: jobsByPhone } = await window.sb
+                                .from('jobs')
+                                .select('*')
+                                .eq('phone', this.user.phone.trim());
                             if (jobsByPhone) allJobs = [...allJobs, ...jobsByPhone];
                         }
 
-                        // 4. Unique Filter & Sort
+                        // 3. De-duplicate matches
                         const uniqueJobs = Array.from(new Map(allJobs.map(item => [item.id, item])).values());
                         uniqueJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                        // 5. Attach Tech Info
+                        // 4. Attach Technician profiles context if active
                         this.items = await Promise.all(uniqueJobs.map(async (job) => {
                             let technician = null;
                             if (job.tech_id) {
-                                const { data: tech } = await window.sb.from('technicians').select('*').eq('id', job.tech_id).single();
+                                const { data: tech } = await window.sb
+                                    .from('technicians')
+                                    .select('*')
+                                    .eq('id', job.tech_id)
+                                    .maybeSingle();
                                 technician = tech;
                             }
                             return { ...job, technician };
@@ -246,14 +258,14 @@
                     } catch (err) {
                         console.error(err);
                         this.errorMessage = "Data Load Error: " + err.message;
-                    } finally {
+                    } final {
                         this.loading = false;
                     }
                 },
 
                 get filteredItems() {
-                    const activeStatuses = ['pending', 'assigned', 'started', 'accepted'];
-                    const s = (status) => (status || '').toLowerCase();
+                    const activeStatuses = ['pending', 'assigned', 'started', 'accepted', 'searching', 'arrived'];
+                    const s = (status) => (status || '').toLowerCase().trim();
                     
                     if (this.filter === 'active') {
                         return this.items.filter(i => activeStatuses.includes(s(i.status)));
@@ -282,9 +294,9 @@
                     return 'bg-gray-100 text-gray-600';
                 },
                 getStatusClasses(status) {
-                    const s = (status || 'pending').toLowerCase();
-                    if(s === 'pending') return 'bg-yellow-50 text-yellow-600 border-yellow-200';
-                    if(s === 'assigned' || s === 'accepted') return 'bg-blue-50 text-blue-600 border-blue-200';
+                    const s = (status || 'pending').toLowerCase().trim();
+                    if(s === 'pending' || s === 'searching') return 'bg-yellow-50 text-yellow-600 border-yellow-200';
+                    if(s === 'assigned' || s === 'accepted' || s === 'arrived' || s === 'started') return 'bg-blue-50 text-blue-600 border-blue-200';
                     if(s === 'completed') return 'bg-green-50 text-green-600 border-green-200';
                     if(s === 'cancelled') return 'bg-red-50 text-red-600 border-red-200';
                     return 'bg-gray-50 text-gray-600';
