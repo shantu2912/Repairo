@@ -243,9 +243,9 @@
                     tagline: 'प्रीमियम होम केअर', choose_lang: 'तुमची भाषा निवडा', lang_continue: 'पुढे जा',
                     welcome: 'FixZen मध्ये स्वागत आहे', create_account: 'नवीन खाते तयार करा', login: 'लॉगिन करा',
                     full_name: 'पूर्ण नाव', username: 'वापरकर्ता नाव', password: 'पासवर्ड', mobile: 'मोबाइल नंबर',
-                    sign_in: 'साइन करा', already_member: 'आधीच सदस्य आहात? साइन इन करा', new_user: 'नवीन वापरकर्ता? खाते तयार करा',
+                    sign_in: 'साइन इन करा', already_member: 'आधीच सदस्य आहात? साइन इन करा', new_user: 'नवीन वापरकर्ता? खाते तयार करा',
                     name_placeholder: 'राहुल शर्मा', user_placeholder: 'वापरकर्ता नाव', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
-                    err_phone: '6-9 ने सुरू होणारा वैध 10-अंकी भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
+                    err_phone: '6-9 ने सुरू होणारा वैध 10-अंकीय भारतीय नंबर प्रविष्ट करा', err_exists: 'हा मोबाईल नंबर आधीपासून नोंदणीकृत आहे',
                     err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
                     err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
                     err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड।', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
@@ -264,6 +264,7 @@
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
+            // INTERACTIVE STEP KEYSTROKE SANITIZATION LOGIC LAYER
             validateField(field) {
                 this.message = '';
                 let val = this.form[field] || '';
@@ -322,7 +323,7 @@
 
                 try {
                     if (this.isNewUser) {
-                        // Validate username availability prior to pushing data arrays
+                        // Validate username uniqueness directly inside public table layout
                         const { data: nameUser, error: nameError } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -338,7 +339,7 @@
                             return;
                         }
 
-                        // Validate phone uniqueness inside your public table records space
+                        // Validate phone availability parameters before initializing session bounds
                         const { data: phoneUser, error: phoneCheckError } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -354,29 +355,36 @@
                             return;
                         }
 
-                        // ── COMPLIANT CLIENT-SIDE UUID GENERATION ──
-                        // Employs a secure 128-bit RFC 4122 compliant unique identifier generation tool setup sequence string
-                        const strictlyValidDatabaseUuid = crypto.randomUUID();
+                        // ── ANONYMOUS AUTH CHANNEL SIGNAL GENERATION ──
+                        // Completely bypasses SMTP/SMS providers while yielding a matching, valid UUID row sequence parameters
+                        const { data: authData, error: signupError } = await window.supabase.auth.signInAnonymously();
 
-                        const { error: profileError } = await window.supabase
-                            .from('profiles')
-                            .insert([{
-                                id: strictlyValidDatabaseUuid, // Satisfies PostgreSQL data-type limits perfectly
-                                full_name: this.form.name.trim(),
-                                username: this.form.user.trim(),
-                                phone: phone,
-                                preferred_lang: this.lang,
-                                password_hash: this.form.pass 
-                            }]);
+                        if (signupError) throw signupError;
 
-                        if (profileError) throw profileError;
+                        // Synchronize identical row references securely using the official auth identity UUID
+                        if (authData && authData.user) {
+                            const { error: profileError } = await window.supabase
+                                .from('profiles')
+                                .insert([{
+                                    id: authData.user.id, // Legitimate structure UUID matching PostgreSQL foreign rules safely
+                                    full_name: this.form.name.trim(),
+                                    username: this.form.user.trim(),
+                                    phone: phone,
+                                    preferred_lang: this.lang,
+                                    password_hash: this.form.pass 
+                                }]);
+
+                            if (profileError) throw profileError;
+                        } else {
+                            throw new Error('Could not establish authentication reference. Verify dashboard provider rules.');
+                        }
 
                         localStorage.setItem('local_user_logged', 'true');
                         localStorage.setItem('local_user_phone', phone);
                         window.location.href = 'index.html';
 
                     } else {
-                        // Direct database login validation loop logic pipeline
+                        // Verify table matches against custom dashboard state rows during profile sign-in
                         const { data: userProfile, error: loginError } = await window.supabase
                             .from('profiles')
                             .select('*')
