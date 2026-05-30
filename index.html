@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -20,7 +21,7 @@ html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
 
 <script>
 // --- LOGIC: INITIALIZE DATABASE ---
@@ -117,8 +118,8 @@ x-data="{
                  'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथी वापरकर्ता', 'Please Log In': 'कृपया लॉग इन करा', 'Home': 'होम',
                  'Carpenter': 'सुतार', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रिशियन', 'Painter': 'पेंटर', 'Mason': 'गवंडी', 'Welder': 'वेल्डर',
                  'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वॉशिंग मशीन', 'Microwave': 'मायक्रोवेव्ह', 'RO Filter': 'आरओ फिल्टर',
-                 'TV / LED': 'टीव्ही / एलईडी', 'CCTV': 'सीसीटीव्ही', 'Car Mech': 'कार मेकॅनिक', 'Bike Mech': 'बाईक मेकॅनिक', 'Pest Ctrl': 'कीटक नियंत्रण', 'Grass Cutting': 'गवत कापणे',
-                 'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑटो', 'Other': 'इतर'
+                 'TV / LED': 'टीव्ही / एलईडी', 'CCTV': 'सीसीटीवी', 'Car Mech': 'कार मेकॅनिक', 'Bike Mech': 'बाईक मेकॅनिक', 'Pest Ctrl': 'कीटक नियंत्रण', 'Grass Cutting': 'गवत कापणे',
+                 'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑतो', 'Other': 'इतर'
              }
          },
          tx(key) { return this.t[this.lang]?.[key] || key; },
@@ -126,36 +127,33 @@ x-data="{
          // ----------------------------------------------------
 
        masterList: [
+            // HOME
+            {n:'Carpenter', cat:'Home_cat', img:'carpenter.png'},
+            {n:'Plumber', cat:'Home_cat', img:'plumber.png'},
+            {n:'Electrician', cat:'Home_cat', img:'electrician.png'},
+            {n:'Painter', cat:'Home_cat', img:'painter.jpg'},
+            {n:'Mason', cat:'Home_cat', img:'mason.jpg'},
+            {n:'Welder', cat:'Home_cat', img:'welder.png'},
 
-// HOME
-{n:'Carpenter', cat:'Home_cat', img:'carpenter.png'},
-{n:'Plumber', cat:'Home_cat', img:'plumber.png'},
-{n:'Electrician', cat:'Home_cat', img:'electrician.png'},
-{n:'Painter', cat:'Home_cat', img:'painter.jpg'},
-{n:'Mason', cat:'Home_cat', img:'mason.jpg'},
-{n:'Welder', cat:'Home_cat', img:'welder.png'},
+            // APPLIANCE
+            {n:'AC Tech', cat:'Appliance', img:'ac-tech.png'},
+            {n:'Fridge', cat:'Appliance', img:'fridge.png'},
+            {n:'Washing M.', cat:'Appliance', img:'washing-machine.png'},
+            {n:'Microwave', cat:'Appliance', img:'microwave.png'},
+            {n:'RO Filter', cat:'Appliance', img:'ro-filter.png'},
 
-// APPLIANCE
-{n:'AC Tech', cat:'Appliance', img:'ac-tech.png'},
-{n:'AC Tech', cat:'Appliance', img:'ac-tech.jpg'},
-{n:'Fridge', cat:'Appliance', img:'fridge.png'},
-{n:'Washing M.', cat:'Appliance', img:'washing-machine.png'},
-{n:'Microwave', cat:'Appliance', img:'microwave.png'},
-{n:'RO Filter', cat:'Appliance', img:'ro-filter.png'},
+            // ELECTRONICS
+            {n:'TV / LED', cat:'Electronics', img:'tv.jpeg'},
+            {n:'CCTV', cat:'Electronics', img:'cctv.png'},
 
-// ELECTRONICS
-{n:'TV / LED', cat:'Electronics', img:'tv.jpeg'},
-{n:'CCTV', cat:'Electronics', img:'cctv.png'},
+            // AUTO
+            {n:'Car Mech', cat:'Auto', img:'car-mechanic.png'},
+            {n:'Bike Mech', cat:'Auto', img:'bike-mechanic.png'},
 
-// AUTO
-{n:'Car Mech', cat:'Auto', img:'car-mechanic.png'},
-{n:'Bike Mech', cat:'Auto', img:'bike-mechanic.png'},
-
-// OTHER
-{n:'Pest Ctrl', cat:'Other', img:'pest-control.png'},
-{n:'Grass Cutting', cat:'Other', img:'grass-cutting.png'}
-
-],
+            // OTHER
+            {n:'Pest Ctrl', cat:'Other', img:'pest-control.png'},
+            {n:'Grass Cutting', cat:'Other', img:'grass-cutting.png'}
+        ],
          get filteredServices() {
              if (this.searchQuery === '') return [];
              return this.masterList.filter(item => 
@@ -164,13 +162,35 @@ x-data="{
              );
          },
 
+         // PERSISTED LOCAL STORAGE IDENTITY CHECK SNAPSHOT
          async checkUser() {
-             if (!window.sb) return; 
-             const { data: { user } } = await window.sb.auth.getUser();
-             if (user) {
-                 const { data: profile } = await window.sb.from('profiles').select('*').eq('id', user.id).single();
-                 this.user = profile || { full_name: 'Valued Customer', phone: user.phone };
-                 await this.checkActiveJobsFromDatabase(user.id);
+             const checkLogged = localStorage.getItem('local_user_logged');
+             const userPhone = localStorage.getItem('local_user_phone');
+
+             if (checkLogged === 'true' && userPhone && window.sb) {
+                 try {
+                     // Query custom profiles table directly to extract display fields
+                     const { data: profile, error } = await window.sb
+                         .from('profiles')
+                         .select('*')
+                         .eq('phone', userPhone.trim())
+                         .maybeSingle();
+
+                     if (error) throw error;
+
+                     if (profile) {
+                         this.user = profile;
+                         await this.checkActiveJobsFromDatabase(profile.id);
+                     } else {
+                         // Fallback identity context instantiation if profile reference yields empty
+                         this.user = { full_name: 'Valued Customer', phone: userPhone };
+                     }
+                 } catch (err) {
+                     console.error('Error parsing profile indices: ', err.message);
+                     this.user = { full_name: 'Valued Customer', phone: userPhone };
+                 }
+             } else {
+                 this.user = null;
              }
          },
 
@@ -199,8 +219,10 @@ x-data="{
              }
          },
 
+         // REFACTORED SESSION DESTRUCTION LAYER
          async logout() {
-             await window.sb.auth.signOut();
+             localStorage.removeItem('local_user_logged');
+             localStorage.removeItem('local_user_phone');
              localStorage.removeItem('active_job_id');
              window.location.reload();
          },
@@ -260,18 +282,16 @@ x-init="
                 </defs>
 
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-5xl tracking-[0.12em] fixzen-svg-text animate-draw-text">FIXZENIX</text>
-
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="url(#fixzenix-gold-shim)" class="font-sans font-extrabold text-5xl tracking-[0.12em] opacity-0 animate-fill-text animate-logo-shine" style="animation-delay: 1.8s; animation-fill-mode: forwards;">FIXZENIX</text>
             </svg>
             
             <p class="text-brand-gold text-[10px] font-bold tracking-[0.32em] uppercase mt-4 opacity-0 animate-sub-text-slide select-none pointer-events-none" 
                style="animation-delay: 2.6s; animation-fill-mode: forwards !important;">
-                WE FIX, YOU RELAX
+                 WE FIX, YOU RELAX
             </p>
         </div>
     </div>
 
-<!-- SIDEBAR -->
 <div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
 <div class="absolute inset-0 bg-brand-olive/40 backdrop-blur-md transition-opacity" @click="sidebarOpen = false"></div>
 <aside class="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col border-r border-white/50"
@@ -289,7 +309,7 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
 </div>
 <div class="relative z-10">
 <p class="text-white font-bold text-sm" x-text="user ? user.full_name : tx('Guest User')"></p>
-<p class="text-brand-beige text-xs" x-text="user ? user.phone : tx('Please Log In')"></p>
+<p class="text-brand-beige text-xs" x-text="user ? (user.username ? '@' + user.username : user.phone) : tx('Please Log In')"></p>
 </div>
 </div>
 </div>
@@ -347,7 +367,6 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
 </aside>
 </div>
 
-<!-- MAIN DASHBOARD CONTENT -->
 <div class="max-w-md mx-auto min-h-screen bg-brand-cream relative shadow-2xl overflow-hidden pb-40" x-show="!loading">
 
 <header class="absolute top-0 w-full z-[60] px-5 py-4 flex justify-between items-center pointer-events-none">
@@ -414,8 +433,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <template x-for="result in filteredServices">
 <div @click="navigate('service.html?id=' + result.n)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer border-b border-brand-cream last:border-0 transition-colors group">
 <div class="text-2xl w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center group-hover:scale-110 transition-transform select-none">
-<img :src="result.img"
-class="w-7 h-7 object-contain drop-shadow-lg">
+<img :src="result.img" class="w-7 h-7 object-contain drop-shadow-lg">
 </div>
 <div>
 <p class="font-bold text-sm text-brand-dark" x-text="tx(result.n)"></p>
@@ -428,22 +446,17 @@ class="w-7 h-7 object-contain drop-shadow-lg">
 </div>
 </div>
 
-<!-- ALL SERVICE SECTIONS -->
 <div class="pb-12 space-y-8 mt-6">
 
-<!-- HOME -->
 <div class="px-6 animate__animated animate__fadeInUp">
 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
 x-text="tx('Construction & Home')"></h2>
 
 <div class="grid grid-cols-4 gap-y-5 gap-x-3">
-
 <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
-
 <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
 @click="navigate('service.html?id='+s.n)">
 
-<!-- ICON -->
 <div class="w-16 h-16 rounded-[22px]
            bg-gradient-to-br from-white via-[#faf7f2] to-[#ece5da]
            border border-white/70
@@ -452,40 +465,24 @@ x-text="tx('Construction & Home')"></h2>
            relative overflow-hidden
            transition-all duration-300
            group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-
 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-<img :src="s.img"
-class="w-full h-full object-contain p-2
-               relative z-10
-               transition-all duration-300
-               group-hover:scale-110">
+<img :src="s.img" class="w-full h-full object-contain p-2 relative z-10 transition-all duration-300 group-hover:scale-110">
 </div>
-<!-- TEXT -->
-<span class="mt-2 min-h-[28px]
-                                text-[10px] sm:text-[11px]
-                                font-semibold text-brand-olive
-                                text-center leading-tight tracking-tight
-                                transition-colors group-hover:text-brand-gold"
+
+<span class="mt-2 min-h-[28px] text-[10px] sm:text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold"
 x-text="tx(s.n)">
 </span>
-
 </div>
-
 </template>
-
 </div>
 </div>
 
-<!-- APPLIANCE -->
 <div class="px-6 animate__animated animate__fadeInUp">
 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
 x-text="tx('Appliance Repair')"></h2>
 
 <div class="grid grid-cols-4 gap-y-5 gap-x-3">
-
 <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
-
 <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
 @click="navigate('service.html?id='+s.n)">
 
@@ -497,40 +494,24 @@ x-text="tx('Appliance Repair')"></h2>
            relative overflow-hidden
            transition-all duration-300
            group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-
 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-<img :src="s.img"
-class="w-full h-full object-contain p-2
-               relative z-10
-               transition-all duration-300
-               group-hover:scale-110">
+<img :src="s.img" class="w-full h-full object-contain p-2 relative z-10 transition-all duration-300 group-hover:scale-110">
 </div>
 
-<span class="mt-2 min-h-[28px]
-                                text-[10px] sm:text-[11px]
-                                font-semibold text-brand-olive
-                                text-center leading-tight tracking-tight
-                                transition-colors group-hover:text-brand-gold"
+<span class="mt-2 min-h-[28px] text-[10px] sm:text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold"
 x-text="tx(s.n)">
 </span>
-
 </div>
-
 </template>
-
 </div>
 </div>
 
-<!-- ELECTRONICS -->
 <div class="px-6 animate__animated animate__fadeInUp">
 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
 x-text="tx('Electronics & IT')"></h2>
 
 <div class="grid grid-cols-4 gap-y-5 gap-x-3">
-
 <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
-
 <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
 @click="navigate('service.html?id='+s.n)">
 
@@ -542,40 +523,24 @@ x-text="tx('Electronics & IT')"></h2>
            relative overflow-hidden
            transition-all duration-300
            group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-
 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-<img :src="s.img"
-class="w-full h-full object-contain p-2
-               relative z-10
-               transition-all duration-300
-               group-hover:scale-110">
+<img :src="s.img" class="w-full h-full object-contain p-2 relative z-10 transition-all duration-300 group-hover:scale-110">
 </div>
 
-<span class="mt-2 min-h-[28px]
-                                text-[10px] sm:text-[11px]
-                                font-semibold text-brand-olive
-                                text-center leading-tight tracking-tight
-                                transition-colors group-hover:text-brand-gold"
+<span class="mt-2 min-h-[28px] text-[10px] sm:text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold"
 x-text="tx(s.n)">
 </span>
-
 </div>
-
 </template>
-
 </div>
 </div>
 
-<!-- AUTOMOBILE -->
 <div class="px-6 animate__animated animate__fadeInUp">
 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
 x-text="tx('Automobile')"></h2>
 
 <div class="grid grid-cols-4 gap-y-5 gap-x-3">
-
 <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
-
 <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
 @click="navigate('service.html?id='+s.n)">
 
@@ -587,40 +552,24 @@ x-text="tx('Automobile')"></h2>
            relative overflow-hidden
            transition-all duration-300
            group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-
 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-<img :src="s.img"
-class="w-full h-full object-contain p-2
-               relative z-10
-               transition-all duration-300
-               group-hover:scale-110">
+<img :src="s.img" class="w-full h-full object-contain p-2 relative z-10 transition-all duration-300 group-hover:scale-110">
 </div>
 
-<span class="mt-2 min-h-[28px]
-                                text-[10px] sm:text-[11px]
-                                font-semibold text-brand-olive
-                                text-center leading-tight tracking-tight
-                                transition-colors group-hover:text-brand-gold"
+<span class="mt-2 min-h-[28px] text-[10px] sm:text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold"
 x-text="tx(s.n)">
 </span>
-
 </div>
-
 </template>
-
 </div>
 </div>
 
-<!-- OTHER -->
 <div class="px-6 animate__animated animate__fadeInUp">
 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
 x-text="tx('Other Services')"></h2>
 
 <div class="grid grid-cols-4 gap-y-5 gap-x-3">
-
 <template x-for="s in masterList.filter(item => item.cat === 'Other')">
-
 <div class="group flex flex-col items-center cursor-pointer active:scale-95 transition-all duration-300 hover:-translate-y-1"
 @click="navigate('service.html?id='+s.n)">
 
@@ -632,28 +581,15 @@ x-text="tx('Other Services')"></h2>
            relative overflow-hidden
            transition-all duration-300
            group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-
 <div class="absolute inset-0 bg-brand-gold/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-<img :src="s.img"
-class="w-full h-full object-contain p-2
-               relative z-10
-               transition-all duration-300
-               group-hover:scale-110">
+<img :src="s.img" class="w-full h-full object-contain p-2 relative z-10 transition-all duration-300 group-hover:scale-110">
 </div>
 
-<span class="mt-2 min-h-[28px]
-                                text-[10px] sm:text-[11px]
-                                font-semibold text-brand-olive
-                                text-center leading-tight tracking-tight
-                                transition-colors group-hover:text-brand-gold"
+<span class="mt-2 min-h-[28px] text-[10px] sm:text-[11px] font-semibold text-brand-olive text-center leading-tight tracking-tight transition-colors group-hover:text-brand-gold"
 x-text="tx(s.n)">
 </span>
-
 </div>
-
 </template>
-
 </div>
 </div>
 
@@ -664,7 +600,7 @@ x-text="tx(s.n)">
 <div class="bg-gradient-to-r from-brand-olive via-[#453F33] to-brand-dark rounded-3xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-2 border-brand-gold/60 flex flex-col gap-3.5 backdrop-blur-md">
 <div class="flex items-center gap-3.5">
 <div class="relative flex h-12 w-12 items-center justify-center bg-white/10 rounded-2xl border border-white/20 flex-shrink-0 shadow-inner">
-<span class="animate-ping absolute inline-flex h-7 w-7 rounded-full bg-brand-green opacity-75"></span>
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
 <i class="fa-solid text-xl text-brand-green relative z-10" :class="currentJobStatus === 'arrived' ? 'fa-door-open animate-bounce' : 'fa-truck-ramp-box animate-pulse'"></i>
 </div>
 <div class="flex-1 min-w-0">
@@ -682,7 +618,6 @@ x-text="tx(s.n)">
 </div>
 </template>
 
-<!-- FLOATING LANGUAGE SWITCHER (ABOVE BOTTOM NAV) -->
 <div class="fixed bottom-[85px] left-1/2 transform -translate-x-1/2 z-50 flex justify-center w-full max-w-sm pointer-events-none">
 <div class="bg-white/90 backdrop-blur-md border border-brand-beige/50 rounded-full p-1 flex shadow-[0_10px_30px_rgba(0,0,0,0.15)] pointer-events-auto gap-1">
 <button @click="setLang('en')" :class="lang==='en'?'bg-brand-olive text-white':'text-brand-olive hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all tracking-wider">ENG</button>
@@ -691,7 +626,6 @@ x-text="tx(s.n)">
 </div>
 </div>
 
-<!-- BOTTOM NAVIGATION -->
 <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
 <div class="bg-white/80 backdrop-blur-xl border border-white/50 rounded-full px-2 py-2 flex justify-around items-center shadow-super-float">
 <a href="index.html" class="flex items-center gap-2 bg-brand-olive text-white px-5 py-3 rounded-full transition-all shadow-lg"><i class="fa-solid fa-house"></i><span class="text-xs font-bold" x-text="tx('Home')"></span></a>
@@ -716,3 +650,4 @@ x-text="tx(s.n)">
 
 </body>
 </html>
+
