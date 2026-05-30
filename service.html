@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -84,7 +83,7 @@
                 name: "Deep Cleaning", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
                 desc: "Professional home deep cleaning and sanitization.",
                 subs: [
-                    {n:"1 BHK Deep Clean", p:1100, d:"Full house house & dusting"},
+                    {n:"1 BHK Deep Clean", p:1100, d:"Full house floor & dusting"},
                     {n:"2 BHK Deep Clean", p:1430, d:"Full house floor & dusting"},
                     {n:"Kitchen Deep Clean", p:880, d:"Oil stain & chimney removal"},
                     {n:"Bathroom Cleaning", p:660, d:"Acid wash & sanitization"},
@@ -114,25 +113,25 @@
 
 <body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
      x-data="{
-        service:null,
-        selectedSubs:[],
-        showAgreement:false,
-        agreed:false,
-        loading:true,
-        bookingLoading:false,
+        service: null,
+        selectedSubs: [],
+        showAgreement: false,
+        agreed: false,
+        loading: true,
+        bookingLoading: false,
         fetchingLocation: false,
 
         user: null,
-        customerName:'',
-        phone:'',
-        address:'',
-        date:'',
-        time:'',
+        customerName: '',
+        phone: '',
+        address: '',
+        date: '',
+        time: '',
         minTime: '',
         minDate: '',
 
-        lat:null,
-        lng:null,
+        lat: null,
+        lng: null,
 
         async init() {
             const params = new URLSearchParams(window.location.search);
@@ -152,7 +151,7 @@
             
             this.setDefaultTime();
             
-            // ── UNIFIED HOOK: INITIALIZE PROFILE SNAPSHOT DIRECT FROM LOCAL STORAGE ──
+            // ── LOCAL STORAGE SESSION & PROFILE RETRIEVAL ──
             const isLogged = localStorage.getItem('local_user_logged');
             const storedPhone = localStorage.getItem('local_user_phone');
 
@@ -168,12 +167,11 @@
 
                     if (profile) {
                         this.user = profile;
-                        // Automatic form box content assignment execution
                         this.customerName = profile.full_name;
                         this.phone = profile.phone.replace('+91', '').trim();
                         if (profile.address) this.address = profile.address;
 
-                        // Verify if user already contains an active job state profile instance
+                        // Check for existing active jobs
                         const { data: existingJobs } = await window.sb
                             .from('jobs')
                             .select('id, status')
@@ -182,18 +180,17 @@
                             .order('created_at', { ascending: false });
 
                         if (existingJobs && existingJobs.length > 0) {
-                            console.log('Redirecting to active tracking instance:', existingJobs[0].id);
                             localStorage.setItem('active_job_id', existingJobs[0].id);
                             window.location.href = `success.html?job_id=${existingJobs[0].id}`;
                             return;
                         }
                     }
                 } catch (err) {
-                    console.error('Error auto-populating field metadata bounds:', err.message);
+                    console.error('Error auto-populating field profile data:', err.message);
                 }
             }
             
-            setTimeout(() => this.loading = false, 400);
+            this.loading = false;
         },
 
         setDefaultTime() {
@@ -229,12 +226,6 @@
             return selectedDateTime >= minDateTime;
         },
 
-        getDateTimeError() {
-            if (!this.date || !this.time) return 'Please select date and time';
-            if (!this.isDateTimeValid()) { return 'Selected time must be at least 30 minutes from now'; }
-            return '';
-        },
-
         toggleSub(sub) {
             const index = this.selectedSubs.findIndex(s => s.n === sub.n);
             if (index > -1) {
@@ -250,7 +241,6 @@
 
         openAgreement() {
             if (this.selectedSubs.length === 0) return;
-            // Kick to login if data fields return clear of identification flags
             if (!this.user) {
                 sessionStorage.setItem('redirect_to', window.location.href);
                 alert('Please Log In to book!');
@@ -327,7 +317,7 @@
                 const scheduledDateTime = `${this.date}T${this.time}:00`;
 
                 const jobPayload = {
-                    user_id: this.user.id, // Maps real stored table identity matching UUID columns perfectly
+                    user_id: this.user.id,
                     category: this.service?.name || 'General Service',
                     device: firstService?.n || 'General Service',
                     issue: firstService?.d || 'Service requested via app',
@@ -363,7 +353,7 @@
                 this.bookingLoading = false;
             }
         }
-    } border-none bg-transparent outline-none">
+    }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-transform cursor-pointer border border-white/50">
@@ -373,7 +363,7 @@
 
     <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50">
         <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-gold mb-3"></i>
-        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase">Loading...</p>
+        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase">Loading Details...</p>
     </div>
 
     <div x-show="!loading" class="pb-44 animate__animated animate__fadeIn">
@@ -528,4 +518,3 @@
     </div>
 </body>
 </html>
-
