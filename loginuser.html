@@ -256,7 +256,8 @@
             tx(key) { return (this.t[this.lang] || this.t['en'])[key] || key; },
             setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
             proceedFromLang() { this.step = 'choose'; },
-            normalizePhone() { return '+91' + this.form.phone.trim(); },
+            // Strict whitespace compression fixes data evaluation conflicts across scripts
+            normalizePhone() { return '+91' + this.form.phone.replace(/\s+/g, '').trim(); },
             
             resetErrors() {
                 this.message = '';
@@ -354,7 +355,6 @@
                         }
 
                         // ── RAW DATA TABLE INSERTION ──
-                        // Generates a proper, valid UUID string client-side to fit the UUID column perfectly.
                         const cleanDatabaseUuid = crypto.randomUUID();
 
                         const { error: profileError } = await window.supabase
@@ -363,9 +363,9 @@
                                 id: cleanDatabaseUuid,
                                 full_name: this.form.name.trim(),
                                 username: this.form.user.trim(),
-                                phone: phone,
+                                phone: phone, // Now cleanly stores without stray spacing artifacts
                                 preferred_lang: this.lang,
-                                password_hash: this.form.pass // Stored safely in plain-text/mock hash format
+                                password_hash: this.form.pass 
                             }]);
 
                         if (profileError) throw profileError;
