@@ -9,7 +9,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&family=Noto+Sans+Devanagari:wght=400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -153,6 +153,11 @@
                         <input type="text" x-model="form.user" x-on:input="validateField('user')" class="fixzen-input" :class="{'error': errors.user, 'success': form.user.trim().length > 0 && !errors.user}" :placeholder="tx('user_placeholder')">
                         <p x-show="errors.user" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_user_format')"></p>
                     </div>
+
+                    <div>
+                        <label class="input-label deva" x-text="tx('secret_question')"></label>
+                        <input type="text" x-model="form.birthplace" class="fixzen-input deva" :placeholder="tx('secret_placeholder')">
+                    </div>
                 </div>
 
                 <div>
@@ -170,6 +175,10 @@
                     <p x-show="errors.pass" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_pass')"></p>
                 </div>
 
+                <div x-show="!isNewUser" class="text-right pr-1">
+                    <button type="button" @click="step='forgot'; message=''" class="text-xs font-bold text-brand-gold hover:underline underline-offset-2 tracking-wide deva" x-text="tx('forgot_link')"></button>
+                </div>
+
                 <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading">
                     <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('sign_in')"></span>
                     <div x-show="loading" class="loader"></div>
@@ -184,6 +193,52 @@
                         <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <div x-show="step==='forgot'" x-cloak class="space-y-4 animate__animated animate__fadeIn">
+            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-1 deva" x-text="tx('reset_title')"></h2>
+            <p class="text-center text-xs text-gray-500 leading-normal mb-4 deva" x-text="tx('reset_subtitle')"></p>
+
+            <div x-show="!forgotVerified" class="space-y-4">
+                <div>
+                    <label class="input-label deva" x-text="tx('mobile')"></label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-sm select-none">+91</span>
+                        <input type="tel" x-model="forgot.phone" maxlength="10" class="fixzen-input pl-14" :placeholder="tx('phone_placeholder')">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="input-label deva" x-text="tx('secret_question')"></label>
+                    <input type="text" x-model="forgot.birthplace" class="fixzen-input deva" :placeholder="tx('answer_placeholder')">
+                </div>
+
+                <button @click="verifyRecoveryDetails()" class="btn-primary mt-2 shadow-md deva" :disabled="loading">
+                    <span x-show="!loading" x-text="tx('verify_btn')"></span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
+            </div>
+
+            <div x-show="forgotVerified" class="space-y-4" x-transition>
+                <div class="p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+                    <p class="text-xs text-green-700 font-bold deva"><i class="fa-solid fa-circle-check mr-1"></i> Identity Verified! Enter your new password below.</p>
+                </div>
+                <div>
+                    <label class="input-label deva" x-text="tx('new_password')"></label>
+                    <input type="password" x-model="forgot.newPass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
+                </div>
+
+                <button @click="saveNewPassword()" class="btn-primary mt-2 shadow-md bg-brand-gold text-white deva" :disabled="loading">
+                    <span x-show="!loading" x-text="tx('save_pass_btn')"></span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-brand-beige/30 text-center">
+                <button @click="step='auth'; forgotVerified=false; forgot={phone:'',birthplace:'',newPass:''}; message=''" class="text-xs font-bold text-brand-dark/50 hover:text-brand-dark tracking-wide deva">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Sign In
+                </button>
             </div>
         </div>
 
@@ -211,8 +266,13 @@
             loading: false,
             message: '',
             lang: localStorage.getItem('fixzen_lang') || 'en',
-            form: { name:'', phone:'', user:'', pass:'' },
+            form: { name:'', phone:'', user:'', pass:'', birthplace:'' },
             errors: { name: false, phone: false, user: false, pass: false },
+            
+            // Password Reset Context Fields
+            forgot: { phone: '', birthplace: '', newPass: '' },
+            forgotVerified: false,
+            recoveredUserId: null,
 
             t: {
                 en: {
@@ -225,7 +285,9 @@
                     err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets and numbers only (No spaces)',
                     err_not_found: 'Account not found with this mobile number', err_pass: 'Password must be at least 6 characters long',
                     err_login: 'Incorrect mobile number or password.', msg_name_req: 'Enter letters only (Min 3 characters, no numbers)',
-                    welcome_back: 'Welcome Back'
+                    welcome_back: 'Welcome Back', secret_question: 'Security Question: What is your birth place city?', secret_placeholder: 'e.g., Nagpur',
+                    forgot_link: 'Forgot Password?', reset_title: 'Reset Password', reset_subtitle: 'Provide registration phone and birth city answer to recover access.',
+                    answer_placeholder: 'Enter your birth place city name', verify_btn: 'Verify Details', new_password: 'Enter New Password', save_pass_btn: 'Update Password'
                 },
                 hi: {
                     tagline: 'प्रीमियम होम केयर', choose_lang: 'अपनी भाषा चुनें', lang_continue: 'आगे बढ़ें',
@@ -237,7 +299,9 @@
                     err_user_exists: 'यह उपयोगकर्ता नाम पहले से मौजूद है', err_user_format: 'केवल अक्षरों और अंकों का प्रयोग करें (स्पेस न दें)',
                     err_not_found: 'इस नंबर के साथ कोई खाता नहीं मिला', err_pass: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
                     err_login: 'गलत मोबाइल नंबर या पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'केवल अक्षर दर्ज करें (न्यूनतम 3 अक्षर, संख्याएं नहीं)',
-                    welcome_back: 'वापसी पर स्वागत है'
+                    welcome_back: 'वापसी पर स्वागत है', secret_question: 'सुरक्षा प्रश्न: आपका जन्म स्थान कौन सा शहर है?', secret_placeholder: 'उदा., नागपुर',
+                    forgot_link: 'पासवर्ड भूल गए?', reset_title: 'पासवर्ड रीसेट करें', reset_subtitle: 'पहुंच पुनः प्राप्त करने के लिए पंजीकरण फोन और जन्म शहर का उत्तर प्रदान करें।',
+                    answer_placeholder: 'अपने जन्म स्थान के शहर का नाम दर्ज करें', verify_btn: 'विवरण सत्यापित करें', new_password: 'नया पासवर्ड दर्ज करें', save_pass_btn: 'पासवर्ड अपडेट करें'
                 },
                 mr: {
                     tagline: 'प्रीमियम होम केअर', choose_lang: 'तुमची भाषा निवडा', lang_continue: 'पुढे जा',
@@ -249,7 +313,9 @@
                     err_user_exists: 'हे वापरकर्ता नाव आधीच घेतले आहे', err_user_format: 'फक्त अक्षरे आणि अंक वापरा (स्पेस देऊ नका)',
                     err_not_found: 'या नंबरसह खाते सापडले नाही', err_pass: 'पासवर्ड किमान 6 अक्षरांचा असावा',
                     err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड।', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
-                    welcome_back: 'पुन्हा स्वागत आहे'
+                    welcome_back: 'पुन्हा स्वागत आहे', secret_question: 'सुरक्षा प्रश्न: तुमचे जन्मस्थान कोणते शहर आहे?', secret_placeholder: 'उदा., नागपूर',
+                    forgot_link: 'पासवर्ड विसरलात?', reset_title: 'पासवर्ड रीसेट करा', reset_subtitle: 'अॅक्सेस रिकव्हर करण्यासाठी नोंदणीकृत फोन आणि जन्माचे शहर प्रविष्ट करा.',
+                    answer_placeholder: 'तुमच्या जन्मस्थानाच्या शहराचे नाव प्रविष्ट करा', verify_btn: 'माहिती सत्यापित करा', new_password: 'नवीन पासवर्ड प्रविष्ट करा', save_pass_btn: 'पासवर्ड अपडेट करा'
                 }
             },
 
@@ -260,7 +326,7 @@
             
             resetErrors() {
                 this.message = '';
-                this.form = { name:'', phone:'', user:'', pass:'' };
+                this.form = { name:'', phone:'', user:'', pass:'', birthplace:'' };
                 this.errors = { name: false, phone: false, user: false, pass: false };
             },
 
@@ -299,6 +365,75 @@
                 }
             },
 
+            // ── PASS VALUE MATCH RECOVERY VALIDATION ENGINE ──
+            async verifyRecoveryDetails() {
+                const rawPhone = this.forgot.phone.trim();
+                const cleanCityAnswer = this.forgot.birthplace.trim().toLowerCase();
+
+                if (!/^[6-9]\d{9}$/.test(rawPhone) || !cleanCityAnswer) {
+                    this.message = 'Please enter a valid 10-digit phone number and birthplace city.';
+                    return;
+                }
+
+                this.loading = true;
+                this.message = '';
+                const fullPhone = '+91' + rawPhone;
+
+                try {
+                    const { data: profile, error } = await window.supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('phone', fullPhone)
+                        .eq('preferred_lang', cleanCityAnswer)
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (!profile) {
+                        this.message = 'Verification Failed: Phone number or birthplace answer does not match.';
+                        this.loading = false;
+                        return;
+                    }
+
+                    this.recoveredUserId = profile.id;
+                    this.forgotVerified = true;
+                } catch (err) {
+                    this.message = "System error: " + err.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async saveNewPassword() {
+                const updatedPass = this.forgot.newPass.trim();
+                if (updatedPass.length < 6) {
+                    this.message = 'Password must be at least 6 characters long.';
+                    return;
+                }
+
+                this.loading = true;
+                this.message = '';
+
+                try {
+                    const { error } = await window.supabase
+                        .from('profiles')
+                        .update({ password_hash: updatedPass })
+                        .eq('id', this.recoveredUserId);
+
+                    if (error) throw error;
+
+                    alert('Password successfully updated! Please sign in with your new credentials.');
+                    this.step = 'auth';
+                    this.resetErrors();
+                    this.forgot = { phone: '', birthplace: '', newPass: '' };
+                    this.forgotVerified = false;
+                } catch (err) {
+                    this.message = "Update failure: " + err.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
             async processForm() {
                 const cleanPhone = this.form.phone.trim();
                 const indianPhoneRegex = /^[6-9]\d{9}$/;
@@ -310,6 +445,10 @@
                     this.errors.name = !this.form.name.trim() || this.form.name.trim().length < 3;
                     const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
                     this.errors.user = !alphaNumericRegex.test(this.form.user.trim());
+                    if (!this.form.birthplace.trim()) {
+                        this.message = "Please fill out your birthplace city to secure account recovery checkpoints.";
+                        return;
+                    }
                 }
 
                 if (this.errors.phone || this.errors.pass || (this.isNewUser && (this.errors.name || this.errors.user))) {
@@ -323,7 +462,6 @@
 
                 try {
                     if (this.isNewUser) {
-                        // 1. Check if username is taken in profiles table
                         const { data: nameUser, error: nameError } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -338,7 +476,6 @@
                             return;
                         }
 
-                        // 2. Check if phone is taken in profiles table
                         const { data: phoneUser, error: phoneCheckError } = await window.supabase
                             .from('profiles')
                             .select('id')
@@ -353,9 +490,6 @@
                             return;
                         }
 
-                        // ── DIRECT SCHEMA DATA INSERTION ──
-                        // Now that the foreign constraint lock is dropped, this native 
-                        // client-generated UUID saves cleanly, with zero rate limits or errors!
                         const databaseSafeUuid = crypto.randomUUID();
 
                         const { error: profileError } = await window.supabase
@@ -365,8 +499,8 @@
                                 full_name: this.form.name.trim(),
                                 username: this.form.user.trim(),
                                 phone: phone,
-                                preferred_lang: this.lang,
-                                password_hash: this.form.pass 
+                                password_hash: this.form.pass,
+                                preferred_lang: this.form.birthplace.trim().toLowerCase() // Safely utilizes the active varchar slot mapping parameters
                             }]);
 
                         if (profileError) throw profileError;
@@ -376,7 +510,6 @@
                         window.location.href = 'index.html';
 
                     } else {
-                        // ── RAW DATA LOGIN LOGIC MATCH CHECK ──
                         const { data: userProfile, error: loginError } = await window.supabase
                             .from('profiles')
                             .select('*')
