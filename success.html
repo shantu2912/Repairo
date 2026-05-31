@@ -63,7 +63,7 @@
 <body class="bg-grid min-h-screen flex flex-col items-center justify-center p-4 relative" x-data="trackingApp()">
 
     <a href="bookings.html" class="absolute top-6 left-6 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-black hover:scale-105 transition z-50">
-        <i class="fa-solid fa-arrow-left"></i>
+        <i class="fa-solid fa-house"></i>
     </a>
 
     <div class="w-full max-w-md glass-card rounded-[2.5rem] shadow-2xl border border-white p-6 relative overflow-hidden z-20">
@@ -101,12 +101,12 @@
 
             <div class="flex flex-col items-center gap-2">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
-                     :class="jobStatus === 'arrived' || jobStatus === 'started' ? 'bg-brand-green text-white animate-bounce' : (jobStatus === 'accepted' || jobStatus === 'assigned' ? 'bg-brand-gold text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
-                    <i class="fa-solid text-xs" :class="jobStatus === 'arrived' || jobStatus === 'started' ? 'fa-street-view' : 'fa-user-astronaut'"></i>
+                     :class="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'bg-brand-green text-white animate-bounce' : (jobStatus === 'accepted' || jobStatus === 'assigned' ? 'bg-brand-gold text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
+                    <i class="fa-solid text-xs" :class="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'fa-street-view' : 'fa-user-astronaut'"></i>
                 </div>
                 <span class="text-[10px] font-bold text-gray-400" 
-                      :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green font-extrabold': jobStatus === 'arrived' || jobStatus === 'started'}"
-                      x-text="jobStatus === 'arrived' || jobStatus === 'started' ? 'Arrived' : 'Assigned'">
+                      :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green font-extrabold': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'}"
+                      x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'Arrived' : 'Assigned'">
                 </span>
             </div>
         </div>
@@ -135,8 +135,8 @@
             
             <div class="text-center mb-4 bg-white py-2 rounded-xl border border-gray-100 shadow-sm">
                 <h3 class="text-sm font-extrabold" 
-                    :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green': jobStatus === 'arrived' || jobStatus === 'started'}"
-                    x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus === 'started' ? '🛠️ Service Execution Started' : 'Your Expert is En Route')">
+                    :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'}"
+                    x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus === 'started' ? '🛠️ Service Execution Started' : (jobStatus === 'in_progress' ? '🔑 Share Completion Code' : 'Your Expert is En Route'))">
                 </h3>
             </div>
 
@@ -148,7 +148,7 @@
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </span>
-                    <span class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wide">ETA: <span x-text="jobStatus === 'arrived' || jobStatus === 'started' ? '0' : etaMins"></span> Mins</span>
+                    <span class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wide">ETA: <span x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? '0' : etaMins"></span> Mins</span>
                 </div>
             </div>
             
@@ -484,6 +484,7 @@
                     this.startTimer();
                     await this.checkJobStatus();
 
+                    // ── WEB-SOCKET BROADCATER SUITE FOR REAL-TIME VALUE INTERACTION ──
                     sb.channel('waiting-room')
                       .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, (payload) => {
                           console.log('Real-time updates payload:', payload);
@@ -492,18 +493,19 @@
                               if (payload.new.status) {
                                   this.jobStatus = payload.new.status;
                                   if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
-                                      if (payload.new.tech_id) {
-                                          this.fetchTechnician(payload.new.tech_id);
-                                      } else {
-                                          this.technicianFound = true;
-                                      }
+                                      this.technicianFound = true;
                                   }
                               }
+                              
+                              // Capture OTP string variables on runtime changes
+                              if (payload.new.otp) {
+                                  this.otpCode = payload.new.otp;
+                              } else if (payload.new.otp === null) {
+                                  this.otpCode = null;
+                              }
+                              
                               if (payload.new.tech_id && !this.techData) {
                                   this.fetchTechnician(payload.new.tech_id);
-                              }
-                              if (payload.new.otp && !this.otpCode) {
-                                  this.otpCode = payload.new.otp;
                               }
                           }
                       })
@@ -635,7 +637,7 @@
                     this.map.fitBounds(bounds, { padding: [30, 30] });
 
                     setInterval(() => {
-                        if (this.jobStatus !== 'arrived' && this.jobStatus !== 'started') {
+                        if (this.jobStatus !== 'arrived' && this.jobStatus !== 'started' && this.jobStatus !== 'in_progress') {
                             techLat += (customerLat - techLat) * 0.08;
                             techLng += (customerLng - techLng) * 0.08;
                             this.techMarker.setLatLng([techLat, techLng]);
@@ -696,7 +698,6 @@
                     }
                 },
 
-                // ── SYNTAX BALANCED FIXED REACTION ENGINE ──
                 async submitFeedback() {
                     if (!this.feedbackRating) return;
                     
@@ -710,7 +711,6 @@
                     this.feedbackLoading = true;
                     
                     try {
-                        // Extract valid local identity parameter strings to clear relational conditions
                         const { data: profile, error: profileError } = await sb
                             .from('profiles')
                             .select('id')
@@ -725,7 +725,6 @@
                             ? `[${this.feedbackTags.join(', ')}] ${this.feedbackComment}`
                             : this.feedbackComment;
 
-                        // Insert review content safe from cross-table lock filters
                         const { error: feedbackError } = await sb.from('feedback').insert([{
                             job_id: this.jobId,
                             rating: this.feedbackRating,
@@ -760,4 +759,3 @@
     </script>
 </body>
 </html>
-
