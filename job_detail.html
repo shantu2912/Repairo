@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -14,6 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <script>
 tailwind.config = {
@@ -133,17 +134,16 @@ body {
   transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 
-.custom-scroll::-webkit-scrollbar {
-  width: 3px;
+.otp-box {
+  width: 3.25rem; height: 3.75rem; text-align: center; font-size: 1.5rem;
+  font-weight: 800; border: 2px solid #DFD4C3; background: #F8F5F0;
+  color: #2D2B28; border-radius: 1rem; outline: none; transition: all 0.2s ease;
 }
-.custom-scroll::-webkit-scrollbar-track {
-  background: #DFD4C3;
-  border-radius: 10px;
+.otp-box:focus {
+  border-color: #A07D54; background: white;
+  box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.15);
 }
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: #A07D54;
-  border-radius: 10px;
-}
+.otp-box.filled { border-color: #5D5646; background: #FFF; }
 
 @supports (padding: max(0px)) {
   .safe-bottom {
@@ -316,12 +316,6 @@ body {
         <i class="fas fa-exclamation-triangle text-[8px]"></i>
         <p class="text-[9px] font-semibold">Collect payment before completing job</p>
       </div>
-      
-      <div class="mt-3 flex justify-center gap-2">
-        <span class="text-[7px] bg-gray-100 px-2 py-1 rounded-full">UPI</span>
-        <span class="text-[7px] bg-gray-100 px-2 py-1 rounded-full">Card</span>
-        <span class="text-[7px] bg-gray-100 px-2 py-1 rounded-full">Cash</span>
-      </div>
     </div>
 
     <div class="space-y-3">
@@ -332,14 +326,51 @@ body {
       <button id="completeBtn" class="w-full bg-gradient-to-r from-success to-emerald-600 hover:from-emerald-600 hover:to-green-700 text-white py-3.5 rounded-xl font-black tracking-wide transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
         <i class="fas fa-circle-check"></i> Complete Job & Unlock
       </button>
-      
-      <p class="text-center text-[8px] text-brand-dark/40 flex items-center justify-center gap-2">
-        <i class="fas fa-lock"></i> Job locked until completion
-        <i class="fas fa-shield-alt"></i> Secure session
-      </p>
     </div>
   </div>
 </main>
+
+<div id="otpOverlay" class="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
+  
+  <div id="otpSheet" class="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 shadow-2xl border-t border-white transform translate-y-full transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
+    
+    <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
+
+    <div class="text-center mb-6">
+      <div class="w-14 h-14 bg-brand-gold/10 text-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
+        <i class="fas fa-shield-keyhole text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-black text-brand-dark">Verify Completion Code</h3>
+      <p class="text-xs text-gray-500 mt-1">Enter the 6-digit security code generated on customer's display sheet to finalize payment.</p>
+    </div>
+
+    <div class="flex justify-center gap-2 mb-6" id="otpFieldsContainer">
+      <input type="text" inputmode="numeric" pattern="[0-8]*" maxlength="1" class="otp-box" data-idx="0">
+      <input type="text" inputmode="numeric" pattern="[0-8]*" maxlength="1" class="otp-box" data-idx="1">
+      <input type="text" inputmode="numeric" pattern="[0-8]*" maxlength="1" class="otp-box" data-idx="2">
+      <input type="text" inputmode="numeric" pattern="[0-8]*" maxlength="1" class="otp-box" data-idx="3">
+      <input type="text" inputmode="numeric" pattern="[0-8]*" maxlength="1" class="otp-box" data-idx="4">
+      <input type="text" inputmode="numeric" pattern="[0-8]*" maxlength="1" class="otp-box" data-idx="5">
+    </div>
+
+    <div id="otpErrorMessage" class="hidden text-center text-xs text-red-500 font-bold mb-4 animate__animated animate__headShake">
+      <i class="fas fa-circle-exclamation mr-1"></i> Mismatched verification digits. Please check and retry.
+    </div>
+
+    <div class="flex gap-3">
+      <button id="cancelOtpBtn" class="flex-1 py-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors">
+        Cancel Verify
+      </button>
+      <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-brand-gold hover:bg-brand-olive text-white rounded-xl text-sm font-black tracking-wider shadow-md transition-colors flex items-center justify-center gap-2">
+        <span>Verify Code</span> <i class="fas fa-arrow-right text-xs"></i>
+      </button>
+    </div>
+
+    <p class="text-center text-[9px] text-gray-400 mt-4 uppercase font-bold tracking-widest">
+      <i class="fas fa-lock-keyhole"></i> FixZen Verified Lifecycle
+    </p>
+  </div>
+</div>
 
 <div class="fixed bottom-5 right-5 z-40 flex flex-col gap-2">
   <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-brand-beige hover:bg-brand-gold/10 transition-all active:scale-95">
@@ -363,6 +394,7 @@ let jobData = null;
 let etaInterval = null;
 let destCoordsCache = null;
 let lastGeocodeTime = 0;
+let generatedOtpReference = null;
 
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
@@ -558,6 +590,10 @@ async function loadJob() {
     const badge = document.getElementById("statusBadge");
     badge.innerHTML = '<i class="fas fa-shield-check text-[7px] mr-1"></i> Verifying Code';
     badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-amber-100 text-amber-700";
+    if (data.otp) {
+        generatedOtpReference = data.otp;
+        openOtpBottomSheet();
+    }
   }
   
   document.getElementById("routeBtn").onclick = () => openNavigation(data.location);
@@ -605,70 +641,161 @@ document.getElementById("arrivedBtn").onclick = async () => {
   }
 };
 
-// ── TWO-STAGE OTP GENERATION AND SECURE JOB FINISHING ENGINE ──
+// ── CUSTOM FOCUS SHIFTING ANIMATED INTERFACE UTILITIES ──
+const otpOverlay = document.getElementById("otpOverlay");
+const otpSheet = document.getElementById("otpSheet");
+const otpInputs = document.querySelectorAll(".otp-box");
+const otpErrorMsg = document.getElementById("otpErrorMessage");
+
+function openOtpBottomSheet() {
+    otpOverlay.classList.remove("hidden");
+    setTimeout(() => {
+        otpOverlay.classList.add("opacity-100");
+        otpSheet.classList.remove("translate-y-full");
+        otpInputs[0].focus();
+    }, 50);
+}
+
+function closeOtpBottomSheet() {
+    otpSheet.classList.add("translate-y-full");
+    otpOverlay.classList.remove("opacity-100");
+    setTimeout(() => {
+        otpOverlay.classList.add("hidden");
+        resetOtpFields();
+    }, 300);
+}
+
+function resetOtpFields() {
+    otpInputs.forEach(input => { input.value = ""; input.classList.remove("filled"); });
+    otpErrorMsg.classList.add("hidden");
+    otpSheet.classList.remove("animate__headShake");
+}
+
+// Focus control loop
+otpInputs.forEach((input, index) => {
+    input.addEventListener("input", (e) => {
+        const val = e.target.value;
+        if (val.length > 0) {
+            input.classList.add("filled");
+            if (index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        }
+    });
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
+            otpInputs[index - 1].value = "";
+            otpInputs[index - 1].classList.remove("filled");
+            otpInputs[index - 1].focus();
+        }
+    });
+});
+
+// Trigger verification prompt flow
 document.getElementById("completeBtn").onclick = async () => {
   if (!jobData) return;
+  
+  const paymentConfirmed = confirm("⚠️ IMPORTANT: Have you collected full payment?\n\nPress OK to broadcast completion code to customer and open verification panel.");
+  if (!paymentConfirmed) return;
   
   const btn = document.getElementById("completeBtn");
   const originalHtml = btn.innerHTML;
 
-  // Generate an authentic 6-digit random code string sequence
-  const secureGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing Code Verification...';
+  generatedOtpReference = Math.floor(100000 + Math.random() * 900000).toString();
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Broadcasting Code...';
   btn.disabled = true;
   
   try {
-    // 1. Broadcast OTP dynamically onto user tracking panels by executing table updates
     const { error: otpPostError } = await sb.from("jobs").update({
       status: "in_progress",
-      otp: secureGeneratedOtp
+      otp: generatedOtpReference
     }).eq("id", jobId);
 
     if (otpPostError) throw otpPostError;
 
-    if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+    const badge = document.getElementById("statusBadge");
+    badge.innerHTML = '<i class="fas fa-shield-check text-[7px] mr-1"></i> Verifying Code';
+    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-amber-100 text-amber-700";
 
-    // 2. Open an immediate modal input window on the operator view asking for code collection
-    const enteredVerificationCode = prompt("📢 Code Broadcasted to Customer Device!\n\nPlease ask the customer for the 6-Digit Completion Code displayed on their dashboard tracking sheet and enter it below:");
-    
-    if (!enteredVerificationCode || enteredVerificationCode.trim() !== secureGeneratedOtp) {
-      alert("❌ Verification Failed: Invalid completion code entered. Please try again.");
-      btn.innerHTML = originalHtml;
-      btn.disabled = false;
-      
-      // Roll status context markers cleanly back to current execution definitions
-      await sb.from("jobs").update({ status: "arrived", otp: null }).eq("id", jobId);
-      const badge = document.getElementById("statusBadge");
-      badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
-      badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
-      return;
-    }
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
 
-    // 3. Finalize complete lifecycle parameters if matching strings are submitted
-    const BASE_FEES = {
-      "Carpenter": 800, "Plumber": 600, "Electrician": 600,
-      "Painter": 600, "Mason": 600, "Welder": 600, "Roofer": 600, "AC Tech": 600
-    };
-    const fee = BASE_FEES[jobData.category] || 450;
-
-    await sb.from("jobs").update({
-      status: "completed",
-      completed_at: new Date().toISOString(),
-      technician_fee: fee
-    }).eq("id", jobId);
-    
-    localStorage.removeItem("locked_job_id");
-    if (etaInterval) clearInterval(etaInterval);
-    
-    alert(`✅ Code Verified! Job Successfully Completed.\n\nTechnician Fee Apportioned: ₹${fee}\nThank you for your service.`);
-    window.location.href = "techniciandashboard.html";
+    if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
+    openOtpBottomSheet();
 
   } catch (err) {
-    alert("Completion workflow error: " + err.message);
+    alert("Broadcast failure: " + err.message);
     btn.innerHTML = originalHtml;
     btn.disabled = false;
   }
+};
+
+// Cancel operation action trigger
+document.getElementById("cancelOtpBtn").onclick = async () => {
+    if (!confirm("Are you sure you want to cancel the code entry window?")) return;
+    closeOtpBottomSheet();
+    
+    // Gracefully roll columns back to arrival defaults
+    await sb.from("jobs").update({ status: "arrived", otp: null }).eq("id", jobId);
+    const badge = document.getElementById("statusBadge");
+    badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
+    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
+};
+
+// Core entry verify string comparison method execution
+document.getElementById("verifyOtpBtn").onclick = async () => {
+    let collectedCodeString = "";
+    otpInputs.forEach(input => collectedCodeString += input.value.trim());
+
+    if (collectedCodeString.length < 6) {
+        alert("Please completely fill out all 6 digit blocks.");
+        return;
+    }
+
+    const verifyBtn = document.getElementById("verifyOtpBtn");
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+
+    if (collectedCodeString !== generatedOtpReference) {
+        setTimeout(async () => {
+            if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+            otpErrorMsg.classList.remove("hidden");
+            otpSheet.classList.add("animate__animated", "animate__headShake");
+            verifyBtn.innerHTML = 'Verify Code <i class="fas fa-arrow-right text-xs"></i>';
+            
+            setTimeout(() => otpSheet.classList.remove("animate__animated", "animate__headShake"), 600);
+        }, 400);
+        return;
+    }
+
+    // Success flow execution lifecycle
+    try {
+        const BASE_FEES = {
+          "Carpenter": 800, "Plumber": 600, "Electrician": 600,
+          "Painter": 600, "Mason": 600, "Welder": 600, "Roofer": 600, "AC Tech": 600
+        };
+        const fee = BASE_FEES[jobData.category] || 450;
+
+        await sb.from("jobs").update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          technician_fee: fee
+        }).eq("id", jobId);
+        
+        localStorage.removeItem("locked_job_id");
+        if (etaInterval) clearInterval(etaInterval);
+        
+        verifyBtn.innerHTML = '<i class="fas fa-circle-check"></i> Code Success!';
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
+        
+        alert(`🎉 Code Verified Successfully!\n\nEarnings Apportioned: ₹${fee}\nThank you for your premium service.`);
+        closeOtpBottomSheet();
+        window.location.href = "techniciandashboard.html";
+
+    } catch (err) {
+        alert("Verification workflow terminal error: " + err.message);
+        verifyBtn.innerHTML = 'Verify Code <i class="fas fa-arrow-right text-xs"></i>';
+    }
 };
 
 document.getElementById("exitJobBtn").onclick = () => {
@@ -692,4 +819,3 @@ window.addEventListener("beforeunload", () => {
 </script>
 </body>
 </html>
-
