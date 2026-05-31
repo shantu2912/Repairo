@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen Admin | Banner Manager</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold':  '#A07D54',
+                        'brand-cream': '#EEEAE2',
+                        'brand-dark':  '#4D4C4B',
+                    },
+                    fontFamily: {
+                        sans:  ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    boxShadow: {
+                        'super-float': '0 30px 60px -15px rgba(93,86,70,0.25)',
+                    }
+                }
+            }
+        }
+
+        const sb = supabase.createClient(
+            "https://kzxdxnxgouthsywbsnvl.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+        );
+    </script>
+</head>
+
+<body class="bg-brand-cream text-brand-dark antialiased font-sans"
+      x-data="bannerManager()"
+      x-init="init()">
+
+<!-- ───────────────── HEADER ───────────────── -->
+<header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-brand-olive/10 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-4">
+        <button @click="sidebarOpen = true" class="text-brand-olive hover:scale-110 transition-transform">
+            <i class="fa-solid fa-bars-staggered text-xl"></i>
+        </button>
+        <h1 class="text-xl font-extrabold tracking-tighter text-brand-olive">
+            FIX <span class="text-brand-gold">ZEN</span>
+            <span class="text-[10px] uppercase tracking-[0.3em] ml-2 opacity-50">Admin</span>
+        </h1>
+    </div>
+    <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-brand-gold uppercase tracking-widest opacity-70">Banner Manager</span>
+        <div class="w-10 h-10 rounded-full border-2 border-brand-gold p-0.5">
+            <img src="https://ui-avatars.com/api/?background=5D5646&color=fff&name=Admin" class="rounded-full">
+        </div>
+    </div>
+</header>
+
+<!-- ───────────────── MAIN ───────────────── -->
+<main class="max-w-5xl mx-auto p-6 pb-32 space-y-8">
+
+    <!-- Page title -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-bold text-brand-olive">Homepage Banners</h2>
+            <p class="text-brand-dark/60 text-sm mt-1">Add, edit, reorder and toggle banners shown on the customer app.</p>
+        </div>
+        <button @click="openAdd()"
+                class="flex items-center gap-2 bg-brand-olive text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-super-float hover:bg-brand-gold transition-colors">
+            <i class="fa-solid fa-plus"></i> Add Banner
+        </button>
+    </div>
+
+    <!-- SQL hint -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-xs text-amber-800 flex gap-3 items-start">
+        <i class="fa-solid fa-circle-info mt-0.5 text-amber-500"></i>
+        <div>
+            <strong>First time?</strong> Run this SQL in Supabase to create the table:
+            <code class="block mt-2 bg-amber-100 rounded-lg px-3 py-2 font-mono text-[11px] leading-relaxed select-all">
+create table if not exists banners (
+  id serial primary key,
+  tag text,
+  title text,
+  image_url text,
+  cta_text text,
+  cta_link text,
+  active boolean default true,
+  sort_order int default 0
+);</code>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div x-show="loading" class="text-center py-20 text-brand-dark/40">
+        <i class="fa-solid fa-spinner animate-spin text-3xl mb-3"></i>
+        <p class="text-sm">Loading banners…</p>
+    </div>
+
+    <!-- Empty state -->
+    <div x-show="!loading && banners.length === 0"
+         class="text-center py-20 bg-white rounded-[2rem] shadow-super-float border border-white/50">
+        <i class="fa-solid fa-image text-5xl text-brand-beige mb-4"></i>
+        <p class="font-bold text-brand-olive text-lg">No banners yet</p>
+        <p class="text-sm text-brand-dark/50 mt-1">Click "Add Banner" to create your first one.</p>
+    </div>
+
+    <!-- Banner cards -->
+    <div x-show="!loading && banners.length > 0" class="space-y-4">
+        <template x-for="(banner, idx) in banners" :key="banner.id">
+            <div class="bg-white rounded-[2rem] shadow-super-float border border-white/50 overflow-hidden flex flex-col md:flex-row">
+
+                <!-- Preview image -->
+                <div class="md:w-56 h-40 md:h-auto flex-shrink-0 bg-brand-cream relative overflow-hidden">
+                    <img :src="banner.image_url || ''"
+                         x-show="banner.image_url"
+                         class="w-full h-full object-cover"
+                         @error="$el.style.display='none'">
+                    <div x-show="!banner.image_url"
+                         class="absolute inset-0 flex items-center justify-center text-brand-dark/20">
+                        <i class="fa-solid fa-image text-4xl"></i>
+                    </div>
+                    <!-- active badge -->
+                    <div class="absolute top-3 left-3">
+                        <span :class="banner.active ? 'bg-green-500' : 'bg-gray-400'"
+                              class="text-white text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                            <span x-text="banner.active ? 'Live' : 'Hidden'"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="flex-1 p-6 flex flex-col justify-between gap-4">
+                    <div>
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <span class="text-[10px] font-bold text-brand-gold uppercase tracking-widest"
+                                      x-text="banner.tag || '—'"></span>
+                                <h3 class="text-xl font-extrabold text-brand-olive mt-0.5"
+                                    x-text="banner.title || 'Untitled'"></h3>
+                            </div>
+                            <span class="text-xs text-brand-dark/40 font-bold mt-1">#<span x-text="banner.sort_order"></span></span>
+                        </div>
+                        <div x-show="banner.cta_text" class="mt-2 flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-pointer text-brand-gold text-xs"></i>
+                            <span class="text-xs text-brand-dark/60 font-semibold" x-text="banner.cta_text"></span>
+                            <span class="text-xs text-brand-dark/30">→</span>
+                            <span class="text-xs text-blue-500 truncate max-w-[160px]" x-text="banner.cta_link"></span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Toggle active -->
+                        <button @click="toggleActive(banner)"
+                                :class="banner.active
+                                    ? 'bg-red-50 text-red-500 border-red-100 hover:bg-red-500 hover:text-white'
+                                    : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-500 hover:text-white'"
+                                class="text-xs font-bold px-4 py-2 rounded-full border transition-all">
+                            <i :class="banner.active ? 'fa-eye-slash' : 'fa-eye'" class="fa-solid mr-1"></i>
+                            <span x-text="banner.active ? 'Hide' : 'Show'"></span>
+                        </button>
+
+                        <!-- Move up -->
+                        <button @click="moveUp(idx)"
+                                :disabled="idx === 0"
+                                :class="idx === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-brand-cream'"
+                                class="w-8 h-8 rounded-full border border-brand-cream flex items-center justify-center text-brand-olive transition-all">
+                            <i class="fa-solid fa-arrow-up text-xs"></i>
+                        </button>
+
+                        <!-- Move down -->
+                        <button @click="moveDown(idx)"
+                                :disabled="idx === banners.length - 1"
+                                :class="idx === banners.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-brand-cream'"
+                                class="w-8 h-8 rounded-full border border-brand-cream flex items-center justify-center text-brand-olive transition-all">
+                            <i class="fa-solid fa-arrow-down text-xs"></i>
+                        </button>
+
+                        <!-- Edit -->
+                        <button @click="openEdit(banner)"
+                                class="text-xs font-bold px-4 py-2 rounded-full border border-brand-cream bg-brand-cream text-brand-olive hover:bg-brand-olive hover:text-white transition-all">
+                            <i class="fa-solid fa-pencil mr-1"></i> Edit
+                        </button>
+
+                        <!-- Delete -->
+                        <button @click="deleteBanner(banner.id)"
+                                class="text-xs font-bold px-4 py-2 rounded-full border border-red-100 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all ml-auto">
+                            <i class="fa-solid fa-trash mr-1"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+</main>
+
+<!-- ───────────────── BOTTOM NAV ───────────────── -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50">
+    <div class="bg-brand-olive/95 backdrop-blur-xl rounded-full p-2 flex justify-between items-center shadow-2xl border border-white/10">
+        <a href="admin.html" class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-brand-gold transition-colors">
+            <i class="fa-solid fa-users-gear text-xl"></i>
+        </a>
+        <a href="admin-banners.html" class="bg-brand-gold text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg">
+            <i class="fa-solid fa-image"></i>
+            <span class="text-xs font-bold">Banners</span>
+        </a>
+        <a href="index.html" class="w-12 h-12 flex items-center justify-center text-white/50 hover:text-brand-gold transition-colors">
+            <i class="fa-solid fa-eye text-xl"></i>
+        </a>
+    </div>
+</div>
+
+<!-- ───────────────── SIDEBAR ───────────────── -->
+<div x-show="sidebarOpen" class="fixed inset-0 z-[100]" style="display:none;">
+    <div class="absolute inset-0 bg-brand-olive/60 backdrop-blur-md" @click="sidebarOpen = false"></div>
+    <aside class="absolute left-0 top-0 h-full w-72 bg-white shadow-2xl p-8"
+           x-transition:enter="transition ease-out duration-300 transform"
+           x-transition:enter-start="-translate-x-full"
+           x-transition:enter-end="translate-x-0">
+        <h2 class="font-extrabold text-2xl text-brand-olive mb-10">ADMIN MENU</h2>
+        <nav class="space-y-6">
+            <a href="admin.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-users-gear w-6"></i> Technician Approval
+            </a>
+            <a href="admin-jobs.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-clipboard-list w-6"></i> Booking Logs
+            </a>
+            <a href="admin-dashboard.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-chart-line w-6"></i> Analytics Dashboard
+            </a>
+            <a href="admin-analytics.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-chart-pie w-6"></i> Financial & Efficiency
+            </a>
+            <a href="adminfeedback.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-star w-6"></i> Feedback & Reviews
+            </a>
+            <a href="admin-users.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-users w-6"></i> Customer Management
+            </a>
+            <a href="admin-payouts.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-money-bill-transfer w-6"></i> Partner Payouts
+            </a>
+            <a href="admin-banners.html" class="flex items-center gap-4 text-brand-olive font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-image w-6"></i> Banner Manager
+            </a>
+            <a href="index.html" class="flex items-center gap-4 text-brand-olive/60 font-bold hover:text-brand-gold">
+                <i class="fa-solid fa-house w-6"></i> Public Site
+            </a>
+            <div class="pt-10">
+                <button class="w-full py-3 rounded-xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100">Logout</button>
+            </div>
+        </nav>
+    </aside>
+</div>
+
+<!-- ───────────────── ADD / EDIT MODAL ───────────────── -->
+<div x-show="modalOpen"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     class="fixed inset-0 z-[200] flex items-center justify-center p-4"
+     style="display:none;">
+
+    <!-- backdrop -->
+    <div class="absolute inset-0 bg-brand-olive/60 backdrop-blur-md" @click="closeModal()"></div>
+
+    <!-- panel -->
+    <div class="relative bg-white rounded-[2rem] shadow-super-float w-full max-w-lg max-h-[90vh] overflow-y-auto"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100">
+
+        <div class="px-8 py-6 border-b border-brand-cream flex items-center justify-between">
+            <h3 class="text-xl font-extrabold text-brand-olive"
+                x-text="editingId ? 'Edit Banner' : 'Add New Banner'"></h3>
+            <button @click="closeModal()"
+                    class="w-8 h-8 rounded-full bg-brand-cream flex items-center justify-center text-brand-dark hover:rotate-90 transition-transform">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <div class="p-8 space-y-5">
+
+            <!-- Image URL -->
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-brand-dark/50 mb-2">
+                    Image URL <span class="text-red-400">*</span>
+                </label>
+                <input x-model="form.image_url"
+                       type="url"
+                       placeholder="https://images.unsplash.com/..."
+                       class="w-full border border-brand-cream rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand-gold transition-colors bg-brand-cream/30">
+                <!-- live preview -->
+                <div x-show="form.image_url" class="mt-3 rounded-xl overflow-hidden h-32 bg-brand-cream">
+                    <img :src="form.image_url" class="w-full h-full object-cover"
+                         @error="$el.style.opacity='0.2'">
+                </div>
+            </div>
+
+            <!-- Tag label -->
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-brand-dark/50 mb-2">
+                    Tag Label
+                    <span class="normal-case font-normal opacity-60 ml-1">(e.g. "Top Rated", "Summer Sale")</span>
+                </label>
+                <input x-model="form.tag"
+                       type="text"
+                       placeholder="Top Rated"
+                       class="w-full border border-brand-cream rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand-gold transition-colors bg-brand-cream/30">
+            </div>
+
+            <!-- Title -->
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-brand-dark/50 mb-2">
+                    Headline <span class="text-red-400">*</span>
+                </label>
+                <input x-model="form.title"
+                       type="text"
+                       placeholder="Expert Electricians Available Now"
+                       class="w-full border border-brand-cream rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand-gold transition-colors bg-brand-cream/30">
+            </div>
+
+            <!-- CTA text + link side by side -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-brand-dark/50 mb-2">
+                        Button Text
+                    </label>
+                    <input x-model="form.cta_text"
+                           type="text"
+                           placeholder="Book Now"
+                           class="w-full border border-brand-cream rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand-gold transition-colors bg-brand-cream/30">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-brand-dark/50 mb-2">
+                        Button Link
+                    </label>
+                    <input x-model="form.cta_link"
+                           type="text"
+                           placeholder="service.html?id=AC Tech"
+                           class="w-full border border-brand-cream rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand-gold transition-colors bg-brand-cream/30">
+                </div>
+            </div>
+
+            <!-- Sort order + Active toggle -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-brand-dark/50 mb-2">
+                        Sort Order
+                    </label>
+                    <input x-model.number="form.sort_order"
+                           type="number"
+                           min="0"
+                           placeholder="0"
+                           class="w-full border border-brand-cream rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand-gold transition-colors bg-brand-cream/30">
+                </div>
+                <div class="flex flex-col justify-end pb-1">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative">
+                            <input type="checkbox" x-model="form.active" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-checked:bg-brand-olive rounded-full transition-colors"></div>
+                            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+                        </div>
+                        <span class="text-sm font-bold text-brand-dark">Live on site</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <p x-show="formError" x-text="formError"
+               class="text-xs text-red-500 font-semibold bg-red-50 px-4 py-2 rounded-xl"></p>
+
+            <!-- Submit -->
+            <button @click="submitForm()"
+                    :disabled="saving"
+                    class="w-full py-4 bg-brand-olive text-white font-extrabold rounded-2xl shadow-super-float hover:bg-brand-gold transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                <i x-show="saving" class="fa-solid fa-spinner animate-spin"></i>
+                <span x-text="saving ? 'Saving…' : (editingId ? 'Update Banner' : 'Add Banner')"></span>
+            </button>
+
+        </div>
+    </div>
+</div>
+
+<!-- ───────────────── TOAST ───────────────── -->
+<div x-show="toast"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 translate-y-4"
+     x-transition:enter-end="opacity-100 translate-y-0"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[300] bg-brand-olive text-white text-sm font-bold px-6 py-3 rounded-full shadow-2xl flex items-center gap-2"
+     style="display:none;">
+    <i class="fa-solid fa-circle-check text-brand-gold"></i>
+    <span x-text="toast"></span>
+</div>
+
+<!-- ───────────────── SCRIPT ───────────────── -->
+<script>
+function bannerManager() {
+    return {
+        banners:    [],
+        loading:    true,
+        sidebarOpen: false,
+
+        // modal
+        modalOpen:  false,
+        editingId:  null,
+        saving:     false,
+        formError:  '',
+        form: { image_url:'', tag:'', title:'', cta_text:'', cta_link:'', sort_order:0, active:true },
+
+        // toast
+        toast: '',
+        toastTimer: null,
+
+        async init() {
+            await this.loadBanners();
+        },
+
+        async loadBanners() {
+            this.loading = true;
+            const { data, error } = await sb
+                .from('banners')
+                .select('*')
+                .order('sort_order');
+            if (error) {
+                this.showToast('⚠ ' + error.message);
+            } else {
+                this.banners = data || [];
+            }
+            this.loading = false;
+        },
+
+        openAdd() {
+            this.editingId = null;
+            this.form = { image_url:'', tag:'', title:'', cta_text:'', cta_link:'', sort_order: this.banners.length, active: true };
+            this.formError = '';
+            this.modalOpen = true;
+        },
+
+        openEdit(banner) {
+            this.editingId = banner.id;
+            this.form = {
+                image_url:  banner.image_url  || '',
+                tag:        banner.tag        || '',
+                title:      banner.title      || '',
+                cta_text:   banner.cta_text   || '',
+                cta_link:   banner.cta_link   || '',
+                sort_order: banner.sort_order ?? 0,
+                active:     banner.active     ?? true,
+            };
+            this.formError = '';
+            this.modalOpen = true;
+        },
+
+        closeModal() {
+            this.modalOpen = false;
+        },
+
+        async submitForm() {
+            this.formError = '';
+            if (!this.form.image_url) { this.formError = 'Image URL is required.'; return; }
+            if (!this.form.title)     { this.formError = 'Headline is required.';  return; }
+
+            this.saving = true;
+            let error;
+
+            if (this.editingId) {
+                ({ error } = await sb.from('banners').update(this.form).eq('id', this.editingId));
+            } else {
+                ({ error } = await sb.from('banners').insert(this.form));
+            }
+
+            this.saving = false;
+
+            if (error) {
+                this.formError = error.message;
+            } else {
+                this.closeModal();
+                this.showToast(this.editingId ? 'Banner updated!' : 'Banner added!');
+                await this.loadBanners();
+            }
+        },
+
+        async toggleActive(banner) {
+            const { error } = await sb
+                .from('banners')
+                .update({ active: !banner.active })
+                .eq('id', banner.id);
+            if (!error) {
+                banner.active = !banner.active;
+                this.showToast(banner.active ? 'Banner is now live' : 'Banner hidden');
+            }
+        },
+
+        async deleteBanner(id) {
+            if (!confirm('Delete this banner? This cannot be undone.')) return;
+            const { error } = await sb.from('banners').delete().eq('id', id);
+            if (!error) {
+                this.banners = this.banners.filter(b => b.id !== id);
+                this.showToast('Banner deleted');
+            }
+        },
+
+        async moveUp(idx) {
+            if (idx === 0) return;
+            await this.swapOrder(idx, idx - 1);
+        },
+
+        async moveDown(idx) {
+            if (idx === this.banners.length - 1) return;
+            await this.swapOrder(idx, idx + 1);
+        },
+
+        async swapOrder(a, b) {
+            const ba = this.banners[a];
+            const bb = this.banners[b];
+            const oa = ba.sort_order;
+            const ob = bb.sort_order;
+
+            // swap in UI immediately
+            this.banners[a].sort_order = ob;
+            this.banners[b].sort_order = oa;
+            this.banners = [...this.banners.sort((x, y) => x.sort_order - y.sort_order)];
+
+            // persist
+            await sb.from('banners').update({ sort_order: ob }).eq('id', ba.id);
+            await sb.from('banners').update({ sort_order: oa }).eq('id', bb.id);
+            this.showToast('Order saved');
+        },
+
+        showToast(msg) {
+            this.toast = msg;
+            clearTimeout(this.toastTimer);
+            this.toastTimer = setTimeout(() => this.toast = '', 2500);
+        }
+    }
+}
+</script>
+
+</body>
+</html>
