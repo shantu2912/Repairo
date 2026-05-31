@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -6,16 +7,12 @@
 <meta name="theme-color" content="#5D5646">
 <title>FixZen Pro | Active Job - Technician Console</title>
 
-<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Font Awesome 6 (Free) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -158,7 +155,6 @@ body {
 
 <body class="min-h-screen pb-24 safe-bottom">
 
-<!-- HEADER - Premium Glassmorphism -->
 <header class="sticky top-0 z-50 bg-brand-cream/85 backdrop-blur-xl border-b border-brand-beige/40 shadow-sm">
   <div class="max-w-md mx-auto px-5 py-3.5">
     <div class="flex items-center justify-between">
@@ -178,7 +174,6 @@ body {
 
 <main class="max-w-md mx-auto p-5 space-y-5">
 
-  <!-- LOADING SKELETON - Enhanced -->
   <div id="loading" class="space-y-5 animate-fade-in">
     <div class="glass-card p-6 rounded-2xl">
       <div class="skeleton h-2.5 w-20 rounded-full mb-4"></div>
@@ -197,10 +192,8 @@ body {
     </div>
   </div>
 
-  <!-- MAIN JOB CARD - Hidden until loaded -->
   <div id="jobBox" class="hidden space-y-5">
 
-    <!-- Job Header Card -->
     <div class="glass-card p-5 rounded-2xl border-l-[3px] border-brand-gold shadow-sm">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -223,7 +216,6 @@ body {
       </div>
     </div>
 
-    <!-- Customer Details Card -->
     <div class="glass-card p-5 rounded-2xl">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-md">
@@ -235,7 +227,6 @@ body {
         </div>
       </div>
 
-      <!-- Contact Actions Row -->
       <div class="grid grid-cols-2 gap-3 mb-4">
         <a id="callBtn" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
           <i class="fas fa-phone-alt text-xs"></i> Call
@@ -245,7 +236,6 @@ body {
         </a>
       </div>
 
-      <!-- Address Section -->
       <div class="bg-brand-beige/15 rounded-xl p-3.5 border border-brand-beige/30">
         <div class="flex gap-2">
           <i class="fas fa-map-pin text-brand-gold text-sm mt-0.5"></i>
@@ -256,13 +246,11 @@ body {
         </div>
       </div>
 
-      <!-- Navigation Trigger -->
       <button id="routeBtn" class="w-full mt-4 bg-brand-olive hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
         <i class="fas fa-location-dot"></i> Navigate (Turn-by-Turn)
       </button>
     </div>
 
-    <!-- Live ETA Intelligence Panel -->
     <div class="glass-card p-4 rounded-2xl overflow-hidden border border-brand-beige/40">
       <div class="flex items-center justify-between mb-3">
         <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold flex items-center gap-1 status-live-dot">
@@ -273,7 +261,6 @@ body {
         </span>
       </div>
 
-      <!-- Metrics Grid -->
       <div class="grid grid-cols-2 gap-3 mb-4">
         <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
           <i class="fas fa-road text-brand-gold text-sm mb-1.5 block"></i>
@@ -287,7 +274,6 @@ body {
         </div>
       </div>
 
-      <!-- ETA Progress Visualization -->
       <div class="mt-1">
         <div class="flex justify-between text-[7px] text-brand-dark/40 mb-1 px-1">
           <span><i class="fas fa-flag-checkered"></i> Start</span>
@@ -310,7 +296,6 @@ body {
       </div>
     </div>
 
-    <!-- Payment QR Section - Enhanced with security note -->
     <div class="glass-card p-5 rounded-2xl text-center">
       <div class="flex items-center justify-center gap-2 mb-2">
         <div class="w-6 h-6 rounded-full bg-brand-gold/10 flex items-center justify-center">
@@ -339,7 +324,6 @@ body {
       </div>
     </div>
 
-    <!-- Primary Action Buttons -->
     <div class="space-y-3">
       <button id="arrivedBtn" class="w-full bg-info hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-sm">
         <i class="fas fa-flag-checkered"></i> Mark Arrived at Location
@@ -357,7 +341,6 @@ body {
   </div>
 </main>
 
-<!-- Floating Quick Actions -->
 <div class="fixed bottom-5 right-5 z-40 flex flex-col gap-2">
   <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-brand-beige hover:bg-brand-gold/10 transition-all active:scale-95">
     <i class="fas fa-headset text-brand-olive text-sm"></i>
@@ -365,7 +348,6 @@ body {
 </div>
 
 <script>
-// Supabase Client (unchanged credentials)
 const sb = supabase.createClient(
   "https://kzxdxnxgouthsywbsnvl.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
@@ -382,7 +364,6 @@ let etaInterval = null;
 let destCoordsCache = null;
 let lastGeocodeTime = 0;
 
-// Geolocation Promise with enhanced accuracy
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -401,7 +382,6 @@ function getCurrentLocation() {
   });
 }
 
-// Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -413,7 +393,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Geocode using OpenStreetMap Nominatim
 async function geocodeAddress(address) {
   if (!address) return null;
   try {
@@ -435,14 +414,11 @@ async function geocodeAddress(address) {
   }
 }
 
-// Update ETA and Distance with Smart Estimation
 async function updateDistanceAndETA() {
   if (!jobData || !jobData.location) return;
 
   try {
     const current = await getCurrentLocation();
-    
-    // Refresh geocoding every 10 minutes
     const now = Date.now();
     if (!destCoordsCache || (now - lastGeocodeTime) > 600000) {
       lastGeocodeTime = now;
@@ -452,14 +428,12 @@ async function updateDistanceAndETA() {
     if (destCoordsCache) {
       const distanceKm = calculateDistance(current.lat, current.lng, destCoordsCache.lat, destCoordsCache.lng);
       
-      // Smart speed profile
-      let avgSpeed = 28; // km/h urban default
+      let avgSpeed = 28; 
       if (distanceKm > 12) avgSpeed = 48;
       else if (distanceKm > 5) avgSpeed = 38;
       
       const etaMinutes = Math.max(1, Math.round((distanceKm / avgSpeed) * 60));
       
-      // Format distance display
       const distanceElem = document.getElementById("distanceText");
       if (distanceKm < 0.15) {
         distanceElem.innerHTML = `<span class="text-success"><i class="fas fa-location-dot text-xs"></i> ${Math.round(distanceKm * 1000)} m</span>`;
@@ -467,14 +441,12 @@ async function updateDistanceAndETA() {
         distanceElem.innerHTML = `${distanceKm.toFixed(1)} km`;
       }
       
-      // Format ETA
       const etaElem = document.getElementById("etaText");
       if (distanceKm < 0.1) {
         etaElem.innerHTML = `<span class="text-success"><i class="fas fa-hourglass-end"></i> Arrived</span>`;
         document.getElementById("etaProgressBar").style.width = "100%";
       } else if (etaMinutes < 60) {
         etaElem.innerHTML = `${etaMinutes} min`;
-        // Progress based on typical max 30km
         const progress = Math.min(95, (1 - Math.min(1, distanceKm / 25)) * 100);
         document.getElementById("etaProgressBar").style.width = `${progress}%`;
       } else {
@@ -484,13 +456,11 @@ async function updateDistanceAndETA() {
         document.getElementById("etaProgressBar").style.width = `${Math.min(80, (1 - Math.min(1, distanceKm / 40)) * 80)}%`;
       }
       
-      // Update last update timestamp
       const timeElem = document.getElementById("lastUpdateTime");
       if (timeElem) {
         timeElem.innerHTML = `<i class="far fa-clock"></i> ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
       }
       
-      // Auto-update status badge if very close
       if (distanceKm < 0.12) {
         const badge = document.getElementById("statusBadge");
         if (badge && !badge.innerHTML.includes("Nearby")) {
@@ -509,7 +479,6 @@ async function updateDistanceAndETA() {
   }
 }
 
-// Open Navigation with Current Location
 function openNavigation(location) {
   if (!location) {
     alert("Customer location not available");
@@ -532,7 +501,6 @@ function openNavigation(location) {
   }
 }
 
-// Manual Refresh Handler
 function manualRefresh() {
   const btn = document.getElementById("refreshLocationBtn");
   if (btn) {
@@ -545,7 +513,6 @@ function manualRefresh() {
   }
 }
 
-// Load Job Data from Supabase
 async function loadJob() {
   const { data, error } = await sb
     .from("jobs")
@@ -562,7 +529,6 @@ async function loadJob() {
 
   jobData = data;
 
-  // Populate UI
   document.getElementById("category").innerText = data.category || "Service";
   document.getElementById("device").querySelector("span").innerText = data.device || "Work Order";
   document.getElementById("issue").innerText = data.issue || "No issue description provided";
@@ -584,27 +550,27 @@ async function loadJob() {
     smsBtn.style.pointerEvents = "none";
   }
   
-  // Status badge update
   if (data.status === "arrived") {
     const badge = document.getElementById("statusBadge");
     badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
     badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
+  } else if (data.status === "in_progress") {
+    const badge = document.getElementById("statusBadge");
+    badge.innerHTML = '<i class="fas fa-shield-check text-[7px] mr-1"></i> Verifying Code';
+    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-amber-100 text-amber-700";
   }
   
   document.getElementById("routeBtn").onclick = () => openNavigation(data.location);
   
-  // Hide loading & show content
   document.getElementById("loading").style.display = "none";
   document.getElementById("jobBox").classList.remove("hidden");
   document.getElementById("jobBox").style.animation = "slideUp 0.3s ease-out";
   
-  // Start live tracking
   await updateDistanceAndETA();
   if (etaInterval) clearInterval(etaInterval);
   etaInterval = setInterval(updateDistanceAndETA, 10000);
 }
 
-// Mark Arrived Handler
 document.getElementById("arrivedBtn").onclick = async () => {
   if (!jobData) return;
   if (!confirm("Confirm you have arrived at customer's location?")) return;
@@ -639,25 +605,53 @@ document.getElementById("arrivedBtn").onclick = async () => {
   }
 };
 
-// Complete Job Handler
+// ── TWO-STAGE OTP GENERATION AND SECURE JOB FINISHING ENGINE ──
 document.getElementById("completeBtn").onclick = async () => {
   if (!jobData) return;
   
-  const paymentConfirmed = confirm("⚠️ IMPORTANT: Have you collected full payment?\n\nPress OK to confirm payment received and complete the job.");
-  if (!paymentConfirmed) return;
-  
-  const BASE_FEES = {
-    "Carpenter": 800, "Plumber": 600, "Electrician": 600,
-    "Painter": 600, "Mason": 600, "Welder": 600, "Roofer": 600, "AC Tech": 600
-  };
-  const fee = BASE_FEES[jobData.category] || 450;
-  
   const btn = document.getElementById("completeBtn");
   const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finalizing...';
+
+  // Generate an authentic 6-digit random code string sequence
+  const secureGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing Code Verification...';
   btn.disabled = true;
   
   try {
+    // 1. Broadcast OTP dynamically onto user tracking panels by executing table updates
+    const { error: otpPostError } = await sb.from("jobs").update({
+      status: "in_progress",
+      otp: secureGeneratedOtp
+    }).eq("id", jobId);
+
+    if (otpPostError) throw otpPostError;
+
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+
+    // 2. Open an immediate modal input window on the operator view asking for code collection
+    const enteredVerificationCode = prompt("📢 Code Broadcasted to Customer Device!\n\nPlease ask the customer for the 6-Digit Completion Code displayed on their dashboard tracking sheet and enter it below:");
+    
+    if (!enteredVerificationCode || enteredVerificationCode.trim() !== secureGeneratedOtp) {
+      alert("❌ Verification Failed: Invalid completion code entered. Please try again.");
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+      
+      // Roll status context markers cleanly back to current execution definitions
+      await sb.from("jobs").update({ status: "arrived", otp: null }).eq("id", jobId);
+      const badge = document.getElementById("statusBadge");
+      badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
+      badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
+      return;
+    }
+
+    // 3. Finalize complete lifecycle parameters if matching strings are submitted
+    const BASE_FEES = {
+      "Carpenter": 800, "Plumber": 600, "Electrician": 600,
+      "Painter": 600, "Mason": 600, "Welder": 600, "Roofer": 600, "AC Tech": 600
+    };
+    const fee = BASE_FEES[jobData.category] || 450;
+
     await sb.from("jobs").update({
       status: "completed",
       completed_at: new Date().toISOString(),
@@ -667,16 +661,16 @@ document.getElementById("completeBtn").onclick = async () => {
     localStorage.removeItem("locked_job_id");
     if (etaInterval) clearInterval(etaInterval);
     
-    alert(`✅ Job Completed!\n\nTechnician Fee: ₹${fee}\nThank you for your service.`);
+    alert(`✅ Code Verified! Job Successfully Completed.\n\nTechnician Fee Apportioned: ₹${fee}\nThank you for your service.`);
     window.location.href = "techniciandashboard.html";
+
   } catch (err) {
-    alert("Completion failed: " + err.message);
+    alert("Completion workflow error: " + err.message);
     btn.innerHTML = originalHtml;
     btn.disabled = false;
   }
 };
 
-// Exit Job Handler
 document.getElementById("exitJobBtn").onclick = () => {
   if (confirm("Exit this job? You'll need to re-accept from dashboard.")) {
     localStorage.removeItem("locked_job_id");
@@ -690,13 +684,12 @@ document.getElementById("supportFloatBtn").onclick = () => {
 
 document.getElementById("refreshLocationBtn").onclick = manualRefresh;
 
-// Initialize
 loadJob();
 
-// Cleanup on unload
 window.addEventListener("beforeunload", () => {
   if (etaInterval) clearInterval(etaInterval);
 });
 </script>
 </body>
 </html>
+
