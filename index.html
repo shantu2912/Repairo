@@ -267,13 +267,24 @@ x-data="{
          },
 
          // ── OFFER TICKER ──
-         offerMessages: [
-             '🔥 Summer Special — 20% off AC servicing this week!',
-             '⚡ Expert Electricians available same day — Book now!',
-             '🧹 Deep Cleaning package starting at ₹499 only!',
-             '🔧 All appliance repairs with 30-day service warranty!',
-             '🎉 Refer a friend & get ₹100 credit on your next booking!',
-         ],
+         offerMessages: [],
+         async loadTickerMessages() {
+    if (!window.sb) return;
+
+    try {
+        const { data, error } = await window.sb
+            .from('ticker_messages')
+            .select('message')
+            .eq('active', true);
+
+        if (error) throw error;
+
+        this.offerMessages = data.map(x => x.message);
+
+    } catch (err) {
+        console.error('Ticker Error:', err.message);
+    }
+},
          tickerPaused: false
      }"
 x-init="
@@ -288,6 +299,7 @@ x-init="
                  clearInterval(check);
                  checkUser();
                  loadAdminBanners();
+                 loadTickerMessages();
              }
              attempts++;
          }, 100);
