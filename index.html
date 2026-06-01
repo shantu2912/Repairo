@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
@@ -9,6 +8,13 @@
 <style>
 /* Force the app to snap to the top and remove Google Translate gaps */
 html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
+/* Offer ticker */
+@keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+.ticker-track { display: flex; width: max-content; animation: tickerScroll 28s linear infinite; }
+.ticker-track:hover, .ticker-paused .ticker-track { animation-play-state: paused; }
 .hide-scroll::-webkit-scrollbar { display: none; }
 .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 .fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
@@ -242,7 +248,33 @@ x-data="{
              } else {
                  this.navigate('bookings.html');
              }
-         }
+         },
+
+         // ── ADMIN BANNERS ──
+         adminBanners: [],
+         async loadAdminBanners() {
+             if (!window.sb) return;
+             try {
+                 const { data, error } = await window.sb
+                     .from('banners')
+                     .select('*')
+                     .eq('active', true)
+                     .order('sort_order');
+                 if (!error && data && data.length > 0) {
+                     this.adminBanners = data;
+                 }
+             } catch(e) { console.warn('Banner load error', e); }
+         },
+
+         // ── OFFER TICKER ──
+         offerMessages: [
+             '🔥 Summer Special — 20% off AC servicing this week!',
+             '⚡ Expert Electricians available same day — Book now!',
+             '🧹 Deep Cleaning package starting at ₹499 only!',
+             '🔧 All appliance repairs with 30-day service warranty!',
+             '🎉 Refer a friend & get ₹100 credit on your next booking!',
+         ],
+         tickerPaused: false
      }"
 x-init="
          if (sessionStorage.getItem('introShown')) { loading = false; } 
@@ -251,12 +283,19 @@ x-init="
          this.currentActiveJobId = localStorage.getItem('active_job_id');
 
          let attempts = 0;
-         let check = setInterval(() => { 
-             if(window.sb || attempts > 20) { clearInterval(check); checkUser(); }
+         let check = setInterval(() => {
+             if(window.sb || attempts > 20) {
+                 clearInterval(check);
+                 checkUser();
+                 loadAdminBanners();
+             }
              attempts++;
          }, 100);
          
-         setInterval(() => slideIndex = (slideIndex + 1) % 3, 5000);
+         setInterval(() => {
+             const total = adminBanners.length > 0 ? adminBanners.length : 3;
+             slideIndex = (slideIndex + 1) % total;
+         }, 5000);
      ">
 
 <div x-show="loading" 
@@ -387,15 +426,55 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
 </button>
 </header>
 
+<!-- ── DYNAMIC BANNER SLIDER (Admin-controlled) ── -->
 <div class="relative h-[380px] rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
-<div class="absolute inset-0" x-show="slideIndex === 0"><img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
-<div class="absolute inset-0" x-show="slideIndex === 1"><img src="https://images.unsplash.com/photo-1581578731117-104f2a417954?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
-<div class="absolute inset-0" x-show="slideIndex === 2"><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
-<div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div>
-<div class="absolute bottom-24 left-6 right-6">
-<span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider" x-text="tx('Top Rated')"></span>
-<h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="slideIndex===0 ? tx('Expert Electricians') : (slideIndex===1 ? tx('Summer Sale') : tx('Deep Cleaning'))"></h2>
-</div>
+
+    <!-- Fallback slides when no admin banners loaded yet -->
+    <template x-if="adminBanners.length === 0">
+        <div>
+            <div class="absolute inset-0" x-show="slideIndex === 0"><img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
+            <div class="absolute inset-0" x-show="slideIndex === 1"><img src="https://images.unsplash.com/photo-1581578731117-104f2a417954?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
+            <div class="absolute inset-0" x-show="slideIndex === 2"><img src="https://images.unsplash.com/photo-1527513972402-2663f8b30831?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div>
+            <div class="absolute bottom-24 left-6 right-6">
+                <span class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider" x-text="tx('Top Rated')"></span>
+                <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="slideIndex===0 ? tx('Expert Electricians') : (slideIndex===1 ? tx('Summer Sale') : tx('Deep Cleaning'))"></h2>
+            </div>
+        </div>
+    </template>
+
+    <!-- Admin-controlled slides -->
+    <template x-if="adminBanners.length > 0">
+        <div class="absolute inset-0">
+            <template x-for="(banner, idx) in adminBanners" :key="banner.id">
+                <div class="absolute inset-0 transition-opacity duration-700"
+                     :style="slideIndex === idx ? 'opacity:1;z-index:1' : 'opacity:0;z-index:0'">
+                    <img :src="banner.image_url" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/40 to-transparent"></div>
+                    <div class="absolute bottom-24 left-6 right-6 z-10">
+                        <span x-show="banner.tag" class="bg-brand-gold text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider" x-text="banner.tag"></span>
+                        <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-2" x-text="banner.title"></h2>
+                        <template x-if="banner.cta_text && banner.cta_link">
+                            <a :href="banner.cta_link"
+                               class="inline-flex items-center gap-2 mt-3 bg-brand-gold text-white text-xs font-extrabold px-5 py-2.5 rounded-full shadow-lg hover:bg-white hover:text-brand-dark transition-all">
+                                <span x-text="banner.cta_text"></span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <!-- Slide dots -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+        <template x-for="(_, idx) in (adminBanners.length > 0 ? adminBanners : [0,1,2])" :key="idx">
+            <button @click="slideIndex = idx"
+                    :class="slideIndex === idx ? 'bg-brand-gold w-5' : 'bg-white/50 w-1.5'"
+                    class="h-1.5 rounded-full transition-all duration-300"></button>
+        </template>
+    </div>
 </div>
 
 <div class="px-6 -mt-10 relative z-50">
@@ -447,6 +526,30 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 </div>
 
 <div class="pb-12 space-y-8 mt-6">
+
+<!-- ── OFFER TICKER BAR ── -->
+<div class="px-4" :class="tickerPaused ? 'ticker-paused' : ''">
+    <div class="bg-gradient-to-r from-brand-olive via-[#453F33] to-brand-dark rounded-2xl overflow-hidden shadow-[0_6px_20px_rgba(93,86,70,0.3)] border border-brand-gold/20 flex items-center">
+        <!-- label pill -->
+        <div class="flex-shrink-0 bg-brand-gold px-3 py-2.5 flex items-center gap-1.5 self-stretch">
+            <i class="fa-solid fa-bolt text-white text-[10px]"></i>
+            <span class="text-white text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Offers</span>
+        </div>
+        <!-- scrolling text -->
+        <div class="overflow-hidden flex-1 py-2.5 cursor-pointer" @click="tickerPaused = !tickerPaused">
+            <div class="ticker-track">
+                <template x-for="(msg, i) in [...offerMessages, ...offerMessages]" :key="i">
+                    <span class="text-white/90 text-[11px] font-semibold whitespace-nowrap px-6" x-text="msg"></span>
+                </template>
+            </div>
+        </div>
+        <!-- pause/play -->
+        <button @click.stop="tickerPaused = !tickerPaused"
+                class="flex-shrink-0 w-8 h-full flex items-center justify-center text-white/40 hover:text-white transition-colors">
+            <i :class="tickerPaused ? 'fa-play' : 'fa-pause'" class="fa-solid text-[9px]"></i>
+        </button>
+    </div>
+</div>
 
 <div class="px-6 animate__animated animate__fadeInUp">
 <h2 class="font-sans font-bold text-lg text-brand-olive mb-4 border-l-4 border-brand-gold pl-3"
