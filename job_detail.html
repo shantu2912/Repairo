@@ -592,6 +592,12 @@ async function loadJob() {
     window.location.href = "techniciandashboard.html";
     return;
   }
+  jobData = data;
+  if (data.is_inspection_job) {
+    document
+      .getElementById("inspectionQuoteCard")
+      .classList.remove("hidden");
+}
 if (
     data.is_inspection_job &&
     data.quote_status === "approved"
@@ -891,14 +897,11 @@ jobData.quoted_amount = total;
 jobData.quote_description = description;
 
 }
-document
-  .getElementById("submitQuoteBtn")
-  .disabled = true;
+alert(`Quote Submitted\n\nAmount: ₹${total}`);
 
-document
-  .getElementById("submitQuoteBtn")
-  .innerText =
-  "Waiting For Customer Approval";
+document.getElementById("submitQuoteBtn").disabled = true;
+document.getElementById("submitQuoteBtn").innerText =
+"Waiting For Customer Approval";
 document
  .getElementById("submitQuoteBtn")
  ?.addEventListener(
