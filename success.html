@@ -182,7 +182,69 @@
                     </a>
                 </div>
             </div>
+            <div x-show="showQuoteCard && quoteStatus === 'submitted'"
+     class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg">
 
+    <div class="text-center mb-4">
+        <h3 class="text-lg font-extrabold text-brand-dark">
+            Technician Quote Received
+        </h3>
+        <p class="text-xs text-gray-500">
+            Review and approve before work starts
+        </p>
+    </div>
+
+    <div class="space-y-3">
+
+        <div class="flex justify-between">
+            <span>Quote Amount</span>
+            <span class="font-bold">
+                ₹<span x-text="quoteAmount"></span>
+            </span>
+        </div>
+
+        <div class="flex justify-between">
+            <span>Inspection Fee Paid</span>
+            <span class="font-bold text-green-600">
+                ₹299
+            </span>
+        </div>
+
+        <div class="border-t pt-3 flex justify-between font-extrabold text-lg">
+            <span>Remaining</span>
+            <span>
+                ₹<span x-text="quoteAmount - inspectionFee"></span>
+            </span>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-3 text-sm">
+            <p class="font-bold mb-1">
+                Description
+            </p>
+            <p x-text="quoteDescription"></p>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mt-5">
+
+        <button
+            @click="rejectQuote()"
+            class="py-3 rounded-xl bg-red-500 text-white font-bold">
+
+            Reject
+        </button>
+
+        <button
+            @click="acceptQuote()"
+            class="py-3 rounded-xl bg-green-600 text-white font-bold">
+
+            Approve
+        </button>
+
+    </div>
+
+</div>
             <div x-show="otpCode && jobStatus !== 'completed'" x-transition.opacity class="text-center py-4">
                 <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm animate-bounce">
                     <i class="fa-solid fa-shield-check text-3xl text-green-500"></i>
@@ -245,7 +307,7 @@
             <div class="p-6 overflow-y-auto bg-[#fdfdfd]" id="invoice-content">
                 
                 <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-4">
-                    <h1 class="font-serif italic text-3xl text-brand-dark font-bold">FixZen</h1>
+                    <h1 class="font-serif italic text-3xl text-brand-dark font-bold">FixZenix</h1>
                     <p class="text-xs text-gray-500 mt-1">Premium Home Services</p>
                     <p class="text-[10px] text-gray-400 mt-1 font-mono">Invoice #<span x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></p>
                 </div>
@@ -287,21 +349,71 @@
                 </div>
 
                 <div class="space-y-2 text-sm text-gray-600 mb-6">
-                    <div class="flex justify-between">
-                        <span>Subtotal</span>
-                        <span class="font-mono">₹<span x-text="Number(billPrice).toFixed(2)"></span></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Platform Fee</span>
-                        <span class="font-mono">₹49.00</span>
-                    </div>
-                    <div class="flex justify-between text-lg font-black text-brand-dark mt-2 pt-2 border-t border-gray-200">
-                        <span>Total Paid</span>
-                        <span class="font-mono text-green-600">
-                            ₹<span x-text="(Number(billPrice) + 49).toFixed(2)"></span>
-                        </span>
-                    </div>
-                </div>
+
+    <template x-if="fullJobData?.is_inspection_job">
+
+        <div>
+
+            <div class="flex justify-between">
+                <span>Work Charges</span>
+                <span class="font-mono">
+                    ₹<span x-text="billQuoteAmount"></span>
+                </span>
+            </div>
+
+            <div class="flex justify-between">
+                <span>Inspection Fee Paid</span>
+                <span class="font-mono text-green-600">
+                    ₹<span x-text="billInspectionFee"></span>
+                </span>
+            </div>
+
+            <div class="flex justify-between">
+                <span>Inspection Adjustment</span>
+                <span class="font-mono text-red-500">
+                    -₹<span x-text="billInspectionFee"></span>
+                </span>
+            </div>
+
+            <div class="flex justify-between font-black text-lg border-t pt-2 mt-2">
+                <span>Final Amount</span>
+                <span class="text-green-600">
+                    ₹<span x-text="billFinalAmount"></span>
+                </span>
+            </div>
+
+        </div>
+
+    </template>
+
+    <template x-if="!fullJobData?.is_inspection_job">
+
+        <div>
+
+            <div class="flex justify-between">
+                <span>Subtotal</span>
+                <span>
+                    ₹<span x-text="billPrice"></span>
+                </span>
+            </div>
+
+            <div class="flex justify-between">
+                <span>Platform Fee</span>
+                <span>₹49</span>
+            </div>
+
+            <div class="flex justify-between font-black text-lg border-t pt-2 mt-2">
+                <span>Total Paid</span>
+                <span class="text-green-600">
+                    ₹<span x-text="Number(billPrice)+49"></span>
+                </span>
+            </div>
+
+        </div>
+
+    </template>
+
+</div>
 
                 <div class="text-center text-xs text-gray-400 mt-6 pb-2">
                     <p>Thank you for trusting FixZen!</p>
@@ -451,6 +563,11 @@
                 
                 otpCode: null,
                 jobStatus: 'pending',
+                quoteAmount: 0,
+                quoteDescription: '',
+                quoteStatus: '',
+                inspectionFee: 299,
+                showQuoteCard: false,
                 
                 showBill: false,
                 fullJobData: null,
@@ -496,6 +613,33 @@
                                       this.technicianFound = true;
                                   }
                               }
+                            
+                              if (payload.new.quote_status) {
+
+                                    this.quoteStatus =
+                                        payload.new.quote_status;
+
+                                    this.quoteAmount =
+                                        payload.new.quoted_amount || 0;
+
+                                    this.quoteDescription =
+                                        payload.new.quote_description || '';
+
+                                    this.showQuoteCard =
+                                        payload.new.quote_status === 'submitted';
+
+                                    if (
+                                        payload.new.quote_status === 'approved'
+                                    ) {
+                                        this.showQuoteCard = false;
+                                    }
+
+                                    if (
+                                        payload.new.quote_status === 'rejected'
+                                    ) {
+                                        this.showQuoteCard = false;
+                                    }
+                                }
                               
                               // Capture OTP string variables on runtime changes
                               if (payload.new.otp) {
@@ -527,7 +671,7 @@
                         this.billVariantName = job.variant_name || job.device || 'Furniture Assembly';
 
                         if (job.original_price !== undefined && job.original_price !== null) {
-                            this.billPrice = parseFloat(job.original_price);
+                            this.billPrice =parseFloat(job.quoted_amount ||job.original_price ||0);
                         } else {
                             this.billPrice = 0;
                         }
@@ -577,9 +721,27 @@
                 },
 
                 async checkJobStatus() {
-                    const { data: job } = await sb.from('jobs').select('tech_id, otp, status, user_id, category').eq('id', this.jobId).single();
+                    const { data: job } = await sb.from('jobs').select(`tech_id,otp,status,user_id,category,quoted_amount,quote_description,quote_status,inspection_fee`).eq('id', this.jobId).single();
                     if (job) {
                         if (job.status) this.jobStatus = job.status;
+                        if (job.quote_status) {
+
+    this.quoteStatus = job.quote_status;
+
+    this.quoteAmount =
+        job.quoted_amount || 0;
+
+    this.quoteDescription =
+        job.quote_description || '';
+
+    this.inspectionFee =
+        job.inspection_fee || 299;
+
+    if (job.quote_status === 'submitted') {
+        this.showQuoteCard = true;
+    }
+
+}
                         if (job.tech_id) this.fetchTechnician(job.tech_id);
                         if (job.otp) this.otpCode = job.otp;
                         if (!this.fullJobData) this.fullJobData = job;
@@ -654,6 +816,50 @@
                     await sb.from('jobs').update({ status: 'cancelled' }).eq('id', this.jobId);
                     window.location.href = 'index.html';
                 },
+                async acceptQuote() {
+
+                    const finalAmount =
+    this.quoteAmount - this.inspectionFee;
+
+await sb
+  .from('jobs')
+  .update({
+      quote_status: 'approved',
+      customer_approved: true,
+      customer_price: finalAmount
+  })
+  .eq('id', this.jobId);
+
+                    if(error){
+                        alert(error.message);
+                        return;
+                    }
+
+                    this.showQuoteCard = false;
+
+                    alert('Quote approved successfully.');
+                },
+async rejectQuote() {
+
+    const { error } =
+        await sb
+        .from('jobs')
+        .update({
+            quote_status: 'rejected',
+            customer_approved: false,
+            status: 'cancelled'
+        })
+        .eq('id', this.jobId);
+
+    if(error){
+        alert(error.message);
+        return;
+    }
+
+    alert(
+      'Quote rejected. Booking closed.'
+    );
+},
 
                 setFeedbackRating(i) {
                     this.feedbackRating = i;

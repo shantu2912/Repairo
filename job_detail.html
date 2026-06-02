@@ -295,7 +295,41 @@ body {
         </button>
       </div>
     </div>
+    <div id="inspectionQuoteCard"
+     class="glass-card p-5 rounded-2xl hidden">
 
+  <div class="flex items-center gap-2 mb-3">
+    <i class="fas fa-file-invoice-dollar text-brand-gold"></i>
+    <h3 class="font-bold text-brand-dark">
+      Inspection Quote
+    </h3>
+  </div>
+
+  <input
+      id="materialCost"
+      type="number"
+      placeholder="Material Cost"
+      class="w-full border rounded-xl p-3 mb-3">
+
+  <input
+      id="labourCost"
+      type="number"
+      placeholder="Labour Cost"
+      class="w-full border rounded-xl p-3 mb-3">
+
+  <textarea
+      id="quoteDescription"
+      placeholder="Work Description"
+      class="w-full border rounded-xl p-3 mb-3"></textarea>
+
+  <button
+      id="submitQuoteBtn"
+      class="w-full bg-brand-gold text-white py-3 rounded-xl font-bold">
+
+      Submit Quote
+  </button>
+
+</div>
     <div class="glass-card p-5 rounded-2xl text-center">
       <div class="flex items-center justify-center gap-2 mb-2">
         <div class="w-6 h-6 rounded-full bg-brand-gold/10 flex items-center justify-center">
@@ -558,8 +592,19 @@ async function loadJob() {
     window.location.href = "techniciandashboard.html";
     return;
   }
+if (
+    data.is_inspection_job &&
+    data.quote_status === "approved"
+) {
 
-  jobData = data;
+    alert(
+      "Customer approved the quote. You can start repair work now."
+    );
+
+    document
+      .getElementById("inspectionQuoteCard")
+      .style.display = "none";
+}
 
   document.getElementById("category").innerText = data.category || "Service";
   document.getElementById("device").querySelector("span").innerText = data.device || "Work Order";
@@ -811,11 +856,99 @@ document.getElementById("supportFloatBtn").onclick = () => {
 
 document.getElementById("refreshLocationBtn").onclick = manualRefresh;
 
+async function submitInspectionQuote() {
+
+    const material =
+      Number(document.getElementById("materialCost").value);
+
+    const labour =
+      Number(document.getElementById("labourCost").value);
+
+    const description =
+      document.getElementById("quoteDescription").value;
+
+    const total = material + labour;
+
+    const { error } = await sb
+      .from("jobs")
+      .update({
+          quoted_amount: total,
+          quote_description: description,
+          quote_status: "submitted"
+      })
+      .eq("id", jobId);
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    alert(
+      `Quote Submitted\n\nAmount: ₹${total}`
+    );
+    jobData.quote_status = "submitted";
+jobData.quoted_amount = total;
+jobData.quote_description = description;
+
+}
+document
+  .getElementById("submitQuoteBtn")
+  .disabled = true;
+
+document
+  .getElementById("submitQuoteBtn")
+  .innerText =
+  "Waiting For Customer Approval";
+document
+ .getElementById("submitQuoteBtn")
+ ?.addEventListener(
+      "click",
+      submitInspectionQuote
+ );
+ sb.channel("quote-approval-" + jobId)
+.on(
+  "postgres_changes",
+  {
+      event: "UPDATE",
+      schema: "public",
+      table: "jobs",
+      filter: `id=eq.${jobId}`
+  },
+  payload => {
+
+      if (
+          payload.new.quote_status === "approved"
+      ) {
+
+          alert(
+            "✅ Customer approved the quote."
+          );
+
+          jobData.quote_status = "approved";
+
+          document
+            .getElementById("inspectionQuoteCard")
+            .style.display = "none";
+      }
+
+      if (
+          payload.new.quote_status === "rejected"
+      ) {
+
+          alert(
+            "❌ Customer rejected the quote."
+          );
+      }
+
+  }
+)
+.subscribe();
 loadJob();
 
 window.addEventListener("beforeunload", () => {
   if (etaInterval) clearInterval(etaInterval);
 });
+
 </script>
 </body>
 </html>
