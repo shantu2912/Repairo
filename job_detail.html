@@ -889,19 +889,18 @@ async function submitInspectionQuote() {
         return;
     }
 
-    alert(
-      `Quote Submitted\n\nAmount: ₹${total}`
-    );
-    jobData.quote_status = "submitted";
-jobData.quoted_amount = total;
-jobData.quote_description = description;
-
-}
-alert(`Quote Submitted\n\nAmount: ₹${total}`);
+    alert(`Quote Submitted\n\nAmount: ₹${total}`);
 
 document.getElementById("submitQuoteBtn").disabled = true;
 document.getElementById("submitQuoteBtn").innerText =
 "Waiting For Customer Approval";
+
+jobData.quote_status = "submitted";
+jobData.quoted_amount = total;
+jobData.quote_description = description;
+
+}
+
 document
  .getElementById("submitQuoteBtn")
  ?.addEventListener(
