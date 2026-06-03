@@ -881,61 +881,65 @@
             window.location.href = 'index.html';
         },
 
-        async acceptQuote() {
-            if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
-            
-            const finalAmount = Math.max(0, this.quoteAmount - this.inspectionFee);
-            
-            try {
-                const { error } = await sb
-                    .from('jobs')
-                    .update({
-                        quote_status: 'approved',
-                        customer_approved: true,
-                        customer_price: finalAmount,
-                        status: 'accepted'
-                    })
-                    .eq('id', this.jobId);
-                
-                if (error) throw error;
-                
-                this.showQuoteCard = false;
-                this.quoteStatus = 'approved';
-                
-                // Refresh job data to update bill
-                await this.refreshJobData();
-                
-                alert(`✅ Quote Approved!\n\nTotal Quote: ₹${this.quoteAmount}\nInspection Fee Paid: ₹${this.inspectionFee}\nAmount Due After Job: ₹${finalAmount}`);
-                
-            } catch (err) {
-                console.error('Error approving quote:', err);
-                alert("Error approving quote: " + err.message);
-            }
-        },
+async acceptQuote() {
+    if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
+    
+    const finalAmount = Math.max(0, this.quoteAmount - this.inspectionFee);
+    
+    try {
+        const { error } = await sb
+            .from('jobs')
+            .update({
+                quote_status: 'approved',
+                customer_approved: true,
+                customer_price: finalAmount,
+                status: 'accepted'  // Valid status in your constraint
+            })
+            .eq('id', this.jobId);
+        
+        if (error) throw error;
+        
+        this.showQuoteCard = false;
+        this.quoteStatus = 'approved';
+        
+        // Refresh job data to update bill
+        await this.refreshJobData();
+        
+        alert(`✅ Quote Approved!\n\n` +
+              `Total Quote: ₹${this.quoteAmount}\n` +
+              `Inspection Fee Paid: ₹${this.inspectionFee}\n` +
+              `Amount Due After Job: ₹${finalAmount}\n\n` +
+              `The technician will now start the repair work.`);
+        
+    } catch (err) {
+        console.error('Error approving quote:', err);
+        alert("Error approving quote: " + err.message);
+    }
+},
 
-        async rejectQuote() {
-            const reason = prompt("Please share why you're rejecting this quote (optional):");
-            
-            try {
-                const { error } = await sb
-                    .from('jobs')
-                    .update({
-                        quote_status: 'rejected',
-                        customer_approved: false,
-                        status: 'cancelled'
-                    })
-                    .eq('id', this.jobId);
-                
-                if (error) throw error;
-                
-                alert("Quote rejected. Your booking has been closed. The inspection fee paid (₹" + this.inspectionFee + ") is non-refundable as the technician visited your location.");
-                window.location.href = 'index.html';
-                
-            } catch (err) {
-                console.error('Error rejecting quote:', err);
-                alert("Error rejecting quote: " + err.message);
-            }
-        },
+async rejectQuote() {
+    const reason = prompt("Please share why you're rejecting this quote (optional):");
+    
+    try {
+        const { error } = await sb
+            .from('jobs')
+            .update({
+                quote_status: 'rejected',
+                customer_approved: false,
+                status: 'cancelled'  // Valid status in your constraint
+            })
+            .eq('id', this.jobId);
+        
+        if (error) throw error;
+        
+        alert("Quote rejected. Your booking has been closed. The inspection fee paid (₹" + this.inspectionFee + ") is non-refundable as the technician visited your location.");
+        window.location.href = 'index.html';
+        
+    } catch (err) {
+        console.error('Error rejecting quote:', err);
+        alert("Error rejecting quote: " + err.message);
+    }
+},
 
         setFeedbackRating(i) {
             this.feedbackRating = i;
