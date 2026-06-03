@@ -962,7 +962,6 @@ function setupQuotePreview() {
     });
     updatePreview();
 }
-
 // Quote submission with proper calculations
 async function submitInspectionQuote() {
     const labour = Number(document.getElementById("labourCost")?.value) || 0;
@@ -1012,7 +1011,7 @@ async function submitInspectionQuote() {
                 quoted_extra: extra,
                 quote_description: description,
                 quote_status: "submitted",
-                status: "waiting_approval"
+                status: "in_progress"  // ← FIXED: Use existing status value
             })
             .eq("id", jobId);
         
@@ -1043,7 +1042,7 @@ async function submitInspectionQuote() {
         submitBtn.disabled = false;
     }
 }
-
+   
 // Cancel quote button handler
 const cancelQuoteBtn = document.getElementById("cancelQuoteBtn");
 if (cancelQuoteBtn) {
@@ -1081,6 +1080,7 @@ if (quoteCard) {
     }
 }
 
+
 // Real-time listener for quote approval status
 if (jobId) {
     sb.channel("quote-approval-" + jobId)
@@ -1100,6 +1100,8 @@ if (jobId) {
                     if (quoteCardElement) {
                         quoteCardElement.style.display = "none";
                     }
+                    // Optionally update job status to show work can begin
+                    sb.from("jobs").update({ status: "accepted" }).eq("id", jobId);
                 }
                 if (payload.new.quote_status === "rejected") {
                     alert("❌ Customer rejected the quote. The job has been closed.");
@@ -1109,7 +1111,6 @@ if (jobId) {
         )
         .subscribe();
 }
-
 // Load the job details
 loadJob();
 
