@@ -889,24 +889,18 @@ async function submitInspectionQuote() {
         return;
     }
 
-    alert(`Quote Submitted\n\nAmount: ₹${total}`);
+    alert(
+      `Quote Submitted\n\nAmount: ₹${total}`
+    );
+    jobData.quote_status = "submitted";
+    jobData.quoted_amount = total;
+    jobData.quote_description = description;
 
-document.getElementById("submitQuoteBtn").disabled = true;
-document.getElementById("submitQuoteBtn").innerText =
-"Waiting For Customer Approval";
-
-jobData.quote_status = "submitted";
-jobData.quoted_amount = total;
-jobData.quote_description = description;
-
+    document.getElementById("submitQuoteBtn").disabled = true;
+    document.getElementById("submitQuoteBtn").innerText = "Waiting For Customer Approval";
 }
 
-document
- .getElementById("submitQuoteBtn")
- ?.addEventListener(
-      "click",
-      submitInspectionQuote
- );
+document.getElementById("submitQuoteBtn").addEventListener("click", submitInspectionQuote);
  sb.channel("quote-approval-" + jobId)
 .on(
   "postgres_changes",
