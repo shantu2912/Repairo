@@ -342,8 +342,6 @@
                 const firstService = this.selectedSubs[0];
                 const scheduledDateTime = `${this.date}T${this.time}:00`;
 
-                const isInspectionJob = firstService?.n === "Other Issue";
-
                 const jobPayload = {
                     user_id: this.user.id, // Legitimate, authentic profile UUID sequence to clear foreign constraints
                     category: this.service?.name || 'General Service',
@@ -351,15 +349,14 @@
                     issue: firstService?.d || 'Service requested via app',
                     customer_name: this.customerName,
                     location: this.address,
-                    phone: '+91' + this.phone.split(' ').join('').trim(),
+                    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
                     status: 'pending',
                     urgent: false,
                     latitude: this.lat || null,
                     longitude: this.lng || null,
                     scheduled_time: scheduledDateTime,
                     original_price: this.total,
-                    discounted_price: this.total,
-                    is_inspection_job: isInspectionJob
+                    discounted_price: this.total
                 };
 
                 const { data: insertedJob, error: jobError } = await window.sb
