@@ -880,7 +880,6 @@
             await sb.from('jobs').update({ status: 'cancelled' }).eq('id', this.jobId);
             window.location.href = 'index.html';
         },
-
 async acceptQuote() {
     if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
     
@@ -893,7 +892,8 @@ async acceptQuote() {
                 quote_status: 'approved',
                 customer_approved: true,
                 customer_price: finalAmount,
-                status: 'accepted'  // Valid status in your constraint
+                status: 'in_progress'  // ✅ Use 'in_progress' (it's in your constraint)
+                // Alternative: status: 'assigned' (also in your constraint)
             })
             .eq('id', this.jobId);
         
@@ -902,7 +902,6 @@ async acceptQuote() {
         this.showQuoteCard = false;
         this.quoteStatus = 'approved';
         
-        // Refresh job data to update bill
         await this.refreshJobData();
         
         alert(`✅ Quote Approved!\n\n` +
