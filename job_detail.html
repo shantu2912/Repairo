@@ -295,40 +295,102 @@ body {
         </button>
       </div>
     </div>
-    <div id="inspectionQuoteCard"
-     class="glass-card p-5 rounded-2xl hidden">
-
-  <div class="flex items-center gap-2 mb-3">
-    <i class="fas fa-file-invoice-dollar text-brand-gold"></i>
-    <h3 class="font-bold text-brand-dark">
-      Inspection Quote
-    </h3>
-  </div>
-
-  <input
-      id="materialCost"
-      type="number"
-      placeholder="Material Cost"
-      class="w-full border rounded-xl p-3 mb-3">
-
-  <input
-      id="labourCost"
-      type="number"
-      placeholder="Labour Cost"
-      class="w-full border rounded-xl p-3 mb-3">
-
-  <textarea
-      id="quoteDescription"
-      placeholder="Work Description"
-      class="w-full border rounded-xl p-3 mb-3"></textarea>
-
-  <button
-      id="submitQuoteBtn"
-      class="w-full bg-brand-gold text-white py-3 rounded-xl font-bold">
-
-      Submit Quote
-  </button>
-
+    <!-- Inspection Quote Card - Complete Implementation -->
+<div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden">
+    <div class="flex items-center gap-2 mb-4">
+        <i class="fas fa-clipboard-list text-brand-gold text-lg"></i>
+        <h3 class="font-bold text-brand-dark text-base">Inspection Quote</h3>
+        <span class="ml-auto text-[9px] bg-brand-cream px-2 py-1 rounded-full text-brand-olive">
+            <i class="fas fa-rupee-sign"></i> Inspection: ₹299 paid
+        </span>
+    </div>
+    
+    <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
+        <i class="fas fa-info-circle text-brand-gold mr-1"></i>
+        Customer has already paid ₹299 inspection fee. This will be adjusted from the final quote amount.
+    </div>
+    
+    <div class="space-y-3">
+        <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+                <i class="fas fa-tools mr-1"></i> Labour Cost
+            </label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+                <input type="number" id="labourCost" placeholder="0" 
+                    class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+        </div>
+        
+        <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+                <i class="fas fa-cubes mr-1"></i> Material Cost
+            </label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+                <input type="number" id="materialCost" placeholder="0" 
+                    class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+        </div>
+        
+        <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+                <i class="fas fa-plus-circle mr-1"></i> Extra Charges (if any)
+            </label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+                <input type="number" id="extraCharges" placeholder="0" 
+                    class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+        </div>
+        
+        <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+                <i class="fas fa-file-alt mr-1"></i> Work Description
+            </label>
+            <textarea id="quoteDescription" rows="3" 
+                placeholder="Describe the issue found, recommended repairs, parts needed, and any additional notes..."
+                class="w-full border border-brand-beige rounded-xl p-3 text-brand-dark text-sm focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition resize-none"></textarea>
+        </div>
+        
+        <!-- Live Quote Preview -->
+        <div class="bg-gradient-to-r from-brand-olive/5 to-brand-gold/5 rounded-xl p-3 mt-2">
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-brand-dark/60">Labour:</span>
+                <span class="font-mono font-bold" id="previewLabour">₹0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-brand-dark/60">Material:</span>
+                <span class="font-mono font-bold" id="previewMaterial">₹0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-brand-dark/60">Extra:</span>
+                <span class="font-mono font-bold" id="previewExtra">₹0</span>
+            </div>
+            <div class="border-t border-brand-beige/50 my-2"></div>
+            <div class="flex justify-between text-base font-bold">
+                <span class="text-brand-olive">Total Quote:</span>
+                <span class="font-mono text-brand-gold" id="previewTotal">₹0</span>
+            </div>
+            <div class="flex justify-between text-xs mt-2 text-green-600">
+                <span>Inspection fee adjustment:</span>
+                <span id="adjustmentInfo">-₹299 (already paid)</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200">
+                <span class="text-brand-dark">Customer Payable:</span>
+                <span class="font-mono text-green-700" id="previewPayable">₹0</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-3 mt-4">
+        <button id="cancelQuoteBtn" class="py-3 rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition-all btn-touch">
+            Cancel
+        </button>
+        <button id="submitQuoteBtn" class="py-3 rounded-xl bg-brand-gold text-white font-bold hover:bg-brand-olive transition-all btn-touch shadow-md flex items-center justify-center gap-2">
+            <i class="fas fa-paper-plane"></i> Submit Quote
+        </button>
+    </div>
 </div>
     <div class="glass-card p-5 rounded-2xl text-center">
       <div class="flex items-center justify-center gap-2 mb-2">
@@ -861,84 +923,200 @@ document.getElementById("supportFloatBtn").onclick = () => {
 };
 
 document.getElementById("refreshLocationBtn").onclick = manualRefresh;
+document.getElementById("refreshLocationBtn").onclick = manualRefresh;
 
-async function submitInspectionQuote() {
+// ============================================================
+// COMPLETE INSPECTION QUOTE SYSTEM WITH PROPER CALCULATIONS
+// ============================================================
 
-    const material =
-      Number(document.getElementById("materialCost").value);
-
-    const labour =
-      Number(document.getElementById("labourCost").value);
-
-    const description =
-      document.getElementById("quoteDescription").value;
-
-    const total = material + labour;
-
-    const { error } = await sb
-      .from("jobs")
-      .update({
-          quoted_amount: total,
-          quote_description: description,
-          quote_status: "submitted"
-      })
-      .eq("id", jobId);
-
-    if (error) {
-        alert(error.message);
-        return;
+// Live preview for quote calculator
+function setupQuotePreview() {
+    const inputs = ["labourCost", "materialCost", "extraCharges"];
+    const inspectionFee = jobData?.inspection_fee_amount || 299;
+    
+    function updatePreview() {
+        const labour = Number(document.getElementById("labourCost")?.value) || 0;
+        const material = Number(document.getElementById("materialCost")?.value) || 0;
+        const extra = Number(document.getElementById("extraCharges")?.value) || 0;
+        const total = labour + material + extra;
+        const payable = Math.max(0, total - inspectionFee);
+        
+        const previewLabour = document.getElementById("previewLabour");
+        const previewMaterial = document.getElementById("previewMaterial");
+        const previewExtra = document.getElementById("previewExtra");
+        const previewTotal = document.getElementById("previewTotal");
+        const previewPayable = document.getElementById("previewPayable");
+        const adjustmentInfo = document.getElementById("adjustmentInfo");
+        
+        if (previewLabour) previewLabour.innerHTML = `₹${labour}`;
+        if (previewMaterial) previewMaterial.innerHTML = `₹${material}`;
+        if (previewExtra) previewExtra.innerHTML = `₹${extra}`;
+        if (previewTotal) previewTotal.innerHTML = `₹${total}`;
+        if (previewPayable) previewPayable.innerHTML = `₹${payable}`;
+        if (adjustmentInfo) adjustmentInfo.innerHTML = `-₹${inspectionFee} (already paid)`;
     }
-
-    alert(
-      `Quote Submitted\n\nAmount: ₹${total}`
-    );
-    jobData.quote_status = "submitted";
-    jobData.quoted_amount = total;
-    jobData.quote_description = description;
-
-    document.getElementById("submitQuoteBtn").disabled = true;
-    document.getElementById("submitQuoteBtn").innerText = "Waiting For Customer Approval";
+    
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", updatePreview);
+    });
+    updatePreview();
 }
 
-document.getElementById("submitQuoteBtn").addEventListener("click", submitInspectionQuote);
- sb.channel("quote-approval-" + jobId)
-.on(
-  "postgres_changes",
-  {
-      event: "UPDATE",
-      schema: "public",
-      table: "jobs",
-      filter: `id=eq.${jobId}`
-  },
-  payload => {
+// Quote submission with proper calculations
+async function submitInspectionQuote() {
+    const labour = Number(document.getElementById("labourCost")?.value) || 0;
+    const material = Number(document.getElementById("materialCost")?.value) || 0;
+    const extra = Number(document.getElementById("extraCharges")?.value) || 0;
+    const description = document.getElementById("quoteDescription")?.value || "";
+    
+    if (!description.trim()) {
+        alert("Please provide a description of the work needed.");
+        return;
+    }
+    
+    if (labour === 0 && material === 0 && extra === 0) {
+        alert("Please enter at least one cost component for the quote.");
+        return;
+    }
+    
+    const totalQuote = labour + material + extra;
+    const inspectionFee = jobData?.inspection_fee_amount || 299;
+    const customerPayable = Math.max(0, totalQuote - inspectionFee);
+    
+    const confirmMsg = `📋 Quote Summary\n\n` +
+        `Labour: ₹${labour}\n` +
+        `Material: ₹${material}\n` +
+        `Extra Charges: ₹${extra}\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `Total Quote: ₹${totalQuote}\n\n` +
+        `Inspection Fee Paid: ₹${inspectionFee}\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `Customer Payable: ₹${customerPayable}\n\n` +
+        `Send this quote to the customer for approval?`;
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const submitBtn = document.getElementById("submitQuoteBtn");
+    const originalHtml = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    submitBtn.disabled = true;
+    
+    try {
+        const { error } = await sb
+            .from("jobs")
+            .update({
+                quoted_amount: totalQuote,
+                quoted_labour: labour,
+                quoted_material: material,
+                quoted_extra: extra,
+                quote_description: description,
+                quote_status: "submitted",
+                status: "waiting_approval"
+            })
+            .eq("id", jobId);
+        
+        if (error) throw error;
+        
+        alert(`✅ Quote Submitted!\n\nTotal: ₹${totalQuote}\nCustomer Payable: ₹${customerPayable}\n\nWaiting for customer approval.`);
+        
+        // Update UI to show pending state
+        submitBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> Waiting for Approval';
+        submitBtn.disabled = true;
+        
+        // Hide cancel button if exists
+        const cancelBtn = document.getElementById("cancelQuoteBtn");
+        if (cancelBtn) cancelBtn.style.display = "none";
+        
+        // Disable inputs
+        ["labourCost", "materialCost", "extraCharges", "quoteDescription"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = true;
+        });
+        
+        jobData.quote_status = "submitted";
+        jobData.quoted_amount = totalQuote;
+        
+    } catch (err) {
+        alert("Error submitting quote: " + err.message);
+        submitBtn.innerHTML = originalHtml;
+        submitBtn.disabled = false;
+    }
+}
 
-      if (
-          payload.new.quote_status === "approved"
-      ) {
+// Cancel quote button handler
+const cancelQuoteBtn = document.getElementById("cancelQuoteBtn");
+if (cancelQuoteBtn) {
+    cancelQuoteBtn.addEventListener("click", () => {
+        if (confirm("Cancel this quote? The customer will be notified.")) {
+            document.getElementById("inspectionQuoteCard").classList.add("hidden");
+        }
+    });
+}
 
-          alert(
-            "✅ Customer approved the quote."
-          );
+// Set up quote submission event listener
+const submitQuoteBtn = document.getElementById("submitQuoteBtn");
+if (submitQuoteBtn) {
+    submitQuoteBtn.addEventListener("click", submitInspectionQuote);
+}
 
-          jobData.quote_status = "approved";
+// Initialize quote preview when card becomes visible
+const quoteCard = document.getElementById("inspectionQuoteCard");
+if (quoteCard) {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === "class") {
+                if (quoteCard && !quoteCard.classList.contains("hidden")) {
+                    setTimeout(() => setupQuotePreview(), 100);
+                    observer.disconnect();
+                }
+            }
+        });
+    });
+    observer.observe(quoteCard, { attributes: true });
+    
+    // Also check if card is already visible
+    if (!quoteCard.classList.contains("hidden")) {
+        setupQuotePreview();
+    }
+}
 
-          document
-            .getElementById("inspectionQuoteCard")
-            .style.display = "none";
-      }
+// Real-time listener for quote approval status
+if (jobId) {
+    sb.channel("quote-approval-" + jobId)
+        .on(
+            "postgres_changes",
+            {
+                event: "UPDATE",
+                schema: "public",
+                table: "jobs",
+                filter: `id=eq.${jobId}`
+            },
+            payload => {
+                if (payload.new.quote_status === "approved") {
+                    alert("✅ Customer approved the quote. You can start the repair work now.");
+                    jobData.quote_status = "approved";
+                    const quoteCardElement = document.getElementById("inspectionQuoteCard");
+                    if (quoteCardElement) {
+                        quoteCardElement.style.display = "none";
+                    }
+                }
+                if (payload.new.quote_status === "rejected") {
+                    alert("❌ Customer rejected the quote. The job has been closed.");
+                    window.location.href = "techniciandashboard.html";
+                }
+            }
+        )
+        .subscribe();
+}
 
-      if (
-          payload.new.quote_status === "rejected"
-      ) {
+// Load the job details
+loadJob();
 
-          alert(
-            "❌ Customer rejected the quote."
-          );
-      }
-
-  }
-)
-.subscribe();
+window.addEventListener("beforeunload", () => {
+    if (etaInterval) clearInterval(etaInterval);
+});
+       
 loadJob();
 
 window.addEventListener("beforeunload", () => {

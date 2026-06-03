@@ -40,7 +40,7 @@
                     {n:"New Point Wiring", p:880, d:"Internal wiring per point"},
                     {n:"Inverter Connection", p:330, d:"Battery & Inverter setup"},
                     {
-                    n:"Other Issue",p:299,d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved."}
+                    n:"Other Issue",p:299,d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true   }
                 ]
             },
             "carpenter": { 
@@ -57,7 +57,7 @@
                     {
     n:"Other Issue",
     p:299,
-    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved."
+    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true  // Flag to identify inspection-only bookings
 }
                 ]
             },
@@ -74,7 +74,7 @@
                     {
     n:"Other Issue",
     p:299,
-    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved."
+    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true  // Flag to identify inspection-only bookings
 }
                 ]
             },
@@ -92,7 +92,7 @@
                     {
     n:"Other Issue",
     p:299,
-    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved."
+    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true  // Flag to identify inspection-only bookings
 }
                 ]
             },
@@ -109,7 +109,7 @@
                     {
     n:"Other Issue",
     p:299,
-    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved."
+    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true  // Flag to identify inspection-only bookings
 }
                 ]
             },
@@ -123,7 +123,7 @@
                     {
     n:"Other Issue",
     p:299,
-    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved."
+    d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true  // Flag to identify inspection-only bookings
 }
                 ]
             }
@@ -312,73 +312,105 @@
         },
 
         async confirmBooking() {
-            if (this.bookingLoading) return;
+    if (this.bookingLoading) return;
 
-            try {
-                if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-                if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-                if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-                if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-                if (!this.date) { alert('Please select a date.'); return; }
-                if (!this.time) { alert('Please select a time.'); return; }
-                if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
+    try {
+        if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+        if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+        if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+        if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+        if (!this.date) { alert('Please select a date.'); return; }
+        if (!this.time) { alert('Please select a time.'); return; }
+        if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
 
-                this.bookingLoading = true;
-                if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
+        this.bookingLoading = true;
+        if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
 
-                const { data: blockJobs } = await window.sb
-                    .from('jobs')
-                    .select('id')
-                    .eq('user_id', this.user.id)
-                    .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
+        const { data: blockJobs } = await window.sb
+            .from('jobs')
+            .select('id')
+            .eq('user_id', this.user.id)
+            .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
 
-                if (blockJobs && blockJobs.length > 0) {
-                    alert('You already have an active service booking under development!');
-                    localStorage.setItem('active_job_id', blockJobs[0].id);
-                    window.location.href = `success.html?job_id=${blockJobs[0].id}`;
-                    return;
-                }
+        if (blockJobs && blockJobs.length > 0) {
+            alert('You already have an active service booking under development!');
+            localStorage.setItem('active_job_id', blockJobs[0].id);
+            window.location.href = `success.html?job_id=${blockJobs[0].id}`;
+            return;
+        }
 
-                const firstService = this.selectedSubs[0];
-                const scheduledDateTime = `${this.date}T${this.time}:00`;
-
-                const jobPayload = {
-                    user_id: this.user.id, // Legitimate, authentic profile UUID sequence to clear foreign constraints
-                    category: this.service?.name || 'General Service',
-                    device: firstService?.n || 'General Service',
-                    issue: firstService?.d || 'Service requested via app',
-                    customer_name: this.customerName,
-                    location: this.address,
-                    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
-                    status: 'pending',
-                    urgent: false,
-                    latitude: this.lat || null,
-                    longitude: this.lng || null,
-                    scheduled_time: scheduledDateTime,
-                    original_price: this.total,
-                    discounted_price: this.total
-                };
-
-                const { data: insertedJob, error: jobError } = await window.sb
-                    .from('jobs')
-                    .insert([jobPayload])
-                    .select()
-                    .single();
-
-                if (jobError) { alert('Booking Error: ' + jobError.message); this.bookingLoading = false; return; }
-
+        const firstService = this.selectedSubs[0];
+        const scheduledDateTime = `${this.date}T${this.time}:00`;
+        
+        // Check if this is an inspection job (Other Issue selected)
+        const isInspectionJob = firstService?.is_inspection === true;
+        
+        // Calculate inspection fee - standard ₹299 for inspection jobs
+        const inspectionFeeAmount = isInspectionJob ? 299 : 0;
+        
+        // For inspection jobs, original price is the inspection fee
+        const originalPrice = isInspectionJob ? inspectionFeeAmount : this.total;
+        
+        // For inspection jobs, we need to process payment for inspection fee
+        if (isInspectionJob) {
+            // Show payment modal for inspection fee
+            const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount);
+            if (!paymentConfirmed) {
                 this.bookingLoading = false;
-                this.showAgreement = false;
-                
-                localStorage.setItem('active_job_id', insertedJob.id);
-                window.location.href = 'success.html?job_id=' + insertedJob.id;
-
-            } catch (err) {
-                console.error(err);
-                alert('Unexpected Error: ' + err.message);
-                this.bookingLoading = false;
+                return;
             }
         }
+
+        const jobPayload = {
+            user_id: this.user.id,
+            category: this.service?.name || 'General Service',
+            device: firstService?.n || 'General Service',
+            issue: firstService?.d || 'Service requested via app',
+            customer_name: this.customerName,
+            location: this.address,
+            phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
+            status: 'pending',
+            urgent: false,
+            latitude: this.lat || null,
+            longitude: this.lng || null,
+            scheduled_time: scheduledDateTime,
+            original_price: originalPrice,
+            discounted_price: originalPrice,
+            is_inspection_job: isInspectionJob,
+            inspection_fee_paid: isInspectionJob,
+            inspection_fee_amount: inspectionFeeAmount,
+            quote_status: isInspectionJob ? 'pending' : null
+        };
+
+        const { data: insertedJob, error: jobError } = await window.sb
+            .from('jobs')
+            .insert([jobPayload])
+            .select()
+            .single();
+
+        if (jobError) { alert('Booking Error: ' + jobError.message); this.bookingLoading = false; return; }
+
+        this.bookingLoading = false;
+        this.showAgreement = false;
+        
+        localStorage.setItem('active_job_id', insertedJob.id);
+        window.location.href = 'success.html?job_id=' + insertedJob.id;
+
+    } catch (err) {
+        console.error(err);
+        alert('Unexpected Error: ' + err.message);
+        this.bookingLoading = false;
+    }
+},
+
+// Add this helper method for inspection payment
+async processInspectionPayment(amount) {
+    return new Promise((resolve) => {
+        // Show a payment confirmation dialog
+        const confirmed = confirm(`🔍 Inspection Service\n\nAn inspection fee of ₹${amount} will be charged.\n\nThis fee will be adjusted against the final bill if you approve the work.\n\nProceed with payment?`);
+        resolve(confirmed);
+    });
+}
     }">
 
     <div class="fixed top-0 w-full z-50 p-6 flex justify-between items-center pointer-events-none">

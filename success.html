@@ -182,68 +182,77 @@
                     </a>
                 </div>
             </div>
-            <div x-show="showQuoteCard && quoteStatus === 'submitted'"
-     class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg">
-
+         
+<div x-show="showQuoteCard && quoteStatus === 'submitted'"
+     class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg animate-slide-up-fade">
+    
     <div class="text-center mb-4">
-        <h3 class="text-lg font-extrabold text-brand-dark">
-            Technician Quote Received
-        </h3>
-        <p class="text-xs text-gray-500">
-            Review and approve before work starts
+        <div class="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-2">
+            <i class="fa-solid fa-file-invoice-dollar text-brand-gold text-xl"></i>
+        </div>
+        <h3 class="text-lg font-extrabold text-brand-dark">Quote Received from Technician</h3>
+        <p class="text-xs text-gray-500">Review the estimate below before work begins</p>
+    </div>
+    
+    <div class="space-y-3">
+        <!-- Detailed Cost Breakdown -->
+        <div class="bg-gray-50 rounded-xl p-3">
+            <div class="flex justify-between text-sm py-1">
+                <span class="text-gray-600">Labour Cost:</span>
+                <span class="font-mono font-bold">₹<span x-text="quoteLabour"></span></span>
+            </div>
+            <div class="flex justify-between text-sm py-1">
+                <span class="text-gray-600">Material Cost:</span>
+                <span class="font-mono font-bold">₹<span x-text="quoteMaterial"></span></span>
+            </div>
+            <div class="flex justify-between text-sm py-1" x-show="quoteExtra > 0">
+                <span class="text-gray-600">Extra Charges:</span>
+                <span class="font-mono font-bold">₹<span x-text="quoteExtra"></span></span>
+            </div>
+            <div class="border-t border-gray-200 my-2"></div>
+            <div class="flex justify-between font-bold text-base">
+                <span>Total Quote:</span>
+                <span class="text-brand-gold">₹<span x-text="quoteAmount"></span></span>
+            </div>
+        </div>
+        
+        <!-- Inspection Fee Adjustment -->
+        <div class="bg-green-50 rounded-xl p-3 border border-green-100">
+            <div class="flex justify-between text-sm">
+                <span class="text-green-700">Inspection Fee Paid:</span>
+                <span class="font-mono text-green-700">-₹<span x-text="inspectionFee"></span></span>
+            </div>
+            <div class="flex justify-between font-bold text-lg mt-1 pt-1 border-t border-green-200">
+                <span class="text-brand-dark">Amount Due After Job:</span>
+                <span class="text-green-600">₹<span x-text="Math.max(0, quoteAmount - inspectionFee)"></span></span>
+            </div>
+            <p class="text-[10px] text-green-600 mt-1 text-center">
+                <i class="fas fa-check-circle"></i> Your ₹<span x-text="inspectionFee"></span> inspection fee has been adjusted
+            </p>
+        </div>
+        
+        <!-- Work Description -->
+        <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Work Description</p>
+            <p class="text-sm text-brand-dark" x-text="quoteDescription || 'No description provided'"></p>
+        </div>
+        
+        <p class="text-xs text-gray-400 text-center">
+            <i class="fas fa-shield-alt mr-1"></i> 
+            If you approve, the technician will start work immediately. You'll pay the remaining amount after completion.
         </p>
     </div>
-
-    <div class="space-y-3">
-
-        <div class="flex justify-between">
-            <span>Quote Amount</span>
-            <span class="font-bold">
-                ₹<span x-text="quoteAmount"></span>
-            </span>
-        </div>
-
-        <div class="flex justify-between">
-            <span>Inspection Fee Paid</span>
-            <span class="font-bold text-green-600">
-                ₹299
-            </span>
-        </div>
-
-        <div class="border-t pt-3 flex justify-between font-extrabold text-lg">
-            <span>Remaining</span>
-            <span>
-                ₹<span x-text="quoteAmount - inspectionFee"></span>
-            </span>
-        </div>
-
-        <div class="bg-gray-50 rounded-xl p-3 text-sm">
-            <p class="font-bold mb-1">
-                Description
-            </p>
-            <p x-text="quoteDescription"></p>
-        </div>
-
-    </div>
-
+    
     <div class="grid grid-cols-2 gap-3 mt-5">
-
-        <button
-            @click="rejectQuote()"
-            class="py-3 rounded-xl bg-red-500 text-white font-bold">
-
-            Reject
+        <button @click="rejectQuote()" 
+                class="py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all active:scale-95">
+            <i class="fas fa-times mr-1"></i> Reject Quote
         </button>
-
-        <button
-            @click="acceptQuote()"
-            class="py-3 rounded-xl bg-green-600 text-white font-bold">
-
-            Approve
+        <button @click="acceptQuote()" 
+                class="py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all active:scale-95 shadow-md">
+            <i class="fas fa-check mr-1"></i> Approve & Start Work
         </button>
-
     </div>
-
 </div>
             <div x-show="otpCode && jobStatus !== 'completed'" x-transition.opacity class="text-center py-4">
                 <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm animate-bounce">
@@ -554,414 +563,486 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('trackingApp', () => ({
-                jobId: null,
-                technicianFound: false,
-                techData: null,
-                secondsElapsed: 0,
-                timerInterval: null,
-                
-                otpCode: null,
-                jobStatus: 'pending',
-                quoteAmount: 0,
-                quoteDescription: '',
-                quoteStatus: '',
-                inspectionFee: 299,
-                showQuoteCard: false,
-                
-                showBill: false,
-                fullJobData: null,
-                billPrice: 0,
-                billServiceName: 'Expert Carpentry',
-                billVariantName: 'Furniture Assembly',
-                isPrinting: false,
+    Alpine.data('trackingApp', () => ({
+        jobId: null,
+        technicianFound: false,
+        techData: null,
+        secondsElapsed: 0,
+        timerInterval: null,
+        
+        otpCode: null,
+        jobStatus: 'pending',
+        quoteAmount: 0,
+        quoteDescription: '',
+        quoteStatus: '',
+        inspectionFee: 299,
+        showQuoteCard: false,
+        quoteLabour: 0,
+        quoteMaterial: 0,
+        quoteExtra: 0,
+        
+        // Bill modal variables
+        showBill: false,
+        fullJobData: null,
+        billPrice: 0,
+        billServiceName: 'Expert Carpentry',
+        billVariantName: 'Furniture Assembly',
+        billQuoteAmount: 0,
+        billInspectionFee: 299,
+        billFinalAmount: 0,
+        isPrinting: false,
 
-                showFeedback: false,
-                feedbackStep: 1,
-                feedbackRating: 0,
-                feedbackComment: '',
-                feedbackTags: [],
-                feedbackLoading: false,
-                feedbackDone: false,
-                
-                map: null,
-                techMarker: null,
-                etaMins: 12,
+        showFeedback: false,
+        feedbackStep: 1,
+        feedbackRating: 0,
+        feedbackComment: '',
+        feedbackTags: [],
+        feedbackLoading: false,
+        feedbackDone: false,
+        
+        map: null,
+        techMarker: null,
+        etaMins: 12,
 
-                async init() {
-                    const params = new URLSearchParams(window.location.search);
-                    this.jobId = params.get('job_id');
+        async init() {
+            const params = new URLSearchParams(window.location.search);
+            this.jobId = params.get('job_id');
 
-                    if (!this.jobId) {
-                        alert("Invalid tracking link.");
-                        window.location.href = 'index.html';
-                        return;
-                    }
+            if (!this.jobId) {
+                alert("Invalid tracking link.");
+                window.location.href = 'index.html';
+                return;
+            }
 
-                    this.startTimer();
-                    await this.checkJobStatus();
+            this.startTimer();
+            await this.checkJobStatus();
 
-                    // ── WEB-SOCKET BROADCATER SUITE FOR REAL-TIME VALUE INTERACTION ──
-                    sb.channel('waiting-room')
-                      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, (payload) => {
-                          console.log('Real-time updates payload:', payload);
-                          
-                          if (payload.new) {
-                              if (payload.new.status) {
-                                  this.jobStatus = payload.new.status;
-                                  if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
-                                      this.technicianFound = true;
-                                  }
-                              }
-                            
-                              if (payload.new.quote_status) {
-
-                                    this.quoteStatus =
-                                        payload.new.quote_status;
-
-                                    this.quoteAmount =
-                                        payload.new.quoted_amount || 0;
-
-                                    this.quoteDescription =
-                                        payload.new.quote_description || '';
-
-                                    this.showQuoteCard =
-                                        payload.new.quote_status === 'submitted';
-
-                                    if (
-                                        payload.new.quote_status === 'approved'
-                                    ) {
-                                        this.showQuoteCard = false;
-                                    }
-
-                                    if (
-                                        payload.new.quote_status === 'rejected'
-                                    ) {
-                                        this.showQuoteCard = false;
-                                    }
+            // Real-time listener for job updates
+            const channel = sb.channel('waiting-room-' + this.jobId);
+            channel
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, 
+                    (payload) => {
+                        console.log('Real-time updates payload:', payload);
+                        
+                        if (payload.new) {
+                            if (payload.new.status) {
+                                this.jobStatus = payload.new.status;
+                                if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
+                                    this.technicianFound = true;
                                 }
-                              
-                              // Capture OTP string variables on runtime changes
-                              if (payload.new.otp) {
-                                  this.otpCode = payload.new.otp;
-                              } else if (payload.new.otp === null) {
-                                  this.otpCode = null;
-                              }
-                              
-                              if (payload.new.tech_id && !this.techData) {
-                                  this.fetchTechnician(payload.new.tech_id);
-                              }
-                          }
-                      })
-                      .subscribe();
-                },
-
-                async openBillModal() {
-                    try {
-                        const { data: job, error: jobError } = await sb
-                            .from('jobs')
-                            .select('*')
-                            .eq('id', this.jobId)
-                            .single();
+                            }
                             
-                        if (jobError) return;
-
-                        this.fullJobData = job;
-                        this.billServiceName = job.service_name || job.category || 'Expert Carpentry';
-                        this.billVariantName = job.variant_name || job.device || 'Furniture Assembly';
-
-                        if (job.original_price !== undefined && job.original_price !== null) {
-                            this.billPrice =parseFloat(job.quoted_amount ||job.original_price ||0);
-                        } else {
-                            this.billPrice = 0;
-                        }
-                        
-                        this.$nextTick(() => {
-                            this.showBill = true;
-                        });
-                        
-                    } catch (err) {
-                        console.error(err);
-                    }
-                },
-
-                downloadPDF() {
-                    this.isPrinting = true;
-                    const element = document.getElementById('invoice-content');
-                    
-                    const opt = {
-                        margin:       0.5,
-                        filename:     `FixZen_Invoice_${this.jobId.slice(0,6).toUpperCase()}.pdf`,
-                        image:        { type: 'jpeg', quality: 0.98 },
-                        html2canvas:  { scale: 2, useCORS: true },
-                        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-                    };
-
-                    html2pdf().set(opt).from(element).save().then(() => {
-                        this.isPrinting = false;
-                    }).catch((err) => {
-                        this.isPrinting = false;
-                    });
-                },
-
-                startTimer() {
-                    this.timerInterval = setInterval(() => { this.secondsElapsed++; }, 1000);
-                },
-
-                get formattedTime() {
-                    const m = Math.floor(this.secondsElapsed / 60).toString().padStart(2, '0');
-                    const s = (this.secondsElapsed % 60).toString().padStart(2, '0');
-                    return `${m}:${s}`;
-                },
-
-                get searchMessage() {
-                    if (this.secondsElapsed < 15) return "Alerting nearby experts...";
-                    if (this.secondsElapsed < 45) return "Connecting with top-rated pros...";
-                    return "High demand. Still searching...";
-                },
-
-                async checkJobStatus() {
-                    const { data: job } = await sb.from('jobs').select(`tech_id,otp,status,user_id,category,quoted_amount,quote_description,quote_status,inspection_fee`).eq('id', this.jobId).single();
-                    if (job) {
-                        if (job.status) this.jobStatus = job.status;
-                        if (job.quote_status) {
-
-    this.quoteStatus = job.quote_status;
-
-    this.quoteAmount =
-        job.quoted_amount || 0;
-
-    this.quoteDescription =
-        job.quote_description || '';
-
-    this.inspectionFee =
-        job.inspection_fee || 299;
-
-    if (job.quote_status === 'submitted') {
-        this.showQuoteCard = true;
-    }
-
-}
-                        if (job.tech_id) this.fetchTechnician(job.tech_id);
-                        if (job.otp) this.otpCode = job.otp;
-                        if (!this.fullJobData) this.fullJobData = job;
-
-                        if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
-                            this.technicianFound = true;
-                        }
-                    }
-                },
-
-                async fetchTechnician(techId) {
-                    const { data: tech } = await sb.from('technicians').select('*').eq('id', techId).single();
-                    if (tech) {
-                        this.techData = tech;
-                        this.technicianFound = true;
-                        clearInterval(this.timerInterval);
-                        
-                        if(this.jobStatus !== 'completed' && !this.otpCode) {
-                            this.$nextTick(() => {
-                                this.initMap();
-                            });
-                        }
-                    }
-                },
-
-                initMap() {
-                    if (this.map) return; 
-
-                    const customerLat = 21.1458;
-                    const customerLng = 79.0882;
-                    let techLat = 21.1200; 
-                    let techLng = 79.0600;
-
-                    this.map = L.map('trackingMap', { zoomControl: false }).setView([customerLat, customerLng], 13);
-
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-                        maxZoom: 19
-                    }).addTo(this.map);
-
-                    const customerIcon = L.divIcon({
-                        html: `<div class="w-8 h-8 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white"><i class="fa-solid fa-house text-xs"></i></div>`,
-                        className: '', iconSize: [32, 32], iconAnchor: [16, 32]
-                    });
-
-                    const techIcon = L.divIcon({
-                        html: `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative"><div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div><i class="fa-solid fa-truck-fast text-sm relative z-10"></i></div>`,
-                        className: '', iconSize: [40, 40], iconAnchor: [20, 40]
-                    });
-
-                    L.marker([customerLat, customerLng], {icon: customerIcon}).addTo(this.map);
-                    this.techMarker = L.marker([techLat, techLng], {icon: techIcon}).addTo(this.map);
-
-                    const bounds = L.latLngBounds([[customerLat, customerLng], [techLat, techLng]]);
-                    this.map.fitBounds(bounds, { padding: [30, 30] });
-
-                    setInterval(() => {
-                        if (this.jobStatus !== 'arrived' && this.jobStatus !== 'started' && this.jobStatus !== 'in_progress') {
-                            techLat += (customerLat - techLat) * 0.08;
-                            techLng += (customerLng - techLng) * 0.08;
-                            this.techMarker.setLatLng([techLat, techLng]);
+                            // Handle quote data updates
+                            if (payload.new.quote_status !== undefined) {
+                                this.quoteStatus = payload.new.quote_status;
+                                this.quoteAmount = payload.new.quoted_amount || 0;
+                                this.quoteDescription = payload.new.quote_description || '';
+                                this.quoteLabour = payload.new.quoted_labour || 0;
+                                this.quoteMaterial = payload.new.quoted_material || 0;
+                                this.quoteExtra = payload.new.quoted_extra || 0;
+                                this.showQuoteCard = payload.new.quote_status === 'submitted';
+                                
+                                if (payload.new.quote_status === 'approved') {
+                                    this.showQuoteCard = false;
+                                    // Refresh job data to update bill amounts
+                                    this.refreshJobData();
+                                }
+                                if (payload.new.quote_status === 'rejected') {
+                                    this.showQuoteCard = false;
+                                }
+                            }
                             
-                            if(Math.random() > 0.7 && this.etaMins > 1) {
-                                this.etaMins--;
+                            // Capture OTP
+                            if (payload.new.otp) {
+                                this.otpCode = payload.new.otp;
+                            } else if (payload.new.otp === null) {
+                                this.otpCode = null;
+                            }
+                            
+                            if (payload.new.tech_id && !this.techData) {
+                                this.fetchTechnician(payload.new.tech_id);
                             }
                         }
-                    }, 2000);
-                },
-
-                async cancelJob() {
-                    if(!confirm("Cancel your search?")) return;
-                    await sb.from('jobs').update({ status: 'cancelled' }).eq('id', this.jobId);
-                    window.location.href = 'index.html';
-                },
-                async acceptQuote() {
-
-                    const finalAmount =
-    this.quoteAmount - this.inspectionFee;
-
-await sb
-  .from('jobs')
-  .update({
-      quote_status: 'approved',
-      customer_approved: true,
-      customer_price: finalAmount
-  })
-  .eq('id', this.jobId);
-
-                    if(error){
-                        alert(error.message);
-                        return;
                     }
+                )
+                .subscribe();
+        },
 
-                    this.showQuoteCard = false;
+        async refreshJobData() {
+            const { data: job } = await sb
+                .from('jobs')
+                .select('*')
+                .eq('id', this.jobId)
+                .single();
+            if (job) {
+                this.fullJobData = job;
+                this.updateBillAmounts(job);
+            }
+        },
 
-                    alert('Quote approved successfully.');
-                },
-async rejectQuote() {
+        updateBillAmounts(job) {
+            if (job.is_inspection_job) {
+                this.billQuoteAmount = job.quoted_amount || 0;
+                this.billInspectionFee = job.inspection_fee_amount || 299;
+                this.billFinalAmount = Math.max(0, this.billQuoteAmount - this.billInspectionFee);
+            } else {
+                this.billPrice = job.original_price || 0;
+            }
+        },
 
-    const { error } =
-        await sb
-        .from('jobs')
-        .update({
-            quote_status: 'rejected',
-            customer_approved: false,
-            status: 'cancelled'
-        })
-        .eq('id', this.jobId);
-
-    if(error){
-        alert(error.message);
-        return;
-    }
-
-    alert(
-      'Quote rejected. Booking closed.'
-    );
-},
-
-                setFeedbackRating(i) {
-                    this.feedbackRating = i;
-                    if (navigator.vibrate) navigator.vibrate(30);
-                },
-                getFeedbackEmoji(i) {
-                    return ['😞','😕','😊','😄','🤩'][i-1] || '';
-                },
-                getFeedbackLabel(i) {
-                    return ['Poor','Fair','Good','Excellent','Incredible!'][i-1] || '';
-                },
-                getFeedbackTags() {
-                    if (this.feedbackRating >= 4) return [
-                        {icon:'⚡',label:'Fast Arrival'},{icon:'👔',label:'Professional'},
-                        {icon:'✨',label:'Clean Work'},{icon:'😊',label:'Polite'},
-                        {icon:'🔧',label:'Genuine Parts'},{icon:'💯',label:'Worth Every Rupee'}
-                    ];
-                    if (this.feedbackRating === 3) return [
-                        {icon:'⏱️',label:'On Time'},{icon:'👍',label:'Decent Work'},{icon:'📞',label:'Good Communication'}
-                    ];
-                    return [
-                        {icon:'⏰',label:'Late Arrival'},{icon:'🔁',label:'Needs Redo'},
-                        {icon:'📵',label:'Poor Communication'},{icon:'💸',label:'Overcharged'}
-                    ];
-                },
-                toggleFeedbackTag(tag) {
-                    if (this.feedbackTags.includes(tag)) {
-                        this.feedbackTags = this.feedbackTags.filter(t => t !== tag);
-                    } else {
-                        this.feedbackTags.push(tag);
-                        if (navigator.vibrate) navigator.vibrate(20);
-                    }
-                },
-                launchConfetti() {
-                    const colors = ['#A07D54','#1a1a1a','#c9a050','#f4f4f5','#fff'];
-                    for (let i = 0; i < 55; i++) {
-                        const p = document.createElement('div');
-                        p.className = 'confetti-piece';
-                        p.style.cssText = `left:${Math.random()*100}vw;top:-20px;width:${Math.random()*8+5}px;height:${Math.random()*8+5}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*0.8}s;`;
-                        document.body.appendChild(p);
-                        setTimeout(() => p.remove(), 4000);
-                    }
-                },
-
-                async submitFeedback() {
-                    if (!this.feedbackRating) return;
+        async openBillModal() {
+            try {
+                const { data: job, error: jobError } = await sb
+                    .from('jobs')
+                    .select('*')
+                    .eq('id', this.jobId)
+                    .single();
                     
-                    const storedPhone = localStorage.getItem('local_user_phone');
-                    if (!storedPhone) {
-                        alert("Session identity missing. Please login again.");
-                        window.location.href = 'loginuser.html';
-                        return;
-                    }
+                if (jobError) throw jobError;
 
-                    this.feedbackLoading = true;
-                    
-                    try {
-                        const { data: profile, error: profileError } = await sb
-                            .from('profiles')
-                            .select('id')
-                            .eq('phone', storedPhone.trim())
-                            .maybeSingle();
-
-                        if (profileError || !profile) {
-                            throw new Error(profileError?.message || "Profile identity reference missing.");
-                        }
-
-                        const combinedComment = this.feedbackTags.length > 0
-                            ? `[${this.feedbackTags.join(', ')}] ${this.feedbackComment}`
-                            : this.feedbackComment;
-
-                        const { error: feedbackError } = await sb.from('feedback').insert([{
-                            job_id: this.jobId,
-                            rating: this.feedbackRating,
-                            comment: combinedComment,
-                            technician_id: this.techData?.id || null,
-                            user_id: profile.id
-                        }]);
-
-                        if (feedbackError) throw feedbackError;
-
-                        await sb.from('jobs').update({ feedback_provided: true }).eq('id', this.jobId);
-                        
-                        this.feedbackStep = 'done';
-                        this.launchConfetti();
-                        
-                        if (navigator.vibrate) navigator.vibrate([100,60,100,60,200]);
-                        
-                        setTimeout(() => {
-                            this.showFeedback = false;
-                            this.feedbackDone = true;
-                        }, 2800);
-
-                    } catch (err) {
-                        console.error(err);
-                        alert("Review Submission Error: " + err.message);
-                    } finally {
-                        this.feedbackLoading = false;
-                    }
+                this.fullJobData = job;
+                this.billServiceName = job.service_name || job.category || 'Expert Service';
+                this.billVariantName = job.variant_name || job.device || 'Service';
+                
+                if (job.is_inspection_job) {
+                    this.billQuoteAmount = job.quoted_amount || 0;
+                    this.billInspectionFee = job.inspection_fee_amount || 299;
+                    this.billFinalAmount = Math.max(0, this.billQuoteAmount - this.billInspectionFee);
+                    this.billPrice = 0;
+                } else {
+                    this.billPrice = parseFloat(job.original_price || job.discounted_price || 0);
                 }
-            }));
-        });
+                
+                this.$nextTick(() => {
+                    this.showBill = true;
+                });
+                
+            } catch (err) {
+                console.error('Error opening bill:', err);
+                alert('Could not load bill details. Please try again.');
+            }
+        },
+
+        downloadPDF() {
+            this.isPrinting = true;
+            const element = document.getElementById('invoice-content');
+            
+            const opt = {
+                margin: 0.5,
+                filename: `FixZen_Invoice_${this.jobId.slice(0,6).toUpperCase()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save()
+                .then(() => { this.isPrinting = false; })
+                .catch((err) => { 
+                    console.error(err);
+                    this.isPrinting = false;
+                    alert('Error generating PDF. Please try again.');
+                });
+        },
+
+        startTimer() {
+            this.timerInterval = setInterval(() => { this.secondsElapsed++; }, 1000);
+        },
+
+        get formattedTime() {
+            const m = Math.floor(this.secondsElapsed / 60).toString().padStart(2, '0');
+            const s = (this.secondsElapsed % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        },
+
+        get searchMessage() {
+            if (this.secondsElapsed < 15) return "Alerting nearby experts...";
+            if (this.secondsElapsed < 45) return "Connecting with top-rated pros...";
+            return "High demand. Still searching...";
+        },
+
+        async checkJobStatus() {
+            const { data: job, error } = await sb
+                .from('jobs')
+                .select('*')
+                .eq('id', this.jobId)
+                .single();
+                
+            if (error) {
+                console.error('Error fetching job:', error);
+                return;
+            }
+            
+            if (job) {
+                this.fullJobData = job;
+                if (job.status) this.jobStatus = job.status;
+                
+                // Handle quote data
+                if (job.quote_status) {
+                    this.quoteStatus = job.quote_status;
+                    this.quoteAmount = job.quoted_amount || 0;
+                    this.quoteDescription = job.quote_description || '';
+                    this.quoteLabour = job.quoted_labour || 0;
+                    this.quoteMaterial = job.quoted_material || 0;
+                    this.quoteExtra = job.quoted_extra || 0;
+                    this.inspectionFee = job.inspection_fee_amount || 299;
+                    this.showQuoteCard = job.quote_status === 'submitted';
+                }
+                
+                if (job.tech_id) this.fetchTechnician(job.tech_id);
+                if (job.otp) this.otpCode = job.otp;
+                
+                // Update bill amounts for later use
+                this.updateBillAmounts(job);
+                
+                if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
+                    this.technicianFound = true;
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                }
+            }
+        },
+
+        async fetchTechnician(techId) {
+            const { data: tech, error } = await sb
+                .from('technicians')
+                .select('*')
+                .eq('id', techId)
+                .single();
+                
+            if (error) {
+                console.error('Error fetching technician:', error);
+                return;
+            }
+            
+            if (tech) {
+                this.techData = tech;
+                this.technicianFound = true;
+                clearInterval(this.timerInterval);
+                
+                if(this.jobStatus !== 'completed' && !this.otpCode) {
+                    this.$nextTick(() => {
+                        this.initMap();
+                    });
+                }
+            }
+        },
+
+        initMap() {
+            if (this.map) return; 
+
+            const customerLat = 21.1458;
+            const customerLng = 79.0882;
+            let techLat = 21.1200; 
+            let techLng = 79.0600;
+
+            this.map = L.map('trackingMap', { zoomControl: false }).setView([customerLat, customerLng], 13);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                maxZoom: 19
+            }).addTo(this.map);
+
+            const customerIcon = L.divIcon({
+                html: `<div class="w-8 h-8 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white"><i class="fa-solid fa-house text-xs"></i></div>`,
+                className: '', iconSize: [32, 32], iconAnchor: [16, 32]
+            });
+
+            const techIcon = L.divIcon({
+                html: `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative"><div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div><i class="fa-solid fa-truck-fast text-sm relative z-10"></i></div>`,
+                className: '', iconSize: [40, 40], iconAnchor: [20, 40]
+            });
+
+            L.marker([customerLat, customerLng], {icon: customerIcon}).addTo(this.map);
+            this.techMarker = L.marker([techLat, techLng], {icon: techIcon}).addTo(this.map);
+
+            const bounds = L.latLngBounds([[customerLat, customerLng], [techLat, techLng]]);
+            this.map.fitBounds(bounds, { padding: [30, 30] });
+
+            const interval = setInterval(() => {
+                if (this.jobStatus !== 'arrived' && this.jobStatus !== 'started' && this.jobStatus !== 'in_progress') {
+                    techLat += (customerLat - techLat) * 0.08;
+                    techLng += (customerLng - techLng) * 0.08;
+                    if (this.techMarker) {
+                        this.techMarker.setLatLng([techLat, techLng]);
+                    }
+                    
+                    if(Math.random() > 0.7 && this.etaMins > 1) {
+                        this.etaMins--;
+                    }
+                } else {
+                    clearInterval(interval);
+                }
+            }, 2000);
+        },
+
+        async cancelJob() {
+            if(!confirm("Cancel your search?")) return;
+            await sb.from('jobs').update({ status: 'cancelled' }).eq('id', this.jobId);
+            window.location.href = 'index.html';
+        },
+
+        async acceptQuote() {
+            if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
+            
+            const finalAmount = Math.max(0, this.quoteAmount - this.inspectionFee);
+            
+            try {
+                const { error } = await sb
+                    .from('jobs')
+                    .update({
+                        quote_status: 'approved',
+                        customer_approved: true,
+                        customer_price: finalAmount,
+                        status: 'accepted'
+                    })
+                    .eq('id', this.jobId);
+                
+                if (error) throw error;
+                
+                this.showQuoteCard = false;
+                this.quoteStatus = 'approved';
+                
+                // Refresh job data to update bill
+                await this.refreshJobData();
+                
+                alert(`✅ Quote Approved!\n\nTotal Quote: ₹${this.quoteAmount}\nInspection Fee Paid: ₹${this.inspectionFee}\nAmount Due After Job: ₹${finalAmount}`);
+                
+            } catch (err) {
+                console.error('Error approving quote:', err);
+                alert("Error approving quote: " + err.message);
+            }
+        },
+
+        async rejectQuote() {
+            const reason = prompt("Please share why you're rejecting this quote (optional):");
+            
+            try {
+                const { error } = await sb
+                    .from('jobs')
+                    .update({
+                        quote_status: 'rejected',
+                        customer_approved: false,
+                        status: 'cancelled'
+                    })
+                    .eq('id', this.jobId);
+                
+                if (error) throw error;
+                
+                alert("Quote rejected. Your booking has been closed. The inspection fee paid (₹" + this.inspectionFee + ") is non-refundable as the technician visited your location.");
+                window.location.href = 'index.html';
+                
+            } catch (err) {
+                console.error('Error rejecting quote:', err);
+                alert("Error rejecting quote: " + err.message);
+            }
+        },
+
+        setFeedbackRating(i) {
+            this.feedbackRating = i;
+            if (navigator.vibrate) navigator.vibrate(30);
+        },
+        
+        getFeedbackEmoji(i) {
+            return ['😞','😕','😊','😄','🤩'][i-1] || '';
+        },
+        
+        getFeedbackLabel(i) {
+            return ['Poor','Fair','Good','Excellent','Incredible!'][i-1] || '';
+        },
+        
+        getFeedbackTags() {
+            if (this.feedbackRating >= 4) return [
+                {icon:'⚡',label:'Fast Arrival'},{icon:'👔',label:'Professional'},
+                {icon:'✨',label:'Clean Work'},{icon:'😊',label:'Polite'},
+                {icon:'🔧',label:'Genuine Parts'},{icon:'💯',label:'Worth Every Rupee'}
+            ];
+            if (this.feedbackRating === 3) return [
+                {icon:'⏱️',label:'On Time'},{icon:'👍',label:'Decent Work'},{icon:'📞',label:'Good Communication'}
+            ];
+            return [
+                {icon:'⏰',label:'Late Arrival'},{icon:'🔁',label:'Needs Redo'},
+                {icon:'📵',label:'Poor Communication'},{icon:'💸',label:'Overcharged'}
+            ];
+        },
+        
+        toggleFeedbackTag(tag) {
+            if (this.feedbackTags.includes(tag)) {
+                this.feedbackTags = this.feedbackTags.filter(t => t !== tag);
+            } else {
+                this.feedbackTags.push(tag);
+                if (navigator.vibrate) navigator.vibrate(20);
+            }
+        },
+        
+        launchConfetti() {
+            const colors = ['#A07D54','#1a1a1a','#c9a050','#f4f4f5','#fff'];
+            for (let i = 0; i < 55; i++) {
+                const p = document.createElement('div');
+                p.className = 'confetti-piece';
+                p.style.cssText = `left:${Math.random()*100}vw;top:-20px;width:${Math.random()*8+5}px;height:${Math.random()*8+5}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*0.8}s;`;
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 4000);
+            }
+        },
+
+        async submitFeedback() {
+            if (!this.feedbackRating) return;
+            
+            const storedPhone = localStorage.getItem('local_user_phone');
+            if (!storedPhone) {
+                alert("Session identity missing. Please login again.");
+                window.location.href = 'loginuser.html';
+                return;
+            }
+
+            this.feedbackLoading = true;
+            
+            try {
+                const { data: profile, error: profileError } = await sb
+                    .from('profiles')
+                    .select('id')
+                    .eq('phone', storedPhone.trim())
+                    .maybeSingle();
+
+                if (profileError || !profile) {
+                    throw new Error(profileError?.message || "Profile identity reference missing.");
+                }
+
+                const combinedComment = this.feedbackTags.length > 0
+                    ? `[${this.feedbackTags.join(', ')}] ${this.feedbackComment}`
+                    : this.feedbackComment;
+
+                const { error: feedbackError } = await sb.from('feedback').insert([{
+                    job_id: this.jobId,
+                    rating: this.feedbackRating,
+                    comment: combinedComment,
+                    technician_id: this.techData?.id || null,
+                    user_id: profile.id
+                }]);
+
+                if (feedbackError) throw feedbackError;
+
+                await sb.from('jobs').update({ feedback_provided: true }).eq('id', this.jobId);
+                
+                this.feedbackStep = 'done';
+                this.launchConfetti();
+                
+                if (navigator.vibrate) navigator.vibrate([100,60,100,60,200]);
+                
+                setTimeout(() => {
+                    this.showFeedback = false;
+                    this.feedbackDone = true;
+                }, 2800);
+
+            } catch (err) {
+                console.error(err);
+                alert("Review Submission Error: " + err.message);
+            } finally {
+                this.feedbackLoading = false;
+            }
+        }
+    }));
+});
     </script>
 </body>
 </html>
