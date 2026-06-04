@@ -3,252 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FixZen - TECHNICIAN Registration</title>
+    <title>FixZen - Join as Expert</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        /* Custom Scrollbar for sleekness */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #F3F0EA; }
-        ::-webkit-scrollbar-thumb { background: #A9A39B; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #B58B5B; border-radius: 10px; }
+
+        /* Animated Mesh Background */
+        .mesh-bg {
+            background-color: #F3F0EA;
+            background-image: 
+                radial-gradient(at 80% 0%, hsla(38, 38%, 53%, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(43, 14%, 36%, 0.1) 0px, transparent 50%),
+                radial-gradient(at 80% 100%, hsla(38, 38%, 53%, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 0%, hsla(0, 0%, 100%, 0.8) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphism Card */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 25px 50px -12px rgba(106, 98, 81, 0.15), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Premium Input Wrappers */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid #E5E1DA;
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        
+        .input-wrapper:focus-within {
+            border-color: #B58B5B;
+            box-shadow: 0 0 0 4px rgba(181, 139, 91, 0.1);
+            transform: translateY(-2px);
+            background: #FFFFFF;
+        }
+
+        .input-wrapper:focus-within i { color: #B58B5B; transform: scale(1.1); }
 
         .premium-input { 
             width: 100%; 
-            background: #FFFFFF;
-            border: 1.5px solid #E5E1DA; 
-            padding: 1rem; 
-            border-radius: 12px; 
+            background: transparent;
+            padding: 1.1rem 1rem 1.1rem 0; 
             outline: none; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            appearance: none;
-            color: #534E46;
+            color: #2D2C2B;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
+        .premium-input::placeholder { color: #A9A39B; font-weight: 400; }
+        .input-icon { padding: 0 1rem; color: #A9A39B; transition: all 0.3s ease; }
 
-        .premium-input::placeholder { color: #A9A39B; }
-
-        .premium-input:focus { 
-            border-color: #B58B5B; 
-            box-shadow: 0 0 0 4px rgba(181, 139, 91, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .btn-theme { 
+        /* Shimmering Button */
+        .btn-shimmer { 
+            position: relative;
             width: 100%; 
-            padding: 1.2rem; 
-            background: linear-gradient(135deg, #B58B5B 0%, #9a764d 100%); 
+            padding: 1.25rem; 
+            background: linear-gradient(135deg, #2D2C2B 0%, #4A4537 100%); 
             color: #FFFFFF; 
-            border-radius: 14px; 
-            font-weight: 700; 
-            letter-spacing: 0.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 20px -5px rgba(181, 139, 91, 0.4);
+            border-radius: 16px; 
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 15px 30px -10px rgba(45, 44, 43, 0.4);
+            overflow: hidden;
         }
-
-        .btn-theme:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(181, 139, 91, 0.5);
-        }
-
-        .btn-theme:active { transform: scale(0.98); }
-        .btn-theme:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-
-        /* Custom Select Arrow */
-        .select-wrapper { position: relative; }
-        .select-wrapper::after {
-            content: '▼'; font-size: 0.8rem; color: #B58B5B;
-            position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%);
-            pointer-events: none;
-        }
-
-        /* Ambient Background Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-30px) scale(1.05); }
-        }
-        .animate-float-1 { animation: float 8s ease-in-out infinite; }
-        .animate-float-2 { animation: float 10s ease-in-out infinite reverse; }
         
-        /* Staggered Form Entry Animations */
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            animation: shimmer 3s infinite;
         }
-        .stagger-1 { animation: slideUpFade 0.5s ease-out 0.1s forwards; opacity: 0; }
-        .stagger-2 { animation: slideUpFade 0.5s ease-out 0.2s forwards; opacity: 0; }
-        .stagger-3 { animation: slideUpFade 0.5s ease-out 0.3s forwards; opacity: 0; }
-        .stagger-4 { animation: slideUpFade 0.5s ease-out 0.4s forwards; opacity: 0; }
-        .stagger-5 { animation: slideUpFade 0.5s ease-out 0.5s forwards; opacity: 0; }
-        .stagger-6 { animation: slideUpFade 0.5s ease-out 0.6s forwards; opacity: 0; }
-        .stagger-7 { animation: slideUpFade 0.5s ease-out 0.7s forwards; opacity: 0; }
-    </style>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        theme: {
-                            primary: '#6A6251',
-                            secondary: '#B58B5B',
-                            bg: '#F3F0EA',
-                            surface: '#FFFFFF',
-                            txt: '#534E46',
-                            muted: '#A9A39B'
-                        }
-                    }
-                }
-            }
+        .btn-shimmer:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px -10px rgba(45, 44, 43, 0.5);
+            background: linear-gradient(135deg, #1A1A1A 0%, #2D2C2B 100%);
         }
-    </script>
+        .btn-shimmer:active { transform: scale(0.98); }
+        .btn-shimmer:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        /* Select Arrow Override */
+        select.premium-input { appearance: none; padding-right: 2.5rem; cursor: pointer; }
+        .select-wrapper::after {
+            content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            font-size: 0.8rem; color: #B58B5B; position: absolute; right: 1.2rem; top: 50%; 
+            transform: translateY(-50%); pointer-events: none; transition: transform 0.3s ease;
+        }
+        .select-wrapper:focus-within::after { transform: translateY(-50%) rotate(180deg); }
+
+        /* Animations */
+        @keyframes shimmer { 100% { left: 200%; } }
+        @keyframes slideUpSpring {
+            0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+            70% { transform: translateY(-5px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(20px, -20px) rotate(5deg); }
+        }
+
+        .animate-spring { animation: slideUpSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-stagger-1 { animation: slideUpSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s forwards; opacity: 0; }
+        .animate-stagger-2 { animation: slideUpSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards; opacity: 0; }
+        .animate-stagger-3 { animation: slideUpSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s forwards; opacity: 0; }
+        .animate-stagger-4 { animation: slideUpSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.4s forwards; opacity: 0; }
+        .animate-stagger-5 { animation: slideUpSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s forwards; opacity: 0; }
+        
+        .floating-shape-1 { position: fixed; top: 10%; left: 5%; font-size: 4rem; color: rgba(181, 139, 91, 0.1); animation: floatSlow 8s infinite; pointer-events: none; z-index: 0; }
+        .floating-shape-2 { position: fixed; bottom: 10%; right: 5%; font-size: 6rem; color: rgba(106, 98, 81, 0.05); animation: floatSlow 12s infinite reverse; pointer-events: none; z-index: 0; }
+    </style>
 </head>
 
-<body class="bg-theme-bg min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden text-theme-txt">
+<body class="mesh-bg min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden text-[#534E46]">
 
-    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-theme-secondary opacity-20 rounded-full mix-blend-multiply filter blur-[80px] animate-float-1 pointer-events-none"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-theme-primary opacity-10 rounded-full mix-blend-multiply filter blur-[100px] animate-float-2 pointer-events-none"></div>
+    <i class="fa-solid fa-wrench floating-shape-1"></i>
+    <i class="fa-solid fa-gear floating-shape-2"></i>
 
-    <div class="w-full max-w-md bg-theme-surface p-8 rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(106,98,81,0.15)] border border-white/60 relative z-10 my-8" x-data="{ isSubmitting: false, isSuccess: false }" x-cloak>
+    <div class="w-full max-w-md glass-panel p-8 sm:p-10 rounded-[2.5rem] relative z-10 my-8 animate-spring" x-data="{ isSubmitting: false, isSuccess: false }" x-cloak>
         
-        <div x-show="!isSuccess" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-4">
-            <div class="text-center mb-8 stagger-1">
-                <div class="w-16 h-16 bg-theme-bg rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-inner border border-theme-muted/20">
-                    <svg class="w-8 h-8 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        <div x-show="!isSuccess" x-transition:leave="transition ease-in duration-300" x-transition:leave-end="opacity-0 scale-95 translate-y-4">
+            
+            <div class="text-center mb-8 animate-stagger-1">
+                <div class="w-20 h-20 bg-white rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-[0_10px_20px_rgba(181,139,91,0.2)] border border-[#E5E1DA] transform -rotate-3 transition-transform hover:rotate-0 duration-300">
+                    <i class="fa-solid fa-user-astronaut text-3xl text-[#B58B5B]"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold text-theme-primary tracking-tight">Join FixZenix</h1>
-                <p class="text-theme-muted mt-2 text-sm font-medium">Fill in your details to get jobs and start earning</p>
+                <h1 class="text-3xl font-extrabold text-[#2D2C2B] tracking-tight">Expert Partner</h1>
+                <p class="text-[#A9A39B] mt-2 text-sm font-medium">Join FixZen and multiply your earnings.</p>
             </div>
             
-            <form @submit.prevent="submitTechnician($data)" class="space-y-5">
-                <div class="space-y-1.5 stagger-2">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Full Name</label>
-                    <input 
-                        type="text"
-                        id="regName"
-                        class="premium-input"
-                        placeholder="e.g. Rahul Sharma"
-                        pattern="[A-Za-z ]{3,40}"
-                        title="Only letters allowed"
-                    required>
+            <form @submit.prevent="submitTechnician($data)" class="space-y-4">
+                
+                <div class="animate-stagger-2">
+                    <div class="input-wrapper group">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="regName" class="premium-input" placeholder="Full Legal Name" pattern="[A-Za-z ]{3,40}" title="Only letters allowed" required>
+                    </div>
                 </div>
 
-                <div class="space-y-1.5 stagger-3">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Mobile Number</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary font-bold">+91</span>
-                        <input 
-                            type="tel"
-                            id="regPhone"
-                            class="premium-input pl-14"
-                            placeholder="9876543210"
-                            maxlength="10"
-                            pattern="[6-9]{1}[0-9]{9}"
-                            required>
+                <div class="animate-stagger-2">
+                    <div class="input-wrapper group">
+                        <i class="fa-solid fa-mobile-screen-button input-icon"></i>
+                        <span class="text-[#B58B5B] font-bold text-sm mr-2 border-r border-[#E5E1DA] pr-2">+91</span>
+                        <input type="tel" id="regPhone" class="premium-input !pl-0" placeholder="9876543210" maxlength="10" pattern="[6-9]{1}[0-9]{9}" required>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4 stagger-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Username</label>
-                        <input type="text" id="regUsername" class="premium-input" placeholder="Username" required>
+                <div class="grid grid-cols-2 gap-4 animate-stagger-3">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-at input-icon !pr-2"></i>
+                        <input type="text" id="regUsername" class="premium-input !pl-0" placeholder="Username" required>
                     </div>
                     
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Password</label>
-                        <input type="password" id="regPassword" class="premium-input" placeholder="••••••••" required>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon !pr-2"></i>
+                        <input type="password" id="regPassword" class="premium-input !pl-0" placeholder="Password" required>
                     </div>
                 </div>
 
-                <div class="space-y-1.5 stagger-5">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Specialization</label>
-                    <div class="select-wrapper">
-                       <select id="regCategory" class="premium-input bg-white" required>
-                            <option value="" disabled selected>Select Specialization</option>
-                            <option value="AC Tech">AC Tech</option>
-                            <option value="Fridge">Fridge</option>
+                <div class="animate-stagger-4 select-wrapper">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-toolbox input-icon"></i>
+                        <select id="regCategory" class="premium-input" required>
+                            <option value="" disabled selected>Your Specialization</option>
+                            <option value="AC Tech">AC Technician</option>
+                            <option value="Fridge">Refrigerator Repair</option>
                             <option value="Washing Machine">Washing Machine</option>
-                            <option value="RO filter">RO filter</option>
-                            <option value="Carpenter">Carpenter</option>
-                            <option value="Plumber">Plumber</option>
-                            <option value="Electrician">Electrician</option>
-                            <option value="TV/LED">TV/LED</option>
-                            <option value="CCTV">CCTV</option>
-                            <option value="Mason">Mason</option>
-                            <option value="Welder">Welder</option>
-                            <option value="Painter">Painter</option>
-                            <option value="Car Mech">Car Mech</option>
-                            <option value="Bike Mech">Bike Mech</option>
-                            <option value="Pest Ctrl">Pest Ctrl</option>
-                            <option value="Microwave">Microwave</option>
-                            <option value="Grass Cutting">Grass Cutting</option>
+                            <option value="RO filter">Water Purifier (RO)</option>
+                            <option value="Carpenter">Carpentry</option>
+                            <option value="Plumber">Plumbing</option>
+                            <option value="Electrician">Electrical Works</option>
+                            <option value="TV/LED">TV & Electronics</option>
+                            <option value="Painter">Painting</option>
+                            <option value="Pest Ctrl">Pest Control</option>
+                            <option value="Clean">Deep Cleaning</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-5 gap-4 stagger-6">
-                    <div class="space-y-1.5 col-span-2">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Experience</label>
-                        <div class="relative">
-                            <input type="number" id="regExp" class="premium-input pr-10" placeholder="0" required>
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-theme-muted text-sm font-medium">Yrs</span>
-                        </div>
+                <div class="grid grid-cols-5 gap-4 animate-stagger-4">
+                    <div class="col-span-2 input-wrapper relative">
+                        <i class="fa-solid fa-star input-icon !pr-2"></i>
+                        <input type="number" id="regExp" class="premium-input !pl-0 !pr-8" placeholder="Exp" min="0" max="50" required>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#A9A39B] text-xs font-bold">Yrs</span>
                     </div>
-                    <div class="space-y-1.5 col-span-3">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Aadhaar</label>
-                        <input 
-                            type="text"
-                            id="regAadhaar"
-                            class="premium-input tracking-widest font-mono"
-                            placeholder="0000 0000 0000"
-                            maxlength="12"
-                            pattern="[0-9]{12}"
-                            required>
+                    <div class="col-span-3 input-wrapper">
+                        <i class="fa-regular fa-id-card input-icon !pr-2"></i>
+                        <input type="text" id="regAadhaar" class="premium-input !pl-0 tracking-widest font-mono" placeholder="Aadhaar No." maxlength="12" pattern="[0-9]{12}" required>
                     </div>
                 </div>
 
-                <div class="space-y-1.5 pb-2 stagger-7">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Service Area</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        </span>
-                        <input 
-                            type="text"
-                            id="regArea"
-                            class="premium-input pl-12"
-                            placeholder="City or Locality"
-                            pattern="[A-Za-z ]{3,40}"
-                            required>
+                <div class="animate-stagger-5 pb-2">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-map-location-dot input-icon"></i>
+                        <input type="text" id="regArea" class="premium-input" placeholder="City or Locality" pattern="[A-Za-z ]{3,40}" required>
                     </div>
                 </div>
 
-                <div class="stagger-7 pt-2">
-                    <button type="submit" class="btn-theme group relative overflow-hidden" :disabled="isSubmitting">
+                <div class="animate-stagger-5 pt-2">
+                    <button type="submit" class="btn-shimmer" :disabled="isSubmitting">
                         <span class="relative z-10 flex items-center justify-center gap-2">
-                            <span x-text="isSubmitting ? 'Registering...' : 'Submit Application'"></span>
-                            <svg x-show="!isSubmitting" class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            <span x-text="isSubmitting ? 'Processing...' : 'Submit Application'"></span>
+                            <i x-show="!isSubmitting" class="fa-solid fa-arrow-right-long transition-transform group-hover:translate-x-1"></i>
+                            <i x-show="isSubmitting" class="fa-solid fa-circle-notch fa-spin"></i>
                         </span>
-                        <div x-show="isSubmitting" class="absolute inset-0 bg-white/20 animate-pulse"></div>
                     </button>
                 </div>
             </form>
         </div>
 
-        <div x-show="isSuccess" x-transition:enter="transition ease-out duration-500 delay-200" x-transition:enter-start="opacity-0 translate-y-8 scale-95" class="text-center py-10">
-            <div class="w-24 h-24 bg-theme-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner relative">
-                <div class="absolute inset-0 border-4 border-theme-secondary rounded-full animate-ping opacity-20"></div>
-                <svg class="w-12 h-12 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+        <div x-show="isSuccess" x-transition:enter="transition ease-out duration-700 delay-300" x-transition:enter-start="opacity-0 translate-y-10 scale-90" class="text-center py-8">
+            <div class="relative w-32 h-32 mx-auto mb-8">
+                <div class="absolute inset-0 bg-[#10B981] opacity-20 rounded-full blur-2xl animate-pulse"></div>
+                <div class="relative w-full h-full bg-gradient-to-tr from-[#10B981] to-[#34D399] rounded-full flex items-center justify-center shadow-2xl border-4 border-white transform hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-check text-5xl text-white"></i>
+                </div>
+                <i class="fa-solid fa-sparkles absolute top-0 right-0 text-yellow-400 animate-bounce"></i>
+                <i class="fa-solid fa-star absolute bottom-4 left-0 text-[#B58B5B] animate-pulse" style="animation-delay: 0.5s;"></i>
             </div>
-            <h2 class="text-3xl font-extrabold text-theme-primary tracking-tight">Application Sent!</h2>
-            <p class="text-theme-txt mt-4 leading-relaxed">Our onboarding team will reach out to you within <br><span class="font-bold text-theme-secondary text-lg">24 hours</span>.</p>
-            <a href="index.html" class="mt-8 flex items-center justify-center gap-2 w-full py-4 border-2 border-theme-secondary text-theme-secondary rounded-xl font-bold hover:bg-theme-secondary hover:text-white transition-all group">
-                <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            
+            <h2 class="text-3xl font-extrabold text-[#2D2C2B] tracking-tight mb-2">Welcome Aboard!</h2>
+            <p class="text-[#6A6251] mt-3 leading-relaxed text-sm bg-white/50 p-4 rounded-2xl border border-white">
+                Your profile is under review.<br>Our onboarding team will call you within <span class="font-extrabold text-[#B58B5B] text-base">24 hours</span> to activate your account.
+            </p>
+            
+            <a href="index.html" class="mt-8 flex items-center justify-center gap-2 w-full py-4 bg-white border-2 border-[#E5E1DA] text-[#2D2C2B] rounded-2xl font-bold hover:border-[#B58B5B] hover:text-[#B58B5B] transition-all group shadow-sm">
+                <i class="fa-solid fa-house transition-transform group-hover:-translate-y-1"></i>
                 Return to Home
             </a>
         </div>
