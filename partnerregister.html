@@ -8,68 +8,126 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="i18n.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         
         body { font-family: 'Inter', sans-serif; }
 
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #F3F0EA; }
+        ::-webkit-scrollbar-thumb { background: #A9A39B; border-radius: 10px; }
+
         .premium-input { 
             width: 100%; 
-            background: #ffffff;
+            background: #FFFFFF;
             border: 1.5px solid #E5E1DA; 
             padding: 1rem; 
             border-radius: 12px; 
             outline: none; 
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             appearance: none;
+            color: #534E46;
         }
+
+        .premium-input::placeholder { color: #A9A39B; }
 
         .premium-input:focus { 
-            border-color: #A07D54; 
-            box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1);
-            transform: translateY(-1px);
+            border-color: #B58B5B; 
+            box-shadow: 0 0 0 4px rgba(181, 139, 91, 0.15);
+            transform: translateY(-2px);
         }
 
-        .floating-label-group { position: relative; }
-
-        .btn-gold { 
+        .btn-theme { 
             width: 100%; 
             padding: 1.2rem; 
-            background: linear-gradient(135deg, #A07D54 0%, #866642 100%); 
-            color: white; 
+            background: linear-gradient(135deg, #B58B5B 0%, #9a764d 100%); 
+            color: #FFFFFF; 
             border-radius: 14px; 
             font-weight: 700; 
             letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 15px -3px rgba(160, 125, 84, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 20px -5px rgba(181, 139, 91, 0.4);
         }
 
-        .btn-gold:active { transform: scale(0.98); }
-        .btn-gold:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-theme:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(181, 139, 91, 0.5);
+        }
+
+        .btn-theme:active { transform: scale(0.98); }
+        .btn-theme:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
         /* Custom Select Arrow */
         .select-wrapper { position: relative; }
         .select-wrapper::after {
-            content: '▼'; font-size: 0.8rem; color: #A07D54;
-            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+            content: '▼'; font-size: 0.8rem; color: #B58B5B;
+            position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%);
             pointer-events: none;
         }
-    </style>
-</head>
-<body class="bg-[#FDFCFB] min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-50" x-data="{ isSubmitting: false, isSuccess: false }" x-cloak>
+        /* Ambient Background Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+        .animate-float-1 { animation: float 8s ease-in-out infinite; }
+        .animate-float-2 { animation: float 10s ease-in-out infinite reverse; }
         
-        <div x-show="!isSuccess" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-extrabold text-[#3E3A31] tracking-tight">Join FixZenix</h1>
-                <p class="text-gray-400 mt-2 text-sm">Fill in your details to get jobs and start earning</p>
+        /* Staggered Form Entry Animations */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-1 { animation: slideUpFade 0.5s ease-out 0.1s forwards; opacity: 0; }
+        .stagger-2 { animation: slideUpFade 0.5s ease-out 0.2s forwards; opacity: 0; }
+        .stagger-3 { animation: slideUpFade 0.5s ease-out 0.3s forwards; opacity: 0; }
+        .stagger-4 { animation: slideUpFade 0.5s ease-out 0.4s forwards; opacity: 0; }
+        .stagger-5 { animation: slideUpFade 0.5s ease-out 0.5s forwards; opacity: 0; }
+        .stagger-6 { animation: slideUpFade 0.5s ease-out 0.6s forwards; opacity: 0; }
+        .stagger-7 { animation: slideUpFade 0.5s ease-out 0.7s forwards; opacity: 0; }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        theme: {
+                            primary: '#6A6251',
+                            secondary: '#B58B5B',
+                            bg: '#F3F0EA',
+                            surface: '#FFFFFF',
+                            txt: '#534E46',
+                            muted: '#A9A39B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-theme-bg min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden text-theme-txt">
+
+    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-theme-secondary opacity-20 rounded-full mix-blend-multiply filter blur-[80px] animate-float-1 pointer-events-none"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-theme-primary opacity-10 rounded-full mix-blend-multiply filter blur-[100px] animate-float-2 pointer-events-none"></div>
+
+    <div class="w-full max-w-md bg-theme-surface p-8 rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(106,98,81,0.15)] border border-white/60 relative z-10 my-8" x-data="{ isSubmitting: false, isSuccess: false }" x-cloak>
+        
+        <div x-show="!isSuccess" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-4">
+            <div class="text-center mb-8 stagger-1">
+                <div class="w-16 h-16 bg-theme-bg rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-inner border border-theme-muted/20">
+                    <svg class="w-8 h-8 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-theme-primary tracking-tight">Join FixZenix</h1>
+                <p class="text-theme-muted mt-2 text-sm font-medium">Fill in your details to get jobs and start earning</p>
             </div>
             
             <form @submit.prevent="submitTechnician($data)" class="space-y-5">
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Full Name</label>
+                <div class="space-y-1.5 stagger-2">
+                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Full Name</label>
                     <input 
                         type="text"
                         id="regName"
@@ -80,10 +138,10 @@
                     required>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Mobile Number</label>
+                <div class="space-y-1.5 stagger-3">
+                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Mobile Number</label>
                     <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">+91</span>
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary font-bold">+91</span>
                         <input 
                             type="tel"
                             id="regPhone"
@@ -95,99 +153,113 @@
                     </div>
                 </div>
                 
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Username</label>
-                    <div class="relative">
-                        <input type="text" id="regUsername" class="premium-input pl-14" placeholder="Enter username" required>
+                <div class="grid grid-cols-2 gap-4 stagger-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Username</label>
+                        <input type="text" id="regUsername" class="premium-input" placeholder="Username" required>
                     </div>
-                </div>
-                
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Password</label>
-                    <div class="relative">
-                        <input type="password" id="regPassword" class="premium-input pl-14" placeholder="Enter password" required>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Specialization</label>
-                    <div class="select-wrapper">
-                       <select id="regCategory" class="premium-input" required>
-    <option value="" disabled selected>Select Specialization</option>
-    <option value="AC Tech">AC Tech</option>
-    <option value="Fridge">Fridge</option>
-    <option value="Washing Machine">Washing Machine</option>
-    <option value="RO filter">RO filter</option>
-    <option value="Carpenter">Carpenter</option>
-    <option value="Plumber">Plumber</option>
-    <option value="Electrician">Electrician</option>
-    <option value="TV/LED">TV/LED</option>
-    <option value="CCTV">CCTV</option>
-    <option value="Mason">Mason</option>
-    <option value="Welder">Welder</option>
-    <option value="Painter">Painter</option>
-    <option value="Car Mech">Car Mech</option>
-    <option value="Bike Mech">Bike Mech</option>
-    <option value="Pest Ctrl">Pest Ctrl</option>
-    <option value="Microwave">Microwave</option>
-    <option value="Grass Cutting">Grass Cutting</option>
-    
-</select>
+                    
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Password</label>
+                        <input type="password" id="regPassword" class="premium-input" placeholder="••••••••" required>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Experience</label>
-                        <input type="number" id="regExp" class="premium-input" placeholder="Years" required>
+                <div class="space-y-1.5 stagger-5">
+                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Specialization</label>
+                    <div class="select-wrapper">
+                       <select id="regCategory" class="premium-input bg-white" required>
+                            <option value="" disabled selected>Select Specialization</option>
+                            <option value="AC Tech">AC Tech</option>
+                            <option value="Fridge">Fridge</option>
+                            <option value="Washing Machine">Washing Machine</option>
+                            <option value="RO filter">RO filter</option>
+                            <option value="Carpenter">Carpenter</option>
+                            <option value="Plumber">Plumber</option>
+                            <option value="Electrician">Electrician</option>
+                            <option value="TV/LED">TV/LED</option>
+                            <option value="CCTV">CCTV</option>
+                            <option value="Mason">Mason</option>
+                            <option value="Welder">Welder</option>
+                            <option value="Painter">Painter</option>
+                            <option value="Car Mech">Car Mech</option>
+                            <option value="Bike Mech">Bike Mech</option>
+                            <option value="Pest Ctrl">Pest Ctrl</option>
+                            <option value="Microwave">Microwave</option>
+                            <option value="Grass Cutting">Grass Cutting</option>
+                        </select>
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Aadhaar</label>
+                </div>
+
+                <div class="grid grid-cols-5 gap-4 stagger-6">
+                    <div class="space-y-1.5 col-span-2">
+                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Experience</label>
+                        <div class="relative">
+                            <input type="number" id="regExp" class="premium-input pr-10" placeholder="0" required>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-theme-muted text-sm font-medium">Yrs</span>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 col-span-3">
+                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Aadhaar</label>
                         <input 
                             type="text"
                             id="regAadhaar"
-                            class="premium-input"
-                            placeholder="12 Digits"
+                            class="premium-input tracking-widest font-mono"
+                            placeholder="0000 0000 0000"
                             maxlength="12"
                             pattern="[0-9]{12}"
                             required>
                     </div>
                 </div>
 
-                <div class="space-y-1 pb-2">
-                    <label class="text-xs font-semibold text-gray-500 ml-1 uppercase">Service Area</label>
-                    <input 
-                        type="text"
-                        id="regArea"
-                        class="premium-input"
-                        placeholder="City or Locality"
-                        pattern="[A-Za-z ]{3,40}"
-                        required>
+                <div class="space-y-1.5 pb-2 stagger-7">
+                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Service Area</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </span>
+                        <input 
+                            type="text"
+                            id="regArea"
+                            class="premium-input pl-12"
+                            placeholder="City or Locality"
+                            pattern="[A-Za-z ]{3,40}"
+                            required>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-gold group relative overflow-hidden" :disabled="isSubmitting">
-                    <span class="relative z-10" x-text="isSubmitting ? 'Registering...' : 'Submit Application'"></span>
-                    <div x-show="isSubmitting" class="absolute inset-0 bg-black/10 animate-pulse"></div>
-                </button>
+                <div class="stagger-7 pt-2">
+                    <button type="submit" class="btn-theme group relative overflow-hidden" :disabled="isSubmitting">
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            <span x-text="isSubmitting ? 'Registering...' : 'Submit Application'"></span>
+                            <svg x-show="!isSubmitting" class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </span>
+                        <div x-show="isSubmitting" class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                    </button>
+                </div>
             </form>
         </div>
 
-        <div x-show="isSuccess" x-transition:enter="transition ease-out duration-500" class="text-center py-10">
-            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div x-show="isSuccess" x-transition:enter="transition ease-out duration-500 delay-200" x-transition:enter-start="opacity-0 translate-y-8 scale-95" class="text-center py-10">
+            <div class="w-24 h-24 bg-theme-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner relative">
+                <div class="absolute inset-0 border-4 border-theme-secondary rounded-full animate-ping opacity-20"></div>
+                <svg class="w-12 h-12 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800">Application Sent!</h2>
-            <p class="text-gray-500 mt-3 leading-relaxed">Our onboarding team will reach out to you within <span class="font-bold text-[#A07D54]">24 hours</span>.</p>
-            <a href="index.html" class="mt-8 inline-block w-full py-4 border-2 border-[#A07D54] text-[#A07D54] rounded-xl font-bold hover:bg-[#A07D54] hover:text-white transition-all">Return to Home</a>
+            <h2 class="text-3xl font-extrabold text-theme-primary tracking-tight">Application Sent!</h2>
+            <p class="text-theme-txt mt-4 leading-relaxed">Our onboarding team will reach out to you within <br><span class="font-bold text-theme-secondary text-lg">24 hours</span>.</p>
+            <a href="index.html" class="mt-8 flex items-center justify-center gap-2 w-full py-4 border-2 border-theme-secondary text-theme-secondary rounded-xl font-bold hover:bg-theme-secondary hover:text-white transition-all group">
+                <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Return to Home
+            </a>
         </div>
     </div>
 
-    <script>
+<script>
 const supabaseUrl = "https://kzxdxnxgouthsywbsnvl.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag";
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 async function submitTechnician(state) {
-
     const name = document.getElementById('regName').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
     const username = document.getElementById('regUsername').value.trim();
@@ -197,52 +269,17 @@ async function submitTechnician(state) {
     const aadhaar = document.getElementById('regAadhaar').value.trim();
     const area = document.getElementById('regArea').value.trim();
 
-    // FULL NAME VALIDATION
-    if (!/^[A-Za-z ]{3,40}$/.test(name)) {
-        alert("Enter valid full name");
-        return;
-    }
-
-    // PHONE VALIDATION
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-        alert("Enter valid 10 digit mobile number");
-        return;
-    }
-
-    // USERNAME VALIDATION
-    if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
-        alert("Username should be 4-20 characters");
-        return;
-    }
-
-    // PASSWORD VALIDATION
-    if (password.length < 6) {
-        alert("Password must be at least 6 characters");
-        return;
-    }
-
-    // EXPERIENCE VALIDATION
-    if (experience < 0 || experience > 50) {
-        alert("Enter valid experience");
-        return;
-    }
-
-    // AADHAAR VALIDATION
-    if (!/^\d{12}$/.test(aadhaar)) {
-        alert("Aadhaar must be 12 digits");
-        return;
-    }
-
-    // SERVICE AREA VALIDATION
-    if (!/^[A-Za-z ]{3,40}$/.test(area)) {
-        alert("Enter valid service area");
-        return;
-    }
+    if (!/^[A-Za-z ]{3,40}$/.test(name)) { alert("Enter valid full name"); return; }
+    if (!/^[6-9]\d{9}$/.test(phone)) { alert("Enter valid 10 digit mobile number"); return; }
+    if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) { alert("Username should be 4-20 characters"); return; }
+    if (password.length < 6) { alert("Password must be at least 6 characters"); return; }
+    if (experience < 0 || experience > 50) { alert("Enter valid experience"); return; }
+    if (!/^\d{12}$/.test(aadhaar)) { alert("Aadhaar must be 12 digits"); return; }
+    if (!/^[A-Za-z ]{3,40}$/.test(area)) { alert("Enter valid service area"); return; }
 
     state.isSubmitting = true;
 
     try {
-
         const { error } = await _supabase
         .from('technicians')
         .insert([{
@@ -258,15 +295,11 @@ async function submitTechnician(state) {
         }]);
 
         if (error) throw error;
-
         state.isSuccess = true;
 
     } catch (err) {
-
         alert("Database Error: " + err.message);
-
     } finally {
-
         state.isSubmitting = false;
     }
 }
