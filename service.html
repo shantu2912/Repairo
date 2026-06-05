@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Service Booking - FixZen</title>
+    <title>Service Booking - FixZenix</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -379,13 +379,16 @@
         const jobPayload = {
             user_id: this.user.id,
             category: this.service?.name || 'General Service',
-            device: serviceNames,  // all selected service names joined — e.g. "Toilet Flush Repair, Other Issue"
+            device: isMixed
+                ? (firstConstant?.n || 'Multiple Services')
+                : (this.selectedSubs[0]?.n || 'General Service'),
             issue: isMixed
                 ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
                 : (hasOtherIssue
                     ? (this.otherIssueText.trim() || 'Other Issue')
                     : (this.selectedSubs[0]?.d || 'Service requested via app')),
             other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
+            services_selected: serviceNames,
             customer_name: this.customerName,
             location: this.address,
             phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
@@ -468,61 +471,50 @@ async processInspectionPayment(amount, isMixed = false) {
             
             <div class="space-y-3">
                 <template x-for="sub in service?.subs">
-                    <div class="rounded-2xl border shadow-sm overflow-hidden transition-all"
-                         :class="selectedSubs.some(s => s.n === sub.n) ? 'border-brand-gold ring-1 ring-brand-gold' : 'border-transparent'">
-
-                        <!-- Tap row — always visible -->
-                        <div @click="toggleSub(sub)"
-                             class="relative flex justify-between items-center p-4 cursor-pointer active:scale-95 transition-all group"
-                             :class="selectedSubs.some(s => s.n === sub.n)
-                                ? (sub.is_inspection ? 'bg-amber-50' : 'bg-orange-50')
-                                : 'bg-white hover:bg-gray-50'">
-
-                            <div class="flex items-start gap-4 z-10">
-                                <div class="mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0"
-                                     :class="selectedSubs.some(s => s.n === sub.n) ? 'border-brand-gold bg-brand-gold text-white scale-110' : 'border-brand-olive/30 text-transparent'">
-                                    <i class="fa-solid fa-check text-[10px]"></i>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-brand-dark text-sm transition-colors flex items-center gap-1.5"
-                                       :class="selectedSubs.some(s => s.n === sub.n) ? 'text-brand-olive' : ''"
-                                       x-text="sub.n"></p>
-                                    <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
-                                    <!-- "Required" hint for Other Issue when selected -->
-                                    <p x-show="sub.is_inspection && selectedSubs.some(s => s.n === sub.n)"
-                                       class="text-[10px] text-brand-gold font-semibold mt-1 flex items-center gap-1">
-                                        <i class="fa-solid fa-pen-to-square text-[9px]"></i> Describe your issue below
-                                    </p>
-                                </div>
+                    <div @click="toggleSub(sub)" 
+                         class="relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm active:scale-95 group"
+                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-orange-50 ring-1 ring-brand-gold' : 'border-transparent hover:border-brand-beige'">
+                        
+                        <div class="flex items-start gap-4 z-10">
+                            <div class="mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300"
+                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white scale-110' : 'border-brand-olive/30 text-transparent'">
+                                <i class="fa-solid fa-check text-[10px]"></i>
                             </div>
-
-                            <span class="font-bold text-brand-olive text-sm z-10 flex-shrink-0">₹<span x-text="sub.p"></span></span>
+                            <div>
+                                <p class="font-bold text-brand-dark text-sm transition-colors" 
+                                   :class="selectedSubs.includes(sub) ? 'text-brand-olive' : ''" x-text="sub.n"></p>
+                                <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
+                            </div>
                         </div>
-
-                        <!-- Inline textarea — only for Other Issue when selected -->
-                        <div x-show="sub.is_inspection && selectedSubs.some(s => s.n === sub.n)"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 max-h-0"
-                             x-transition:enter-end="opacity-100 max-h-96"
-                             @click.stop
-                             class="bg-amber-50 border-t border-brand-gold/20 px-4 pb-4 pt-3">
-                            <p class="text-[10px] font-bold text-brand-olive uppercase tracking-wide mb-2 flex items-center gap-1">
-                                <i class="fa-solid fa-magnifying-glass text-brand-gold"></i> Describe your issue
-                                <span class="text-danger ml-1">*</span>
-                            </p>
-                            <textarea x-model="otherIssueText"
-                                      @click.stop
-                                      placeholder="e.g. Water leaking under sink since yesterday, not sure which pipe..."
-                                      rows="3"
-                                      class="w-full bg-white border border-brand-gold/30 rounded-xl p-3 text-sm text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/40 resize-none leading-relaxed"></textarea>
-                            <p class="text-[10px] text-brand-gold/80 mt-1.5 flex items-center gap-1">
-                                <i class="fa-solid fa-circle-info"></i>
-                                ₹299 inspection fee — adjusted in final bill if work is approved
-                            </p>
-                        </div>
-
+                        
+                        <span class="font-bold text-brand-olive text-sm z-10">₹<span x-text="sub.p"></span></span>
                     </div>
                 </template>
+            </div>
+
+            <!-- OTHER ISSUE DESCRIPTION BOX — shows when Other Issue is selected -->
+            <div x-show="hasOtherIssueSelected" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="mt-4 bg-amber-50 border border-brand-gold/40 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-7 h-7 rounded-full bg-brand-gold/20 flex items-center justify-center">
+                        <i class="fa-solid fa-magnifying-glass text-brand-gold text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-brand-olive text-sm">Describe Your Other Issue</p>
+                        <p class="text-[10px] text-brand-dark/50">Help the technician understand what to inspect</p>
+                    </div>
+                </div>
+                <textarea x-model="otherIssueText" 
+                          placeholder="e.g. Water leaking under sink since yesterday, not sure of the pipe..."
+                          rows="3"
+                          class="w-full bg-white border border-brand-gold/30 rounded-xl p-3 text-sm text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/40 resize-none leading-relaxed"></textarea>
+                <p class="text-[10px] text-brand-gold/80 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-info"></i>
+                    ₹299 inspection fee included — adjusted in final bill if work is approved
+                </p>
             </div>
 
             <!-- BILL BREAKDOWN — shows when 2+ items selected including Other Issue -->
@@ -642,7 +634,7 @@ async processInspectionPayment(amount, isMixed = false) {
                     <li>If customer declines the quotation, the inspection fee remains payable.</li>
                     <li>Final quotation may be provided after inspection where applicable.</li>
                     <li>Cancellations within 30 mins of arrival may incur a fee.</li>
-                    <li>You authorize FixZen to share your exact GPS location with the nearest available expert.</li>
+                    <li>You authorize FixZenix to share your exact GPS location with the nearest available expert.</li>
                 </ul>
             </div>
 
