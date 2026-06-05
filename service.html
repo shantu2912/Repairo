@@ -379,16 +379,13 @@
         const jobPayload = {
             user_id: this.user.id,
             category: this.service?.name || 'General Service',
-            device: isMixed
-                ? (firstConstant?.n || 'Multiple Services')
-                : (this.selectedSubs[0]?.n || 'General Service'),
+            device: serviceNames,  // all selected service names joined — e.g. "Toilet Flush Repair, Other Issue"
             issue: isMixed
                 ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
                 : (hasOtherIssue
                     ? (this.otherIssueText.trim() || 'Other Issue')
                     : (this.selectedSubs[0]?.d || 'Service requested via app')),
             other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
-            services_selected: serviceNames,
             customer_name: this.customerName,
             location: this.address,
             phone: '+91' + this.phone.replace(/\s+/g, '').trim(),

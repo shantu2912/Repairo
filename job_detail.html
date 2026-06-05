@@ -686,12 +686,12 @@ async function loadJob() {
         }
     }
 
-    // Show booked services list for mixed bookings
-    if (data.services_selected) {
+    // Show booked services list for mixed bookings (stored in device field)
+    if (data.device && data.device.includes(',')) {
         const mixedBox = document.getElementById("mixedServicesBox");
         const mixedText = document.getElementById("mixedServicesText");
         if (mixedBox && mixedText) {
-            mixedText.innerText = data.services_selected;
+            mixedText.innerText = data.device;
             mixedBox.classList.remove("hidden");
         }
     }
@@ -709,7 +709,9 @@ async function loadJob() {
   }
 
   document.getElementById("category").innerText = data.category || "Service";
-  document.getElementById("device").querySelector("span").innerText = data.device || "Work Order";
+  // device field holds comma-separated service names for mixed bookings
+  const deviceNames = (data.device || 'Work Order').split(',');
+  document.getElementById("device").querySelector("span").innerText = deviceNames[0].trim();
 // ================= ISSUE DISPLAY FIX =================
 // Show full issue string — handles plain, Other Issue only, and mixed bookings
 const finalIssue = data.issue || (data.other_issue ? `Other Issue: ${data.other_issue}` : "No issue description provided");
