@@ -159,6 +159,11 @@
 
         lat: null,
         lng: null,
+        otherIssueText: '',
+
+        get hasOtherIssueSelected() {
+            return this.selectedSubs.some(s => s.is_inspection === true);
+        },
 
         async init() {
             const params = new URLSearchParams(window.location.search);
@@ -339,50 +344,54 @@
             return;
         }
 
-        const firstService = this.selectedSubs[0];
         const scheduledDateTime = `${this.date}T${this.time}:00`;
         
-        // Check if this is an inspection job (Other Issue selected)
-        const isInspectionJob = firstService?.is_inspection === true;
+        // Check if Other Issue is selected (alone or mixed with other services)
+        const hasOtherIssue = this.selectedSubs.some(s => s.is_inspection === true);
+        const constantServices = this.selectedSubs.filter(s => !s.is_inspection);
+        const isMixed = hasOtherIssue && constantServices.length > 0;
+        const isInspectionOnlyJob = hasOtherIssue && constantServices.length === 0;
         
-        // Calculate inspection fee - standard ₹299 for inspection jobs
-        const inspectionFeeAmount = isInspectionJob ? 299 : 0;
+        // Validate Other Issue description if selected
+        if (hasOtherIssue && (!this.otherIssueText || !this.otherIssueText.trim())) {
+            alert('Please describe your Other Issue before booking.');
+            this.bookingLoading = false;
+            return;
+        }
         
-        // For inspection jobs, original price is the inspection fee
-        const originalPrice = isInspectionJob ? inspectionFeeAmount : this.total;
+        // Inspection fee is ₹299 when Other Issue is included
+        const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
+        const originalPrice = this.total;
         
-        // For inspection jobs, we need to process payment for inspection fee
-        if (isInspectionJob) {
-            // Show payment modal for inspection fee
-            const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount);
+        // Show inspection payment prompt
+        if (hasOtherIssue) {
+            const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
             if (!paymentConfirmed) {
                 this.bookingLoading = false;
                 return;
             }
         }
 
-       const jobPayload = {
-    user_id: this.user.id,
-
-    category: this.service?.name || 'General Service',
-
-    device: firstService?.n || 'General Service',
-
-    issue:
-        firstService?.n === 'Other Issue'
-            ? (this.otherIssueText || 'Other Issue')
-            : (firstService?.d || 'Service requested via app'),
-
-    other_issue:
-        firstService?.n === 'Other Issue'
-            ? (this.otherIssueText || '')
-            : '',
-
-    customer_name: this.customerName,
-
-    location: this.address,
-
-    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
+        // Build services summary for the job
+        const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
+        const firstConstant = constantServices[0];
+        
+        const jobPayload = {
+            user_id: this.user.id,
+            category: this.service?.name || 'General Service',
+            device: isMixed
+                ? (firstConstant?.n || 'Multiple Services')
+                : (this.selectedSubs[0]?.n || 'General Service'),
+            issue: isMixed
+                ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
+                : (hasOtherIssue
+                    ? (this.otherIssueText.trim() || 'Other Issue')
+                    : (this.selectedSubs[0]?.d || 'Service requested via app')),
+            other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
+            services_selected: serviceNames,
+            customer_name: this.customerName,
+            location: this.address,
+            phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
             status: 'pending',
             urgent: false,
             latitude: this.lat || null,
@@ -390,10 +399,10 @@
             scheduled_time: scheduledDateTime,
             original_price: originalPrice,
             discounted_price: originalPrice,
-            is_inspection_job: isInspectionJob,
-            inspection_fee_paid: isInspectionJob,
+            is_inspection_job: hasOtherIssue,
+            inspection_fee_paid: hasOtherIssue,
             inspection_fee_amount: inspectionFeeAmount,
-            quote_status: isInspectionJob ? 'pending' : null
+            quote_status: hasOtherIssue ? 'pending' : null
         };
 
         const { data: insertedJob, error: jobError } = await window.sb
@@ -418,10 +427,12 @@
 },
 
 // Add this helper method for inspection payment
-async processInspectionPayment(amount) {
+async processInspectionPayment(amount, isMixed = false) {
     return new Promise((resolve) => {
-        // Show a payment confirmation dialog
-        const confirmed = confirm(`🔍 Inspection Service\n\nAn inspection fee of ₹${amount} will be charged.\n\nThis fee will be adjusted against the final bill if you approve the work.\n\nProceed with payment?`);
+        const msg = isMixed
+            ? `🔍 Mixed Booking Notice\n\nYour booking includes both fixed-price services and an Other Issue inspection (₹${amount}).\n\nThe ₹${amount} inspection fee will be adjusted in the final bill if the additional work is approved.\n\nProceed with booking?`
+            : `🔍 Inspection Service\n\nAn inspection fee of ₹${amount} will be charged.\n\nThis fee will be adjusted against the final bill if you approve the work.\n\nProceed with payment?`;
+        const confirmed = confirm(msg);
         resolve(confirmed);
     });
 }
@@ -480,6 +491,55 @@ async processInspectionPayment(amount) {
                     </div>
                 </template>
             </div>
+
+            <!-- OTHER ISSUE DESCRIPTION BOX — shows when Other Issue is selected -->
+            <div x-show="hasOtherIssueSelected" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="mt-4 bg-amber-50 border border-brand-gold/40 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-7 h-7 rounded-full bg-brand-gold/20 flex items-center justify-center">
+                        <i class="fa-solid fa-magnifying-glass text-brand-gold text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-brand-olive text-sm">Describe Your Other Issue</p>
+                        <p class="text-[10px] text-brand-dark/50">Help the technician understand what to inspect</p>
+                    </div>
+                </div>
+                <textarea x-model="otherIssueText" 
+                          placeholder="e.g. Water leaking under sink since yesterday, not sure of the pipe..."
+                          rows="3"
+                          class="w-full bg-white border border-brand-gold/30 rounded-xl p-3 text-sm text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/40 resize-none leading-relaxed"></textarea>
+                <p class="text-[10px] text-brand-gold/80 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-info"></i>
+                    ₹299 inspection fee included — adjusted in final bill if work is approved
+                </p>
+            </div>
+
+            <!-- BILL BREAKDOWN — shows when 2+ items selected including Other Issue -->
+            <div x-show="hasOtherIssueSelected && selectedSubs.length > 1"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="mt-4 bg-white border border-brand-beige rounded-2xl p-4 shadow-sm">
+                <p class="font-bold text-brand-olive text-xs uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-receipt text-brand-gold"></i> Bill Breakdown
+                </p>
+                <template x-for="item in selectedSubs" :key="item.n">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                        <div>
+                            <p class="text-sm font-semibold text-brand-dark" x-text="item.n"></p>
+                            <p class="text-[10px] text-brand-dark/40" x-text="item.is_inspection ? 'Inspection fee (adjusted if work approved)' : item.d"></p>
+                        </div>
+                        <span class="text-sm font-bold text-brand-olive">₹<span x-text="item.p"></span></span>
+                    </div>
+                </template>
+                <div class="flex justify-between items-center pt-3 mt-1">
+                    <p class="font-bold text-brand-olive text-sm">Total Estimate</p>
+                    <p class="font-bold text-brand-olive text-lg">₹<span x-text="total"></span></p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -491,6 +551,11 @@ async processInspectionPayment(amount) {
                     <span class="text-xl font-bold text-brand-olive">₹</span>
                     <h2 class="text-4xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="total"></h2>
                 </div>
+                <p x-show="hasOtherIssueSelected && selectedSubs.length > 1" 
+                   class="text-[10px] text-brand-gold mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Includes ₹299 inspection fee
+                </p>
             </div>
             <div class="text-right">
                 <div x-show="selectedSubs.length > 0" class="animate__animated animate__fadeIn">
