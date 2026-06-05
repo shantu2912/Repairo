@@ -676,7 +676,51 @@ if (
 
   document.getElementById("category").innerText = data.category || "Service";
   document.getElementById("device").querySelector("span").innerText = data.device || "Work Order";
-  document.getElementById("issue").innerText = data.issue || "No issue description provided";
+// ================= ISSUE DISPLAY FIX =================
+
+let finalIssue = "";
+
+// Case 1:
+// User selected "Other"
+// AND typed custom issue
+if (
+    data.issue &&
+    data.issue.toLowerCase() === "other" &&
+    data.other_issue
+) {
+
+    finalIssue = `Other: ${data.other_issue}`;
+}
+
+// Case 2:
+// Normal issue + extra custom note
+else if (
+    data.issue &&
+    data.other_issue
+) {
+
+    finalIssue =
+      `${data.issue} (${data.other_issue})`;
+}
+
+// Case 3:
+// Only normal issue
+else if (data.issue) {
+
+    finalIssue = data.issue;
+}
+
+// Case 4:
+// Nothing exists
+else {
+
+    finalIssue =
+      "No issue description provided";
+}
+
+// Finally show on technician side
+document.getElementById("issue").innerText =
+finalIssue;
   document.getElementById("customer").innerText = data.customer_name || "Valued Customer";
   document.getElementById("location").innerText = data.location || "Address not specified";
   document.getElementById("jobIdRef").querySelector("span").innerText = `JOB-${data.id.slice(-8).toUpperCase()}`;
@@ -932,7 +976,7 @@ document.getElementById("refreshLocationBtn").onclick = manualRefresh;
 // Live preview for quote calculator
 function setupQuotePreview() {
     const inputs = ["labourCost", "materialCost", "extraCharges"];
-    const inspectionFee = jobData?.inspection_fee_amount || 299;
+    const inspectionFee = jobData?.inspection_fee_amount || 149;
     
     function updatePreview() {
         const labour = Number(document.getElementById("labourCost")?.value) || 0;

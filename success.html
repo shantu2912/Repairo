@@ -684,7 +684,7 @@
         updateBillAmounts(job) {
             if (job.is_inspection_job) {
                 this.billQuoteAmount = job.quoted_amount || 0;
-                this.billInspectionFee = job.inspection_fee_amount || 299;
+                this.billInspectionFee = job.inspection_fee_amount || 149;
                 this.billFinalAmount = Math.max(0, this.billQuoteAmount - this.billInspectionFee);
             } else {
                 this.billPrice = job.original_price || 0;

@@ -361,14 +361,28 @@
             }
         }
 
-        const jobPayload = {
-            user_id: this.user.id,
-            category: this.service?.name || 'General Service',
-            device: firstService?.n || 'General Service',
-            issue: firstService?.d || 'Service requested via app',
-            customer_name: this.customerName,
-            location: this.address,
-            phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
+       const jobPayload = {
+    user_id: this.user.id,
+
+    category: this.service?.name || 'General Service',
+
+    device: firstService?.n || 'General Service',
+
+    issue:
+        firstService?.n === 'Other Issue'
+            ? (this.otherIssueText || 'Other Issue')
+            : (firstService?.d || 'Service requested via app'),
+
+    other_issue:
+        firstService?.n === 'Other Issue'
+            ? (this.otherIssueText || '')
+            : '',
+
+    customer_name: this.customerName,
+
+    location: this.address,
+
+    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
             status: 'pending',
             urgent: false,
             latitude: this.lat || null,
