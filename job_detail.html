@@ -305,9 +305,25 @@ body {
         </span>
     </div>
     
+    <!-- Customer's Other Issue description — populated from job data -->
+    <div id="customerOtherIssueBox" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+        <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fas fa-comment-dots"></i> Customer's Issue Description
+        </p>
+        <p id="customerOtherIssueText" class="text-sm text-brand-dark font-medium leading-relaxed"></p>
+    </div>
+
+    <!-- Mixed booking services list -->
+    <div id="mixedServicesBox" class="hidden bg-brand-cream/50 border border-brand-beige rounded-xl p-3 mb-3">
+        <p class="text-[9px] font-bold text-brand-olive uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fas fa-list-check text-brand-gold"></i> Booked Services
+        </p>
+        <p id="mixedServicesText" class="text-xs text-brand-dark/70 leading-relaxed"></p>
+    </div>
+
     <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
         <i class="fas fa-info-circle text-brand-gold mr-1"></i>
-        Customer has already paid ₹299 inspection fee. This will be adjusted from the final quote amount.
+        Customer has already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. This will be adjusted from the final quote amount.
     </div>
     
     <div class="space-y-3">
@@ -655,72 +671,49 @@ async function loadJob() {
     return;
   }
   jobData = data;
+
+  // Show inspection quote card for any job with Other Issue (pure or mixed)
   if (data.is_inspection_job) {
-    document
-      .getElementById("inspectionQuoteCard")
-      .classList.remove("hidden");
-}
-if (
-    data.is_inspection_job &&
-    data.quote_status === "approved"
-) {
+    document.getElementById("inspectionQuoteCard").classList.remove("hidden");
 
-    alert(
-      "Customer approved the quote. You can start repair work now."
-    );
+    // Show customer's Other Issue description
+    if (data.other_issue && data.other_issue.trim()) {
+        const otherBox = document.getElementById("customerOtherIssueBox");
+        const otherText = document.getElementById("customerOtherIssueText");
+        if (otherBox && otherText) {
+            otherText.innerText = data.other_issue.trim();
+            otherBox.classList.remove("hidden");
+        }
+    }
 
-    document
-      .getElementById("inspectionQuoteCard")
-      .style.display = "none";
-}
+    // Show booked services list for mixed bookings
+    if (data.services_selected) {
+        const mixedBox = document.getElementById("mixedServicesBox");
+        const mixedText = document.getElementById("mixedServicesText");
+        if (mixedBox && mixedText) {
+            mixedText.innerText = data.services_selected;
+            mixedBox.classList.remove("hidden");
+        }
+    }
+
+    // Update inspection fee label from DB
+    const feeLabel = document.getElementById("inspectionFeeLabel");
+    if (feeLabel && data.inspection_fee_amount) {
+        feeLabel.innerText = data.inspection_fee_amount;
+    }
+  }
+
+  if (data.is_inspection_job && data.quote_status === "approved") {
+    alert("Customer approved the quote. You can start repair work now.");
+    document.getElementById("inspectionQuoteCard").style.display = "none";
+  }
 
   document.getElementById("category").innerText = data.category || "Service";
   document.getElementById("device").querySelector("span").innerText = data.device || "Work Order";
 // ================= ISSUE DISPLAY FIX =================
-
-let finalIssue = "";
-
-// Case 1:
-// User selected "Other"
-// AND typed custom issue
-if (
-    data.issue &&
-    data.issue.toLowerCase() === "other" &&
-    data.other_issue
-) {
-
-    finalIssue = `Other: ${data.other_issue}`;
-}
-
-// Case 2:
-// Normal issue + extra custom note
-else if (
-    data.issue &&
-    data.other_issue
-) {
-
-    finalIssue =
-      `${data.issue} (${data.other_issue})`;
-}
-
-// Case 3:
-// Only normal issue
-else if (data.issue) {
-
-    finalIssue = data.issue;
-}
-
-// Case 4:
-// Nothing exists
-else {
-
-    finalIssue =
-      "No issue description provided";
-}
-
-// Finally show on technician side
-document.getElementById("issue").innerText =
-finalIssue;
+// Show full issue string — handles plain, Other Issue only, and mixed bookings
+const finalIssue = data.issue || (data.other_issue ? `Other Issue: ${data.other_issue}` : "No issue description provided");
+document.getElementById("issue").innerText = finalIssue;
   document.getElementById("customer").innerText = data.customer_name || "Valued Customer";
   document.getElementById("location").innerText = data.location || "Address not specified";
   document.getElementById("jobIdRef").querySelector("span").innerText = `JOB-${data.id.slice(-8).toUpperCase()}`;
@@ -1025,15 +1018,20 @@ async function submitInspectionQuote() {
     
     const totalQuote = labour + material + extra;
     const inspectionFee = jobData?.inspection_fee_amount || 299;
+    const fixedServicesTotal = jobData?.original_price ? (jobData.original_price - inspectionFee) : 0;
     const customerPayable = Math.max(0, totalQuote - inspectionFee);
     
+    const fixedLine = fixedServicesTotal > 0
+        ? `Fixed Services (already included): ₹${fixedServicesTotal}\n`
+        : "";
     const confirmMsg = `📋 Quote Summary\n\n` +
         `Labour: ₹${labour}\n` +
         `Material: ₹${material}\n` +
         `Extra Charges: ₹${extra}\n` +
         `━━━━━━━━━━━━━━━\n` +
-        `Total Quote: ₹${totalQuote}\n\n` +
+        `Total Quote: ₹${totalQuote}\n` +
         `Inspection Fee Paid: ₹${inspectionFee}\n` +
+        fixedLine +
         `━━━━━━━━━━━━━━━\n` +
         `Customer Payable: ₹${customerPayable}\n\n` +
         `Send this quote to the customer for approval?`;
