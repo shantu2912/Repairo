@@ -276,6 +276,9 @@
         },
 
         async init() {
+     // Check maintenance mode on page load - ADD THIS LINE AT THE START
+    const isMaintenance = await this.checkMaintenanceMode();
+    if (isMaintenance) return;
             const params = new URLSearchParams(window.location.search);
             let rawId = params.get('id');
             if (!rawId) { window.location.href = 'index.html'; return; }
@@ -381,16 +384,19 @@
             }
         },
 
-        openAgreement() {
-            if (this.selectedSubs.length === 0) return;
-            if (!this.user) {
-                sessionStorage.setItem('redirect_to', window.location.href);
-                alert('Please Log In to book!');
-                window.location.href = 'loginuser.html';
-                return;
-            }
-            this.showAgreement = true;
-        },
+       openAgreement() {
+    // Check maintenance mode first
+    if (this.checkMaintenanceMode()) return;
+    
+    if (this.selectedSubs.length === 0) return;
+    if (!this.user) {
+        sessionStorage.setItem('redirect_to', window.location.href);
+        alert('Please Log In to book!');
+        window.location.href = 'loginuser.html';
+        return;
+    }
+    this.showAgreement = true;
+},
 
         async fetchGPS() {
             this.fetchingLocation = true;
@@ -543,7 +549,38 @@
                 alert('Unexpected Error: ' + err.message);
                 this.bookingLoading = false;
             }
+        },
+    // Add this method to check maintenance mode
+async checkMaintenanceMode() {
+    try {
+        // Check localStorage first
+        let isMaintenance = localStorage.getItem('fixzen_maintenance_mode') === 'true';
+        
+        // Try to get from Supabase
+        if (window.sb) {
+            const { data, error } = await window.sb
+                .from('settings')
+                .select('value')
+                .eq('key', 'maintenance_mode')
+                .single();
+            
+            if (!error && data) {
+                isMaintenance = data.value === 'true';
+                localStorage.setItem('fixzen_maintenance_mode', isMaintenance);
+            }
         }
+        
+        if (isMaintenance) {
+            alert('🔧 Platform is under maintenance. Bookings are temporarily disabled. Please try again later.');
+            window.location.href = 'index.html';
+            return true;
+        }
+        return false;
+    } catch (err) {
+        console.warn('Maintenance check failed:', err);
+        return false;
+    }
+}
     }">
 
     <!-- Premium Header -->
