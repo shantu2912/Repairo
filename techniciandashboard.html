@@ -1,892 +1,928 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FixZen Pro | Technician Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="i18n.js"></script>
-<!-- Tailwind -->
-<script src="https://cdn.tailwindcss.com"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>FixZenix - Premium Home Services</title>
+<meta name="theme-color" content="#5D5646">
+<meta name="description" content="Premium home services at your doorstep. Expert technicians for all your repair needs.">
 
-<!-- Alpine -->
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
-
-<!-- Icons / Fonts -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
-
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        'brand-olive': '#5D5646',
-        'brand-gold': '#A07D54',
-        'brand-cream': '#F8F5F0',
-        'brand-dark': '#2D2B28',
-        'brand-beige': '#DFD4C3'
-      }
-    }
-  }
-}
-</script>
 <style>
-[x-cloak]{display:none}
-body{background:#F8F5F0;color:#2D2B28}
-.glass-card{
-  background:rgba(255,255,255,.95);
-  backdrop-filter:blur(18px);
-  border:1px solid #fff;
-  box-shadow:0 15px 35px rgba(93,86,70,.08)
+/* Force the app to snap to the top and remove Google Translate gaps */
+html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
+
+/* Modern Premium Animations */
+@keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(160,125,84,0.3); }
+    50% { box-shadow: 0 0 25px rgba(160,125,84,0.6); }
+}
+
+.ticker-track { display: flex; width: max-content; animation: tickerScroll 28s linear infinite; }
+.ticker-track:hover, .ticker-paused .ticker-track { animation-play-state: paused; }
+.hide-scroll::-webkit-scrollbar { display: none; }
+.hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Modern Card Styles */
+.service-card {
+    transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+.service-card:active {
+    transform: scale(0.96);
+}
+
+/* Category Animation */
+.category-section {
+    animation: fadeInUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+    opacity: 0;
+}
+
+.category-section:nth-child(1) { animation-delay: 0.05s; }
+.category-section:nth-child(2) { animation-delay: 0.12s; }
+.category-section:nth-child(3) { animation-delay: 0.19s; }
+.category-section:nth-child(4) { animation-delay: 0.26s; }
+.category-section:nth-child(5) { animation-delay: 0.33s; }
+
+/* Gradient Effects */
+.gradient-border {
+    background: linear-gradient(135deg, #A07D54, #5D5646);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #A07D54 0%, #5D5646 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
+.fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.deva { font-family: 'Noto Sans Devanagari', sans-serif; }
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #EEEAE2;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: #A07D54;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #5D5646;
+}
+
+/* Glass Morphism */
+.glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+.hover-lift:hover {
+    transform: translateY(-4px);
+}
+
+/* Floating Animation */
+.float-animation {
+    animation: float 3s ease-in-out infinite;
 }
 </style>
 
-<!-- ✅ SUPABASE CLIENT -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
 <script>
-window.sb = supabase.createClient(
-  "https://kzxdxnxgouthsywbsnvl.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
-);
+// --- DATABASE INITIALIZATION ---
+const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+
+if (window.supabase) {
+window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
+
+// --- TAILWIND CONFIG ---
+tailwind.config = {
+theme: {
+extend: {
+colors: { 
+'brand-olive': '#5D5646', 
+'brand-gold': '#A07D54', 
+'brand-cream': '#EEEAE2', 
+'brand-dark': '#4D4C4B', 
+'brand-beige': '#DFD4C3', 
+'brand-red': '#EF4444', 
+'brand-green': '#10B981' 
+},
+fontFamily: { 
+sans: ['Inter', 'system-ui', 'sans-serif'], 
+serif: ['"Playfair Display"', 'serif'] 
+},
+boxShadow: { 
+'super-float': '0 20px 40px -12px rgba(93, 86, 70, 0.15)', 
+'neon': '0 0 20px rgba(160, 125, 84, 0.3)',
+'premium': '0 8px 24px rgba(0, 0, 0, 0.04)',
+'card-hover': '0 20px 30px -12px rgba(93, 86, 70, 0.2)',
+'premium-glow': '0 0 30px rgba(160,125,84,0.3)'
+},
+animation: {
+'chaos-spin': 'chaosSpin 2s linear infinite',
+'forge-flash': 'forgeFlash 1.5s ease-out forwards 1s',
+'draw-text': 'drawText 2s ease-out forwards 1.2s',
+'fill-text': 'fillText 1s ease-out forwards 2.5s',
+'logo-shine': 'logoShine 2s ease-in-out forwards 2.8s',
+'sub-text-slide': 'subTextSlide 1s ease-out forwards 3s',
+'text-scroll': 'textScroll 6s infinite',
+'float-icon': 'floatIcon 3s ease-in-out infinite',
+'float-fast': 'floatIcon 2s ease-in-out infinite',
+'shine-pass': 'shinePass 0.8s ease-in-out',
+'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+'fade-in-scale': 'fadeInScale 0.5s ease-out',
+'glow-pulse': 'glowPulse 2s ease-in-out infinite'
+},
+keyframes: {
+textScroll: { 
+'0%, 20%': { transform: 'translateY(0%)' }, 
+'25%, 45%': { transform: 'translateY(-25%)' }, 
+'50%, 70%': { transform: 'translateY(-50%)' }, 
+'75%, 95%': { transform: 'translateY(-75%)' }, 
+'100%': { transform: 'translateY(-0%)' } 
+},
+chaosSpin: { 
+'0%': { transform: 'rotate(0deg) scale(1)', opacity: '0.5' }, 
+'50%': { transform: 'rotate(180deg) scale(1.1)', opacity: '0.8' }, 
+'100%': { transform: 'rotate(360deg) scale(1)', opacity: '0.5' } 
+},
+forgeFlash: { 
+'0%': { opacity: '0', transform: 'scale(0)' }, 
+'50%': { opacity: '1', transform: 'scale(1.3)' }, 
+'100%': { opacity: '0', transform: 'scale(2)' } 
+},
+drawText: { 'to': { strokeDashoffset: '0' } },
+fillText: { 'from': { fillOpacity: '0' }, 'to': { fillOpacity: '1' } },
+logoShine: { '0%': { backgroundPosition: '-200%' }, '100%': { backgroundPosition: '200%' } },
+subTextSlide: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+floatIcon: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-6px)' } },
+shinePass: { '0%': { transform: 'translateX(-100%) skewX(-15deg)' }, '100%': { transform: 'translateX(200%) skewX(-15deg)' } },
+fadeInScale: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+glowPulse: { '0%, 100%': { boxShadow: '0 0 5px rgba(160,125,84,0.3)' }, '50%': { boxShadow: '0 0 25px rgba(160,125,84,0.6)' } }
+}
+}
+}
+}
 </script>
 </head>
 
-<body
-x-data="dashboardHandler()"
-x-init="init()"
-x-cloak
-class="font-sans antialiased pb-36"
->
+<body class="bg-brand-cream text-brand-dark antialiased"
+x-data="{ 
+         loading: true, 
+         searchOpen: false, 
+         sidebarOpen: false, 
+         slideIndex: 0,
+         searchQuery: '',
+         user: null,
+         currentActiveJobId: null,
+         currentJobStatus: '',
+         showScrollTop: false,
 
-<!-- HEADER -->
-<header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur border-b p-5">
-  <div class="max-w-md mx-auto flex justify-between items-center">
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-full bg-brand-olive text-white flex items-center justify-center font-bold">
-        <span x-text="techName.charAt(0)"></span>
-      </div>
-      <div>
-        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-black">Pro Partner</p>
-        <p class="font-serif italic text-lg text-brand-olive" x-text="techName"></p>
-      </div>
-    </div>
-    <button @click="logout()" class="text-brand-olive hover:text-red-500">
-      <i class="fa-solid fa-power-off"></i>
-    </button>
-  </div>
-</header>
+         // --- TRANSLATION LOGIC ---
+         lang: localStorage.getItem('fixzen_lang') || 'en',
+         t: {
+             en: {
+                 'Top Rated': 'Top Rated', 'Expert Electricians': 'Expert Electricians', 'Summer Sale': 'Summer Sale', 'Deep Cleaning': 'Deep Cleaning',
+                 'Search for': 'Search for', 'Construction & Home': 'Construction & Home', 'Appliance Repair': 'Appliance Repair',
+                 'Electronics & IT': 'Electronics & IT', 'Automobile': 'Automobile', 'Other Services': 'Other Services',
+                 'HOME': 'HOME', 'Utility': 'Utility', 'LIVE TRACKING': 'LIVE TRACKING', 'MY BOOKINGS': 'MY BOOKINGS',
+                 'CONTACT US': 'CONTACT US', 'Legal': 'Legal', 'PRIVACY POLICY': 'PRIVACY POLICY', 'TERMS & POLICY': 'TERMS & POLICY',
+                 'For Experts': 'For Experts', 'REGISTER AS TECHNICIAN': 'REGISTER AS TECHNICIAN', 'TECHNICIAN LOGIN': 'TECHNICIAN LOGIN',
+                 'Log Out': 'Log Out', 'Log In': 'Log In', 'Guest User': 'Guest User', 'Please Log In': 'Please Log In', 'Home': 'Home',
+                 'Carpenter': 'Carpenter', 'Plumber': 'Plumber', 'Electrician': 'Electrician', 'Painter': 'Painter', 'Mason': 'Mason', 'Welder': 'Welder',
+                 'AC Tech': 'AC Tech', 'Fridge': 'Fridge', 'Washing M.': 'Washing M.', 'Microwave': 'Microwave', 'RO Filter': 'RO Filter',
+                 'TV / LED': 'TV / LED', 'CCTV': 'CCTV', 'Car Mech': 'Car Mech', 'Bike Mech': 'Bike Mech', 'Pest Ctrl': 'Pest Ctrl', 'Grass Cutting': 'Grass Cutting',
+                 'Home_cat': 'Home', 'Appliance': 'Appliance', 'Electronics': 'Electronics', 'Auto': 'Auto', 'Other': 'Other',
+                 'Limited Time Offer': 'Limited Time Offer', 'Book Now': 'Book Now', 'Available 24/7': 'Available 24/7', 
+                 'Certified Experts': 'Certified Experts', '100% Guarantee': '100% Guarantee', 'Quality Service': 'Quality Service'
+             },
+             hi: {
+                 'Top Rated': 'शीर्ष रेटेड', 'Expert Electricians': 'विशेषज्ञ इलेक्ट्रीशियन', 'Summer Sale': 'ग्रीष्मकालीन सेल', 'Deep Cleaning': 'डीप क्लीनिंग',
+                 'Search for': 'खोजें', 'Construction & Home': 'निर्माण और घर', 'Appliance Repair': 'उपकरण मरम्मत',
+                 'Electronics & IT': 'इलेक्ट्रॉनिक्स और आईटी', 'Automobile': 'ऑटोमोबाइल', 'Other Services': 'अन्य सेवाएं',
+                 'HOME': 'होम', 'Utility': 'उपयोगिता', 'LIVE TRACKING': 'लाइव ट्रैकिंग', 'MY BOOKINGS': 'मेरी बुकिंग',
+                 'CONTACT US': 'संपर्क करें', 'Legal': 'कानूनी', 'PRIVACY POLICY': 'गोपनीयता नीति', 'TERMS & POLICY': 'नियम और नीति',
+                 'For Experts': 'विशेषज्ञों के लिए', 'REGISTER AS TECHNICIAN': 'तकनीशियन के रूप में रजिस्टर करें', 'TECHNICIAN LOGIN': 'तकनीशियन लॉगिन',
+                 'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथि उपयोगकर्ता', 'Please Log In': 'कृपया लॉग इन करें', 'Home': 'होम',
+                 'Carpenter': 'बढ़ई', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रीशियन', 'Painter': 'पेंटर', 'Mason': 'राजमिस्त्री', 'Welder': 'वेल्डर',
+                 'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वॉशिंग मशीन', 'Microwave': 'माइक्रोवेव', 'RO Filter': 'आरओ फ़िल्टर',
+                 'TV / LED': 'टीवी / एलईडी', 'CCTV': 'सीसीटीवी', 'Car Mech': 'कार मैकेनिक', 'Bike Mech': 'बाइक मैकेनिक', 'Pest Ctrl': 'कीट नियंत्रण', 'Grass Cutting': 'घास काटना',
+                 'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑटो', 'Other': 'अन्य',
+                 'Limited Time Offer': 'सीमित समय का ऑफर', 'Book Now': 'अभी बुक करें', 'Available 24/7': 'उपलब्ध 24/7', 
+                 'Certified Experts': 'प्रमाणित विशेषज्ञ', '100% Guarantee': '100% गारंटी', 'Quality Service': 'गुणवत्तापूर्ण सेवा'
+             },
+             mr: {
+                 'Top Rated': 'सर्वाधिक रेटेड', 'Expert Electricians': 'तज्ञ इलेक्ट्रिशियन', 'Summer Sale': 'उन्हाळी सेल', 'Deep Cleaning': 'डीप क्लिनिंग',
+                 'Search for': 'शोधा', 'Construction & Home': 'बांधकाम आणि घर', 'Appliance Repair': 'उपकरण दुरुस्ती',
+                 'Electronics & IT': 'इलेक्ट्रॉनिक्स आणि आयटी', 'Automobile': 'ऑटोमोबाईल', 'Other Services': 'इतर सेवा',
+                 'HOME': 'होम', 'Utility': 'उपयुक्तता', 'LIVE TRACKING': 'लाइव्ह ट्रॅकिंग', 'MY BOOKINGS': 'माझे बुकिंग',
+                 'CONTACT US': 'संपर्क साधा', 'Legal': 'कायदेशीर', 'PRIVACY POLICY': 'गोपनीयता धोरण', 'TERMS & POLICY': 'अटी आणि धोरण',
+                 'For Experts': 'तज्ञांसाठी', 'REGISTER AS TECHNICIAN': 'तंत्रज्ञ म्हणून नोंदणी करा', 'TECHNICIAN LOGIN': 'तंत्रज्ञ लॉगिन',
+                 'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथी वापरकर्ता', 'Please Log In': 'कृपया लॉग इन करा', 'Home': 'होम',
+                 'Carpenter': 'सुतार', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रिशियन', 'Painter': 'पेंटर', 'Mason': 'गवंडी', 'Welder': 'वेल्डर',
+                 'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वॉशिंग मशीन', 'Microwave': 'मायक्रोवेव्ह', 'RO Filter': 'आरओ फिल्टर',
+                 'TV / LED': 'टीव्ही / एलईडी', 'CCTV': 'सीसीटीवी', 'Car Mech': 'कार मेकॅनिक', 'Bike Mech': 'बाईक मेकॅनिक', 'Pest Ctrl': 'कीटक नियंत्रण', 'Grass Cutting': 'गवत कापणे',
+                 'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑतो', 'Other': 'इतर',
+                 'Limited Time Offer': 'मर्यादित वेळ ऑफर', 'Book Now': 'आत्ताच बुक करा', 'Available 24/7': 'उपलब्ध 24/7', 
+                 'Certified Experts': 'प्रमाणित तज्ञ', '100% Guarantee': '100% हमी', 'Quality Service': 'गुणवत्तापूर्ण सेवा'
+             }
+         },
+         tx(key) { return this.t[this.lang]?.[key] || key; },
+         setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
+         
+         // Service Categories (clean - no fake reviews/ratings)
+         masterList: [
+    // HOME
+    {n:'Carpenter', cat:'Home_cat', img:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Plumber', cat:'Home_cat', img:'https://images.unsplash.com/photo-1607400201515-c2c41c19e4c2?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Electrician', cat:'Home_cat', img:'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Painter', cat:'Home_cat', img:'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Mason', cat:'Home_cat', img:'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Welder', cat:'Home_cat', img:'https://images.unsplash.com/photo-1565688534245-05d6b5be184a?w=300&h=300&fit=crop&auto=format&q=85'},
+    // APPLIANCE
+    {n:'AC Tech', cat:'Appliance', img:'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Fridge', cat:'Appliance', img:'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Washing M.', cat:'Appliance', img:'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Microwave', cat:'Appliance', img:'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'RO Filter', cat:'Appliance', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop&auto=format&q=85'},
+    // ELECTRONICS
+    {n:'TV / LED', cat:'Electronics', img:'https://images.unsplash.com/photo-1593359677879-a4bb92f4834a?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'CCTV', cat:'Electronics', img:'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=300&fit=crop&auto=format&q=85'},
+    // AUTO
+    {n:'Car Mech', cat:'Auto', img:'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Bike Mech', cat:'Auto', img:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=300&h=300&fit=crop&auto=format&q=85'},
+    // OTHER
+    {n:'Pest Ctrl', cat:'Other', img:'https://images.unsplash.com/photo-1604187351574-c75ca79f5807?w=300&h=300&fit=crop&auto=format&q=85'},
+    {n:'Grass Cutting', cat:'Other', img:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop&auto=format&q=85'}
+],
+         
+         get filteredServices() {
+             if (this.searchQuery === '') return [];
+             return this.masterList.filter(item => 
+                 item.n.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                 this.tx(item.n).toLowerCase().includes(this.searchQuery.toLowerCase())
+             );
+         },
 
-<main class="max-w-md mx-auto p-6 space-y-8">
+         // User Functions
+         async checkUser() {
+             const checkLogged = localStorage.getItem('local_user_logged');
+             const userPhone = localStorage.getItem('local_user_phone');
 
-<!-- STATS -->
-<section>
-  <div class="grid grid-cols-2 gap-4">
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Active Jobs</p>
-      <h3 class="text-3xl font-extrabold text-brand-olive" x-text="stats.activeJobs"></h3>
-    </div>
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Earnings</p>
-      <h3 class="text-3xl font-extrabold text-green-700">
-        ₹<span x-text="stats.earnings"></span>
-      </h3>
-    </div>
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
-      <h3 class="text-3xl font-extrabold text-purple-700">
-        ₹<span x-text="stats.todayEarnings"></span>
-      </h3>
-    </div>
-    <div class="flex items-center gap-4">
-      <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
-        <input
-          type="checkbox"
-          class="accent-green-600"
-          :checked="available"
-          @change="toggleAvailability($event)"
-        >
-        <span class="font-semibold">Available for Jobs</span>
-      </label>
-    </div>
-  </div>
-</section>
+             if (checkLogged === 'true' && userPhone && window.sb) {
+                 try {
+                     const { data: profile, error } = await window.sb
+                         .from('profiles')
+                         .select('*')
+                         .eq('phone', userPhone.trim())
+                         .maybeSingle();
 
-<!-- Notification permission banner -->
-<div x-show="notifStatus === 'denied'"
-     class="bg-red-50 border border-red-200 rounded-2xl p-4 text-xs text-red-700">
-  <strong>🔕 Notifications blocked.</strong> You won't receive job alerts.
-  Please enable notifications in your browser settings and reload.
+                     if (error) throw error;
+
+                     if (profile) {
+                         this.user = profile;
+                         await this.checkActiveJobsFromDatabase(profile.id);
+                     } else {
+                         this.user = { full_name: 'Valued Customer', phone: userPhone };
+                     }
+                 } catch (err) {
+                     console.error('Error parsing profile indices: ', err.message);
+                     this.user = { full_name: 'Valued Customer', phone: userPhone };
+                 }
+             } else {
+                 this.user = null;
+             }
+         },
+
+         async checkActiveJobsFromDatabase(userId) {
+             try {
+                 const { data: activeJobs, error } = await window.sb
+                     .from('jobs')
+                     .select('id, status')
+                     .eq('user_id', userId)
+                     .in('status', ['pending', 'accepted', 'searching', 'assigned', 'arrived', 'started'])
+                     .order('created_at', { ascending: false });
+
+                 if (error) throw error;
+
+                 if (activeJobs && activeJobs.length > 0) {
+                     this.currentActiveJobId = activeJobs[0].id;
+                     this.currentJobStatus = activeJobs[0].status;
+                     localStorage.setItem('active_job_id', this.currentActiveJobId);
+                 } else {
+                     this.currentActiveJobId = null;
+                     this.currentJobStatus = '';
+                     localStorage.removeItem('active_job_id');
+                 }
+             } catch (err) {
+                 this.currentActiveJobId = localStorage.getItem('active_job_id');
+             }
+         },
+
+         async logout() {
+             localStorage.removeItem('local_user_logged');
+             localStorage.removeItem('local_user_phone');
+             localStorage.removeItem('active_job_id');
+             window.location.reload();
+         },
+
+         navigate(url) {
+             if (this.user) {
+                 window.location.href = url;
+             } else {
+                 sessionStorage.setItem('redirect_to', url);
+                 window.location.href = 'loginuser.html';
+             }
+         },
+
+         handleCartNavigation() {
+             if (this.currentActiveJobId && this.currentActiveJobId !== 'null' && this.currentActiveJobId !== '') {
+                 window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
+             } else {
+                 this.navigate('bookings.html');
+             }
+         },
+
+         // Admin Functions
+         adminBanners: [],
+         async loadAdminBanners() {
+             if (!window.sb) return;
+             try {
+                 const { data, error } = await window.sb
+                     .from('banners')
+                     .select('*')
+                     .eq('active', true)
+                     .order('sort_order');
+                 if (!error && data && data.length > 0) {
+                     this.adminBanners = data;
+                 }
+             } catch(e) { console.warn('Banner load error', e); }
+         },
+
+         offerMessages: [],
+         async loadTickerMessages() {
+    if (!window.sb) return;
+
+    try {
+        const { data, error } = await window.sb
+            .from('ticker_messages')
+            .select('message')
+            .eq('active', true);
+
+        if (error) throw error;
+
+        this.offerMessages = data.map(x => x.message);
+
+    } catch (err) {
+        console.error('Ticker Error:', err.message);
+    }
+},
+         tickerPaused: false,
+         
+         // Scroll Handling
+         handleScroll() {
+             this.showScrollTop = window.scrollY > 300;
+         },
+         
+         scrollToTop() {
+             window.scrollTo({ top: 0, behavior: 'smooth' });
+         }
+     }"
+x-init="
+         if (sessionStorage.getItem('introShown')) { loading = false; } 
+         else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
+         
+         this.currentActiveJobId = localStorage.getItem('active_job_id');
+
+         let attempts = 0;
+         let check = setInterval(() => {
+             if(window.sb || attempts > 20) {
+                 clearInterval(check);
+                 checkUser();
+                 loadAdminBanners();
+                 loadTickerMessages();
+             }
+             attempts++;
+         }, 100);
+         
+         setInterval(() => {
+             const total = adminBanners.length > 0 ? adminBanners.length : 3;
+             slideIndex = (slideIndex + 1) % total;
+         }, 5000);
+         
+         window.addEventListener('scroll', () => handleScroll());
+     ">
+
+<!-- PREMIUM LOADING SCREEN -->
+<div x-show="loading" 
+         x-transition:leave="transition ease-in-out duration-1000" 
+         x-transition:leave-start="opacity-100 transform scale-100" 
+         x-transition:leave-end="opacity-0 transform scale-110" 
+         class="fixed inset-0 z-[100] bg-gradient-to-br from-brand-olive to-brand-dark flex flex-col items-center justify-center overflow-hidden">
+        
+        <div class="absolute inset-0 flex items-center justify-center opacity-20 select-none pointer-events-none">
+            <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
+            <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
+        </div>
+        
+        <div class="relative z-10 flex flex-col items-center justify-center text-center">
+            
+            <svg height="80" width="320" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" class="select-none pointer-events-none">
+                <defs>
+                    <linearGradient id="fixzenix-gold-shim" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#A07D54" />
+                        <stop offset="50%" stop-color="#EEEAE2" />
+                        <stop offset="100%" stop-color="#A07D54" />
+                    </linearGradient>
+                </defs>
+
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-5xl tracking-[0.12em] fixzen-svg-text animate-draw-text">FIXZENIX</text>
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="url(#fixzenix-gold-shim)" class="font-sans font-extrabold text-5xl tracking-[0.12em] opacity-0 animate-fill-text animate-logo-shine" style="animation-delay: 1.8s; animation-fill-mode: forwards;">FIXZENIX</text>
+            </svg>
+            
+            <p class="text-brand-gold text-[10px] font-bold tracking-[0.32em] uppercase mt-4 opacity-0 animate-sub-text-slide select-none pointer-events-none" 
+               style="animation-delay: 2.6s; animation-fill-mode: forwards !important;">
+                 WE FIX, YOU RELAX
+            </p>
+        </div>
+    </div>
+
+<!-- PREMIUM SIDEBAR MENU -->
+<div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300" @click="sidebarOpen = false"></div>
+<aside class="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col"
+x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0">
+
+<div class="p-6 border-b border-brand-beige/30 bg-gradient-to-r from-brand-cream to-white">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-sans font-extrabold text-2xl gradient-text">FIXZENIX</h2>
+<button @click="sidebarOpen = false" class="w-8 h-8 rounded-full bg-brand-cream border border-brand-beige flex items-center justify-center text-brand-dark hover:rotate-90 transition-all duration-300"><i class="fa-solid fa-xmark"></i></button>
 </div>
 
-<div x-show="notifStatus === 'prompt'"
-     class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-xs text-yellow-800">
-  <strong>🔔 Enable notifications</strong> to receive instant job alerts.
-  <button @click="setupNotifications()" class="ml-2 underline font-bold">Enable now</button>
+<div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-2xl p-4 flex items-center gap-3 shadow-lg relative overflow-hidden group">
+<div class="w-12 h-12 rounded-full border-2 border-brand-gold p-0.5 relative z-10">
+<img :src="user ? 'https://ui-avatars.com/api/?background=A07D54&color=fff&name=' + encodeURIComponent(user.full_name) : 'https://i.pravatar.cc/150?img=3'" class="w-full h-full rounded-full object-cover">
+</div>
+<div class="relative z-10">
+<p class="text-white font-bold text-sm" x-text="user ? user.full_name : tx('Guest User')"></p>
+<p class="text-brand-beige text-xs" x-text="user ? (user.username ? '@' + user.username : user.phone) : tx('Please Log In')"></p>
+</div>
+<div class="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+</div>
 </div>
 
-<!-- JOBS -->
-<section id="jobsSection" class="space-y-4">
+<nav class="flex-1 overflow-y-auto py-2 hide-scroll">
+<a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group relative">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('HOME')"></span>
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-gold scale-y-0 group-hover:scale-y-100 transition-transform origin-top"></div>
+</a>
 
-  <div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-20">
-    Loading jobs…
-  </div>
+<div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
+<p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('Utility')"></p>
 
-  <div x-show="!loading && jobs.length === 0"
-       class="text-center text-sm text-brand-dark/50 mt-20">
-    No active jobs
-  </div>
+<button @click="handleCartNavigation()" class="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all text-left group bg-transparent border-none outline-none relative">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? tx('LIVE TRACKING') : tx('MY BOOKINGS')"></span>
+</button>
 
-  <template x-for="job in jobs" :key="job.id">
-    <div class="glass-card p-6 rounded-[2.5rem] border-l-4"
-         :class="job.urgent ? 'border-red-500':'border-brand-gold'">
+<a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group relative">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('CONTACT US')"></span>
+</a>
 
-      <!-- TITLE -->
-      <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
-      <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
-      <p class="text-xs italic text-brand-dark/60" x-text="job.issue || job.other_issue"></p>
-      
-      <!-- Quote Status Badge for Inspection Jobs -->
-      <div x-show="job.is_inspection_job && job.quote_status && job.quote_status !== 'pending'" 
-           class="mt-2 mb-2">
-        <span class="text-[8px] px-2 py-1 rounded-full font-bold"
-              :class="job.quote_status === 'approved' ? 'bg-green-100 text-green-700' :
-                       job.quote_status === 'submitted' ? 'bg-amber-100 text-amber-700' :
-                       'bg-gray-100 text-gray-700'">
-          <i class="fas" :class="job.quote_status === 'approved' ? 'fa-check-circle' :
-                                 job.quote_status === 'submitted' ? 'fa-paper-plane' :
-                                 'fa-clipboard'"></i>
-          Quote: <span x-text="job.quote_status"></span>
-        </span>
-      </div>
-      
-      <p class="text-xs text-gray-500 mt-1">
-        Started: <span x-text="formatTime(job.started_at)"></span>
-      </p>
+<div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
+<p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('Legal')"></p>
+<a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('PRIVACY POLICY')"></span>
+</a>
+<a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('TERMS & POLICY')"></span>
+</a>
 
-      <!-- EARNINGS BADGE - Updated for quote-based pricing -->
-      <div x-show="(calculateFee(job) > 0 || (job.is_inspection_job && job.quote_status === 'submitted'))" 
-           class="mt-3 flex items-center justify-between rounded-xl px-3 py-2"
-           :class="job.quote_status === 'submitted' ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-100'">
-        
-        <span class="text-[10px] font-semibold uppercase tracking-wide"
-              :class="job.quote_status === 'submitted' ? 'text-amber-700' : 'text-green-700'">
-          <i class="fas" :class="job.quote_status === 'submitted' ? 'fa-hourglass-half' : 'fa-rupee-sign'"></i>
-          <span x-show="job.quote_status !== 'submitted'"> Your Earnings</span>
-          <span x-show="job.quote_status === 'submitted'"> Quote Pending Approval</span>
-        </span>
-        
-        <div x-show="job.quote_status !== 'submitted'">
-          <span class="font-extrabold text-sm" :class="job.is_inspection_job && job.quoted_amount ? 'text-brand-olive' : 'text-green-700'">
-            ₹<span x-text="calculateFee(job)"></span>
-          </span>
-        </div>
-        
-        <div x-show="job.quote_status === 'submitted'">
-          <span class="font-extrabold text-amber-700 text-sm">
-            ₹<span x-text="job.quoted_amount || '0'"></span>
-          </span>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="flex justify-between items-center border-t mt-4 pt-4">
-
-        <!-- CUSTOMER -->
-        <div>
-          <p class="text-sm font-bold" x-text="job.customer_name"></p>
-          <a
-            :href="'tel:' + job.phone"
-            class="text-xs text-green-600 font-bold mt-1 block">
-            📞 Call Customer
-          </a>
-
-          <p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
-          <button
-            @click="openMaps(job.location)"
-            class="text-xs text-blue-600 font-bold mt-1">
-            Open in Maps →
-          </button>
-
-          <p class="text-[9px] font-mono text-red-600 mt-1"
-             x-show="job.slaRemaining">
-             SLA: <span x-text="job.slaRemaining"></span>
-          </p>
-        </div>
-
-        <!-- STATUS + ACTION -->
-        <div class="flex flex-col items-end gap-2">
-
-          <span
-           :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
-                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                    job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
-                    'bg-green-100 text-green-700'"
-            x-text="job.status.replace('_',' ')"
-          ></span>
-
-          <!-- ACCEPT / REJECT (only when job is free) -->
-          <button
-            x-show="job.status === 'pending'"
-            @click="acceptJob(job.id)"
-            class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
-            Accept
-          </button>
-
-          <button
-            x-show="job.status === 'pending'"
-            @click="rejectJob(job.id)"
-            class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
-            Reject
-          </button>
-
-          <!-- MARK ARRIVED (after accepting job) -->
-          <button
-            x-show="job.status === 'in_progress'"
-            @click="markArrived(job)"
-            class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
-            Mark Arrived
-          </button>
-
-          <!-- COMPLETE (ONLY after arrival) -->
-          <button
-            x-show="job.status === 'arrived'"
-            @click="completeJob(job)"
-            class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
-            Complete Job
-          </button>
-
-        </div>
-      </div>
-    </div>
-  </template>
-
-</section>
-
-</main>
-
-<!-- BOTTOM NAV -->
-<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
-  <div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
-
-    <button class="w-12 h-12 text-brand-gold">
-      <i class="fa-solid fa-house"></i>
-    </button>
-
-    <button @click="scrollToJobs()" class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
-      <i class="fa-solid fa-box-open"></i>
-    </button>
-
-    <div class="w-14 h-12"></div>
-
-    <button onclick="window.location.href='completed_jobs.html'"
-            class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
-      <i class="fa-solid fa-book-open"></i>
-    </button>
-
-    <button @click="logout()" class="w-12 h-12 text-brand-olive/40">
-      <i class="fa-solid fa-circle-user"></i>
-    </button>
-
-    <button
-      class="absolute left-1/2 -translate-x-1/2 -top-6
-             w-14 h-14 bg-brand-gold rounded-full
-             flex items-center justify-center text-white
-             shadow-lg border-4 border-white">
-      <i class="fa-solid fa-camera"></i>
-    </button>
-
-  </div>
+<div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
+<p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('For Experts')"></p>
+<a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('REGISTER AS TECHNICIAN')"></span>
+</a>
+<a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
+<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('TECHNICIAN LOGIN')"></span>
+</a>
 </nav>
 
-<!-- ============================================================
-     🔥 FIREBASE INIT (must happen before Alpine uses it)
-     ============================================================ -->
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-};
-
-// Guard: don't init twice if this script re-runs
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-// Expose messaging globally so Alpine can use it safely
-// We create it ONCE here so there's no race condition
-window.firebaseMessaging = firebase.messaging();
-</script>
-
-<!-- ============================================================
-     ALPINE COMPONENT
-     ============================================================ -->
-<script>
-function dashboardHandler() {
-  return {
-    tech: null,
-    techName: '',
-    loading: true,
-    jobs: [],
-    stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
-    incomingJob: null,
-    available: false,
-    notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
-
-    // ─────────────────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────────────────
-    async init() {
-      // ✅ LOAD SAVED LANGUAGE
-      const savedLang = localStorage.getItem("preferred_language") || "en";
-      if (typeof setLanguage === "function") {
-        setLanguage(savedLang);
-      }
-      this.tech = JSON.parse(localStorage.getItem("active_tech"));
-      if (!this.tech) {
-        window.location.href = "partnerlogin.html";
-        return;
-      }
-
-      // Hard lock: if a job is in progress redirect to detail
-      const lockedJobId = localStorage.getItem("locked_job_id");
-      if (lockedJobId) {
-        window.location.href = "job_detail.html";
-        return;
-      }
-
-      this.techName = this.tech.name;
-      
-      // Set initial availability from DB
-      await this.loadTechProfile();
-
-      // ── FIX: setupNotifications must complete before onMessage is registered ──
-      await this.setupNotifications();
-
-      // Register foreground message handler AFTER setup is done
-      // This is now safe because setupNotifications awaits SW registration
-      this.registerForegroundHandler();
-
-      await this.fetchJobs();
-      this.subscribeRealtime();
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // Load tech profile (availability, etc.)
-    // ─────────────────────────────────────────────────────────
-    async loadTechProfile() {
-      const { data, error } = await window.sb
-        .from('technicians')
-        .select('is_available')
-        .eq('id', this.tech.id)
-        .single();
-
-      if (!error && data) {
-        this.available = data.is_available ?? false;
-      }
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // FIX: setupNotifications — returns a promise so init() can await it
-    // ─────────────────────────────────────────────────────────
-    async setupNotifications() {
-      try {
-        if (!('serviceWorker' in navigator)) {
-          console.error("❌ Service Worker not supported in this browser");
-          this.notifStatus = 'denied';
-          return;
-        }
-
-        // FIX: Check current permission state first — don't request yet
-        this.notifStatus = Notification.permission;
-
-        if (Notification.permission === 'denied') {
-          console.warn("🔕 Notification permission has been denied by user");
-          return;
-        }
-
-        // Register service worker — await it fully so messaging can use it
-        let registration;
-        try {
-          registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-            // FIX: updateViaCache = 'none' ensures a fresh SW is always checked
-            updateViaCache: 'none'
-          });
-          console.log("✅ Service Worker registered:", registration.scope);
-
-          // FIX: Wait for the SW to be active before proceeding
-          await navigator.serviceWorker.ready;
-          console.log("✅ Service Worker is active and ready");
-        } catch (swError) {
-          console.error("❌ Service Worker registration failed:", swError);
-          return;
-        }
-
-        // Request permission (only if not already granted)
-        if (Notification.permission !== 'granted') {
-          const permission = await Notification.requestPermission();
-          this.notifStatus = permission;
-          if (permission !== 'granted') {
-            console.warn("🔕 Notification permission:", permission);
-            return;
-          }
-        }
-
-        this.notifStatus = 'granted';
-
-        // FIX: Get FCM token — always pass the serviceWorkerRegistration
-        //      so Firebase uses OUR SW, not a default one
-        const token = await window.firebaseMessaging.getToken({
-          vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-          serviceWorkerRegistration: registration
-        });
-
-        if (!token) {
-          console.error("❌ No FCM token received — check VAPID key and service worker");
-          return;
-        }
-
-        console.log("✅ FCM Token obtained:", token.substring(0, 20) + "...");
-
-        // Save token to DB
-        await this.saveFCMToken(token);
-
-        // FIX: Listen for token refresh and update DB automatically
-        //      Firebase rotates tokens periodically; if you miss this the
-        //      Edge Function will be sending to a dead token
-        window.firebaseMessaging.onTokenRefresh(async () => {
-          console.log("🔄 FCM Token refreshed — updating DB");
-          try {
-            const newToken = await window.firebaseMessaging.getToken({
-              vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-              serviceWorkerRegistration: registration
-            });
-            if (newToken) {
-              await this.saveFCMToken(newToken);
-            }
-          } catch (err) {
-            console.error("❌ Failed to refresh FCM token:", err);
-          }
-        });
-
-      } catch (err) {
-        console.error("❌ Notification setup failed:", err);
-      }
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // FIX: Extracted token save into its own method — reused by onTokenRefresh
-    // ─────────────────────────────────────────────────────────
-    async saveFCMToken(token) {
-      const { error } = await window.sb
-        .from("technicians")
-        .update({ fcm_token: token })
-        .eq("id", this.tech.id);
-
-      if (error) {
-        console.error("❌ Failed to save FCM token to DB:", error);
-      } else {
-        console.log("✅ FCM Token saved to Supabase for tech:", this.tech.id);
-      }
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // FIX: Foreground handler is separate from setup so there's
-    //      no chance it runs before the SW is registered
-    // ─────────────────────────────────────────────────────────
-    registerForegroundHandler() {
-      window.firebaseMessaging.onMessage((payload) => {
-        console.log("📩 Foreground message received:", payload);
-
-        const title = payload.notification?.title || "New Job";
-        const body  = payload.notification?.body  || "You have a new job";
-
-        // FIX: Check permission explicitly before calling new Notification()
-        //      Without this check, the call silently fails when permission
-        //      is not 'granted', causing the "no notification" bug
-        if (Notification.permission === 'granted') {
-          const notif = new Notification(title, {
-            body: body,
-            icon: "/icon-192.png",
-            badge: "/icon-192.png",
-            requireInteraction: true,
-            vibrate: [200, 100, 200]
-          });
-
-          // Open dashboard on click
-          notif.onclick = () => {
-            window.focus();
-            notif.close();
-          };
-        } else {
-          console.warn("🔕 Permission not granted — showing in-app alert instead");
-        }
-
-        // FIX: Always update the in-app job list on foreground message,
-        //      regardless of notification permission state
-        this.fetchJobs();
-      });
-    },
-
-    // ─────────────────────────────────────────────────────────
-    openMaps(location) {
-      const encoded = encodeURIComponent(location);
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
-    },
-
-    scrollToJobs() {
-      document.getElementById('jobsSection')?.scrollIntoView({ behavior: 'smooth' });
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // FIX: toggleAvailability now persists to DB so the Edge Function
-    //      respects it when filtering technicians to notify
-    // ─────────────────────────────────────────────────────────
-    async toggleAvailability(e) {
-      const newValue = e.target.checked;
-      this.available = newValue;
-
-      const { error } = await window.sb
-        .from('technicians')
-        .update({ is_available: newValue })
-        .eq('id', this.tech.id);
-
-      if (error) {
-        console.error("❌ Failed to update availability:", error);
-        // Revert on failure
-        this.available = !newValue;
-        alert("Failed to update availability. Please try again.");
-      } else {
-        console.log(`✅ Availability set to: ${newValue}`);
-      }
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // UPDATED: calculateFee with quote-based pricing support
-    // ─────────────────────────────────────────────────────────
-    calculateFee(job) {
-      const COMMISSION = 0.157; // 15.7% commission
-      
-      // For inspection jobs with an approved quote
-      if (job.is_inspection_job && job.quote_status === 'approved' && job.quoted_amount) {
-        // Use the quoted amount as the service price
-        const servicePrice = job.quoted_amount;
-        return Math.round(servicePrice * (1 - COMMISSION));
-      }
-      
-      // For regular jobs or inspection jobs without quote yet
-      const servicePrice = job.discounted_price || job.original_price || job.price || 0;
-      return Math.round(servicePrice * (1 - COMMISSION));
-    },
-
-    // ─────────────────────────────────────────────────────────
-    async fetchJobs() {
-      this.loading = true;
-      const { data, error } = await window.sb
-        .from("jobs")
-        .select("*")
-        .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
-        .not("rejected_by", "cs", `{${this.tech.id}}`)
-        .order("created_at", { ascending: false });
-
-      if (!error) {
-        this.jobs = data;
-
-        this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
-
-        const completedJobs = data.filter(
-          j => j.status === 'completed' && j.tech_id === this.tech.id
-        );
-
-        this.stats.earnings = completedJobs.reduce((total, job) => {
-          return total + this.calculateFee(job);
-        }, 0);
-
-        const today = new Date().toISOString().split('T')[0];
-        this.stats.todayEarnings = data
-          .filter(j =>
-            j.status === 'completed' &&
-            j.tech_id === this.tech.id &&
-            j.completed_at?.startsWith(today)
-          )
-          .reduce((sum, j) => sum + this.calculateFee(j), 0);
-      }
-
-      this.loading = false;
-    },
-
-    // ─────────────────────────────────────────────────────────
-    subscribeRealtime() {
-      window.sb
-        .channel(`public-jobs`)
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "jobs" },
-          (payload) => {
-            const job = payload.new;
-
-            // Remove rejected jobs from this tech's view
-            if (job.rejected_by?.includes(this.tech.id)) {
-              this.jobs = this.jobs.filter(j => j.id !== job.id);
-              return;
-            }
-
-            const index = this.jobs.findIndex(j => j.id === job.id);
-            if (index !== -1) {
-              this.jobs[index] = job;
-            } else {
-              // Add new pending unassigned jobs
-              if (job.status === "pending" && !job.tech_id) {
-                this.jobs.unshift(job);
-              }
-            }
-
-            this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-
-            const completedJobs = this.jobs.filter(
-              j => j.status === 'completed' && j.tech_id === this.tech.id
-            );
-            this.stats.earnings = completedJobs.reduce((total, job) => {
-              return total + this.calculateFee(job);
-            }, 0);
-            const today = new Date().toISOString().split('T')[0];
-            this.stats.todayEarnings = completedJobs
-              .filter(j => j.completed_at?.startsWith(today))
-              .reduce((sum, j) => sum + this.calculateFee(j), 0);
-          }
-        )
-        .subscribe();
-    },
-
-    // ─────────────────────────────────────────────────────────
-    async acceptJob(jobId) {
-      const { data, error } = await window.sb
-        .from("jobs")
-        .update({
-          tech_id: this.tech.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        })
-        .eq("id", jobId)
-        .is("tech_id", null)
-        .eq("status", "pending")
-        .select();
-
-      if (error) {
-        console.error("Accept error:", error);
-        alert("Database error while accepting job");
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        alert("Too late. Another technician already took this job.");
-        return;
-      }
-
-      const index = this.jobs.findIndex(j => j.id === jobId);
-      if (index !== -1) {
-        this.jobs[index].status = "in_progress";
-        this.jobs[index].tech_id = this.tech.id;
-      }
-
-      localStorage.setItem("locked_job_id", jobId);
-      window.location.href = "job_detail.html";
-    },
-
-    // ─────────────────────────────────────────────────────────
-    async rejectJob(jobId) {
-      const job = this.jobs.find(j => j.id === jobId);
-      if (!job) return;
-
-      const currentRejected = job.rejected_by || [];
-
-      const { error } = await window.sb
-        .from("jobs")
-        .update({
-          rejected_by: [...currentRejected, this.tech.id]
-        })
-        .eq("id", jobId);
-
-      if (error) {
-        console.error("Reject failed:", error);
-        alert("Reject failed");
-        return;
-      }
-
-      this.jobs = this.jobs.filter(j => j.id !== jobId);
-      this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // UPDATED: completeJob with quote-based pricing support
-    // ─────────────────────────────────────────────────────────
-    async completeJob(job) {
-      const completedAt = new Date().toISOString();
-      
-      // Calculate fee using the updated method
-      let fee = this.calculateFee(job);
-      
-      const updateData = {
-        status: "completed",
-        completed_at: completedAt,
-        technician_earning: fee
-      };
-      
-      // If this is an inspection job, also store the final amount
-      if (job.is_inspection_job && job.quoted_amount) {
-        updateData.final_amount = job.quoted_amount;
-      }
-
-      const { error } = await window.sb
-        .from("jobs")
-        .update(updateData)
-        .eq("id", job.id)
-        .eq("tech_id", this.tech.id);
-
-      if (error) {
-        console.error(error);
-        alert("Failed to complete job: " + error.message);
-        return;
-      }
-
-      alert(`✅ Job completed! Your earnings: ₹${fee}`);
-      this.fetchJobs();
-    },
-
-    // ─────────────────────────────────────────────────────────
-    async markArrived(job) {
-      try {
-        const { error } = await window.sb
-          .from('jobs')
-          .update({ 
-            arrived_at: new Date().toISOString(),
-            status: "arrived"
-          })
-          .eq('id', job.id)
-          .eq('tech_id', this.tech.id);
-
-        if (error) {
-          console.error("SUPABASE ERROR:", error);
-          alert("DB Error: " + error.message);
-          return;
-        }
-
-        job.arrived_at = new Date().toISOString();
-        job.status = "arrived";
-
-        alert("✅ Arrival marked successfully");
-
-      } catch (err) {
-        console.error("ARRIVAL FULL ERROR:", err);
-        alert("Failed to mark arrival: " + (err.message || "Unknown error"));
-      }
-    },
-
-    // ─────────────────────────────────────────────────────────
-    async acceptIncoming() {
-      const job = this.incomingJob;
-      if (!job) return;
-
-      const { data, error } = await window.sb
-        .from("jobs")
-        .update({
-          tech_id: this.tech.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        })
-        .eq("id", job.id)
-        .eq("status", "pending")
-        .is("tech_id", null)
-        .select();
-
-      if (!data || data.length === 0) {
-        alert("Too late. Another technician accepted this job.");
-      }
-
-      this.incomingJob = null;
-      this.fetchJobs();
-    },
-
-    // ─────────────────────────────────────────────────────────
-    async rejectIncoming() {
-      const job = this.incomingJob;
-      if (!job) return;
-
-      const currentRejected = job.rejected_by || [];
-
-      await window.sb
-        .from("jobs")
-        .update({
-          rejected_by: [...currentRejected, this.tech.id]
-        })
-        .eq("id", job.id);
-
-      this.incomingJob = null;
-    },
-
-    // ─────────────────────────────────────────────────────────
-    formatTime(dt) {
-      if (!dt) return "-";
-      const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
-      if (diff < 1)  return "just now";
-      if (diff < 60) return diff + " mins ago";
-      const hours = Math.floor(diff / 60);
-      if (hours < 24) return hours + " hrs ago";
-      return Math.floor(hours / 24) + " days ago";
-    },
-
-    // ─────────────────────────────────────────────────────────
-    logout() {
-      localStorage.removeItem("active_tech");
-      window.location.href = "partnerlogin.html";
-    }
-  }
-}
-</script>
-
-<!-- 🔔 JOB ALERT MODAL (Alpine-driven) -->
-<div
-  x-show="incomingJob"
-  x-transition
-  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
->
-  <div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
-
-    <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
-      New Job Arrived
-    </p>
-
-    <h3 class="text-xl font-extrabold text-brand-olive mt-2"
-        x-text="incomingJob?.category"></h3>
-
-    <p class="text-sm text-gray-600 mt-1"
-       x-text="incomingJob?.location"></p>
-
-    <p class="text-xs text-gray-500 italic mt-2"
-       x-text="incomingJob?.issue || incomingJob?.other_issue"></p>
-
-    <div class="flex gap-3 mt-6">
-      <button
-        @click="acceptIncoming()"
-        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
-        Accept
-      </button>
-
-      <button
-        @click="rejectIncoming()"
-        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
-        Reject
-      </button>
+<div class="p-6 bg-gradient-to-r from-brand-cream/50 to-white/50">
+<template x-if="user">
+<button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest block text-center">
+<i class="fas fa-sign-out-alt mr-2"></i><span x-text="tx('Log Out')"></span>
+</button>
+</template>
+<template x-if="!user">
+<a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white transition-all uppercase tracking-widest block text-center">
+<i class="fas fa-sign-in-alt mr-2"></i><span x-text="tx('Log In')"></span>
+</a>
+</template>
+</div>
+</aside>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="max-w-md mx-auto min-h-screen bg-brand-cream relative shadow-2xl overflow-hidden pb-40" x-show="!loading">
+
+<!-- PREMIUM HEADER WITH BLUR EFFECT -->
+<header class="fixed top-0 w-full max-w-md mx-auto z-[60] px-5 py-3 flex justify-between items-center bg-white/80 backdrop-blur-lg shadow-sm transition-all duration-300">
+<button @click="sidebarOpen = true" class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-brand-cream transition-all text-brand-olive">
+<i class="fa-solid fa-bars text-lg"></i>
+</button>
+
+<div class="flex items-center gap-1">
+<span class="font-serif italic text-xl font-bold gradient-text">FixZenix</span>
+<span class="text-[8px] font-bold text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-full animate-pulse-slow">PREMIUM</span>
+</div>
+
+<button @click="handleCartNavigation()" class="relative w-10 h-10 rounded-full bg-brand-gold shadow-md flex items-center justify-center hover:bg-brand-olive transition-all text-white">
+<i class="fa-solid fa-clipboard-list text-lg"></i>
+<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
+<span class="absolute -top-1 -right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white"></span>
+</span>
+</template>
+</button>
+</header>
+
+<!-- DYNAMIC BANNER SLIDER -->
+<div class="relative h-[420px] rounded-b-[40px] overflow-hidden shadow-xl bg-gray-900 group mx-3 mt-14">
+    <template x-if="adminBanners.length === 0">
+        <div>
+            <div class="absolute inset-0 transition-opacity duration-700" x-show="slideIndex === 0">
+                <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=900&h=700&fit=crop&auto=format&q=90" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+            </div>
+            <div class="absolute inset-0 transition-opacity duration-700" x-show="slideIndex === 1">
+                <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=900&h=700&fit=crop&auto=format&q=90" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+            </div>
+            <div class="absolute inset-0 transition-opacity duration-700" x-show="slideIndex === 2">
+                <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&h=700&fit=crop&auto=format&q=90" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+            </div>
+            <div class="absolute bottom-20 left-6 right-6 animate-fade-in-scale">
+                <span class="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg inline-flex items-center gap-1">
+                    <i class="fas fa-star text-[8px]"></i> <span x-text="tx('Top Rated')"></span>
+                </span>
+                <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-3" x-text="slideIndex===0 ? tx('Expert Electricians') : (slideIndex===1 ? tx('Summer Sale') : tx('Deep Cleaning'))"></h2>
+                <p class="text-white/80 text-sm mt-2">Quality service at your doorstep</p>
+                <button class="mt-4 bg-white text-brand-olive px-5 py-2.5 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform">
+                    Book Now →
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="adminBanners.length > 0">
+        <div class="absolute inset-0">
+            <template x-for="(banner, idx) in adminBanners" :key="banner.id">
+                <div class="absolute inset-0 transition-opacity duration-700"
+                     :style="slideIndex === idx ? 'opacity:1;z-index:1' : 'opacity:0;z-index:0'">
+                    <img :src="banner.image_url" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                    <div class="absolute bottom-20 left-6 right-6 z-10 animate-fade-in-scale">
+                        <span x-show="banner.tag" class="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg inline-flex items-center gap-1" x-text="banner.tag"></span>
+                        <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-3" x-text="banner.title"></h2>
+                        <template x-if="banner.cta_text && banner.cta_link">
+                            <a :href="banner.cta_link"
+                               class="inline-flex items-center gap-2 mt-4 bg-white text-brand-olive text-xs font-extrabold px-5 py-2.5 rounded-full shadow-lg hover:scale-105 transition-all duration-300">
+                                <span x-text="banner.cta_text"></span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <!-- Slider Indicators -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+        <template x-for="(_, idx) in (adminBanners.length > 0 ? adminBanners : [0,1,2])" :key="idx">
+            <button @click="slideIndex = idx"
+                    :class="slideIndex === idx ? 'bg-brand-gold w-8' : 'bg-white/50 w-2'"
+                    class="h-2 rounded-full transition-all duration-300 cursor-pointer"></button>
+        </template>
     </div>
+</div>
 
+<!-- PREMIUM SEARCH SECTION -->
+<div class="px-5 -mt-10 relative z-50">
+<div class="relative">
+<div class="glass rounded-2xl p-2 shadow-xl flex items-center gap-2 border border-white/50">
+<div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-gold to-brand-olive flex items-center justify-center text-white shadow-inner">
+<i class="fa-solid fa-magnifying-glass text-lg"></i>
+</div>
+<div class="flex-1 h-12 relative flex items-center">
+<div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
+<span class="text-brand-dark/40 text-sm font-medium mr-1" x-text="tx('Search for')"></span>
+<div class="relative h-5 w-32 overflow-hidden">
+<div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
+<div class="h-5 flex items-center" x-text="tx('AC Tech')"></div>
+<div class="h-5 flex items-center" x-text="tx('Plumber')"></div>
+<div class="h-5 flex items-center" x-text="tx('Deep Cleaning')"></div>
+</div>
+</div>
+</div>
+<input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg z-10 placeholder-transparent" placeholder="">
+<button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="mr-2 w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-brand-dark/60 hover:bg-red-500 hover:text-white transition-all">
+<i class="fa-solid fa-times text-xs"></i>
+</button>
+</div>
+</div>
+
+<!-- Search Results Dropdown -->
+<div x-show="searchQuery.length > 0" 
+x-transition:enter="transition ease-out duration-200"
+x-transition:enter-start="opacity-0 translate-y-[-10px]"
+x-transition:enter-end="opacity-100 translate-y-0"
+x-transition:leave="transition ease-in duration-150"
+x-transition:leave-start="opacity-100 translate-y-0"
+x-transition:leave-end="opacity-0 translate-y-[-10px]"
+@click.outside="searchQuery = ''"
+class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-40 max-h-80 overflow-y-auto">
+
+<div class="divide-y divide-brand-beige/30">
+<template x-for="result in filteredServices">
+<div @click="navigate('service.html?id=' + result.n)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer transition-all group">
+<div class="text-2xl w-12 h-12 rounded-full overflow-hidden bg-brand-cream flex items-center justify-center group-hover:scale-110 transition-transform">
+<img :src="result.img" class="w-full h-full object-cover">
+</div>
+<div class="flex-1">
+<p class="font-bold text-sm text-brand-dark" x-text="tx(result.n)"></p>
+<p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text="tx(result.cat)"></p>
+</div>
+<i class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold transition-all"></i>
+</div>
+</template>
+</div>
+</div>
+</div>
+</div>
+
+<!-- OFFER TICKER -->
+<div class="px-4 mt-6" :class="tickerPaused ? 'ticker-paused' : ''">
+    <div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-xl overflow-hidden shadow-lg border border-brand-gold/20 flex items-center">
+        <div class="flex-shrink-0 bg-brand-gold px-4 py-2.5 flex items-center gap-2 self-stretch">
+            <i class="fa-solid fa-fire text-white text-xs animate-pulse"></i>
+            <span class="text-white text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Hot Offers</span>
+        </div>
+        <div class="overflow-hidden flex-1 py-2.5 cursor-pointer" @click="tickerPaused = !tickerPaused">
+            <div class="ticker-track">
+                <template x-for="(msg, i) in [...offerMessages, ...offerMessages]" :key="i">
+                    <span class="text-white/90 text-[11px] font-semibold whitespace-nowrap px-6 flex items-center gap-2">
+                        <i class="fas fa-tag text-[8px] text-brand-gold"></i>
+                        <span x-text="msg"></span>
+                    </span>
+                </template>
+            </div>
+        </div>
+        <button @click.stop="tickerPaused = !tickerPaused"
+                class="flex-shrink-0 w-8 h-full flex items-center justify-center text-white/40 hover:text-white transition-all">
+            <i :class="tickerPaused ? 'fa-play' : 'fa-pause'" class="fa-solid text-[9px]"></i>
+        </button>
+    </div>
+</div>
+
+<!-- SERVICE SECTIONS - Clean with no ratings or view all buttons -->
+<div class="pb-12 space-y-8 mt-6">
+
+<!-- Construction & Home -->
+<div class="category-section px-5">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Construction & Home')"></h2>
   </div>
+  
+  <div class="grid grid-cols-3 gap-3">
+    <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
+      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
+        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
+            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- Appliance Repair -->
+<div class="category-section px-5">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Appliance Repair')"></h2>
+  </div>
+  
+  <div class="grid grid-cols-3 gap-3">
+    <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
+      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
+        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
+            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- Electronics & IT -->
+<div class="category-section px-5">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Electronics & IT')"></h2>
+  </div>
+  
+  <div class="grid grid-cols-3 gap-3">
+    <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
+      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
+        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
+            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- Automobile -->
+<div class="category-section px-5">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Automobile')"></h2>
+  </div>
+  
+  <div class="grid grid-cols-3 gap-3">
+    <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
+      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
+        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
+            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- Other Services -->
+<div class="category-section px-5 pb-8">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Other Services')"></h2>
+  </div>
+  
+  <div class="grid grid-cols-3 gap-3">
+    <template x-for="s in masterList.filter(item => item.cat === 'Other')">
+      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
+        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
+            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+</div>
+
+<!-- ACTIVE JOB BANNER -->
+<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
+<div class="fixed bottom-[140px] left-4 right-4 z-40 animate-pulse">
+<div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-2xl p-4 shadow-2xl border border-brand-gold/30 flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<div class="relative flex h-12 w-12 items-center justify-center bg-white/10 rounded-xl border border-white/20 flex-shrink-0">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
+<i class="fa-solid text-xl text-brand-green relative z-10" :class="currentJobStatus === 'arrived' ? 'fa-door-open animate-bounce' : 'fa-truck-fast animate-pulse'"></i>
+</div>
+<div class="flex-1">
+<h4 class="text-white text-sm font-bold" x-text="currentJobStatus === 'arrived' ? '🎉 Expert Has Arrived!' : '🔧 Expert Is On The Way'"></h4>
+<p class="text-white/60 text-[10px]">Tap to track your service in real-time</p>
+</div>
+<i class="fas fa-chevron-right text-white/40 text-xs"></i>
+</div>
+<button @click="handleCartNavigation()" class="w-full py-2.5 rounded-xl bg-brand-gold text-brand-dark font-bold text-xs uppercase tracking-wide hover:bg-white transition-all">
+<span>Open Live Tracking →</span> 
+</button>
+</div>
+</div>
+</template>
+
+<!-- LANGUAGE SWITCHER -->
+<div class="fixed bottom-[100px] left-1/2 transform -translate-x-1/2 z-50 flex justify-center w-full max-w-sm pointer-events-none">
+<div class="glass rounded-full p-1.5 flex shadow-xl pointer-events-auto gap-1 border border-white/30">
+<button @click="setLang('en')" :class="lang==='en'?'bg-brand-olive text-white shadow-md':'text-brand-dark hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300">🇬🇧 ENG</button>
+<button @click="setLang('hi')" :class="lang==='hi'?'bg-brand-olive text-white shadow-md':'text-brand-dark hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 deva">🇮🇳 हिंदी</button>
+<button @click="setLang('mr')" :class="lang==='mr'?'bg-brand-olive text-white shadow-md':'text-brand-dark hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 deva">🇮🇳 मराठी</button>
+</div>
+</div>
+
+<!-- PREMIUM BOTTOM NAVIGATION -->
+<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[92%] max-w-sm z-50">
+<div class="glass rounded-2xl px-2 py-2 flex justify-around items-center shadow-xl border border-white/40">
+<a href="index.html" class="flex flex-col items-center gap-1 bg-brand-olive text-white px-5 py-2 rounded-xl transition-all shadow-md hover:shadow-lg">
+<i class="fa-solid fa-house text-sm"></i>
+<span class="text-[8px] font-bold" x-text="tx('Home')"></span>
+</a>
+
+<button @click="handleCartNavigation()" class="relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-brand-dark/60 hover:text-brand-gold transition-all group">
+<i class="fa-solid fa-calendar-check text-lg group-hover:scale-110 transition-transform"></i>
+<span class="text-[8px] font-bold" x-text="currentActiveJobId ? 'Track' : 'Bookings'"></span>
+<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
+<span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+</span>
+</template>
+</button>
+
+<button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-brand-dark/60 hover:text-brand-gold transition-all group">
+<i :class="user ? 'fa-solid fa-user-circle' : 'fa-regular fa-user'" class="text-xl group-hover:scale-110 transition-transform"></i>
+<span class="text-[8px] font-bold" x-text="user ? 'Profile' : 'Login'"></span>
+</button>
+</div>
+</div>
+
+<!-- Scroll to Top Button -->
+<button x-show="showScrollTop" @click="scrollToTop()" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-10"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        class="fixed bottom-28 right-5 w-12 h-12 bg-brand-gold rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-all z-40 hover:shadow-premium-glow">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
 </div>
 
 </body>
