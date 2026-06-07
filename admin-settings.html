@@ -6,7 +6,6 @@
     <title>FixZen Admin | System Settings</title>
     <meta name="theme-color" content="#5D5646">
     
-    <!-- Use Tailwind CDN (development only - replace with build in production) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -16,7 +15,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #EEEAE2 0%, #E5E0D8 100%); color: #2D2B28; }
         
-        /* Glass Morphism */
         .glass-card { 
             background: rgba(255,255,255,0.95); 
             backdrop-filter: blur(12px); 
@@ -29,7 +27,6 @@
             box-shadow: 0 20px 40px -12px rgba(93, 86, 70, 0.15);
         }
         
-        /* Input Fields */
         .input-field { 
             background: white; 
             border: 1px solid #DFD4C3; 
@@ -46,7 +43,6 @@
             box-shadow: 0 0 0 3px rgba(160,125,84,0.1);
         }
         
-        /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -60,7 +56,6 @@
             animation: fadeInUp 0.4s ease-out forwards;
         }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -73,7 +68,6 @@
             border-radius: 10px;
         }
         
-        /* Category Badge */
         .category-badge {
             animation: slideInRight 0.3s ease-out;
             transition: all 0.2s ease;
@@ -83,12 +77,10 @@
             box-shadow: 0 4px 12px rgba(160,125,84,0.2);
         }
         
-        /* Toast Notification */
         .toast-show {
             animation: slideInRight 0.3s ease-out forwards;
         }
         
-        /* Gradient Text */
         .gradient-text {
             background: linear-gradient(135deg, #A07D54 0%, #5D5646 100%);
             -webkit-background-clip: text;
@@ -96,7 +88,6 @@
             background-clip: text;
         }
         
-        /* Button Hover Effects */
         .btn-primary {
             background: linear-gradient(135deg, #5D5646, #4D4C4B);
             transition: all 0.3s ease;
@@ -104,31 +95,6 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px -5px rgba(93, 86, 70, 0.3);
-        }
-        
-        /* Loading Spinner */
-        .spinner {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #A07D54;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Local Storage Indicator */
-        .local-storage-badge {
-            background: #F59E0B;
-            color: white;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 20px;
-            margin-left: 8px;
         }
     </style>
 </head>
@@ -168,8 +134,8 @@
             <!-- Business Logic Section -->
             <section class="glass-card p-6 md:p-8 shadow-sm animate-fade-up" style="animation-delay: 0.05s">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-brand-beige/30">
-                    <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                        <i class="fa-solid fa-percent text-warning text-lg"></i>
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <i class="fa-solid fa-percent text-amber-600 text-lg"></i>
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-brand-olive">Business Logic</h2>
@@ -196,7 +162,7 @@
                     </div>
                 </div>
                 
-                <button onclick="saveGlobalSettings()" class="btn-primary mt-6 bg-[#5D5646] text-white px-8 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+                <button onclick="saveGlobalSettings()" class="btn-primary mt-6 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
                     <i class="fa-solid fa-save"></i>
                     Update Business Rules
                 </button>
@@ -206,8 +172,8 @@
             <!-- Service Categories Section -->
             <section class="glass-card p-6 md:p-8 shadow-sm animate-fade-up" style="animation-delay: 0.1s">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-brand-beige/30">
-                    <div class="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center">
-                        <i class="fa-solid fa-list-check text-info text-lg"></i>
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i class="fa-solid fa-list-check text-blue-600 text-lg"></i>
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-brand-olive">Service Categories</h2>
@@ -234,11 +200,11 @@
             </section>
 
             <!-- Maintenance Mode Section -->
-            <section class="glass-card p-6 md:p-8 shadow-sm border-l-4 border-warning animate-fade-up" style="animation-delay: 0.15s">
+            <section class="glass-card p-6 md:p-8 shadow-sm border-l-4 border-amber-500 animate-fade-up" style="animation-delay: 0.15s">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                            <i class="fa-solid fa-shield-halved text-warning text-lg"></i>
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                            <i class="fa-solid fa-shield-halved text-amber-600 text-lg"></i>
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-brand-olive">Maintenance Mode</h2>
@@ -247,7 +213,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="maintToggle" class="sr-only peer">
-                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-warning"></div>
+                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500"></div>
                         <span class="ml-3 text-sm font-medium" id="maintStatusLabel">Off</span>
                     </label>
                 </div>
@@ -257,8 +223,8 @@
             <!-- Data Management Section -->
             <section class="glass-card p-6 md:p-8 shadow-sm animate-fade-up" style="animation-delay: 0.2s">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-brand-beige/30">
-                    <div class="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
-                        <i class="fa-solid fa-database text-danger text-lg"></i>
+                    <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                        <i class="fa-solid fa-database text-red-600 text-lg"></i>
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-brand-olive">Data Management</h2>
@@ -271,7 +237,7 @@
                         <i class="fa-solid fa-download"></i>
                         Export All Data (JSON)
                     </button>
-                    <button onclick="resetCategories()" class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-danger text-danger font-bold hover:bg-danger hover:text-white transition-all">
+                    <button onclick="resetCategories()" class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-500 text-red-500 font-bold hover:bg-red-500 hover:text-white transition-all">
                         <i class="fa-solid fa-rotate-left"></i>
                         Reset Default Categories
                     </button>
@@ -302,18 +268,27 @@
         } catch (err) {
             console.warn("Supabase initialization failed, using localStorage fallback:", err);
             useLocalStorage = true;
-            document.getElementById('storageStatus').innerHTML = '⚠️ Local Storage Mode (DB offline)';
-            document.getElementById('storageStatus').style.background = '#EF4444';
+            const statusEl = document.getElementById('storageStatus');
+            if (statusEl) {
+                statusEl.innerHTML = '⚠️ Local Storage Mode (DB offline)';
+                statusEl.style.background = '#EF4444';
+                statusEl.style.color = 'white';
+            }
         }
         
-        // Default categories
-        const DEFAULT_CATEGORIES = ['Carpenter', 'Plumber', 'Electrician', 'Painter', 'Mason', 'Welder', 'AC Tech', 'Fridge', 'Washing M.', 'Microwave', 'RO Filter', 'TV / LED', 'CCTV', 'Car Mech', 'Bike Mech', 'Pest Ctrl', 'Grass Cutting'];
+        // Default categories (unique, no duplicates)
+        const DEFAULT_CATEGORIES = [
+            'AC Tech', 'Bike Mech', 'Car Mech', 'Carpenter', 
+            'Electrician', 'Fridge', 'Grass Cutting', 'Mason', 
+            'Microwave', 'Painter', 'Pest Ctrl', 'Plumber', 
+            'RO Filter', 'TV / LED', 'Welder'
+        ];
         
         // Local storage keys
         const STORAGE_KEYS = {
             COMMISSION: 'fixzen_settings_commission',
             BASE_FEE: 'fixzen_settings_base_fee',
-            MAINTENANCE: 'fixzen_settings_maintenance',
+            MAINTENANCE: 'fixzen_maintenance_mode',
             CATEGORIES: 'fixzen_categories'
         };
         
@@ -324,7 +299,7 @@
             await loadMaintenanceMode();
         }
         
-        // Load global settings (commission and base fee)
+        // Load global settings
         async function loadGlobalSettings() {
             if (!useLocalStorage && sb) {
                 try {
@@ -333,7 +308,7 @@
                         .select('*')
                         .in('key', ['platform_commission', 'base_visit_fee']);
                     
-                    if (!error && data) {
+                    if (!error && data && data.length > 0) {
                         const commission = data.find(s => s.key === 'platform_commission');
                         const baseFee = data.find(s => s.key === 'base_visit_fee');
                         
@@ -367,7 +342,11 @@
             
             let success = false;
             
-            // Try Supabase first
+            // Save to localStorage first
+            if (commissionRate) localStorage.setItem(STORAGE_KEYS.COMMISSION, commissionRate);
+            if (baseFee) localStorage.setItem(STORAGE_KEYS.BASE_FEE, baseFee);
+            
+            // Try Supabase
             if (!useLocalStorage && sb) {
                 try {
                     const updates = [];
@@ -395,21 +374,17 @@
                     }
                     success = true;
                 } catch (err) {
-                    console.warn('Supabase save failed, using localStorage:', err);
+                    console.warn('Supabase save failed:', err);
+                    success = true; // Still success because localStorage worked
                 }
-            }
-            
-            // Fallback to localStorage
-            if (!success) {
-                if (commissionRate) localStorage.setItem(STORAGE_KEYS.COMMISSION, commissionRate);
-                if (baseFee) localStorage.setItem(STORAGE_KEYS.BASE_FEE, baseFee);
+            } else {
                 success = true;
             }
             
             if (success) {
                 showToast('Business rules saved successfully!', 'success');
                 if (messageDiv) {
-                    messageDiv.innerHTML = '<span class="text-success">✓ Settings saved successfully</span>';
+                    messageDiv.innerHTML = '<span class="text-green-600">✓ Settings saved successfully</span>';
                     messageDiv.classList.remove('hidden');
                     setTimeout(() => messageDiv.classList.add('hidden'), 3000);
                 }
@@ -418,10 +393,11 @@
             }
         };
         
-        // Load categories from database or localStorage
+        // Load categories (no duplicates)
         async function loadCategories() {
             const container = document.getElementById('categoryList');
             let categories = [];
+            let uniqueNames = new Set();
             
             if (!useLocalStorage && sb) {
                 try {
@@ -431,7 +407,16 @@
                         .order('name', { ascending: true });
                     
                     if (!error && data && data.length > 0) {
-                        categories = data;
+                        // Remove duplicates by name
+                        const uniqueCategories = [];
+                        const seenNames = new Set();
+                        for (const cat of data) {
+                            if (!seenNames.has(cat.name)) {
+                                seenNames.add(cat.name);
+                                uniqueCategories.push(cat);
+                            }
+                        }
+                        categories = uniqueCategories;
                     }
                 } catch (err) {
                     console.warn('Supabase error loading categories:', err);
@@ -442,7 +427,17 @@
             if (categories.length === 0) {
                 const savedCategories = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
                 if (savedCategories) {
-                    categories = JSON.parse(savedCategories);
+                    const parsed = JSON.parse(savedCategories);
+                    // Remove duplicates from saved
+                    const unique = [];
+                    const seen = new Set();
+                    for (const cat of parsed) {
+                        if (!seen.has(cat.name)) {
+                            seen.add(cat.name);
+                            unique.push(cat);
+                        }
+                    }
+                    categories = unique;
                 } else {
                     categories = DEFAULT_CATEGORIES.map((name, index) => ({ id: index, name }));
                     localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
@@ -450,22 +445,25 @@
             }
             
             if (!categories || categories.length === 0) {
-                container.innerHTML = '<p class="text-sm text-brand-dark/40 col-span-full">No categories added yet. Add your first category above.</p>';
+                container.innerHTML = '<p class="text-sm text-brand-dark/40">No categories added yet. Add your first category above.</p>';
                 return;
             }
+            
+            // Sort alphabetically
+            categories.sort((a, b) => a.name.localeCompare(b.name));
             
             container.innerHTML = categories.map(cat => `
                 <div class="category-badge bg-white border border-brand-beige px-4 py-2 rounded-full flex items-center gap-3 text-sm font-bold shadow-sm">
                     <i class="fa-solid fa-tag text-brand-gold text-xs"></i>
                     <span>${escapeHtml(cat.name)}</span>
-                    <button onclick="deleteCategory('${cat.id}')" class="text-danger/50 hover:text-danger transition-all ml-1">
+                    <button onclick="deleteCategory('${cat.id}')" class="text-red-400 hover:text-red-600 transition-all ml-1">
                         <i class="fa-solid fa-times text-xs"></i>
                     </button>
                 </div>
             `).join('');
         }
         
-        // Add new category
+        // Add new category (prevents duplicates)
         window.addCategory = async function() {
             const input = document.getElementById('newCategory');
             const categoryName = input.value.trim();
@@ -475,35 +473,48 @@
                 return;
             }
             
+            // Check for duplicates in current display
+            const existingBadges = document.querySelectorAll('#categoryList .category-badge span');
+            for (const badge of existingBadges) {
+                if (badge.innerText.toLowerCase() === categoryName.toLowerCase()) {
+                    showToast(`Category "${categoryName}" already exists!`, 'error');
+                    input.value = '';
+                    return;
+                }
+            }
+            
             let success = false;
             let categories = [];
             
-            // Try Supabase first
+            // Save to localStorage first
+            const savedCategories = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+            categories = savedCategories ? JSON.parse(savedCategories) : DEFAULT_CATEGORIES.map((name, index) => ({ id: index, name }));
+            
+            // Check duplicate in localStorage
+            if (categories.some(cat => cat.name.toLowerCase() === categoryName.toLowerCase())) {
+                showToast(`Category "${categoryName}" already exists!`, 'error');
+                input.value = '';
+                return;
+            }
+            
+            const newId = Date.now();
+            categories.push({ id: newId, name: categoryName });
+            localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+            success = true;
+            
+            // Try Supabase
             if (!useLocalStorage && sb) {
                 try {
-                    const { data, error } = await sb
+                    const { error } = await sb
                         .from('service_categories')
-                        .insert([{ name: categoryName }])
-                        .select()
-                        .single();
+                        .insert([{ name: categoryName }]);
                     
-                    if (!error && data) {
-                        success = true;
+                    if (error && error.code !== '23505') { // Ignore duplicate key error
+                        console.warn('Supabase add warning:', error);
                     }
                 } catch (err) {
                     console.warn('Supabase add failed:', err);
                 }
-            }
-            
-            // Fallback to localStorage
-            if (!success) {
-                const savedCategories = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-                categories = savedCategories ? JSON.parse(savedCategories) : DEFAULT_CATEGORIES.map((name, index) => ({ id: index, name }));
-                
-                const newId = Date.now();
-                categories.push({ id: newId, name: categoryName });
-                localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-                success = true;
             }
             
             if (success) {
@@ -521,27 +532,20 @@
             
             let success = false;
             
-            // Try Supabase first
+            // Update localStorage
+            const savedCategories = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+            let categories = savedCategories ? JSON.parse(savedCategories) : [];
+            categories = categories.filter(cat => cat.id != id);
+            localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+            success = true;
+            
+            // Try Supabase
             if (!useLocalStorage && sb) {
                 try {
-                    const { error } = await sb
-                        .from('service_categories')
-                        .delete()
-                        .eq('id', id);
-                    
-                    if (!error) success = true;
+                    await sb.from('service_categories').delete().eq('id', id);
                 } catch (err) {
                     console.warn('Supabase delete failed:', err);
                 }
-            }
-            
-            // Fallback to localStorage
-            if (!success) {
-                const savedCategories = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-                let categories = savedCategories ? JSON.parse(savedCategories) : [];
-                categories = categories.filter(cat => cat.id != id);
-                localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-                success = true;
             }
             
             if (success) {
@@ -552,47 +556,38 @@
             }
         };
         
-        // Reset to default categories
+        // Reset to default categories (no duplicates)
         window.resetCategories = async function() {
             if (!confirm('⚠️ This will delete all custom categories and restore defaults. Continue?')) return;
             
-            let success = false;
+            // Reset localStorage
+            const defaultCategories = DEFAULT_CATEGORIES.map((name, index) => ({ id: index, name }));
+            localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(defaultCategories));
             
-            // Try Supabase first
+            // Try Supabase
             if (!useLocalStorage && sb) {
                 try {
-                    // Delete all existing categories
                     await sb.from('service_categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                    
-                    // Insert default categories
                     const defaultCategoryObjects = DEFAULT_CATEGORIES.map(name => ({ name }));
-                    const { error } = await sb.from('service_categories').insert(defaultCategoryObjects);
-                    
-                    if (!error) success = true;
+                    await sb.from('service_categories').insert(defaultCategoryObjects);
                 } catch (err) {
                     console.warn('Supabase reset failed:', err);
                 }
             }
             
-            // Fallback to localStorage
-            if (!success) {
-                const defaultCategories = DEFAULT_CATEGORIES.map((name, index) => ({ id: index, name }));
-                localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(defaultCategories));
-                success = true;
-            }
-            
-            if (success) {
-                showToast('Categories reset to defaults', 'success');
-                await loadCategories();
-            } else {
-                showToast('Failed to reset categories', 'error');
-            }
+            showToast('Categories reset to defaults', 'success');
+            await loadCategories();
         };
         
         // Load maintenance mode status
         async function loadMaintenanceMode() {
             let isMaintenance = false;
             
+            // Check localStorage first
+            const savedMaintenance = localStorage.getItem(STORAGE_KEYS.MAINTENANCE);
+            isMaintenance = savedMaintenance === 'true';
+            
+            // Try Supabase
             if (!useLocalStorage && sb) {
                 try {
                     const { data, error } = await sb
@@ -603,16 +598,11 @@
                     
                     if (!error && data) {
                         isMaintenance = data.value === 'true';
+                        localStorage.setItem(STORAGE_KEYS.MAINTENANCE, isMaintenance);
                     }
                 } catch (err) {
                     console.warn('Supabase maintenance load failed:', err);
                 }
-            }
-            
-            // Fallback to localStorage
-            if (!isMaintenance) {
-                const savedMaintenance = localStorage.getItem(STORAGE_KEYS.MAINTENANCE);
-                isMaintenance = savedMaintenance === 'true';
             }
             
             const toggle = document.getElementById('maintToggle');
@@ -623,79 +613,47 @@
         }
         
         // Toggle maintenance mode
-       // Function to check maintenance status
-async function checkMaintenanceStatus() {
-    let isMaintenance = localStorage.getItem('fixzen_maintenance_mode') === 'true';
-    
-    if (sb && !useLocalStorage) {
-        try {
-            const { data, error } = await sb
-                .from('settings')
-                .select('value')
-                .eq('key', 'maintenance_mode')
-                .single();
-            
-            if (!error && data) {
-                isMaintenance = data.value === 'true';
-                localStorage.setItem('fixzen_maintenance_mode', isMaintenance);
-            }
-        } catch (err) {
-            console.warn('Could not fetch maintenance status from DB');
-        }
-    }
-    
-    return isMaintenance;
-}
-
-// Toggle maintenance mode
-const maintToggle = document.getElementById('maintToggle');
-if (maintToggle) {
-    maintToggle.addEventListener('change', async function() {
-        const isMaintenance = this.checked;
-        const label = document.getElementById('maintStatusLabel');
-        const messageDiv = document.getElementById('maintMessage');
-        
-        if (label) label.innerText = isMaintenance ? 'ON' : 'Off';
-        
-        let success = false;
-        
-        // Save to localStorage first (immediate)
-        localStorage.setItem('fixzen_maintenance_mode', isMaintenance);
-        
-        // Try Supabase
-        if (!useLocalStorage && sb) {
-            try {
-                const { error } = await sb
-                    .from('settings')
-                    .upsert({
-                        key: 'maintenance_mode',
-                        value: isMaintenance ? 'true' : 'false',
-                        updated_at: new Date().toISOString()
-                    });
+        const maintToggle = document.getElementById('maintToggle');
+        if (maintToggle) {
+            maintToggle.addEventListener('change', async function() {
+                const isMaintenance = this.checked;
+                const label = document.getElementById('maintStatusLabel');
+                const messageDiv = document.getElementById('maintMessage');
                 
-                if (!error) success = true;
-            } catch (err) {
-                console.warn('Supabase maintenance save failed:', err);
-            }
-        } else {
-            success = true;
+                if (label) label.innerText = isMaintenance ? 'ON' : 'Off';
+                
+                // Save to localStorage
+                localStorage.setItem(STORAGE_KEYS.MAINTENANCE, isMaintenance);
+                
+                // Try Supabase
+                let supabaseSuccess = false;
+                if (!useLocalStorage && sb) {
+                    try {
+                        const { error } = await sb
+                            .from('settings')
+                            .upsert({
+                                key: 'maintenance_mode',
+                                value: isMaintenance ? 'true' : 'false',
+                                updated_at: new Date().toISOString()
+                            });
+                        
+                        if (!error) supabaseSuccess = true;
+                    } catch (err) {
+                        console.warn('Supabase maintenance save failed:', err);
+                    }
+                } else {
+                    supabaseSuccess = true;
+                }
+                
+                showToast(isMaintenance ? '🔧 Maintenance mode activated - Bookings disabled' : '✅ Maintenance mode deactivated - Bookings enabled', 'success');
+                
+                if (messageDiv) {
+                    messageDiv.innerHTML = `<span class="text-${isMaintenance ? 'amber-600' : 'green-600'}">✓ Platform is now ${isMaintenance ? 'in maintenance mode' : 'live'}</span>`;
+                    messageDiv.classList.remove('hidden');
+                    setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+                }
+            });
         }
-        
-        if (success) {
-            showToast(isMaintenance ? '🔧 Maintenance mode activated - Bookings disabled' : '✅ Maintenance mode deactivated - Bookings enabled', 'success');
-            
-            if (messageDiv) {
-                messageDiv.innerHTML = `<span class="text-${isMaintenance ? 'warning' : 'success'}">✓ Platform is now ${isMaintenance ? 'in maintenance mode' : 'live'}</span>`;
-                messageDiv.classList.remove('hidden');
-                setTimeout(() => messageDiv.classList.add('hidden'), 3000);
-            }
-        } else {
-            showToast('Failed to update maintenance mode', 'error');
-            this.checked = !isMaintenance;
-            if (label) label.innerText = !isMaintenance ? 'ON' : 'Off';
-        }
-    });
-}
         
         // Export data to JSON
         window.exportData = async function() {
@@ -729,11 +687,21 @@ if (maintToggle) {
                     if (savedCategories) categories = JSON.parse(savedCategories);
                 }
                 
+                // Remove duplicates from categories for export
+                const uniqueCategories = [];
+                const seenNames = new Set();
+                for (const cat of categories) {
+                    if (!seenNames.has(cat.name)) {
+                        seenNames.add(cat.name);
+                        uniqueCategories.push(cat);
+                    }
+                }
+                
                 const allData = {
                     exportDate: new Date().toISOString(),
                     technicians: technicians,
                     jobs: jobs,
-                    categories: categories,
+                    categories: uniqueCategories,
                     feedback: feedback,
                     settings: {
                         commission: localStorage.getItem(STORAGE_KEYS.COMMISSION),
@@ -766,12 +734,12 @@ if (maintToggle) {
             
             const toast = document.createElement('div');
             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            const color = type === 'success' ? 'text-success' : type === 'error' ? 'text-danger' : 'text-info';
+            const color = type === 'success' ? 'text-green-600' : type === 'error' ? 'text-red-600' : 'text-blue-600';
             
             toast.className = `bg-white/95 backdrop-blur rounded-xl p-3 min-w-[200px] toast-show flex items-center gap-2 shadow-lg border border-white/50`;
             toast.innerHTML = `
                 <i class="fas ${icon} ${color}"></i>
-                <span class="text-sm text-brand-dark">${message}</span>
+                <span class="text-sm text-gray-700">${message}</span>
             `;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
