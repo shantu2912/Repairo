@@ -280,29 +280,33 @@ x-data="{
          // Each image perfectly matches the service name
          // ============================================================
          masterList: [
-             // HOME SERVICES (6)
-             {n:'Carpenter', cat:'Home_cat', img:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=400&h=400&fit=crop'},
-             {n:'Plumber', cat:'Home_cat', img:'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=400&fit=crop'},
-             {n:'Electrician', cat:'Home_cat', img:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=400&fit=crop'},
-             {n:'Painter', cat:'Home_cat', img:'https://images.unsplash.com/photo-1562259972-9d3f7c6e5f1b?w=400&h=400&fit=crop'},
-             {n:'Mason', cat:'Home_cat', img:'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=400&h=400&fit=crop'},
-             {n:'Welder', cat:'Home_cat', img:'https://images.unsplash.com/photo-1565688534245-05d6b5be184a?w=400&h=400&fit=crop'},
-             // APPLIANCE REPAIR (5)
-             {n:'AC Tech', cat:'Appliance', img:'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=400&h=400&fit=crop'},
-             {n:'Fridge', cat:'Appliance', img:'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400&h=400&fit=crop'},
-             {n:'Washing M.', cat:'Appliance', img:'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400&h=400&fit=crop'},
-             {n:'Microwave', cat:'Appliance', img:'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=400&fit=crop'},
-             {n:'RO Filter', cat:'Appliance', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop'},
-             // ELECTRONICS & IT (2)
-             {n:'TV / LED', cat:'Electronics', img:'https://images.unsplash.com/photo-1593359677879-a4bb92f4834a?w=400&h=400&fit=crop'},
-             {n:'CCTV', cat:'Electronics', img:'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=400&fit=crop'},
-             // AUTOMOBILE (2)
-             {n:'Car Mech', cat:'Auto', img:'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=400&h=400&fit=crop'},
-             {n:'Bike Mech', cat:'Auto', img:'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=400&h=400&fit=crop'},
-             // OTHER SERVICES (2)
-             {n:'Pest Ctrl', cat:'Other', img:'https://images.unsplash.com/photo-1604187351574-c75ca79f5807?w=400&h=400&fit=crop'},
-             {n:'Grass Cutting', cat:'Other', img:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=400&fit=crop'}
-         ],
+    // ========== HOME SERVICES ==========
+    {n:'Carpenter', cat:'Home_cat', img:'https://cdn.pixabay.com/photo/2017/08/07/15/23/man-2604632_640.jpg'},
+    {n:'Plumber', cat:'Home_cat', img:'https://cdn.pixabay.com/photo/2016/10/19/04/37/plumber-1752454_640.jpg'},
+    {n:'Electrician', cat:'Home_cat', img:'https://cdn.pixabay.com/photo/2016/12/16/16/23/electrician-1911942_640.jpg'},
+    {n:'Painter', cat:'Home_cat', img:'https://cdn.pixabay.com/photo/2021/02/12/14/22/painter-6010394_640.jpg'},
+    {n:'Mason', cat:'Home_cat', img:'https://cdn.pixabay.com/photo/2018/04/04/18/19/bricklayer-3290769_640.jpg'},
+    {n:'Welder', cat:'Home_cat', img:'https://cdn.pixabay.com/photo/2018/06/27/02/07/welder-3501042_640.jpg'},
+    
+    // ========== APPLIANCE REPAIR ==========
+    {n:'AC Tech', cat:'Appliance', img:'https://cdn.pixabay.com/photo/2016/11/18/13/42/air-conditioner-1834934_640.jpg'},
+    {n:'Fridge', cat:'Appliance', img:'https://cdn.pixabay.com/photo/2017/08/02/20/15/repair-2572609_640.jpg'},
+    {n:'Washing M.', cat:'Appliance', img:'https://cdn.pixabay.com/photo/2014/11/13/17/29/washing-machine-530313_640.jpg'},
+    {n:'Microwave', cat:'Appliance', img:'https://cdn.pixabay.com/photo/2020/05/16/10/41/microwave-5176631_640.jpg'},
+    {n:'RO Filter', cat:'Appliance', img:'https://cdn.pixabay.com/photo/2019/10/18/10/04/water-filter-4559302_640.jpg'},
+    
+    // ========== ELECTRONICS & IT ==========
+    {n:'TV / LED', cat:'Electronics', img:'https://cdn.pixabay.com/photo/2017/07/28/15/36/television-2549225_640.jpg'},
+    {n:'CCTV', cat:'Electronics', img:'https://cdn.pixabay.com/photo/2017/07/12/20/27/camera-2498201_640.jpg'},
+    
+    // ========== AUTOMOBILE ==========
+    {n:'Car Mech', cat:'Auto', img:'https://cdn.pixabay.com/photo/2020/10/15/15/12/auto-repair-5656935_640.jpg'},
+    {n:'Bike Mech', cat:'Auto', img:'https://cdn.pixabay.com/photo/2015/05/06/03/23/motorcycle-755114_640.jpg'},
+    
+    // ========== OTHER SERVICES ==========
+    {n:'Pest Ctrl', cat:'Other', img:'https://cdn.pixabay.com/photo/2016/12/01/20/35/spray-1876749_640.jpg'},
+    {n:'Grass Cutting', cat:'Other', img:'https://cdn.pixabay.com/photo/2016/11/23/22/38/lawn-mower-1855090_640.jpg'}
+],
          
          get filteredServices() {
              if (this.searchQuery === '') return [];
