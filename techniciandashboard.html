@@ -2,32 +2,16 @@
 <html lang="en" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<meta name="theme-color" content="#5D5646">
-<title>FixZen Pro | Technician Command Center</title>
-
-<!-- Tailwind + Plugins -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FixZen Pro | Technician Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="i18n.js"></script>
 <!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/relativeTime.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/calendar.js"></script>
 
-<!-- Fonts & Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- Alpine -->
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-<script>
-dayjs.extend(window.dayjs_plugin_relativeTime);
-dayjs.extend(window.dayjs_plugin_calendar);
-</script>
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -46,199 +30,22 @@ colors: {
 'brand-gold': '#A07D54',
 'brand-cream': '#F8F5F0',
 'brand-dark': '#2D2B28',
-        'brand-beige': '#DFD4C3',
-        'success': '#10B981',
-        'warning': '#F59E0B',
-        'danger': '#EF4444',
-        'info': '#3B82F6'
-      },
-      fontFamily: {
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
-        'mono': ['JetBrains Mono', 'monospace']
-      },
-      animation: {
-        'pulse-ring': 'pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'slide-down': 'slideDown 0.3s ease-out',
-        'glow': 'glow 2s ease-in-out infinite'
-      },
-      keyframes: {
-        pulseRing: {
-          '0%': { boxShadow: '0 0 0 0 rgba(160,125,84,0.4)' },
-          '70%': { boxShadow: '0 0 0 8px rgba(160,125,84,0)' },
-          '100%': { boxShadow: '0 0 0 0 rgba(160,125,84,0)' }
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' }
-        },
-        slideDown: {
-          '0%': { opacity: '0', transform: 'translateY(-20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' }
-        },
-        glow: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.6' }
-        }
-        'brand-beige': '#DFD4C3'
+'brand-beige': '#DFD4C3'
 }
 }
 }
 }
 </script>
-
 <style>
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
-  background: linear-gradient(135deg, #F8F5F0 0%, #F0EDE6 100%);
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(93, 86, 70, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(93, 86, 70, 0.12);
-}
-
-.btn-touch {
-  transition: transform 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-.btn-touch:active {
-  transform: scale(0.97);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #DFD4C3;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #A07D54;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #5D5646;
-}
-
-/* Skeleton Loading */
-.skeleton {
-  background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s linear infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Status Indicators */
-.status-badge {
-  position: relative;
-  padding-left: 20px;
-}
-
-.status-badge::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.status-badge.available::before {
-  background-color: #10B981;
-  box-shadow: 0 0 8px #10B981;
-}
-
-.status-badge.busy::before {
-  background-color: #F59E0B;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
-  50% { opacity: 0.5; transform: translateY(-50%) scale(0.8); }
-}
-
-/* Toast Animation */
-.toast-show {
-  animation: slideInRight 0.3s ease-out;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Metric Cards */
-.metric-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.metric-card::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(160,125,84,0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  body {
-    background: linear-gradient(135deg, #2D2B28 0%, #3D3A36 100%);
-  }
-  
-  .glass-card {
-    background: rgba(45, 43, 40, 0.95);
-    border-color: rgba(93, 86, 70, 0.3);
-  }
 [x-cloak]{display:none}
 body{background:#F8F5F0;color:#2D2B28}
 .glass-card{
-  background:rgba(255,255,255,.95);
-  backdrop-filter:blur(18px);
-  border:1px solid #fff;
-  box-shadow:0 15px 35px rgba(93,86,70,.08)
+background:rgba(255,255,255,.95);
+backdrop-filter:blur(18px);
+border:1px solid #fff;
+box-shadow:0 15px 35px rgba(93,86,70,.08)
 }
 </style>
-
-<!-- Supabase + Firebase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
 <!-- ✅ SUPABASE CLIENT -->
 <script>
@@ -246,40 +53,9 @@ window.sb = supabase.createClient(
 "https://kzxdxnxgouthsywbsnvl.supabase.co",
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
 );
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-};
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-window.firebaseMessaging = firebase.messaging();
 </script>
 </head>
 
-<body class="min-h-screen pb-32" x-data="commandCenter()" x-init="init()" x-cloak>
-
-<!-- Premium Header -->
-<header class="sticky top-0 z-50 bg-brand-cream/90 backdrop-blur-xl border-b border-brand-beige/30 shadow-lg">
-  <div class="max-w-4xl mx-auto px-5 py-3">
-    <div class="flex items-center justify-between">
-      <!-- Logo & Brand -->
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-lg">
-            <i class="fas fa-tools text-xl"></i>
-          </div>
-          <div class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success border-2 border-white"></div>
-        </div>
-        <div>
-          <p class="text-[8px] uppercase tracking-widest text-brand-gold font-black">Pro Command Center</p>
-          <h1 class="font-bold text-xl text-brand-olive" x-text="techName"></h1>
-        </div>
 <body
 x-data="dashboardHandler()"
 x-init="init()"
@@ -289,175 +65,90 @@ class="font-sans antialiased pb-36"
 
 <!-- HEADER -->
 <header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur border-b p-5">
-  <div class="max-w-md mx-auto flex justify-between items-center">
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-full bg-brand-olive text-white flex items-center justify-center font-bold">
-        <span x-text="techName.charAt(0)"></span>
+<div class="max-w-md mx-auto flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-brand-olive text-white flex items-center justify-center font-bold">
+<span x-text="techName.charAt(0)"></span>
 </div>
-      
-      <!-- Quick Actions -->
-      <div class="flex items-center gap-2">
-        <button @click="toggleDarkMode()" class="w-10 h-10 rounded-full bg-white/50 backdrop-blur hover:bg-white transition-all flex items-center justify-center shadow-sm">
-          <i class="fas fa-moon text-brand-olive text-sm" x-show="!isDarkMode"></i>
-          <i class="fas fa-sun text-brand-gold text-sm" x-show="isDarkMode"></i>
-        </button>
-        <button @click="logout()" class="w-10 h-10 rounded-full bg-white/50 hover:bg-red-50 transition-all flex items-center justify-center shadow-sm group">
-          <i class="fas fa-sign-out-alt text-brand-olive group-hover:text-red-500 transition-colors"></i>
-        </button>
-      <div>
-        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-black">Pro Partner</p>
-        <p class="font-serif italic text-lg text-brand-olive" x-text="techName"></p>
+<div>
+<p class="text-[10px] uppercase tracking-widest text-brand-gold font-black">Pro Partner</p>
+<p class="font-serif italic text-lg text-brand-olive" x-text="techName"></p>
 </div>
 </div>
-    <button @click="logout()" class="text-brand-olive hover:text-red-500">
-      <i class="fa-solid fa-power-off"></i>
-    </button>
+<button @click="logout()" class="text-brand-olive hover:text-red-500">
+<i class="fa-solid fa-power-off"></i>
+</button>
 </div>
 </header>
 
-<main class="max-w-4xl mx-auto p-5 space-y-6">
 <main class="max-w-md mx-auto p-6 space-y-8">
 
-  <!-- Welcome Banner with Stats -->
-  <div class="glass-card rounded-3xl p-6 bg-gradient-to-r from-brand-olive/5 to-brand-gold/5">
-    <div class="flex items-start justify-between">
-      <div>
-        <p class="text-sm text-brand-dark/60">Welcome back,</p>
-        <h2 class="text-2xl font-bold text-brand-olive" x-text="techName.split(' ')[0]"></h2>
-        <p class="text-xs text-brand-gold mt-1 flex items-center gap-1">
-          <i class="fas fa-calendar-alt"></i>
-          <span x-text="getGreeting()"></span>
-        </p>
-      </div>
-      <div class="text-right">
-        <div class="flex items-center gap-2 bg-white/50 rounded-full px-3 py-1.5">
-          <div class="status-badge" :class="available ? 'available' : 'busy'"></div>
-          <span class="text-xs font-bold" x-text="available ? 'Available' : 'Busy'"></span>
-          <label class="relative inline-flex items-center cursor-pointer ml-2">
-            <input type="checkbox" class="sr-only peer" :checked="available" @change="toggleAvailability">
-            <div class="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-brand-gold transition-all"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
-          </label>
-        </div>
-      </div>
 <!-- STATS -->
 <section>
-  <div class="grid grid-cols-2 gap-4">
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Active Jobs</p>
-      <h3 class="text-3xl font-extrabold text-brand-olive" x-text="stats.activeJobs"></h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-card p-5 rounded-[2rem]">
+<p class="text-[9px] font-bold text-brand-gold uppercase">Active Jobs</p>
+<h3 class="text-3xl font-extrabold text-brand-olive" x-text="stats.activeJobs"></h3>
 </div>
-  </div>
-
-  <!-- Enhanced Analytics Grid -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <div class="metric-card glass-card rounded-2xl p-4 text-center">
-      <i class="fas fa-briefcase text-brand-gold text-lg mb-2"></i>
-      <p class="text-[9px] uppercase tracking-wider text-brand-dark/50">Active Jobs</p>
-      <p class="text-2xl font-black text-brand-olive" x-text="stats.activeJobs"></p>
-    </div>
-    
-    <div class="metric-card glass-card rounded-2xl p-4 text-center">
-      <i class="fas fa-chart-line text-success text-lg mb-2"></i>
-      <p class="text-[9px] uppercase tracking-wider text-brand-dark/50">Today's Earnings</p>
-      <p class="text-2xl font-black text-success">₹<span x-text="stats.todayEarnings"></span></p>
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Earnings</p>
-      <h3 class="text-3xl font-extrabold text-green-700">
-        ₹<span x-text="stats.earnings"></span>
-      </h3>
+<div class="glass-card p-5 rounded-[2rem]">
+<p class="text-[9px] font-bold text-brand-gold uppercase">Earnings</p>
+<h3 class="text-3xl font-extrabold text-green-700">
+₹<span x-text="stats.earnings"></span>
+</h3>
 </div>
-    
-    <div class="metric-card glass-card rounded-2xl p-4 text-center">
-      <i class="fas fa-trophy text-warning text-lg mb-2"></i>
-      <p class="text-[9px] uppercase tracking-wider text-brand-dark/50">Total Earnings</p>
-      <p class="text-2xl font-black text-warning">₹<span x-text="stats.earnings"></span></p>
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
-      <h3 class="text-3xl font-extrabold text-purple-700">
-        ₹<span x-text="stats.todayEarnings"></span>
-      </h3>
+<div class="glass-card p-5 rounded-[2rem]">
+<p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
+<h3 class="text-3xl font-extrabold text-purple-700">
+₹<span x-text="stats.todayEarnings"></span>
+</h3>
 </div>
-    
-    <div class="metric-card glass-card rounded-2xl p-4 text-center">
-      <i class="fas fa-star text-info text-lg mb-2"></i>
-      <p class="text-[9px] uppercase tracking-wider text-brand-dark/50">Rating</p>
-      <p class="text-2xl font-black text-info">4.9 <span class="text-xs">★</span></p>
-    <div class="flex items-center gap-4">
-      <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
-        <input
-          type="checkbox"
-          class="accent-green-600"
-          :checked="available"
-          @change="toggleAvailability($event)"
-        >
-        <span class="font-semibold">Available for Jobs</span>
-      </label>
+<div class="flex items-center gap-4">
+<label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
+<input
+type="checkbox"
+class="accent-green-600"
+:checked="available"
+@change="toggleAvailability($event)"
+>
+<span class="font-semibold">Available for Jobs</span>
+</label>
 </div>
 </div>
 </section>
 
-  <!-- Earnings Chart -->
-  <div class="glass-card rounded-2xl p-5">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <p class="text-[9px] uppercase tracking-wider text-brand-gold font-black">Performance Analytics</p>
-        <h3 class="font-bold text-brand-olive text-lg">Weekly Earnings Trend</h3>
-      </div>
-      <select x-model="chartPeriod" @change="updateChart()" class="text-xs border border-brand-beige rounded-lg px-2 py-1 bg-white">
-        <option value="week">Last 7 Days</option>
-        <option value="month">Last 30 Days</option>
-      </select>
-    </div>
-    <canvas id="earningsChart" width="400" height="200" class="w-full h-48"></canvas>
 <!-- Notification permission banner -->
 <div x-show="notifStatus === 'denied'"
-     class="bg-red-50 border border-red-200 rounded-2xl p-4 text-xs text-red-700">
-  <strong>🔕 Notifications blocked.</strong> You won't receive job alerts.
-  Please enable notifications in your browser settings and reload.
+class="bg-red-50 border border-red-200 rounded-2xl p-4 text-xs text-red-700">
+<strong>🔕 Notifications blocked.</strong> You won't receive job alerts.
+Please enable notifications in your browser settings and reload.
 </div>
 
 <div x-show="notifStatus === 'prompt'"
-     class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-xs text-yellow-800">
-  <strong>🔔 Enable notifications</strong> to receive instant job alerts.
-  <button @click="setupNotifications()" class="ml-2 underline font-bold">Enable now</button>
+class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-xs text-yellow-800">
+<strong>🔔 Enable notifications</strong> to receive instant job alerts.
+<button @click="setupNotifications()" class="ml-2 underline font-bold">Enable now</button>
 </div>
 
 <!-- JOBS -->
 <section id="jobsSection" class="space-y-4">
 
-  <div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-20">
-    Loading jobs…
+<div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-20">
+Loading jobs…
 </div>
 
-  <!-- Notification Permission Banner -->
-  <div x-show="notifStatus === 'denied'" class="glass-card rounded-2xl p-4 border-l-4 border-danger">
-    <div class="flex items-center gap-3">
-      <i class="fas fa-bell-slash text-danger text-xl"></i>
-      <div class="flex-1">
-        <p class="text-sm font-bold text-danger">Notifications Blocked</p>
-        <p class="text-xs text-brand-dark/60">Enable notifications to get real-time job alerts</p>
-      </div>
-      <button @click="enableNotifications()" class="px-3 py-1.5 bg-brand-olive text-white rounded-lg text-xs font-bold">Enable</button>
-    </div>
-  <div x-show="!loading && jobs.length === 0"
-       class="text-center text-sm text-brand-dark/50 mt-20">
-    No active jobs
+<div x-show="!loading && jobs.length === 0"
+class="text-center text-sm text-brand-dark/50 mt-20">
+No active jobs
 </div>
 
-  <!-- Jobs Section with Advanced Filtering -->
-  <section>
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <p class="text-[9px] uppercase tracking-wider text-brand-gold font-black">Active Assignments</p>
-        <h3 class="font-bold text-brand-olive text-lg">Your Jobs</h3>
-  <template x-for="job in jobs" :key="job.id">
-    <div class="glass-card p-6 rounded-[2.5rem] border-l-4"
-         :class="job.urgent ? 'border-red-500':'border-brand-gold'">
+<template x-for="job in jobs" :key="job.id">
+<div class="glass-card p-6 rounded-[2.5rem] border-l-4"
+:class="job.urgent ? 'border-red-500':'border-brand-gold'">
 
-      <!-- TITLE -->
-      <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
-      <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
+<!-- TITLE -->
+<span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
+<h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
+      <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
       <p class="text-xs italic text-brand-dark/60" x-text="job.issue || job.other_issue"></p>
       
       <!-- Quote Status Badge for Inspection Jobs -->
@@ -472,21 +163,17 @@ class="font-sans antialiased pb-36"
                                  'fa-clipboard'"></i>
           Quote: <span x-text="job.quote_status"></span>
         </span>
-</div>
+      </div>
+      
+<p class="text-xs text-gray-500 mt-1">
+Started: <span x-text="formatTime(job.started_at)"></span>
+</p>
 
-      <!-- Filter & Search -->
-      <div class="flex gap-2">
-        <button @click="showFilters = !showFilters" class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-          <i class="fas fa-sliders-h text-brand-olive"></i>
-        </button>
-        <div class="relative">
-          <input type="text" x-model="searchQuery" placeholder="Search jobs..." 
-                 class="pl-9 pr-3 py-2 rounded-xl border border-brand-beige text-sm w-40 focus:outline-none focus:border-brand-gold">
-          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-brand-dark/40 text-xs"></i>
-      <p class="text-xs text-gray-500 mt-1">
-        Started: <span x-text="formatTime(job.started_at)"></span>
-      </p>
-
+      <!-- EARNINGS BADGE -->
+      <div x-show="calculateFee(job) > 0"
+           class="mt-3 flex items-center justify-between bg-green-50 border border-green-100 rounded-xl px-3 py-2">
+        <span class="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Your Earnings</span>
+        <span class="font-extrabold text-green-700 text-sm">₹<span x-text="calculateFee(job)"></span></span>
       <!-- EARNINGS BADGE - Updated for quote-based pricing -->
       <div x-show="(calculateFee(job) > 0 || (job.is_inspection_job && job.quote_status === 'submitted'))" 
            class="mt-3 flex items-center justify-between rounded-xl px-3 py-2"
@@ -509,306 +196,136 @@ class="font-sans antialiased pb-36"
           <span class="font-extrabold text-amber-700 text-sm">
             ₹<span x-text="job.quoted_amount || '0'"></span>
           </span>
-</div>
-</div>
-    </div>
-    
-    <!-- Filter Panel -->
-    <div x-show="showFilters" x-collapse class="mb-4">
-      <div class="glass-card rounded-2xl p-4">
-        <div class="flex flex-wrap gap-2">
-          <button @click="filterStatus = 'all'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all" 
-                  :class="filterStatus === 'all' ? 'bg-brand-gold text-white' : 'bg-white text-brand-dark'">
-            All
-
-      <!-- FOOTER -->
-      <div class="flex justify-between items-center border-t mt-4 pt-4">
-
-        <!-- CUSTOMER -->
-        <div>
-          <p class="text-sm font-bold" x-text="job.customer_name"></p>
-          <a
-            :href="'tel:' + job.phone"
-            class="text-xs text-green-600 font-bold mt-1 block">
-            📞 Call Customer
-          </a>
-
-          <p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
-          <button
-            @click="openMaps(job.location)"
-            class="text-xs text-blue-600 font-bold mt-1">
-            Open in Maps →
-</button>
-          <button @click="filterStatus = 'pending'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                  :class="filterStatus === 'pending' ? 'bg-brand-gold text-white' : 'bg-white text-brand-dark'">
-            Pending
-
-          <p class="text-[9px] font-mono text-red-600 mt-1"
-             x-show="job.slaRemaining">
-             SLA: <span x-text="job.slaRemaining"></span>
-          </p>
         </div>
+</div>
 
-        <!-- STATUS + ACTION -->
-        <div class="flex flex-col items-end gap-2">
+<!-- FOOTER -->
+<div class="flex justify-between items-center border-t mt-4 pt-4">
 
-          <span
-           :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
-                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                    job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
+<!-- CUSTOMER -->
+<div>
+<p class="text-sm font-bold" x-text="job.customer_name"></p>
+<a
+:href="'tel:' + job.phone"
+class="text-xs text-green-600 font-bold mt-1 block">
+📞 Call Customer
+</a>
+
+<p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
+<button
+@click="openMaps(job.location)"
+class="text-xs text-blue-600 font-bold mt-1">
+Open in Maps →
+</button>
+
+<p class="text-[9px] font-mono text-red-600 mt-1"
+x-show="job.slaRemaining">
+SLA: <span x-text="job.slaRemaining"></span>
+</p>
+</div>
+
+<!-- STATUS + ACTION -->
+<div class="flex flex-col items-end gap-2">
+
+<span
+:class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
+                   job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                   job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
+                    'bg-green-100 text-green-700'
+                  "
                     'bg-green-100 text-green-700'"
-            x-text="job.status.replace('_',' ')"
-          ></span>
+x-text="job.status.replace('_',' ')"
+></span>
 
-          <!-- ACCEPT / REJECT (only when job is free) -->
-          <button
-            x-show="job.status === 'pending'"
-            @click="acceptJob(job.id)"
-            class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
-            Accept
+<!-- ACCEPT / REJECT (only when job is free) -->
+<button
+x-show="job.status === 'pending'"
+@click="acceptJob(job.id)"
+class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
+Accept
 </button>
-          <button @click="filterStatus = 'in_progress'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                  :class="filterStatus === 'in_progress' ? 'bg-brand-gold text-white' : 'bg-white text-brand-dark'">
-            In Progress
 
-          <button
-            x-show="job.status === 'pending'"
-            @click="rejectJob(job.id)"
-            class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
-            Reject
+<button
+x-show="job.status === 'pending'"
+@click="rejectJob(job.id)"
+class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
+Reject
 </button>
-          <button @click="filterStatus = 'arrived'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                  :class="filterStatus === 'arrived' ? 'bg-brand-gold text-white' : 'bg-white text-brand-dark'">
-            Arrived
 
-          <!-- MARK ARRIVED (after accepting job) -->
-          <button
-            x-show="job.status === 'in_progress'"
-            @click="markArrived(job)"
-            class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
-            Mark Arrived
+<!-- MARK ARRIVED (after accepting job) -->
+<button
+x-show="job.status === 'in_progress'"
+@click="markArrived(job)"
+class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
+Mark Arrived
 </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Loading State -->
-    <div x-show="loading" class="space-y-4">
-      <div class="glass-card rounded-2xl p-6">
-        <div class="skeleton h-4 w-24 rounded mb-3"></div>
-        <div class="skeleton h-6 w-48 rounded mb-2"></div>
-        <div class="skeleton h-3 w-full rounded"></div>
-          <!-- COMPLETE (ONLY after arrival) -->
-          <button
-            x-show="job.status === 'arrived'"
-            @click="completeJob(job)"
-            class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
-            Complete Job
-          </button>
+<!-- COMPLETE (ONLY after arrival) -->
+<button
+x-show="job.status === 'arrived'"
+@click="completeJob(job)"
+class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
+Complete Job
+</button>
 
-        </div>
 </div>
 </div>
-  </template>
+</div>
+</template>
 
-    <!-- No Jobs State -->
-    <div x-show="!loading && filteredJobs.length === 0" 
-         class="glass-card rounded-2xl p-12 text-center">
-      <i class="fas fa-inbox text-5xl text-brand-beige mb-3"></i>
-      <p class="text-brand-dark/50">No active jobs at the moment</p>
-      <p class="text-xs text-brand-dark/40 mt-1">Enable notifications to get instant alerts</p>
-    </div>
 </section>
 
-    <!-- Jobs Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <template x-for="job in filteredJobs" :key="job.id">
-        <div class="glass-card rounded-2xl overflow-hidden transition-all hover:scale-[1.02] cursor-pointer"
-             :class="job.urgent ? 'border-l-4 border-danger' : ''"
-             @click="selectedJob = job; showJobModal = true">
-          
-          <!-- Job Header -->
-          <div class="p-5">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <span class="text-[8px] font-black text-brand-gold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-gold/10" 
-                      x-text="job.category"></span>
-                <span x-show="job.is_inspection_job && job.quote_status === 'approved'" 
-                      class="text-[8px] font-black text-success uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/10 ml-1">
-                  Quote Approved
-                </span>
-              </div>
-              <span class="text-[9px] font-mono text-brand-dark/30" x-text="'#' + job.id.slice(-6)"></span>
-            </div>
-            
-            <h4 class="font-bold text-brand-olive text-base mb-1" x-text="job.device"></h4>
-            <p class="text-xs text-brand-dark/50 line-clamp-2" x-text="job.issue || job.other_issue"></p>
-            
-            <!-- Progress Indicator -->
-            <div class="mt-3">
-              <div class="flex justify-between text-[8px] text-brand-dark/40 mb-1">
-                <span>Status</span>
-                <span x-text="getProgressText(job.status)"></span>
-              </div>
-              <div class="h-1.5 bg-brand-beige/50 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all"
-                     :class="getProgressColor(job.status)"
-                     :style="{ width: getProgressWidth(job.status) }"></div>
-              </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="flex items-center justify-between mt-4 pt-3 border-t border-brand-beige/30">
-              <div class="flex items-center gap-2">
-                <i class="fas fa-map-marker-alt text-brand-gold text-[10px]"></i>
-                <span class="text-[9px] text-brand-dark/50 truncate max-w-[120px]" x-text="job.location"></span>
-              </div>
-              <span class="text-[10px] font-bold" 
-                    :class="job.status === 'pending' ? 'text-warning' : 'text-success'"
-                    x-text="getStatusText(job.status)"></span>
-            </div>
-          </div>
-          
-          <!-- Action Buttons -->
-          <div class="bg-gradient-to-r from-brand-olive/5 to-brand-gold/5 p-3 flex gap-2">
-            <button x-show="job.status === 'pending'"
-                    @click.stop="acceptJob(job.id)"
-                    class="flex-1 py-2 bg-success text-white rounded-lg text-xs font-bold hover:shadow-lg transition-all">
-              <i class="fas fa-check-circle mr-1"></i> Accept
-            </button>
-            <button x-show="job.status === 'pending'"
-                    @click.stop="rejectJob(job.id)"
-                    class="flex-1 py-2 bg-danger text-white rounded-lg text-xs font-bold hover:shadow-lg transition-all">
-              <i class="fas fa-times-circle mr-1"></i> Reject
-            </button>
-            <button x-show="job.status === 'in_progress'"
-                    @click.stop="markArrived(job)"
-                    class="flex-1 py-2 bg-info text-white rounded-lg text-xs font-bold hover:shadow-lg transition-all">
-              <i class="fas fa-flag-checkered mr-1"></i> Mark Arrived
-            </button>
-            <button x-show="job.status === 'arrived'"
-                    @click.stop="completeJob(job)"
-                    class="flex-1 py-2 bg-success text-white rounded-lg text-xs font-bold hover:shadow-lg transition-all">
-              <i class="fas fa-check-double mr-1"></i> Complete
-            </button>
-          </div>
-        </div>
-      </template>
-    </div>
-  </section>
-
-  <!-- Quick Stats Footer -->
-  <div class="grid grid-cols-3 gap-3 glass-card rounded-2xl p-4">
-    <div class="text-center">
-      <i class="fas fa-clock text-brand-gold text-sm"></i>
-      <p class="text-[8px] text-brand-dark/50 mt-1">Response Time</p>
-      <p class="text-xs font-bold text-brand-olive" x-text="stats.avgResponseTime || '2.4 min'"></p>
-    </div>
-    <div class="text-center">
-      <i class="fas fa-check-circle text-success text-sm"></i>
-      <p class="text-[8px] text-brand-dark/50 mt-1">Completion Rate</p>
-      <p class="text-xs font-bold text-brand-olive" x-text="stats.completionRate || '98%'"></p>
-    </div>
-    <div class="text-center">
-      <i class="fas fa-calendar-week text-info text-sm"></i>
-      <p class="text-[8px] text-brand-dark/50 mt-1">Jobs This Week</p>
-      <p class="text-xs font-bold text-brand-olive" x-text="stats.weeklyJobs || '12'"></p>
-    </div>
-  </div>
 </main>
 
-<!-- Floating Action Button -->
-<button @click="scrollToTop()" x-show="showScrollTop" 
-        class="fixed bottom-24 right-5 w-12 h-12 bg-brand-gold rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-all z-40">
-  <i class="fas fa-arrow-up"></i>
-</button>
-
-<!-- Job Details Modal -->
-<div x-show="showJobModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
-     x-transition.opacity @click.away="showJobModal = false">
-  <div class="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto" x-show="showJobModal" x-transition.scale>
-    <div class="sticky top-0 bg-white p-5 border-b border-brand-beige/30 flex justify-between items-center">
-      <h3 class="font-bold text-brand-olive">Job Details</h3>
-      <button @click="showJobModal = false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="p-5" x-show="selectedJob">
-      <template x-if="selectedJob">
-        <div class="space-y-4">
-          <div>
-            <p class="text-[9px] text-brand-gold uppercase font-bold">Customer</p>
-            <p class="font-bold text-brand-olive" x-text="selectedJob.customer_name"></p>
-            <a :href="'tel:' + selectedJob.phone" class="text-sm text-green-600 mt-1 inline-block">
-              <i class="fas fa-phone"></i> <span x-text="selectedJob.phone"></span>
-            </a>
-          </div>
-          <div>
-            <p class="text-[9px] text-brand-gold uppercase font-bold">Location</p>
-            <p class="text-sm" x-text="selectedJob.location"></p>
-            <button @click="openMaps(selectedJob.location)" class="text-xs text-blue-600 mt-1">Open in Maps →</button>
-          </div>
-          <div x-show="selectedJob.is_inspection_job && selectedJob.quoted_amount">
-            <p class="text-[9px] text-brand-gold uppercase font-bold">Quote Amount</p>
-            <p class="text-xl font-bold text-brand-olive">₹<span x-text="selectedJob.quoted_amount"></span></p>
-            <p class="text-xs text-success">Your earnings: ₹<span x-text="calculateFee(selectedJob)"></span></p>
-          </div>
-        </div>
-      </template>
-    </div>
 <!-- BOTTOM NAV -->
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
-  <div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
+<div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
 
-    <button class="w-12 h-12 text-brand-gold">
-      <i class="fa-solid fa-house"></i>
-    </button>
+<button class="w-12 h-12 text-brand-gold">
+<i class="fa-solid fa-house"></i>
+</button>
 
-    <button @click="scrollToJobs()" class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
-      <i class="fa-solid fa-box-open"></i>
-    </button>
+<button @click="scrollToJobs()" class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
+<i class="fa-solid fa-box-open"></i>
+</button>
 
-    <div class="w-14 h-12"></div>
+<div class="w-14 h-12"></div>
 
-    <button onclick="window.location.href='completed_jobs.html'"
-            class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
-      <i class="fa-solid fa-book-open"></i>
-    </button>
+<button onclick="window.location.href='completed_jobs.html'"
+class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
+<i class="fa-solid fa-book-open"></i>
+</button>
 
-    <button @click="logout()" class="w-12 h-12 text-brand-olive/40">
-      <i class="fa-solid fa-circle-user"></i>
-    </button>
+<button @click="logout()" class="w-12 h-12 text-brand-olive/40">
+<i class="fa-solid fa-circle-user"></i>
+</button>
 
-    <button
-      class="absolute left-1/2 -translate-x-1/2 -top-6
-             w-14 h-14 bg-brand-gold rounded-full
-             flex items-center justify-center text-white
-             shadow-lg border-4 border-white">
-      <i class="fa-solid fa-camera"></i>
-    </button>
+<button
+class="absolute left-1/2 -translate-x-1/2 -top-6
+            w-14 h-14 bg-brand-gold rounded-full
+            flex items-center justify-center text-white
+            shadow-lg border-4 border-white">
+<i class="fa-solid fa-camera"></i>
+</button>
 
-</div>
 </div>
 </nav>
 
-<!-- Toast Notification Container -->
-<div class="fixed bottom-24 right-5 z-50 space-y-2" id="toastContainer"></div>
 <!-- ============================================================
-     🔥 FIREBASE INIT (must happen before Alpine uses it)
-     ============================================================ -->
+    🔥 FIREBASE INIT (must happen before Alpine uses it)
+    ============================================================ -->
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+authDomain: "fixzen-73d68.firebaseapp.com",
+projectId: "fixzen-73d68",
+messagingSenderId: "816193738840",
+appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
 };
 
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 // Guard: don't init twice if this script re-runs
 if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 }
 
 // Expose messaging globally so Alpine can use it safely
@@ -817,69 +334,29 @@ window.firebaseMessaging = firebase.messaging();
 </script>
 
 <!-- ============================================================
-     ALPINE COMPONENT
-     ============================================================ -->
+    ALPINE COMPONENT
+    ============================================================ -->
 <script>
-function commandCenter() {
 function dashboardHandler() {
 return {
-    // State
 tech: null,
 techName: '',
 loading: true,
 jobs: [],
-    stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
-    incomingJob: null,
+stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
+incomingJob: null,
 available: false,
-    notifStatus: 'default',
-    searchQuery: '',
-    filterStatus: 'all',
-    showFilters: false,
-    showScrollTop: false,
-    showJobModal: false,
-    selectedJob: null,
-    isDarkMode: false,
-    chartPeriod: 'week',
-    earningsChart: null,
-    
-    // Stats
-    stats: {
-      activeJobs: 0,
-      earnings: 0,
-      todayEarnings: 0,
-      avgResponseTime: '2.4',
-      completionRate: '98',
-      weeklyJobs: 0
-    },
-    
-    // Computed
-    get filteredJobs() {
-      let filtered = this.jobs;
-      
-      if (this.filterStatus !== 'all') {
-        filtered = filtered.filter(j => j.status === this.filterStatus);
-      }
-      
-      if (this.searchQuery) {
-        const query = this.searchQuery.toLowerCase();
-        filtered = filtered.filter(j => 
-          j.customer_name?.toLowerCase().includes(query) ||
-          j.device?.toLowerCase().includes(query) ||
-          j.location?.toLowerCase().includes(query)
-        );
-      }
-      
-      return filtered;
-    },
-    
-    // Methods
-    notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
+notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
 
-    // ─────────────────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────
 async init() {
-      // ✅ LOAD SAVED LANGUAGE
+// ✅ LOAD SAVED LANGUAGE
+const savedLang = localStorage.getItem("preferred_language") || "en";
+if (typeof setLanguage === "function") {
+setLanguage(savedLang);
+}
       const savedLang = localStorage.getItem("preferred_language") || "en";
       if (typeof setLanguage === "function") {
         setLanguage(savedLang);
@@ -889,723 +366,511 @@ if (!this.tech) {
 window.location.href = "partnerlogin.html";
 return;
 }
-      
 
-      // Hard lock: if a job is in progress redirect to detail
+// Hard lock: if a job is in progress redirect to detail
 const lockedJobId = localStorage.getItem("locked_job_id");
 if (lockedJobId) {
 window.location.href = "job_detail.html";
 return;
 }
-      
 
 this.techName = this.tech.name;
-      
-      // Set initial availability from DB
+
+// Set initial availability from DB
 await this.loadTechProfile();
 
-      // ── FIX: setupNotifications must complete before onMessage is registered ──
+// ── FIX: setupNotifications must complete before onMessage is registered ──
 await this.setupNotifications();
 
-      // Register foreground message handler AFTER setup is done
-      // This is now safe because setupNotifications awaits SW registration
-      this.registerForegroundHandler();
+// Register foreground message handler AFTER setup is done
+// This is now safe because setupNotifications awaits SW registration
+this.registerForegroundHandler();
 
 await this.fetchJobs();
 this.subscribeRealtime();
-      this.initChart();
-      this.setupScrollListener();
-      
-      // Update greeting and stats periodically
-      setInterval(() => this.updateStats(), 60000);
 },
-    
 
-    // ─────────────────────────────────────────────────────────
-    // Load tech profile (availability, etc.)
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Load tech profile (availability, etc.)
+// ─────────────────────────────────────────────────────────
 async loadTechProfile() {
-      const { data } = await window.sb
-      const { data, error } = await window.sb
+const { data, error } = await window.sb
 .from('technicians')
 .select('is_available')
 .eq('id', this.tech.id)
 .single();
-      
-      if (data) this.available = data.is_available ?? false;
-    },
-    
-    async toggleAvailability(e) {
-      const newValue = e.target.checked;
-      this.available = newValue;
-      
-      await window.sb
-        .from('technicians')
-        .update({ is_available: newValue })
-        .eq('id', this.tech.id);
-      
-      this.showToast(newValue ? 'You are now available for jobs' : 'You are now offline', 'success');
 
-      if (!error && data) {
-        this.available = data.is_available ?? false;
-      }
+if (!error && data) {
+this.available = data.is_available ?? false;
+}
 },
-    
 
-    // ─────────────────────────────────────────────────────────
-    // FIX: setupNotifications — returns a promise so init() can await it
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// FIX: setupNotifications — returns a promise so init() can await it
+// ─────────────────────────────────────────────────────────
 async setupNotifications() {
-      if (!('serviceWorker' in navigator)) return;
-      
-      this.notifStatus = Notification.permission;
-      
-      if (Notification.permission === 'granted') {
-        const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-        await navigator.serviceWorker.ready;
-        
-      try {
-        if (!('serviceWorker' in navigator)) {
-          console.error("❌ Service Worker not supported in this browser");
-          this.notifStatus = 'denied';
-          return;
-        }
+try {
+if (!('serviceWorker' in navigator)) {
+console.error("❌ Service Worker not supported in this browser");
+this.notifStatus = 'denied';
+return;
+}
 
-        // FIX: Check current permission state first — don't request yet
-        this.notifStatus = Notification.permission;
+// FIX: Check current permission state first — don't request yet
+this.notifStatus = Notification.permission;
 
-        if (Notification.permission === 'denied') {
-          console.warn("🔕 Notification permission has been denied by user");
-          return;
-        }
+if (Notification.permission === 'denied') {
+console.warn("🔕 Notification permission has been denied by user");
+return;
+}
 
-        // Register service worker — await it fully so messaging can use it
-        let registration;
-        try {
-          registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-            // FIX: updateViaCache = 'none' ensures a fresh SW is always checked
-            updateViaCache: 'none'
-          });
-          console.log("✅ Service Worker registered:", registration.scope);
+// Register service worker — await it fully so messaging can use it
+let registration;
+try {
+registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+// FIX: updateViaCache = 'none' ensures a fresh SW is always checked
+updateViaCache: 'none'
+});
+console.log("✅ Service Worker registered:", registration.scope);
 
-          // FIX: Wait for the SW to be active before proceeding
-          await navigator.serviceWorker.ready;
-          console.log("✅ Service Worker is active and ready");
-        } catch (swError) {
-          console.error("❌ Service Worker registration failed:", swError);
-          return;
-        }
+// FIX: Wait for the SW to be active before proceeding
+await navigator.serviceWorker.ready;
+console.log("✅ Service Worker is active and ready");
+} catch (swError) {
+console.error("❌ Service Worker registration failed:", swError);
+return;
+}
 
-        // Request permission (only if not already granted)
-        if (Notification.permission !== 'granted') {
-          const permission = await Notification.requestPermission();
-          this.notifStatus = permission;
-          if (permission !== 'granted') {
-            console.warn("🔕 Notification permission:", permission);
-            return;
-          }
-        }
+// Request permission (only if not already granted)
+if (Notification.permission !== 'granted') {
+const permission = await Notification.requestPermission();
+this.notifStatus = permission;
+if (permission !== 'granted') {
+console.warn("🔕 Notification permission:", permission);
+return;
+}
+}
 
-        this.notifStatus = 'granted';
+this.notifStatus = 'granted';
 
-        // FIX: Get FCM token — always pass the serviceWorkerRegistration
-        //      so Firebase uses OUR SW, not a default one
+// FIX: Get FCM token — always pass the serviceWorkerRegistration
+//      so Firebase uses OUR SW, not a default one
 const token = await window.firebaseMessaging.getToken({
 vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
 serviceWorkerRegistration: registration
 });
-        
-        if (token) await this.saveFCMToken(token);
 
-        if (!token) {
-          console.error("❌ No FCM token received — check VAPID key and service worker");
-          return;
-        }
+if (!token) {
+console.error("❌ No FCM token received — check VAPID key and service worker");
+return;
+}
 
-        console.log("✅ FCM Token obtained:", token.substring(0, 20) + "...");
+console.log("✅ FCM Token obtained:", token.substring(0, 20) + "...");
 
-        // Save token to DB
-        await this.saveFCMToken(token);
+// Save token to DB
+await this.saveFCMToken(token);
 
-        // FIX: Listen for token refresh and update DB automatically
-        //      Firebase rotates tokens periodically; if you miss this the
-        //      Edge Function will be sending to a dead token
-        window.firebaseMessaging.onTokenRefresh(async () => {
-          console.log("🔄 FCM Token refreshed — updating DB");
-          try {
-            const newToken = await window.firebaseMessaging.getToken({
-              vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-              serviceWorkerRegistration: registration
-            });
-            if (newToken) {
-              await this.saveFCMToken(newToken);
-            }
-          } catch (err) {
-            console.error("❌ Failed to refresh FCM token:", err);
-          }
-        });
+// FIX: Listen for token refresh and update DB automatically
+//      Firebase rotates tokens periodically; if you miss this the
+//      Edge Function will be sending to a dead token
+window.firebaseMessaging.onTokenRefresh(async () => {
+console.log("🔄 FCM Token refreshed — updating DB");
+try {
+const newToken = await window.firebaseMessaging.getToken({
+vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
+serviceWorkerRegistration: registration
+});
+if (newToken) {
+await this.saveFCMToken(newToken);
+}
+} catch (err) {
+console.error("❌ Failed to refresh FCM token:", err);
+}
+});
 
-      } catch (err) {
-        console.error("❌ Notification setup failed:", err);
+} catch (err) {
+console.error("❌ Notification setup failed:", err);
 }
 },
-    
 
-    // ─────────────────────────────────────────────────────────
-    // FIX: Extracted token save into its own method — reused by onTokenRefresh
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// FIX: Extracted token save into its own method — reused by onTokenRefresh
+// ─────────────────────────────────────────────────────────
 async saveFCMToken(token) {
-      await window.sb.from("technicians").update({ fcm_token: token }).eq("id", this.tech.id);
-      const { error } = await window.sb
-        .from("technicians")
-        .update({ fcm_token: token })
-        .eq("id", this.tech.id);
+const { error } = await window.sb
+.from("technicians")
+.update({ fcm_token: token })
+.eq("id", this.tech.id);
 
-      if (error) {
-        console.error("❌ Failed to save FCM token to DB:", error);
-      } else {
-        console.log("✅ FCM Token saved to Supabase for tech:", this.tech.id);
-      }
+if (error) {
+console.error("❌ Failed to save FCM token to DB:", error);
+} else {
+console.log("✅ FCM Token saved to Supabase for tech:", this.tech.id);
+}
 },
-    
-    async enableNotifications() {
-      const permission = await Notification.requestPermission();
-      this.notifStatus = permission;
-      if (permission === 'granted') await this.setupNotifications();
 
-    // ─────────────────────────────────────────────────────────
-    // FIX: Foreground handler is separate from setup so there's
-    //      no chance it runs before the SW is registered
-    // ─────────────────────────────────────────────────────────
-    registerForegroundHandler() {
-      window.firebaseMessaging.onMessage((payload) => {
-        console.log("📩 Foreground message received:", payload);
+// ─────────────────────────────────────────────────────────
+// FIX: Foreground handler is separate from setup so there's
+//      no chance it runs before the SW is registered
+// ─────────────────────────────────────────────────────────
+registerForegroundHandler() {
+window.firebaseMessaging.onMessage((payload) => {
+console.log("📩 Foreground message received:", payload);
 
-        const title = payload.notification?.title || "New Job";
-        const body  = payload.notification?.body  || "You have a new job";
+const title = payload.notification?.title || "New Job";
+const body  = payload.notification?.body  || "You have a new job";
 
-        // FIX: Check permission explicitly before calling new Notification()
-        //      Without this check, the call silently fails when permission
-        //      is not 'granted', causing the "no notification" bug
-        if (Notification.permission === 'granted') {
-          const notif = new Notification(title, {
-            body: body,
-            icon: "/icon-192.png",
-            badge: "/icon-192.png",
-            requireInteraction: true,
-            vibrate: [200, 100, 200]
-          });
+// FIX: Check permission explicitly before calling new Notification()
+//      Without this check, the call silently fails when permission
+//      is not 'granted', causing the "no notification" bug
+if (Notification.permission === 'granted') {
+const notif = new Notification(title, {
+body: body,
+icon: "/icon-192.png",
+badge: "/icon-192.png",
+requireInteraction: true,
+vibrate: [200, 100, 200]
+});
 
-          // Open dashboard on click
-          notif.onclick = () => {
-            window.focus();
-            notif.close();
-          };
-        } else {
-          console.warn("🔕 Permission not granted — showing in-app alert instead");
-        }
+// Open dashboard on click
+notif.onclick = () => {
+window.focus();
+notif.close();
+};
+} else {
+console.warn("🔕 Permission not granted — showing in-app alert instead");
+}
 
-        // FIX: Always update the in-app job list on foreground message,
-        //      regardless of notification permission state
-        this.fetchJobs();
-      });
-    },
-
-    // ─────────────────────────────────────────────────────────
-    openMaps(location) {
-      const encoded = encodeURIComponent(location);
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
-    },
-
-    scrollToJobs() {
-      document.getElementById('jobsSection')?.scrollIntoView({ behavior: 'smooth' });
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // FIX: toggleAvailability now persists to DB so the Edge Function
-    //      respects it when filtering technicians to notify
-    // ─────────────────────────────────────────────────────────
-    async toggleAvailability(e) {
-      const newValue = e.target.checked;
-      this.available = newValue;
-
-      const { error } = await window.sb
-        .from('technicians')
-        .update({ is_available: newValue })
-        .eq('id', this.tech.id);
-
-      if (error) {
-        console.error("❌ Failed to update availability:", error);
-        // Revert on failure
-        this.available = !newValue;
-        alert("Failed to update availability. Please try again.");
-      } else {
-        console.log(`✅ Availability set to: ${newValue}`);
-      }
+// FIX: Always update the in-app job list on foreground message,
+//      regardless of notification permission state
+this.fetchJobs();
+});
 },
-    
+
+// ─────────────────────────────────────────────────────────
+openMaps(location) {
+const encoded = encodeURIComponent(location);
+window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
+},
+
+scrollToJobs() {
+document.getElementById('jobsSection')?.scrollIntoView({ behavior: 'smooth' });
+},
+
+// ─────────────────────────────────────────────────────────
+// FIX: toggleAvailability now persists to DB so the Edge Function
+//      respects it when filtering technicians to notify
+// ─────────────────────────────────────────────────────────
+async toggleAvailability(e) {
+const newValue = e.target.checked;
+this.available = newValue;
+
+const { error } = await window.sb
+.from('technicians')
+.update({ is_available: newValue })
+.eq('id', this.tech.id);
+
+if (error) {
+console.error("❌ Failed to update availability:", error);
+// Revert on failure
+this.available = !newValue;
+alert("Failed to update availability. Please try again.");
+} else {
+console.log(`✅ Availability set to: ${newValue}`);
+}
+},
 
     // ─────────────────────────────────────────────────────────
     // UPDATED: calculateFee with quote-based pricing support
     // ─────────────────────────────────────────────────────────
-calculateFee(job) {
-      const COMMISSION = 0.157;
+    calculateFee(job) {
       const COMMISSION = 0.157; // 15.7% commission
       
       // For inspection jobs with an approved quote
-if (job.is_inspection_job && job.quote_status === 'approved' && job.quoted_amount) {
-        return Math.round(job.quoted_amount * (1 - COMMISSION));
+      if (job.is_inspection_job && job.quote_status === 'approved' && job.quoted_amount) {
         // Use the quoted amount as the service price
         const servicePrice = job.quoted_amount;
         return Math.round(servicePrice * (1 - COMMISSION));
-}
+      }
       
       // For regular jobs or inspection jobs without quote yet
-const servicePrice = job.discounted_price || job.original_price || job.price || 0;
-return Math.round(servicePrice * (1 - COMMISSION));
-},
-    
+      const servicePrice = job.discounted_price || job.original_price || job.price || 0;
+      return Math.round(servicePrice * (1 - COMMISSION));
+    },
 
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 async fetchJobs() {
 this.loading = true;
-      const { data } = await window.sb
-      const { data, error } = await window.sb
+const { data, error } = await window.sb
 .from("jobs")
 .select("*")
 .or(`and(status.eq.pending,tech_id.is.null),tech_id.eq.${this.tech.id}`)
 .not("rejected_by", "cs", `{${this.tech.id}}`)
 .order("created_at", { ascending: false });
-      
-      if (data) {
 
-      if (!error) {
+if (!error) {
 this.jobs = data;
-        this.updateStats();
 
-        this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
+this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
 
-        const completedJobs = data.filter(
-          j => j.status === 'completed' && j.tech_id === this.tech.id
-        );
+const completedJobs = data.filter(
+j => j.status === 'completed' && j.tech_id === this.tech.id
+);
 
-        this.stats.earnings = completedJobs.reduce((total, job) => {
-          return total + this.calculateFee(job);
-        }, 0);
+this.stats.earnings = completedJobs.reduce((total, job) => {
+return total + this.calculateFee(job);
+}, 0);
 
-        const today = new Date().toISOString().split('T')[0];
-        this.stats.todayEarnings = data
-          .filter(j =>
-            j.status === 'completed' &&
-            j.tech_id === this.tech.id &&
-            j.completed_at?.startsWith(today)
-          )
-          .reduce((sum, j) => sum + this.calculateFee(j), 0);
+const today = new Date().toISOString().split('T')[0];
+this.stats.todayEarnings = data
+.filter(j =>
+j.status === 'completed' &&
+j.tech_id === this.tech.id &&
+j.completed_at?.startsWith(today)
+)
+.reduce((sum, j) => sum + this.calculateFee(j), 0);
 }
 
 this.loading = false;
 },
-    
-    updateStats() {
-      this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-      
-      const completedJobs = this.jobs.filter(j => j.status === 'completed' && j.tech_id === this.tech.id);
-      this.stats.earnings = completedJobs.reduce((total, job) => total + this.calculateFee(job), 0);
-      
-      const today = new Date().toISOString().split('T')[0];
-      this.stats.todayEarnings = completedJobs
-        .filter(j => j.completed_at?.startsWith(today))
-        .reduce((sum, j) => sum + this.calculateFee(j), 0);
-      
-      this.stats.weeklyJobs = completedJobs.filter(j => {
-        const date = new Date(j.completed_at);
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return date > weekAgo;
-      }).length;
 
-    // ─────────────────────────────────────────────────────────
-    subscribeRealtime() {
-      window.sb
-        .channel(`public-jobs`)
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "jobs" },
-          (payload) => {
-            const job = payload.new;
+// ─────────────────────────────────────────────────────────
+subscribeRealtime() {
+window.sb
+.channel(`public-jobs`)
+.on(
+"postgres_changes",
+{ event: "*", schema: "public", table: "jobs" },
+(payload) => {
+const job = payload.new;
 
-            // Remove rejected jobs from this tech's view
-            if (job.rejected_by?.includes(this.tech.id)) {
-              this.jobs = this.jobs.filter(j => j.id !== job.id);
-              return;
-            }
-
-            const index = this.jobs.findIndex(j => j.id === job.id);
-            if (index !== -1) {
-              this.jobs[index] = job;
-            } else {
-              // Add new pending unassigned jobs
-              if (job.status === "pending" && !job.tech_id) {
-                this.jobs.unshift(job);
-              }
-            }
-
-            this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
-
-            const completedJobs = this.jobs.filter(
-              j => j.status === 'completed' && j.tech_id === this.tech.id
-            );
-            this.stats.earnings = completedJobs.reduce((total, job) => {
-              return total + this.calculateFee(job);
-            }, 0);
-            const today = new Date().toISOString().split('T')[0];
-            this.stats.todayEarnings = completedJobs
-              .filter(j => j.completed_at?.startsWith(today))
-              .reduce((sum, j) => sum + this.calculateFee(j), 0);
-          }
-        )
-        .subscribe();
-},
-    
-
-    // ─────────────────────────────────────────────────────────
-async acceptJob(jobId) {
-      const { data } = await window.sb
-      const { data, error } = await window.sb
-.from("jobs")
-        .update({ tech_id: this.tech.id, status: "in_progress", started_at: new Date().toISOString() })
-        .update({
-          tech_id: this.tech.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        })
-.eq("id", jobId)
-.is("tech_id", null)
-        .eq("status", "pending")
-.select();
-      
-      if (data?.length) {
-        localStorage.setItem("locked_job_id", jobId);
-        window.location.href = "job_detail.html";
-      } else {
-        this.showToast("Job already taken by another technician", "error");
-        await this.fetchJobs();
-
-      if (error) {
-        console.error("Accept error:", error);
-        alert("Database error while accepting job");
-        return;
+// Remove rejected jobs from this tech's view
+if (job.rejected_by?.includes(this.tech.id)) {
+this.jobs = this.jobs.filter(j => j.id !== job.id);
+return;
 }
 
-      if (!data || data.length === 0) {
-        alert("Too late. Another technician already took this job.");
-        return;
-      }
+const index = this.jobs.findIndex(j => j.id === job.id);
+if (index !== -1) {
+this.jobs[index] = job;
+} else {
+// Add new pending unassigned jobs
+if (job.status === "pending" && !job.tech_id) {
+this.jobs.unshift(job);
+}
+}
 
-      const index = this.jobs.findIndex(j => j.id === jobId);
-      if (index !== -1) {
-        this.jobs[index].status = "in_progress";
-        this.jobs[index].tech_id = this.tech.id;
-      }
+this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 
-      localStorage.setItem("locked_job_id", jobId);
-      window.location.href = "job_detail.html";
+const completedJobs = this.jobs.filter(
+j => j.status === 'completed' && j.tech_id === this.tech.id
+);
+this.stats.earnings = completedJobs.reduce((total, job) => {
+return total + this.calculateFee(job);
+}, 0);
+const today = new Date().toISOString().split('T')[0];
+this.stats.todayEarnings = completedJobs
+.filter(j => j.completed_at?.startsWith(today))
+.reduce((sum, j) => sum + this.calculateFee(j), 0);
+}
+)
+.subscribe();
 },
-    
 
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+async acceptJob(jobId) {
+const { data, error } = await window.sb
+.from("jobs")
+.update({
+tech_id: this.tech.id,
+status: "in_progress",
+started_at: new Date().toISOString()
+})
+.eq("id", jobId)
+.is("tech_id", null)
+.eq("status", "pending")
+.select();
+
+if (error) {
+console.error("Accept error:", error);
+alert("Database error while accepting job");
+return;
+}
+
+if (!data || data.length === 0) {
+alert("Too late. Another technician already took this job.");
+return;
+}
+
+const index = this.jobs.findIndex(j => j.id === jobId);
+if (index !== -1) {
+this.jobs[index].status = "in_progress";
+this.jobs[index].tech_id = this.tech.id;
+}
+
+localStorage.setItem("locked_job_id", jobId);
+window.location.href = "job_detail.html";
+},
+
+// ─────────────────────────────────────────────────────────
 async rejectJob(jobId) {
 const job = this.jobs.find(j => j.id === jobId);
-      const currentRejected = job?.rejected_by || [];
-      
-      await window.sb
-      if (!job) return;
+if (!job) return;
 
-      const currentRejected = job.rejected_by || [];
+const currentRejected = job.rejected_by || [];
 
-      const { error } = await window.sb
+const { error } = await window.sb
 .from("jobs")
-        .update({ rejected_by: [...currentRejected, this.tech.id] })
-        .update({
-          rejected_by: [...currentRejected, this.tech.id]
-        })
+.update({
+rejected_by: [...currentRejected, this.tech.id]
+})
 .eq("id", jobId);
-      
 
-      if (error) {
-        console.error("Reject failed:", error);
-        alert("Reject failed");
-        return;
-      }
+if (error) {
+console.error("Reject failed:", error);
+alert("Reject failed");
+return;
+}
 
 this.jobs = this.jobs.filter(j => j.id !== jobId);
-      this.updateStats();
-      this.showToast("Job rejected", "info");
-    },
-    
-    async markArrived(job) {
-      await window.sb
-        .from('jobs')
-        .update({ arrived_at: new Date().toISOString(), status: "arrived" })
-        .eq('id', job.id);
-      
-      job.status = "arrived";
-      this.showToast("Arrival marked successfully", "success");
-      this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
 },
-    
 
     // ─────────────────────────────────────────────────────────
     // UPDATED: completeJob with quote-based pricing support
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 async completeJob(job) {
+const completedAt = new Date().toISOString();
       const fee = this.calculateFee(job);
-      await window.sb
-        .from("jobs")
-        .update({ status: "completed", completed_at: new Date().toISOString(), technician_earning: fee })
-        .eq("id", job.id);
-      const completedAt = new Date().toISOString();
-
-      this.showToast(`Job completed! Earnings: ₹${fee}`, "success");
-      await this.fetchJobs();
-    },
-    
-    subscribeRealtime() {
-      window.sb
-        .channel(`public-jobs`)
-        .on("postgres_changes", { event: "*", schema: "public", table: "jobs" }, (payload) => {
-          const job = payload.new;
-          if (job.rejected_by?.includes(this.tech.id)) {
-            this.jobs = this.jobs.filter(j => j.id !== job.id);
-            return;
-          }
-          
-          const index = this.jobs.findIndex(j => j.id === job.id);
-          if (index !== -1) {
-            this.jobs[index] = job;
-          } else if (job.status === "pending" && !job.tech_id) {
-            this.jobs.unshift(job);
-            this.showToast(`New job: ${job.category} at ${job.location}`, "info");
-          }
-          this.updateStats();
-        })
-        .subscribe();
-    },
-    
-    initChart() {
-      const ctx = document.getElementById('earningsChart')?.getContext('2d');
-      if (!ctx) return;
       
-      this.earningsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            label: 'Earnings (₹)',
-            data: [0, 0, 0, 0, 0, 0, 0],
-            borderColor: '#A07D54',
-            backgroundColor: 'rgba(160,125,84,0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#5D5646',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: (ctx) => `₹${ctx.raw}` } }
-          },
-          scales: {
-            y: { beginAtZero: true, grid: { color: '#DFD4C3' }, ticks: { callback: (v) => `₹${v}` } },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-    },
-    
-    async updateChart() {
-      if (!this.earningsChart) return;
       // Calculate fee using the updated method
       let fee = this.calculateFee(job);
-
-      // Simulate real data - replace with actual API call
-      const mockData = this.chartPeriod === 'week' 
-        ? [1200, 800, 1500, 900, 2100, 1800, 2500]
-        : [4500, 5200, 4800, 6100, 5800, 7200, 6800, 7900, 8400, 9100];
+      
       const updateData = {
         status: "completed",
         completed_at: completedAt,
         technician_earning: fee
       };
-
-      this.earningsChart.data.datasets[0].data = mockData.slice(0, this.chartPeriod === 'week' ? 7 : 10);
-      this.earningsChart.update();
-    },
-    
-    showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = `glass-card rounded-xl p-3 min-w-[200px] toast-show flex items-center gap-2`;
-      toast.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle text-success' : type === 'error' ? 'fa-exclamation-circle text-danger' : 'fa-info-circle text-info'}"></i>
-        <span class="text-sm text-brand-dark">${message}</span>
-      `;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    },
-    
-    openMaps(location) {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`, '_blank');
-    },
-    
-    getGreeting() {
-      const hour = new Date().getHours();
-      if (hour < 12) return 'Good morning ☀️';
-      if (hour < 18) return 'Good afternoon 🌤️';
-      return 'Good evening 🌙';
-    },
-    
-    getStatusText(status) {
-      const map = { pending: 'Awaiting Response', in_progress: 'In Progress', arrived: 'On Site', completed: 'Done' };
-      return map[status] || status;
-    },
-    
-    getProgressWidth(status) {
-      const map = { pending: '25%', in_progress: '50%', arrived: '75%', completed: '100%' };
-      return map[status] || '0%';
-    },
-    
-    getProgressColor(status) {
-      const map = { pending: 'bg-warning', in_progress: 'bg-info', arrived: 'bg-brand-gold', completed: 'bg-success' };
-      return map[status] || 'bg-gray-300';
+      
       // If this is an inspection job, also store the final amount
       if (job.is_inspection_job && job.quoted_amount) {
         updateData.final_amount = job.quoted_amount;
       }
 
-      const { error } = await window.sb
-        .from("jobs")
+const { error } = await window.sb
+.from("jobs")
+        .update({
+          status: "completed",
+          completed_at: completedAt,
+          technician_earning: fee
+        })
         .update(updateData)
-        .eq("id", job.id)
-        .eq("tech_id", this.tech.id);
+.eq("id", job.id)
+.eq("tech_id", this.tech.id);
 
-      if (error) {
-        console.error(error);
-        alert("Failed to complete job: " + error.message);
-        return;
-      }
+if (error) {
+console.error(error);
+alert("Failed to complete job: " + error.message);
+return;
+}
 
+      alert("Job marked as completed!");
       alert(`✅ Job completed! Your earnings: ₹${fee}`);
-      this.fetchJobs();
+this.fetchJobs();
 },
-    
-    getProgressText(status) {
-      const map = { pending: 'Awaiting Response', in_progress: 'Traveling', arrived: 'On Site', completed: 'Completed' };
-      return map[status] || status;
 
-    // ─────────────────────────────────────────────────────────
-    async markArrived(job) {
-      try {
-        const { error } = await window.sb
-          .from('jobs')
+// ─────────────────────────────────────────────────────────
+async markArrived(job) {
+try {
+const { error } = await window.sb
+.from('jobs')
+          .update({ arrived_at: new Date().toISOString() })
           .update({ 
             arrived_at: new Date().toISOString(),
             status: "arrived"
           })
-          .eq('id', job.id)
-          .eq('tech_id', this.tech.id);
+.eq('id', job.id)
+.eq('tech_id', this.tech.id);
 
-        if (error) {
-          console.error("SUPABASE ERROR:", error);
-          alert("DB Error: " + error.message);
-          return;
-        }
+if (error) {
+console.error("SUPABASE ERROR:", error);
+alert("DB Error: " + error.message);
+return;
+}
 
-        job.arrived_at = new Date().toISOString();
-        job.status = "arrived";
+job.arrived_at = new Date().toISOString();
+job.status = "arrived";
 
+        alert("Arrival marked successfully");
         alert("✅ Arrival marked successfully");
 
-      } catch (err) {
-        console.error("ARRIVAL FULL ERROR:", err);
-        alert("Failed to mark arrival: " + (err.message || "Unknown error"));
-      }
+} catch (err) {
+console.error("ARRIVAL FULL ERROR:", err);
+alert("Failed to mark arrival: " + (err.message || "Unknown error"));
+}
 },
-    
-    setupScrollListener() {
-      window.addEventListener('scroll', () => {
-        this.showScrollTop = window.scrollY > 300;
-      });
+
+// ─────────────────────────────────────────────────────────
+async acceptIncoming() {
+const job = this.incomingJob;
+if (!job) return;
+
+const { data, error } = await window.sb
+.from("jobs")
+.update({
+tech_id: this.tech.id,
+status: "in_progress",
+started_at: new Date().toISOString()
+})
+.eq("id", job.id)
+.eq("status", "pending")
+.is("tech_id", null)
+.select();
+
+if (!data || data.length === 0) {
+alert("Too late. Another technician accepted this job.");
+}
+
+this.incomingJob = null;
+this.fetchJobs();
+},
+
+// ─────────────────────────────────────────────────────────
+async rejectIncoming() {
+const job = this.incomingJob;
+if (!job) return;
+
+const currentRejected = job.rejected_by || [];
+
+await window.sb
+.from("jobs")
+.update({
+rejected_by: [...currentRejected, this.tech.id]
+})
+.eq("id", job.id);
+
+this.incomingJob = null;
+},
+
+// ─────────────────────────────────────────────────────────
+formatTime(dt) {
+if (!dt) return "-";
+const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
+if (diff < 1)  return "just now";
+if (diff < 60) return diff + " mins ago";
+const hours = Math.floor(diff / 60);
+if (hours < 24) return hours + " hrs ago";
+return Math.floor(hours / 24) + " days ago";
+},
 
     // ─────────────────────────────────────────────────────────
-    async acceptIncoming() {
-      const job = this.incomingJob;
-      if (!job) return;
+    calculateFee(job) {
+      const COMMISSION = 0.157;
+      const servicePrice = job.discounted_price || job.original_price || job.price || 0;
+      return Math.round(servicePrice * (1 - COMMISSION));
+    },
 
-      const { data, error } = await window.sb
-        .from("jobs")
-        .update({
-          tech_id: this.tech.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        })
-        .eq("id", job.id)
-        .eq("status", "pending")
-        .is("tech_id", null)
-        .select();
-
-      if (!data || data.length === 0) {
-        alert("Too late. Another technician accepted this job.");
-      }
-
-      this.incomingJob = null;
-      this.fetchJobs();
-},
-    
-    scrollToTop() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // ─────────────────────────────────────────────────────────
-    async rejectIncoming() {
-      const job = this.incomingJob;
-      if (!job) return;
-
-      const currentRejected = job.rejected_by || [];
-
-      await window.sb
-        .from("jobs")
-        .update({
-          rejected_by: [...currentRejected, this.tech.id]
-        })
-        .eq("id", job.id);
-
-      this.incomingJob = null;
-},
-    
-    toggleDarkMode() {
-      this.isDarkMode = !this.isDarkMode;
-      document.body.classList.toggle('dark', this.isDarkMode);
-
-    // ─────────────────────────────────────────────────────────
-    formatTime(dt) {
-      if (!dt) return "-";
-      const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
-      if (diff < 1)  return "just now";
-      if (diff < 60) return diff + " mins ago";
-      const hours = Math.floor(diff / 60);
-      if (hours < 24) return hours + " hrs ago";
-      return Math.floor(hours / 24) + " days ago";
-},
-    
-
-    // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 logout() {
 localStorage.removeItem("active_tech");
 window.location.href = "partnerlogin.html";
@@ -1616,40 +881,41 @@ window.location.href = "partnerlogin.html";
 
 <!-- 🔔 JOB ALERT MODAL (Alpine-driven) -->
 <div
-  x-show="incomingJob"
-  x-transition
-  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+x-show="incomingJob"
+x-transition
+class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
+<div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
 
-    <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
-      New Job Arrived
-    </p>
+<p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
+New Job Arrived
+</p>
 
-    <h3 class="text-xl font-extrabold text-brand-olive mt-2"
-        x-text="incomingJob?.category"></h3>
+<h3 class="text-xl font-extrabold text-brand-olive mt-2"
+x-text="incomingJob?.category"></h3>
 
-    <p class="text-sm text-gray-600 mt-1"
-       x-text="incomingJob?.location"></p>
+<p class="text-sm text-gray-600 mt-1"
+x-text="incomingJob?.location"></p>
 
-    <p class="text-xs text-gray-500 italic mt-2"
+<p class="text-xs text-gray-500 italic mt-2"
+       x-text="incomingJob?.issue"></p>
        x-text="incomingJob?.issue || incomingJob?.other_issue"></p>
 
-    <div class="flex gap-3 mt-6">
-      <button
-        @click="acceptIncoming()"
-        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
-        Accept
-      </button>
+<div class="flex gap-3 mt-6">
+<button
+@click="acceptIncoming()"
+class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
+Accept
+</button>
 
-      <button
-        @click="rejectIncoming()"
-        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
-        Reject
-      </button>
-    </div>
+<button
+@click="rejectIncoming()"
+class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
+Reject
+</button>
+</div>
 
-  </div>
+</div>
 </div>
 
 </body>
