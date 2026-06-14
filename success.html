@@ -312,123 +312,171 @@
       
         <div class="bg-white w-full max-w-md rounded-[20px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             
-            <div class="p-6 overflow-y-auto bg-[#fdfdfd]" id="invoice-content">
-                
-                <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-4">
-                    <h1 class="font-serif italic text-3xl text-brand-dark font-bold">FixZenix</h1>
-                    <p class="text-xs text-gray-500 mt-1">Premium Home Services</p>
-                    <p class="text-[10px] text-gray-400 mt-1 font-mono">Invoice #<span x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></p>
+            <div class="p-6 overflow-y-auto bg-white" id="invoice-content">
+
+                <!-- Header -->
+                <div class="flex items-start justify-between pb-4 mb-4 border-b-2 border-brand-dark">
+                    <div>
+                        <h1 class="font-serif italic text-2xl text-brand-dark font-extrabold leading-none">FixZen</h1>
+                        <p class="text-[10px] text-gray-500 mt-1">Premium Home Services</p>
+                        <p class="text-[9px] text-gray-400 mt-2 leading-relaxed">
+                            FixZen Services<br>
+                            Nagpur, Maharashtra, India<br>
+                            help@fixzen.in
+                        </p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <span class="inline-block px-2 py-0.5 bg-brand-dark text-white text-[9px] font-bold uppercase tracking-widest rounded">Service Invoice</span>
+                        <p class="text-[9px] text-gray-400 mt-2">Invoice No.</p>
+                        <p class="text-xs font-extrabold text-brand-dark font-mono" x-text="'FXN-' + (jobId ? jobId.slice(0,8).toUpperCase() : '')"></p>
+                        <p class="text-[9px] text-gray-400 mt-1">Invoice Date</p>
+                        <p class="text-xs font-extrabold text-brand-dark font-mono" x-text="new Date().toLocaleDateString('en-IN')"></p>
+                    </div>
                 </div>
 
-                <div class="flex justify-between text-xs text-gray-600 mb-6 font-mono">
+                <!-- Billed To / Service Provider -->
+                <div class="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-3">
                     <div>
-                        <p class="font-bold text-gray-800">Billed To:</p>
-                        <p x-text="fullJobData?.customer_name || 'Customer'"></p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Billed To</p>
+                        <p class="font-bold text-brand-dark text-sm" x-text="fullJobData?.customer_name || 'Customer'"></p>
                         <p x-text="fullJobData?.phone || ''"></p>
+                        <p class="text-gray-400" x-text="fullJobData?.address || fullJobData?.location || ''"></p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-gray-800">Date:</p>
-                        <p x-text="new Date().toLocaleDateString('en-IN')"></p>
-                        <p class="font-bold text-gray-800 mt-2">Tech:</p>
-                        <p x-text="techData?.name || 'Expert'"></p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Service Provided By</p>
+                        <p class="font-bold text-brand-dark text-sm" x-text="techData?.name || 'FixZen Expert'"></p>
+                        <p x-text="'Technician ID: ' + (techData?.id ? techData.id.slice(0,8).toUpperCase() : 'N/A')"></p>
+                        <p class="text-gray-400" x-text="fullJobData?.category || 'Home Service'"></p>
                     </div>
                 </div>
 
-                <div class="border-b-2 border-dashed border-gray-300 pb-4 mb-4">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-gray-400 border-b border-gray-200">
-                                <th class="pb-2 font-normal">Service</th>
-                                <th class="pb-2 text-right font-normal">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Dynamic line items — one row per selected service -->
-                            <template x-for="(item, idx) in billLineItems" :key="idx">
-                                <tr class="border-b border-gray-100 last:border-0">
-                                    <td class="py-2.5">
-                                        <p class="font-bold text-brand-dark text-sm" x-text="item.name"></p>
-                                        <p class="text-xs text-gray-400" x-text="item.desc"></p>
-                                    </td>
-                                    <td class="py-2.5 text-right font-mono font-bold text-sm">
-                                        <span x-show="item.price > 0">₹<span x-text="item.price.toFixed(2)"></span></span>
-                                        <span x-show="item.price === 0" class="text-gray-400 text-xs">Included</span>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                <!-- Job ref strip -->
+                <div class="flex justify-between items-center bg-gray-50 rounded-lg px-3 py-2 mb-4 text-[10px] border border-gray-100">
+                    <span class="text-gray-500">Job Ref: <span class="font-mono font-bold text-gray-700" x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></span>
+                    <span class="inline-flex items-center gap-1 text-green-600 font-bold"><i class="fa-solid fa-circle-check"></i> Completed</span>
                 </div>
 
-                <div class="space-y-2 text-sm text-gray-600 mb-6">
+                <!-- Itemized services table -->
+                <table class="w-full text-sm mb-1">
+                    <thead>
+                        <tr class="text-left text-[9px] text-gray-400 uppercase tracking-wide border-b-2 border-gray-200">
+                            <th class="pb-2 font-bold w-6">#</th>
+                            <th class="pb-2 font-bold">Description</th>
+                            <th class="pb-2 text-right font-bold">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- One row per selected service; "Other Service" rows include the technician's full quote breakdown -->
+                        <template x-for="(item, idx) in billLineItems" :key="idx">
+                            <tr class="border-b border-gray-100 align-top">
+                                <td class="py-2.5 pr-1 text-xs text-gray-400 font-mono" x-text="idx+1"></td>
+                                <td class="py-2.5 pr-2">
+                                    <p class="font-bold text-brand-dark text-sm" x-text="item.name"></p>
 
-    <template x-if="fullJobData?.is_inspection_job">
+                                    <p class="text-[10px] text-gray-400 mt-0.5" x-show="item.type !== 'quote'" x-text="item.desc"></p>
 
-        <div>
+                                    <div x-show="item.type === 'quote'">
+                                        <p class="text-[10px] text-gray-400 italic mt-0.5">Reported issue: <span x-text="item.desc"></span></p>
+                                        <p class="text-[10px] text-gray-500 mt-1" x-show="item.workDesc"><span class="font-bold text-gray-600">Technician's note:</span> <span x-text="item.workDesc"></span></p>
+                                        <div class="mt-1.5 ml-0.5 space-y-0.5 border-l-2 border-gray-100 pl-2">
+                                            <div class="flex justify-between text-[10px] text-gray-500">
+                                                <span>Labour Charges</span>
+                                                <span class="font-mono" x-text="'₹' + item.labour.toFixed(2)"></span>
+                                            </div>
+                                            <div class="flex justify-between text-[10px] text-gray-500">
+                                                <span>Material / Spare Parts</span>
+                                                <span class="font-mono" x-text="'₹' + item.material.toFixed(2)"></span>
+                                            </div>
+                                            <div class="flex justify-between text-[10px] text-gray-500" x-show="item.extra > 0">
+                                                <span>Additional Charges</span>
+                                                <span class="font-mono" x-text="'₹' + item.extra.toFixed(2)"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-2.5 text-right font-mono font-bold text-sm whitespace-nowrap">₹<span x-text="item.price.toFixed(2)"></span></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
 
-            <div class="flex justify-between">
-                <span>Work Charges</span>
-                <span class="font-mono">
-                    ₹<span x-text="billQuoteAmount"></span>
-                </span>
-            </div>
+                <!-- Totals -->
+                <div class="space-y-1.5 text-sm text-gray-600 border-t-2 border-dashed border-gray-300 pt-3 mb-4">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span class="font-mono" x-text="'₹' + billSubtotal.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between" x-show="billPlatformFee > 0">
+                        <span>Platform Fee</span>
+                        <span class="font-mono" x-text="'₹' + billPlatformFee.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between font-black text-base border-t pt-2 mt-1 text-brand-dark">
+                        <span>Grand Total</span>
+                        <span x-text="'₹' + billGrandTotal.toFixed(2)"></span>
+                    </div>
+                </div>
 
-            <div class="flex justify-between">
-                <span>Inspection Fee Paid</span>
-                <span class="font-mono text-green-600">
-                    ₹<span x-text="billInspectionFee"></span>
-                </span>
-            </div>
+                <!-- Payment summary -->
+                <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-xs">
+                    <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-receipt mr-1"></i> Payment Summary</p>
 
-            <div class="flex justify-between">
-                <span>Inspection Adjustment</span>
-                <span class="font-mono text-red-500">
-                    -₹<span x-text="billInspectionFee"></span>
-                </span>
-            </div>
+                    <template x-if="isInspectionJob">
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Advance Paid (At Booking)</span>
+                                <span class="font-mono font-bold" x-text="'₹' + billAdvancePaid.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between text-gray-400 text-[10px] -mt-0.5">
+                                <span class="pl-2">incl. inspection fee credited</span>
+                                <span class="font-mono" x-text="'₹' + billInspectionFee.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between text-gray-600" x-show="billBalancePaid > 0">
+                                <span>Balance Paid (On Completion)</span>
+                                <span class="font-mono font-bold" x-text="'₹' + billBalancePaid.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between text-red-500" x-show="billRefundDue > 0">
+                                <span>Refund Due to Customer</span>
+                                <span class="font-mono font-bold" x-text="'₹' + billRefundDue.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between font-black text-sm border-t border-green-200 pt-1 mt-1 text-green-700">
+                                <span>Total Settled</span>
+                                <span x-text="'₹' + (billAdvancePaid + billBalancePaid - billRefundDue).toFixed(2)"></span>
+                            </div>
+                        </div>
+                    </template>
 
-            <div class="flex justify-between font-black text-lg border-t pt-2 mt-2">
-                <span>Final Amount</span>
-                <span class="text-green-600">
-                    ₹<span x-text="billFinalAmount"></span>
-                </span>
-            </div>
+                    <template x-if="!isInspectionJob">
+                        <div class="flex justify-between font-black text-sm text-green-700">
+                            <span>Total Paid</span>
+                            <span x-text="'₹' + billGrandTotal.toFixed(2)"></span>
+                        </div>
+                    </template>
+                </div>
 
-        </div>
+                <!-- Amount in words -->
+                <p class="text-[10px] text-gray-400 mb-4">
+                    <span class="font-bold text-gray-500">Amount in Words:</span>
+                    <span x-text="billAmountInWords"></span> Rupees Only
+                </p>
 
-    </template>
+                <!-- Notes + seal -->
+                <div class="flex items-end justify-between border-t border-gray-100 pt-4 mb-2">
+                    <div class="text-[9px] text-gray-400 leading-relaxed pr-3">
+                        <p class="font-bold text-gray-500 mb-1">Terms & Notes</p>
+                        <p>• Prices are inclusive of all applicable taxes.</p>
+                        <p>• System-generated invoice — no signature required.</p>
+                        <p>• For service queries, contact support within 48 hours.</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="w-20 h-20 rounded-full border-2 border-brand-green flex flex-col items-center justify-center text-brand-green -rotate-12 opacity-80">
+                            <i class="fa-solid fa-stamp text-lg mb-0.5"></i>
+                            <span class="text-[8px] font-black uppercase tracking-wide text-center leading-tight">Verified<br>Paid</span>
+                        </div>
+                    </div>
+                </div>
 
-    <template x-if="!fullJobData?.is_inspection_job">
-
-        <div>
-
-            <div class="flex justify-between">
-                <span>Subtotal</span>
-                <span>
-                    ₹<span x-text="billSubtotal"></span>
-                </span>
-            </div>
-
-            <div class="flex justify-between">
-                <span>Platform Fee</span>
-                <span>₹49</span>
-            </div>
-
-            <div class="flex justify-between font-black text-lg border-t pt-2 mt-2">
-                <span>Total Paid</span>
-                <span class="text-green-600">
-                    ₹<span x-text="Number(billSubtotal)+49"></span>
-                </span>
-            </div>
-
-        </div>
-
-    </template>
-
-</div>
-
-                <div class="text-center text-xs text-gray-400 mt-6 pb-2">
-                    <p>Thank you for trusting FixZen!</p>
+                <div class="text-center text-xs text-gray-400 mt-2 pb-2 border-t border-dashed border-gray-200 pt-3">
+                    <p class="font-bold text-gray-500">Thank you for trusting FixZen!</p>
                     <p>For support, email help@fixzen.in</p>
                 </div>
             </div>
@@ -587,14 +635,19 @@
         // Bill modal variables
         showBill: false,
         fullJobData: null,
-        billPrice: 0,
-        billSubtotal: 0,
         billLineItems: [],
         billServiceName: '',
         billVariantName: '',
-        billQuoteAmount: 0,
-        billInspectionFee: 299,
-        billFinalAmount: 0,
+        isInspectionJob: false,
+        billSubtotal: 0,        // sum of all itemized rows (fixed services + other-service quote)
+        billPlatformFee: 0,     // flat platform fee, only for non-inspection bookings
+        billGrandTotal: 0,      // total value of everything billed
+        billInspectionFee: 299, // inspection/visiting fee paid upfront
+        billQuoteAmount: 0,     // technician's final quote for "Other Service"
+        billAdvancePaid: 0,     // amount paid at booking time
+        billBalancePaid: 0,     // amount paid after job completion
+        billRefundDue: 0,       // if quote < inspection fee already paid
+        billAmountInWords: '',
         isPrinting: false,
 
         showFeedback: false,
@@ -687,15 +740,36 @@
         },
 
         updateBillAmounts(job) {
-            const inspFee = job.inspection_fee_amount || 299;
-            if (job.is_inspection_job) {
-                this.billQuoteAmount = job.quoted_amount || 0;
-                this.billInspectionFee = inspFee;
-                this.billFinalAmount = Math.max(0, this.billQuoteAmount - inspFee);
-            } else {
-                this.billPrice = parseFloat(job.original_price || 0);
-                this.billSubtotal = this.billPrice;
-            }
+            // Full bill totals are recomputed in openBillModal() right before the
+            // invoice is shown, so this just keeps a fresh copy of the job record.
+            this.fullJobData = job;
+        },
+
+        // Converts a number to Indian-style words for the invoice
+        // (e.g. 1234 -> "One Thousand Two Hundred Thirty Four")
+        numberToWords(num) {
+            num = Math.round(Math.max(0, num || 0));
+            if (num === 0) return 'Zero';
+
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+                           'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            const twoDigits = n => n < 20 ? ones[n] : (tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : ''));
+            const threeDigits = n => n < 100 ? twoDigits(n) : (ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + twoDigits(n % 100) : ''));
+
+            let result = '';
+            const crore = Math.floor(num / 10000000); num %= 10000000;
+            const lakh = Math.floor(num / 100000); num %= 100000;
+            const thousand = Math.floor(num / 1000); num %= 1000;
+            const hundred = num;
+
+            if (crore) result += threeDigits(crore) + ' Crore ';
+            if (lakh) result += threeDigits(lakh) + ' Lakh ';
+            if (thousand) result += threeDigits(thousand) + ' Thousand ';
+            if (hundred) result += threeDigits(hundred);
+
+            return result.trim();
         },
 
         async openBillModal() {
@@ -705,75 +779,125 @@
                     .select('*')
                     .eq('id', this.jobId)
                     .single();
-                    
+
                 if (jobError) throw jobError;
 
                 this.fullJobData = job;
                 this.billServiceName = job.service_name || job.category || 'Expert Service';
                 this.billVariantName = job.variant_name || job.device || 'Service';
 
-                // ── Build line items from services_selected + prices ──
-                // services_selected = "Toilet Flush Repair, Other Issue"
-                // original_price = total of all selected
-                // inspection_fee_amount = Other Issue fee
-                const lineItems = [];
-                // service names are stored in job.device as comma-separated string
+                const OTHER_LABEL = 'Other Issue';
+                const inspFee = Number(job.inspection_fee_amount || 299);
+                const totalPrice = parseFloat(job.original_price || job.discounted_price || 0);
+
+                // Service names selected during booking, stored comma-separated
                 const servicesSelected = job.device || '';
                 const serviceNames = servicesSelected
                     ? servicesSelected.split(',').map(s => s.trim()).filter(Boolean)
                     : ['Service'];
 
-                const inspFee = job.inspection_fee_amount || 299;
-                const totalPrice = parseFloat(job.original_price || job.discounted_price || 0);
+                const fixedServiceNames = serviceNames.filter(n => n.toLowerCase() !== OTHER_LABEL.toLowerCase());
+                const hasOtherService = !!job.is_inspection_job || serviceNames.some(n => n.toLowerCase() === OTHER_LABEL.toLowerCase());
 
-                if (serviceNames.length > 1) {
-                    // Mixed booking: split out fixed services and Other Issue
-                    const fixedTotal = totalPrice - (job.is_inspection_job ? inspFee : 0);
-                    const fixedServices = serviceNames.filter(n => n !== 'Other Issue');
-                    const perServicePrice = fixedServices.length > 0
-                        ? Math.round(fixedTotal / fixedServices.length)
-                        : 0;
+                // The amount paid at booking covers the fixed-price services PLUS the
+                // inspection/visiting fee charged for "Other Service" (if selected).
+                const fixedTotal = hasOtherService ? Math.max(0, totalPrice - inspFee) : totalPrice;
 
-                    fixedServices.forEach(name => {
-                        lineItems.push({ name, desc: job.category || '', price: perServicePrice });
-                    });
+                // ── Optional: real per-service prices saved at booking time ──
+                // If the booking page stores job.service_price_breakdown as JSON, e.g.
+                //   '{"Door Repairing": 399, "Hinge Replacement": 150}'
+                // those exact prices are shown below instead of an even split of the total.
+                let priceMap = null;
+                if (job.service_price_breakdown) {
+                    try {
+                        const parsed = typeof job.service_price_breakdown === 'string'
+                            ? JSON.parse(job.service_price_breakdown)
+                            : job.service_price_breakdown;
+                        if (parsed && typeof parsed === 'object') priceMap = parsed;
+                    } catch (e) { priceMap = null; }
+                }
 
-                    if (job.is_inspection_job) {
-                        const otherDesc = job.other_issue
-                            ? `"${job.other_issue.slice(0, 60)}${job.other_issue.length > 60 ? '…' : ''}"`
-                            : 'Expert inspection on-site';
-                        lineItems.push({
-                            name: 'Other Issue (Inspection)',
-                            desc: otherDesc,
-                            price: inspFee
+                const lineItems = [];
+
+                // ── Fixed, catalog-priced services chosen at booking ──
+                if (fixedServiceNames.length > 0) {
+                    if (priceMap) {
+                        fixedServiceNames.forEach(name => {
+                            lineItems.push({
+                                type: 'simple',
+                                name,
+                                desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
+                                price: Number(priceMap[name] ?? 0)
+                            });
+                        });
+                    } else {
+                        const per = fixedServiceNames.length > 0 ? (fixedTotal / fixedServiceNames.length) : 0;
+                        fixedServiceNames.forEach(name => {
+                            lineItems.push({
+                                type: 'simple',
+                                name,
+                                desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
+                                price: per
+                            });
                         });
                     }
-                } else {
-                    // Single service
-                    const name = serviceNames[0];
-                    const isOther = name === 'Other Issue' || job.is_inspection_job;
-                    const desc = isOther
-                        ? (job.other_issue ? `"${job.other_issue.slice(0, 60)}${job.other_issue.length > 60 ? '…' : ''}"` : 'Expert inspection on-site')
-                        : (job.issue || job.device || '');
-                    lineItems.push({ name, desc, price: totalPrice });
+                }
+
+                // ── "Other Service" — final price decided by the technician on-site via quote ──
+                let quotedTotal = 0;
+                if (hasOtherService) {
+                    const labour = Number(job.quoted_labour || 0);
+                    const material = Number(job.quoted_material || 0);
+                    const extra = Number(job.quoted_extra || 0);
+                    quotedTotal = Number(job.quoted_amount || (labour + material + extra) || 0);
+
+                    const issueDesc = job.other_issue
+                        ? job.other_issue
+                        : 'Issue diagnosed and resolved on-site by the technician.';
+
+                    lineItems.push({
+                        type: 'quote',
+                        name: 'Other Service (On-Site Diagnosis & Repair)',
+                        desc: issueDesc,
+                        workDesc: job.quote_description || '',
+                        labour, material, extra,
+                        price: quotedTotal
+                    });
                 }
 
                 this.billLineItems = lineItems;
-                this.billSubtotal = lineItems.reduce((s, i) => s + i.price, 0);
+                this.isInspectionJob = hasOtherService;
+                this.billInspectionFee = inspFee;
+                this.billQuoteAmount = quotedTotal;
+                this.billSubtotal = lineItems.reduce((s, i) => s + (i.price || 0), 0);
 
-                if (job.is_inspection_job) {
-                    this.billQuoteAmount = job.quoted_amount || 0;
-                    this.billInspectionFee = inspFee;
-                    this.billFinalAmount = Math.max(0, this.billQuoteAmount - inspFee);
-                    this.billPrice = 0;
+                if (hasOtherService) {
+                    // No platform fee tracked separately for jobs that went through inspection.
+                    this.billPlatformFee = 0;
+                    this.billGrandTotal = this.billSubtotal; // fixedTotal + quotedTotal
+                    this.billAdvancePaid = fixedTotal + inspFee; // paid at booking time
+
+                    if (quotedTotal >= inspFee) {
+                        this.billBalancePaid = quotedTotal - inspFee;
+                        this.billRefundDue = 0;
+                    } else {
+                        this.billBalancePaid = 0;
+                        this.billRefundDue = inspFee - quotedTotal;
+                    }
                 } else {
-                    this.billPrice = this.billSubtotal;
+                    this.billPlatformFee = 49;
+                    this.billGrandTotal = this.billSubtotal + this.billPlatformFee;
+                    this.billAdvancePaid = this.billGrandTotal;
+                    this.billBalancePaid = 0;
+                    this.billRefundDue = 0;
                 }
-                
+
+                this.billAmountInWords = this.numberToWords(this.billGrandTotal);
+
                 this.$nextTick(() => {
                     this.showBill = true;
                 });
-                
+
             } catch (err) {
                 console.error('Error opening bill:', err);
                 alert('Could not load bill details. Please try again.');
