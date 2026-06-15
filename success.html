@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tracking Booking - FixZen</title>
+    <title>Tracking Booking - FixZenix</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -772,137 +772,138 @@
             return result.trim();
         },
 
-        async openBillModal() {
+       async openBillModal() {
+    try {
+        const { data: job, error: jobError } = await sb
+            .from('jobs')
+            .select('*')
+            .eq('id', this.jobId)
+            .single();
+
+        if (jobError) throw jobError;
+
+        this.fullJobData = job;
+        this.billServiceName = job.service_name || job.category || 'Expert Service';
+        this.billVariantName = job.variant_name || job.device || 'Service';
+
+        const OTHER_LABEL = 'Other Issue';
+        const inspFee = Number(job.inspection_fee_amount || 299);
+        const totalPrice = parseFloat(job.original_price || job.discounted_price || 0);
+
+        // ✅ FIXED: Use services_selected instead of device
+        const servicesSelected = job.services_selected || job.device || '';
+        const serviceNames = servicesSelected
+            ? servicesSelected.split(',').map(s => s.trim()).filter(Boolean)
+            : ['Service'];
+
+        const fixedServiceNames = serviceNames.filter(n => n !== OTHER_LABEL);
+        const hasOtherService = !!job.is_inspection_job || serviceNames.some(n => n === OTHER_LABEL);
+
+        const fixedTotal = hasOtherService ? Math.max(0, totalPrice - inspFee) : totalPrice;
+
+        // ✅ Parse price breakdown from booking page
+        let priceMap = null;
+        if (job.service_price_breakdown) {
             try {
-                const { data: job, error: jobError } = await sb
-                    .from('jobs')
-                    .select('*')
-                    .eq('id', this.jobId)
-                    .single();
+                const parsed = typeof job.service_price_breakdown === 'string'
+                    ? JSON.parse(job.service_price_breakdown)
+                    : job.service_price_breakdown;
+                if (parsed && typeof parsed === 'object') priceMap = parsed;
+            } catch (e) { priceMap = null; }
+        }
 
-                if (jobError) throw jobError;
+        const lineItems = [];
 
-                this.fullJobData = job;
-                this.billServiceName = job.service_name || job.category || 'Expert Service';
-                this.billVariantName = job.variant_name || job.device || 'Service';
-
-                const OTHER_LABEL = 'Other Issue';
-                const inspFee = Number(job.inspection_fee_amount || 299);
-                const totalPrice = parseFloat(job.original_price || job.discounted_price || 0);
-
-                // Service names selected during booking, stored comma-separated
-                const servicesSelected = job.device || '';
-                const serviceNames = servicesSelected
-                    ? servicesSelected.split(',').map(s => s.trim()).filter(Boolean)
-                    : ['Service'];
-
-                const fixedServiceNames = serviceNames.filter(n => n.toLowerCase() !== OTHER_LABEL.toLowerCase());
-                const hasOtherService = !!job.is_inspection_job || serviceNames.some(n => n.toLowerCase() === OTHER_LABEL.toLowerCase());
-
-                // The amount paid at booking covers the fixed-price services PLUS the
-                // inspection/visiting fee charged for "Other Service" (if selected).
-                const fixedTotal = hasOtherService ? Math.max(0, totalPrice - inspFee) : totalPrice;
-
-                // ── Optional: real per-service prices saved at booking time ──
-                // If the booking page stores job.service_price_breakdown as JSON, e.g.
-                //   '{"Door Repairing": 399, "Hinge Replacement": 150}'
-                // those exact prices are shown below instead of an even split of the total.
-                let priceMap = null;
-                if (job.service_price_breakdown) {
-                    try {
-                        const parsed = typeof job.service_price_breakdown === 'string'
-                            ? JSON.parse(job.service_price_breakdown)
-                            : job.service_price_breakdown;
-                        if (parsed && typeof parsed === 'object') priceMap = parsed;
-                    } catch (e) { priceMap = null; }
-                }
-
-                const lineItems = [];
-
-                // ── Fixed, catalog-priced services chosen at booking ──
-                if (fixedServiceNames.length > 0) {
-                    if (priceMap) {
-                        fixedServiceNames.forEach(name => {
-                            lineItems.push({
-                                type: 'simple',
-                                name,
-                                desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
-                                price: Number(priceMap[name] ?? 0)
-                            });
-                        });
-                    } else {
-                        const per = fixedServiceNames.length > 0 ? (fixedTotal / fixedServiceNames.length) : 0;
-                        fixedServiceNames.forEach(name => {
-                            lineItems.push({
-                                type: 'simple',
-                                name,
-                                desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
-                                price: per
-                            });
+        // Fixed services with individual prices
+        if (fixedServiceNames.length > 0) {
+            if (priceMap) {
+                // ✅ Use exact prices from booking
+                fixedServiceNames.forEach(name => {
+                    const price = Number(priceMap[name] ?? 0);
+                    if (price > 0) {
+                        lineItems.push({
+                            type: 'simple',
+                            name: name,
+                            desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
+                            price: price
                         });
                     }
-                }
-
-                // ── "Other Service" — final price decided by the technician on-site via quote ──
-                let quotedTotal = 0;
-                if (hasOtherService) {
-                    const labour = Number(job.quoted_labour || 0);
-                    const material = Number(job.quoted_material || 0);
-                    const extra = Number(job.quoted_extra || 0);
-                    quotedTotal = Number(job.quoted_amount || (labour + material + extra) || 0);
-
-                    const issueDesc = job.other_issue
-                        ? job.other_issue
-                        : 'Issue diagnosed and resolved on-site by the technician.';
-
-                    lineItems.push({
-                        type: 'quote',
-                        name: 'Other Service (On-Site Diagnosis & Repair)',
-                        desc: issueDesc,
-                        workDesc: job.quote_description || '',
-                        labour, material, extra,
-                        price: quotedTotal
-                    });
-                }
-
-                this.billLineItems = lineItems;
-                this.isInspectionJob = hasOtherService;
-                this.billInspectionFee = inspFee;
-                this.billQuoteAmount = quotedTotal;
-                this.billSubtotal = lineItems.reduce((s, i) => s + (i.price || 0), 0);
-
-                if (hasOtherService) {
-                    // No platform fee tracked separately for jobs that went through inspection.
-                    this.billPlatformFee = 0;
-                    this.billGrandTotal = this.billSubtotal; // fixedTotal + quotedTotal
-                    this.billAdvancePaid = fixedTotal + inspFee; // paid at booking time
-
-                    if (quotedTotal >= inspFee) {
-                        this.billBalancePaid = quotedTotal - inspFee;
-                        this.billRefundDue = 0;
-                    } else {
-                        this.billBalancePaid = 0;
-                        this.billRefundDue = inspFee - quotedTotal;
-                    }
-                } else {
-                    this.billPlatformFee = 49;
-                    this.billGrandTotal = this.billSubtotal + this.billPlatformFee;
-                    this.billAdvancePaid = this.billGrandTotal;
-                    this.billBalancePaid = 0;
-                    this.billRefundDue = 0;
-                }
-
-                this.billAmountInWords = this.numberToWords(this.billGrandTotal);
-
-                this.$nextTick(() => {
-                    this.showBill = true;
                 });
-
-            } catch (err) {
-                console.error('Error opening bill:', err);
-                alert('Could not load bill details. Please try again.');
+            } else {
+                // Fallback: split evenly if no price breakdown
+                const per = fixedServiceNames.length > 0 ? (fixedTotal / fixedServiceNames.length) : 0;
+                fixedServiceNames.forEach(name => {
+                    lineItems.push({
+                        type: 'simple',
+                        name: name,
+                        desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
+                        price: per
+                    });
+                });
             }
-        },
+        }
+
+        // Other Service with quote breakdown
+        let quotedTotal = 0;
+        if (hasOtherService) {
+            const labour = Number(job.quoted_labour || 0);
+            const material = Number(job.quoted_material || 0);
+            const extra = Number(job.quoted_extra || 0);
+            quotedTotal = Number(job.quoted_amount || (labour + material + extra) || 0);
+
+            const issueDesc = job.other_issue
+                ? job.other_issue
+                : 'Issue diagnosed and resolved on-site by the technician.';
+
+            lineItems.push({
+                type: 'quote',
+                name: 'Other Service (On-Site Diagnosis & Repair)',
+                desc: issueDesc,
+                workDesc: job.quote_description || '',
+                labour: labour,
+                material: material,
+                extra: extra,
+                price: quotedTotal
+            });
+        }
+
+        this.billLineItems = lineItems;
+        this.isInspectionJob = hasOtherService;
+        this.billInspectionFee = inspFee;
+        this.billQuoteAmount = quotedTotal;
+        this.billSubtotal = lineItems.reduce((s, i) => s + (i.price || 0), 0);
+
+        if (hasOtherService) {
+            this.billPlatformFee = 0;
+            this.billGrandTotal = this.billSubtotal;
+            this.billAdvancePaid = fixedTotal + inspFee;
+
+            if (quotedTotal >= inspFee) {
+                this.billBalancePaid = quotedTotal - inspFee;
+                this.billRefundDue = 0;
+            } else {
+                this.billBalancePaid = 0;
+                this.billRefundDue = inspFee - quotedTotal;
+            }
+        } else {
+            this.billPlatformFee = 49;
+            this.billGrandTotal = this.billSubtotal + this.billPlatformFee;
+            this.billAdvancePaid = this.billGrandTotal;
+            this.billBalancePaid = 0;
+            this.billRefundDue = 0;
+        }
+
+        this.billAmountInWords = this.numberToWords(this.billGrandTotal);
+
+        this.$nextTick(() => {
+            this.showBill = true;
+        });
+
+    } catch (err) {
+        console.error('Error opening bill:', err);
+        alert('Could not load bill details. Please try again.');
+    }
+},
 
         downloadPDF() {
             this.isPrinting = true;
