@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tracking Booking - FixZen</title>
+    <title>Tracking Booking - Fixzenix</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -790,8 +790,10 @@
                 const inspFee = Number(job.inspection_fee_amount || 299);
                 const totalPrice = parseFloat(job.original_price || job.discounted_price || 0);
 
-                // Service names selected during booking, stored comma-separated
-                const servicesSelected = job.device || '';
+                // Service names selected during booking, stored comma-separated.
+                // services_selected holds EVERY chosen service; device historically only
+                // held one name, so it's kept only as a fallback for older job records.
+                const servicesSelected = job.services_selected || job.device || '';
                 const serviceNames = servicesSelected
                     ? servicesSelected.split(',').map(s => s.trim()).filter(Boolean)
                     : ['Service'];
