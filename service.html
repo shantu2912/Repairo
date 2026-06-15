@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FixZenix | Multi-Service Expert Booking</title>
+    <title>FixZenix - Book Expert Service</title>
     <meta name="theme-color" content="#5D5646">
     
-    <!-- Supabase & Libs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -15,26 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 
     <style>
-        /* Animations & glass effects */
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 5px rgba(160,125,84,0.3); }
-            50% { box-shadow: 0 0 20px rgba(160,125,84,0.6); }
-        }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
@@ -59,20 +41,11 @@
         .service-card-hover {
             transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
-        .service-card-hover:active {
-            transform: scale(0.98);
-        }
         .gradient-text {
             background: linear-gradient(135deg, #A07D54 0%, #5D5646 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
-        .pulse-ring {
-            animation: glowPulse 2s ease-in-out infinite;
-        }
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
         }
     </style>
 
@@ -85,117 +58,83 @@
                         'brand-gold': '#A07D54', 
                         'brand-cream': '#F8F5F0', 
                         'brand-dark': '#2D2B28', 
-                        'brand-beige': '#DFD4C3', 
-                        'brand-green': '#10B981', 
-                        'brand-red': '#EF4444',
-                        'brand-warning': '#F59E0B'
-                    },
-                    fontFamily: { 
-                        sans: ['Inter', 'system-ui', 'sans-serif'], 
-                        serif: ['"Playfair Display"', 'serif'] 
-                    },
-                    boxShadow: { 
-                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)', 
-                        'up': '0 -5px 20px rgba(0,0,0,0.05)',
-                        'premium': '0 20px 40px -12px rgba(93, 86, 70, 0.15)',
-                        'card-hover': '0 20px 30px -12px rgba(93, 86, 70, 0.2)',
-                        'premium-glow': '0 0 30px rgba(160,125,84,0.3)'
-                    },
-                    animation: { 
-                        'slide-up': 'slideUp 0.4s ease-out forwards', 
-                        'pulse-slow': 'pulse 3s infinite',
-                        'fade-scale': 'fadeInScale 0.3s ease-out',
-                        'shimmer': 'shimmer 2.5s linear infinite'
+                        'brand-beige': '#DFD4C3'
                     }
                 }
             }
         }
 
-        // ---------- MASTER SERVICE DATABASE (enriched for multi-service) ----------
         const servicesDB = {
             "electrician": { 
                 name: "Expert Electrician", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
-                desc: "Certified electricians for wiring, appliance installation, and repairs. 24/7 emergency.",
+                desc: "Certified electricians for wiring, appliance installation, and repairs.",
                 icon: "fa-bolt",
                 subs: [
                     {n:"Switch/Socket Repair", p:275, d:"Per switchboard unit", popular: true},
                     {n:"Fan Installation", p:385, d:"Ceiling fan assembly & hanging", popular: false},
                     {n:"Fan Replacement", p:330, d:"Replace old with new", popular: false},
-                    {n:"Tube Light Install", p:220, d:"Wall mounting & connection", popular: false},
                     {n:"MCB Replacement", p:440, d:"Fuse box repair", popular: false},
                     {n:"New Point Wiring", p:880, d:"Internal wiring per point", popular: false},
-                    {n:"Inverter Connection", p:330, d:"Battery & Inverter setup", popular: false},
-                    {n:"Visit & Inspection", p:250, d:"Diagnosis (waived if service taken)", popular: false, is_inspection: true},
-                    {n:"Other Issue", p:299, d:"Can't find problem? Expert inspection. Fee adjusted.", is_inspection: true}
+                    {n:"Visit & Inspection", p:250, d:"Diagnosis charge", popular: false, is_inspection: true},
+                    {n:"Other Issue", p:299, d:"Expert inspection. Fee adjusted.", is_inspection: true}
                 ]
             },
             "carpenter": { 
                 name: "Expert Carpentry", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
-                desc: "Furniture assembly, door repairs, custom woodwork. Precision craftsmanship.",
+                desc: "Furniture assembly, door repairs, and custom woodwork.",
                 icon: "fa-hammer",
                 subs: [
                     {n:"Furniture Assembly", p:440, d:"Bed, wardrobe, table assembly", popular: true},
                     {n:"Door Hinge Repair", p:275, d:"Fixing creaking/loose doors", popular: false},
-                    {n:"Drawer Channel Fix", p:330, d:"Smooth sliding repair", popular: false},
                     {n:"Lock Installation", p:350, d:"Door/Cupboard lock", popular: false},
                     {n:"Wooden Bed Repair", p:550, d:"Structural fix & tightening", popular: false},
-                    {n:"Cupboard Alignment", p:385, d:"Door balancing", popular: false},
                     {n:"Visit & Inspection", p:299, d:"Assessment & measurement", is_inspection: true},
-                    {n:"Other Issue", p:299, d:"Expert inspection. Fee adjusted in final bill.", is_inspection: true}
+                    {n:"Other Issue", p:299, d:"Expert inspection. Fee adjusted.", is_inspection: true}
                 ]
             },
             "plumber": { 
                 name: "Professional Plumbing", image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
-                desc: "Leakage fixing, tap installation, blockage removal. Same-day service.",
+                desc: "Leakage fixing, tap installation, and blockage removal.",
                 icon: "fa-wrench",
                 subs: [
                     {n:"Tap Replacement", p:275, d:"Per tap installation", popular: true},
-                    {n:"Wash Basin Install", p:440, d:"Wall mounting & sealant", popular: false},
                     {n:"Blockage Removal", p:440, d:"Sink/Pipe unclogging", popular: true},
                     {n:"Toilet Flush Repair", p:385, d:"Tank mechanism fix", popular: false},
-                    {n:"Motor Connection", p:550, d:"Water pump setup", popular: false},
                     {n:"Visit & Inspection", p:250, d:"Leak detection & quote", is_inspection: true},
-                    {n:"Other Issue", p:299, d:"Inspection fee adjusted if work approved", is_inspection: true}
+                    {n:"Other Issue", p:299, d:"Expert inspection. Fee adjusted.", is_inspection: true}
                 ]
             },
             "ac tech": { 
                 name: "AC Repair & Service", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800",
-                desc: "Cooling issues, gas refill, deep cleaning. Keep AC efficient.",
+                desc: "Cooling issues, gas refill, and deep cleaning.",
                 icon: "fa-snowflake",
                 subs: [
-                    {n:"Split AC Service", p:550, d:"Foam jet cleaning (Indoor+Outdoor)", popular: true},
-                    {n:"Window AC Service", p:495, d:"Filter & coil cleaning", popular: false},
-                    {n:"Gas Refill", p:2500, d:"Complete gas charging (R32/R410)", popular: false},
+                    {n:"Split AC Service", p:550, d:"Foam jet cleaning", popular: true},
+                    {n:"Gas Refill", p:2500, d:"Complete gas charging", popular: false},
                     {n:"Installation", p:1650, d:"Split AC wall mounting", popular: false},
-                    {n:"Uninstallation", p:770, d:"Safe removal with gas lock", popular: false},
-                    {n:"Capacitor Change", p:650, d:"Starting problem fix", popular: false},
                     {n:"AC Inspection", p:330, d:"Diagnosis charge", is_inspection: true},
-                    {n:"Other Issue", p:299, d:"Inspection fee adjusted", is_inspection: true}
+                    {n:"Other Issue", p:299, d:"Expert inspection. Fee adjusted.", is_inspection: true}
                 ]
             },
             "clean": { 
                 name: "Deep Cleaning", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
-                desc: "Professional home deep cleaning & sanitization. Eco-friendly products.",
+                desc: "Professional home deep cleaning and sanitization.",
                 icon: "fa-broom",
                 subs: [
-                    {n:"1 BHK Deep Clean", p:1100, d:"Full house floor & dusting", popular: true},
-                    {n:"2 BHK Deep Clean", p:1430, d:"Full house floor & dusting", popular: true},
-                    {n:"Kitchen Deep Clean", p:880, d:"Oil stain & chimney removal", popular: false},
-                    {n:"Bathroom Cleaning", p:660, d:"Acid wash & sanitization", popular: false},
-                    {n:"Sofa Cleaning", p:770, d:"Shampoo wash (5 seater)", popular: false},
-                    {n:"Move-in Cleaning", p:1650, d:"Empty house cleaning", popular: false},
-                    {n:"Other Issue", p:299, d:"Inspection & customized quote", is_inspection: true}
+                    {n:"1 BHK Deep Clean", p:1100, d:"Full house cleaning", popular: true},
+                    {n:"2 BHK Deep Clean", p:1430, d:"Full house cleaning", popular: true},
+                    {n:"Kitchen Deep Clean", p:880, d:"Oil stain removal", popular: false},
+                    {n:"Other Issue", p:299, d:"Custom cleaning quote", is_inspection: true}
                 ]
             },
             "default": {
                 name: "General Service", image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
-                desc: "Standard inspection and repair service. Quality guaranteed.",
+                desc: "Standard inspection and repair service.",
                 icon: "fa-tools",
                 subs: [
                     {n:"Minor Repair", p:450, d:"Up to 1 hour work", popular: true},
                     {n:"Major Repair", p:850, d:"Complex technical work", popular: false},
-                    {n:"Visit & Inspection", p:299, d:"Standard visit charge", is_inspection: true},
-                    {n:"Other Issue", p:299, d:"Expert inspection", is_inspection: true}
+                    {n:"Visit & Inspection", p:299, d:"Standard visit charge", is_inspection: true}
                 ]
             }
         };
@@ -209,402 +148,278 @@
     </script>
 </head>
 
-<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
-     x-data="{
-        service: null,
-        selectedSubs: [],
-        showAgreement: false,
-        agreed: false,
-        loading: true,
-        bookingLoading: false,
-        fetchingLocation: false,
-        showScrollTop: false,
-        user: null,
-        customerName: '',
-        phone: '',
-        address: '',
-        date: '',
-        time: '',
-        minTime: '',
-        minDate: '',
-        lat: null,
-        lng: null,
-        otherIssueText: '',
+<body class="bg-brand-cream text-brand-dark antialiased" x-data="bookingApp()" x-init="init()">
 
-        get hasOtherIssueSelected() {
-            return this.selectedSubs.some(s => s.is_inspection === true);
-        },
-        
-        get selectedCount() {
-            return this.selectedSubs.length;
-        },
-        
-        get total() {
-            return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
-        },
-
-        // price breakdown per service for final payload
-        get servicePriceBreakdown() {
-            let breakdown = {};
-            this.selectedSubs.forEach(s => { breakdown[s.n] = s.p; });
-            return breakdown;
-        },
-
-        async init() {
-            const params = new URLSearchParams(window.location.search);
-            let rawId = params.get('id');
-            if (!rawId) { window.location.href = 'index.html'; return; }
-            let id = rawId.toLowerCase().trim();
-            this.service = servicesDB[id] || servicesDB['default'];
-            if(!servicesDB[id]) this.service.name = rawId; 
-
-            const today = new Date();
-            this.minDate = today.toISOString().split('T')[0];
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            this.date = tomorrow.toISOString().split('T')[0];
-            this.setDefaultTime();
-            
-            const isLogged = localStorage.getItem('local_user_logged');
-            const storedPhone = localStorage.getItem('local_user_phone');
-
-            if (isLogged === 'true' && storedPhone && window.sb) {
-                try {
-                    const { data: profile, error } = await window.sb
-                        .from('profiles')
-                        .select('*')
-                        .eq('phone', storedPhone.trim())
-                        .maybeSingle();
-                    if (!error && profile) {
-                        this.user = profile;
-                        this.customerName = profile.full_name;
-                        this.phone = profile.phone.replace('+91', '').trim();
-                        if (profile.address) this.address = profile.address;
-                        const { data: existingJobs } = await window.sb
-                            .from('jobs')
-                            .select('id, status')
-                            .eq('user_id', profile.id)
-                            .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started'])
-                            .order('created_at', { ascending: false });
-                        if (existingJobs && existingJobs.length > 0) {
-                            localStorage.setItem('active_job_id', existingJobs[0].id);
-                            window.location.href = `success.html?job_id=${existingJobs[0].id}`;
-                            return;
-                        }
-                    }
-                } catch (err) { console.error(err); }
-            }
-            this.loading = false;
-            window.addEventListener('scroll', () => { this.showScrollTop = window.scrollY > 300; });
-        },
-
-        setDefaultTime() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 30);
-            let minutes = now.getMinutes();
-            let roundedMinutes = Math.ceil(minutes / 30) * 30;
-            now.setMinutes(roundedMinutes);
-            now.setSeconds(0);
-            this.time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-            this.updateMinTime();
-        },
-
-        updateMinTime() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 30);
-            this.minTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        },
-
-        isDateTimeValid() {
-            if (!this.date || !this.time) return false;
-            const selectedDateTime = new Date(`${this.date}T${this.time}`);
-            const now = new Date();
-            const minDateTime = new Date(now.getTime() + 30 * 60000);
-            return selectedDateTime >= minDateTime;
-        },
-
-        toggleSub(sub) {
-            const index = this.selectedSubs.findIndex(s => s.n === sub.n);
-            if (index > -1) {
-                this.selectedSubs.splice(index, 1);
-            } else {
-                this.selectedSubs.push(sub);
-            }
-        },
-
-        openAgreement() {
-            if (this.selectedSubs.length === 0) return;
-            if (!this.user) {
-                sessionStorage.setItem('redirect_to', window.location.href);
-                alert('Please Log In to book!');
-                window.location.href = 'loginuser.html';
-                return;
-            }
-            this.showAgreement = true;
-        },
-
-        async fetchGPS() {
-            this.fetchingLocation = true;
-            if (!navigator.geolocation) {
-                alert('Geolocation not supported.');
-                this.fetchingLocation = false;
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    this.lat = position.coords.latitude;
-                    this.lng = position.coords.longitude;
-                    try {
-                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`);
-                        const data = await response.json();
-                        if(data && data.display_name) {
-                            let parts = data.display_name.split(',');
-                            this.address = parts.slice(0,3).join(',').trim();
-                        } else this.address = 'GPS Location Captured';
-                    } catch (error) { this.address = 'GPS Location Captured'; }
-                    this.fetchingLocation = false;
-                },
-                (error) => {
-                    alert('Location permission needed.');
-                    this.fetchingLocation = false;
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        },
-        
-        scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); },
-
-        async processInspectionPayment(amount, isMixed = false) {
-            return new Promise((resolve) => {
-                const msg = isMixed
-                    ? `🔍 Mixed Service Booking\n\nYour booking includes both fixed services and an "Other Issue" inspection (₹${amount}).\nThe ₹${amount} inspection fee will be adjusted in the final bill if additional work is approved.\n\nProceed?`
-                    : `🔍 Inspection Service\n\nAn inspection fee of ₹${amount} will be charged.\nFee adjusted against final bill if work approved.\n\nProceed with payment?`;
-                resolve(confirm(msg));
-            });
-        },
-
-      async confirmBooking() {
-    if (this.bookingLoading) return;
-
-    try {
-        if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-        if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-        if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-        if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-        if (!this.date) { alert('Please select a date.'); return; }
-        if (!this.time) { alert('Please select a time.'); return; }
-        if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
-
-        this.bookingLoading = true;
-        if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
-
-        const { data: blockJobs } = await window.sb
-            .from('jobs')
-            .select('id')
-            .eq('user_id', this.user.id)
-            .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
-
-        if (blockJobs && blockJobs.length > 0) {
-            alert('You already have an active service booking!');
-            localStorage.setItem('active_job_id', blockJobs[0].id);
-            window.location.href = `success.html?job_id=${blockJobs[0].id}`;
-            return;
-        }
-
-        const scheduledDateTime = `${this.date}T${this.time}:00`;
-        const hasOtherIssue = this.selectedSubs.some(s => s.is_inspection === true);
-        const constantServices = this.selectedSubs.filter(s => !s.is_inspection);
-        const isMixed = hasOtherIssue && constantServices.length > 0;
-        
-        if (hasOtherIssue && (!this.otherIssueText || !this.otherIssueText.trim())) {
-            alert('Please describe your Other Issue before booking.');
-            this.bookingLoading = false;
-            return;
-        }
-        
-        const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
-        const originalPrice = this.total;
-        
-        if (hasOtherIssue) {
-            const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
-            if (!paymentConfirmed) {
-                this.bookingLoading = false;
-                return;
-            }
-        }
-
-        const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
-        const firstConstant = constantServices[0];
-
-        const priceBreakdownObj = {};
-        this.selectedSubs.forEach(s => { priceBreakdownObj[s.n] = s.p; });
-
-        const jobPayload = {
-            user_id: this.user.id,
-            category: this.service?.name || 'General Service',
-            device: isMixed ? (firstConstant?.n || 'Multiple Services') : (this.selectedSubs[0]?.n || 'General Service'),
-            issue: isMixed ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}` : (hasOtherIssue ? (this.otherIssueText.trim() || 'Other Issue') : (this.selectedSubs[0]?.d || 'Service requested via app')),
-            other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
-            services_selected: serviceNames,
-            service_price_breakdown: JSON.stringify(priceBreakdownObj),
-            customer_name: this.customerName,
-            location: this.address,
-            phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
-            status: 'pending',
-            urgent: false,
-            latitude: this.lat || null,
-            longitude: this.lng || null,
-            scheduled_time: scheduledDateTime,
-            original_price: originalPrice,
-            discounted_price: originalPrice,
-            is_inspection_job: hasOtherIssue,
-            inspection_fee_paid: hasOtherIssue,
-            inspection_fee_amount: inspectionFeeAmount,
-            quote_status: hasOtherIssue ? 'pending' : null
-        };
-
-        const { data: insertedJob, error: jobError } = await window.sb
-            .from('jobs')
-            .insert([jobPayload])
-            .select()
-            .single();
-
-        if (jobError) { alert('Booking Error: ' + jobError.message); this.bookingLoading = false; return; }
-
-        this.bookingLoading = false;
-        this.showAgreement = false;
-        
-        localStorage.setItem('active_job_id', insertedJob.id);
-        window.location.href = 'success.html?job_id=' + insertedJob.id;
-
-    } catch (err) {
-        console.error(err);
-        alert('Unexpected Error: ' + err.message);
-        this.bookingLoading = false;
-    }
-}
-    }">
-
-    <!-- Premium Header -->
+    <!-- Header -->
     <div class="fixed top-0 w-full z-50 p-5 flex justify-between items-center pointer-events-none">
-        <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full glass-header shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-all duration-300 cursor-pointer border border-white/50">
+        <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full glass-header shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-all border border-white/50">
             <i class="fa-solid fa-arrow-left text-lg"></i>
         </a>
         <div class="pointer-events-auto glass-header rounded-full px-4 py-2 shadow-glass border border-white/50">
-            <span class="text-[10px] font-bold text-brand-gold uppercase tracking-wider">Multi-Service Booking</span>
+            <span class="text-[10px] font-bold text-brand-gold uppercase tracking-wider">Multi-Service</span>
         </div>
     </div>
 
-    <!-- Loading Screen -->
+    <!-- Loading -->
     <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50">
         <div class="relative">
             <div class="w-20 h-20 rounded-full border-4 border-brand-beige border-t-brand-gold animate-spin"></div>
             <i class="fa-solid fa-tools absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-brand-gold text-xl"></i>
         </div>
-        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase mt-4">Loading Service Details...</p>
+        <p class="text-xs font-bold tracking-widest text-brand-olive uppercase mt-4">Loading Services...</p>
     </div>
 
     <!-- Main Content -->
-    <div x-show="!loading" class="pb-48 animate__animated animate__fadeIn">
-        <!-- Hero Section -->
-        <div class="relative h-[45vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
-            <img :src="service?.image" class="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-            <div class="absolute bottom-8 left-6 right-6 text-white animate__animated animate__fadeInUp">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="bg-brand-gold/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-lg border border-white/20 flex items-center gap-1">
-                        <i :class="'fas ' + (service?.icon || 'fa-star')" class="text-[8px]"></i> Verified Pro
-                    </span>
-                    <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider"><i class="fas fa-shield-alt mr-1"></i> Insured</span>
-                </div>
-                <h1 class="text-3xl font-serif font-bold leading-tight" x-text="service?.name"></h1>
-                <p class="text-white/80 text-xs mt-2 font-light" x-text="service?.desc"></p>
-                <div class="flex items-center gap-4 mt-3 text-[10px] text-white/60">
-                    <span><i class="fas fa-clock mr-1"></i> Same-day service</span>
-                    <span><i class="fas fa-check-circle mr-1"></i> 30-day warranty</span>
-                </div>
+    <div x-show="!loading" class="pb-48">
+        
+        <!-- Hero -->
+        <div class="relative h-[40vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900">
+            <img :src="service?.image" class="w-full h-full object-cover opacity-90">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+            <div class="absolute bottom-8 left-6 right-6 text-white">
+                <h1 class="text-3xl font-serif font-bold" x-text="service?.name"></h1>
+                <p class="text-white/80 text-xs mt-2" x-text="service?.desc"></p>
             </div>
         </div>
 
         <div class="px-5 mt-6">
             <div class="flex justify-between items-end mb-4">
                 <div>
-                    <h3 class="font-bold text-lg text-brand-olive flex items-center gap-2"><i class="fas fa-list-check text-brand-gold"></i> Select Multiple Services</h3>
-                    <p class="text-[10px] text-brand-dark/40 mt-0.5">Choose all needed tasks — combined estimate</p>
+                    <h3 class="font-bold text-lg text-brand-olive flex items-center gap-2">
+                        <i class="fas fa-list-check text-brand-gold"></i> Select Services
+                    </h3>
+                    <p class="text-[10px] text-brand-dark/40">Tap to add multiple services</p>
                 </div>
-                <span class="text-[9px] text-brand-gold font-medium bg-white/80 backdrop-blur px-2.5 py-1 rounded-full shadow-sm"><i class="fas fa-hand-pointer mr-1"></i> Tap to add</span>
             </div>
             
             <!-- Service List -->
             <div class="space-y-3">
-                <template x-for="(sub, idx) in service?.subs" :key="idx">
+                <template x-for="sub in service?.subs" :key="sub.n">
                     <div @click="toggleSub(sub)" 
-                         class="service-card-hover relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm"
-                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-gradient-to-r from-orange-50 to-white ring-2 ring-brand-gold/20' : 'border-transparent hover:border-brand-beige hover:shadow-md'">
-                        
-                        <div x-show="sub.popular" class="absolute top-0 right-0"><div class="bg-brand-gold text-white text-[8px] font-bold px-3 py-0.5 rounded-bl-xl rounded-tr-xl">🔥 Popular</div></div>
-                        <div class="flex items-start gap-4 z-10">
+                         class="service-card-hover flex justify-between items-center p-4 bg-white rounded-2xl border transition-all cursor-pointer shadow-sm"
+                         :class="isSelected(sub) ? 'border-brand-gold bg-orange-50 ring-2 ring-brand-gold/20' : 'border-transparent hover:border-brand-beige'">
+                        <div class="flex items-start gap-4">
                             <div class="mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
-                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white scale-110' : 'border-brand-olive/30 text-transparent'"><i class="fa-solid fa-check text-[10px]"></i></div>
-                            <div><p class="font-bold text-brand-dark text-sm" x-text="sub.n"></p><p class="text-[10px] text-brand-dark/50 leading-tight" x-text="sub.d"></p></div>
+                                 :class="isSelected(sub) ? 'border-brand-gold bg-brand-gold text-white' : 'border-brand-olive/30'">
+                                <i class="fa-solid fa-check text-[10px]" x-show="isSelected(sub)"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-brand-dark text-sm" x-text="sub.n"></p>
+                                <p class="text-[10px] text-brand-dark/50" x-text="sub.d"></p>
+                            </div>
                         </div>
-                        <div class="text-right"><span class="font-bold text-brand-olive text-sm">₹<span x-text="sub.p"></span></span><p x-show="sub.is_inspection" class="text-[8px] text-brand-gold mt-0.5">Adjusted bill</p></div>
+                        <div class="text-right">
+                            <span class="font-bold text-brand-olive text-sm">₹<span x-text="sub.p"></span></span>
+                            <p x-show="sub.is_inspection" class="text-[8px] text-brand-gold">Adjusted</p>
+                        </div>
                     </div>
                 </template>
             </div>
 
-            <!-- Other Issue Description Box -->
-            <div x-show="hasOtherIssueSelected" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-brand-gold/30 rounded-2xl p-4 shadow-sm">
-                <div class="flex items-center gap-2 mb-3"><div class="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center"><i class="fa-solid fa-pen-to-square text-brand-gold text-sm"></i></div><div><p class="font-bold text-brand-olive text-sm">Describe Your Issue</p><p class="text-[10px] text-brand-dark/50">Help technician understand</p></div></div>
-                <textarea x-model="otherIssueText" placeholder="e.g., Water leaking under sink since yesterday, not sure of the pipe..." rows="3" class="w-full bg-white border border-brand-gold/30 rounded-xl p-3 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-gold/40 resize-none"></textarea>
-                <div class="flex items-center gap-2 mt-2 text-[10px] text-brand-gold/80"><i class="fa-solid fa-circle-info"></i><span>₹299 inspection fee — adjusted in final bill if work approved</span></div>
+            <!-- Other Issue Description -->
+            <div x-show="hasOtherIssue" x-transition class="mt-4 bg-amber-50 border border-brand-gold/30 rounded-2xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-pen-to-square text-brand-gold"></i>
+                    <p class="font-bold text-brand-olive text-sm">Describe Your Issue</p>
+                </div>
+                <textarea x-model="otherIssueText" 
+                          placeholder="e.g., Water leaking under sink since yesterday..."
+                          rows="3"
+                          class="w-full bg-white border border-brand-gold/30 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/40"></textarea>
+                <div class="text-[10px] text-brand-gold/80 mt-2">
+                    <i class="fa-solid fa-circle-info"></i> ₹299 inspection fee — adjusted if work approved
+                </div>
             </div>
 
-            <!-- Bill Breakdown with per-item pricing -->
-            <div x-show="selectedSubs.length > 0" x-transition:enter="transition ease-out duration-300" class="mt-4 bg-white border border-brand-beige rounded-2xl p-4 shadow-sm">
-                <p class="font-bold text-brand-olive text-xs uppercase tracking-wide mb-3 flex items-center gap-2"><i class="fas fa-receipt text-brand-gold"></i> Your Selection (price per item)</p>
-                <div class="space-y-2 max-h-56 overflow-y-auto pr-2">
+            <!-- Bill Breakdown -->
+            <div x-show="selectedSubs.length > 0" x-transition class="mt-4 bg-white border border-brand-beige rounded-2xl p-4">
+                <p class="font-bold text-brand-olive text-xs uppercase mb-3"><i class="fas fa-receipt text-brand-gold"></i> Your Selection</p>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
                     <template x-for="item in selectedSubs" :key="item.n">
-                        <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                            <div><p class="text-sm font-semibold text-brand-dark" x-text="item.n"></p><p class="text-[10px] text-brand-dark/40" x-text="item.is_inspection ? 'Inspection fee adjusted if work approved' : item.d"></p></div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <div>
+                                <p class="text-sm font-semibold" x-text="item.n"></p>
+                                <p class="text-[10px] text-brand-dark/40" x-text="item.is_inspection ? 'Inspection fee' : item.d"></p>
+                            </div>
                             <span class="text-sm font-bold text-brand-olive">₹<span x-text="item.p"></span></span>
                         </div>
                     </template>
                 </div>
-                <div class="flex justify-between items-center pt-3 mt-2 border-t-2 border-brand-gold/20"><p class="font-bold text-brand-olive text-base">Total Estimate</p><p class="font-bold text-brand-gold text-xl">₹<span x-text="total"></span></p></div>
-                <p class="text-[9px] text-brand-dark/40 text-center mt-2"><i class="fas fa-shield-alt mr-1"></i> GST included. No hidden charges. Each service priced individually.</p>
+                <div class="flex justify-between items-center pt-3 mt-2 border-t-2 border-brand-gold/20">
+                    <p class="font-bold">Total Estimate</p>
+                    <p class="font-bold text-brand-gold text-xl">₹<span x-text="total"></span></p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Sticky Bottom Bar -->
-    <div x-show="!loading" class="fixed bottom-0 w-full z-40 glass-card rounded-t-[30px] border-t border-white/50 p-5 shadow-up animate-slide-up">
+    <!-- Bottom Bar -->
+    <div x-show="!loading" class="fixed bottom-0 w-full z-40 glass-card rounded-t-[30px] border-t border-white/50 p-5">
         <div class="flex justify-between items-center mb-3">
-            <div><p class="text-[9px] text-brand-dark/50 font-bold uppercase">Total Estimate</p><div class="flex items-baseline gap-1"><span class="text-lg font-bold text-brand-olive">₹</span><h2 class="text-3xl font-serif font-bold text-brand-olive" x-text="total"></h2></div><p x-show="hasOtherIssueSelected && selectedSubs.length > 1" class="text-[9px] text-brand-gold mt-0.5"><i class="fa-solid fa-circle-info"></i> Includes ₹299 inspection fee</p></div>
-            <div class="text-right"><div x-show="selectedCount > 0"><span class="bg-brand-gold text-white text-[9px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check-circle text-[8px]"></i> <span x-text="selectedCount + ' Item' + (selectedCount > 1 ? 's' : '')"></span></span></div><p class="text-[9px] text-brand-dark/40 mt-1" x-show="selectedCount === 0">Select items to continue</p></div>
+            <div>
+                <p class="text-[9px] text-brand-dark/50 uppercase">Total</p>
+                <h2 class="text-2xl font-bold text-brand-olive">₹<span x-text="total"></span></h2>
+            </div>
+            <button @click="openAgreement()" 
+                    :disabled="selectedSubs.length === 0"
+                    class="px-6 py-3 rounded-xl font-bold"
+                    :class="selectedSubs.length > 0 ? 'bg-brand-olive text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+                Book Now
+            </button>
         </div>
-        <button @click="openAgreement()" :disabled="selectedCount === 0" class="w-full rounded-xl font-bold text-base py-3.5 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 shadow-lg" :class="selectedCount > 0 ? 'bg-gradient-to-r from-brand-olive to-brand-dark text-white hover:shadow-premium-glow' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"><span x-text="selectedCount > 0 ? 'Book Now' : 'Select a Service'"></span><i class="fa-solid fa-arrow-right text-sm transition-transform" x-show="selectedCount > 0"></i></button>
-        <p class="text-center text-[9px] text-brand-dark/30 mt-2"><i class="fas fa-lock mr-1"></i> Secure booking • No advance payment • Per-service pricing</p>
     </div>
 
-    <!-- Booking Modal (same as original but enhanced) -->
-    <div x-show="showAgreement" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-transition.opacity style="display: none;">
-        <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl animate__animated animate__slideInUp max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white z-10 px-6 pt-6 pb-3 border-b border-brand-beige/30"><div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div><div class="flex justify-between items-center"><h3 class="text-xl font-serif font-bold gradient-text">Confirm Booking</h3><span class="text-sm font-bold bg-brand-gold/10 px-3 py-1 rounded-full text-brand-gold">₹<span x-text="total"></span></span></div></div>
-            <div class="p-6 space-y-4">
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40"><i class="fas fa-user text-brand-gold text-sm"></i><input type="text" x-model="customerName" placeholder="Full Name" class="bg-transparent w-full text-sm font-medium"></div>
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3"><i class="fas fa-phone text-brand-gold text-sm"></i><div class="flex w-full"><span class="text-sm font-semibold mr-1">+91</span><input type="tel" x-model="phone" placeholder="Phone Number" class="bg-transparent w-full text-sm"></div></div>
-                <button @click="fetchGPS()" class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-gradient-to-r from-green-50 to-emerald-50 text-brand-green text-sm font-bold flex justify-center items-center gap-2"><i class="fas fa-location-crosshairs" :class="fetchingLocation ? 'fa-spin' : ''"></i><span x-text="fetchingLocation ? 'Fetching...' : '📍 Use Current Location'"></span></button>
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3"><i class="fas fa-location-dot text-brand-gold text-sm"></i><input type="text" x-model="address" placeholder="Full Address" class="bg-transparent w-full text-sm"></div>
-                <div class="bg-gray-50 border rounded-xl p-3 flex items-center gap-3"><i class="fas fa-calendar text-brand-gold text-sm"></i><input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm"></div>
-                <div class="bg-gray-50 border rounded-xl p-3 flex items-center gap-3"><i class="fas fa-clock text-brand-gold text-sm"></i><input type="time" x-model="time" :min="date === minDate ? minTime : ''" class="bg-transparent w-full text-sm"></div>
-                <div class="bg-brand-cream/50 rounded-xl p-3 text-xs text-brand-dark/70 max-h-36 overflow-auto"><p class="font-bold mb-1">📄 Terms:</p><ul class="list-disc pl-4 space-y-1 text-[10px]"><li>Per-service pricing exact as selected.</li><li>Inspection fee (₹299) adjusted if work approved.</li><li>Final price may vary slightly based on parts.</li><li>Cancellation policy applies.</li></ul></div>
-                <label class="flex items-start gap-3 p-2 cursor-pointer"><input type="checkbox" x-model="agreed" class="peer h-5 w-5 rounded-md border-2 border-gray-300 checked:border-brand-gold checked:bg-brand-gold transition-all"><i class="fas fa-check text-white absolute left-1 top-1 text-[10px] opacity-0 peer-checked:opacity-100 pointer-events-none"></i><span class="text-xs font-medium">I agree to the Terms & Conditions.</span></label>
-                <div class="flex gap-3"><button @click="showAgreement = false" class="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-gray-500">Cancel</button><button @click="confirmBooking()" :disabled="!agreed || bookingLoading || !isDateTimeValid()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-brand-gold to-brand-olive text-white font-bold disabled:opacity-50 flex justify-center gap-2"><span x-show="!bookingLoading">Confirm</span><i x-show="bookingLoading" class="fas fa-circle-notch fa-spin"></i></button></div>
+    <!-- Modal -->
+    <div x-show="showAgreement" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" x-cloak style="display: none;">
+        <div class="bg-white w-full max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-xl font-bold gradient-text mb-4">Confirm Booking</h3>
+                
+                <div class="space-y-3">
+                    <input type="text" x-model="customerName" placeholder="Full Name" class="w-full p-3 border rounded-xl">
+                    <input type="tel" x-model="phone" placeholder="Phone Number" class="w-full p-3 border rounded-xl">
+                    <input type="text" x-model="address" placeholder="Address" class="w-full p-3 border rounded-xl">
+                    <input type="date" x-model="date" :min="minDate" class="w-full p-3 border rounded-xl">
+                    <input type="time" x-model="time" class="w-full p-3 border rounded-xl">
+                </div>
+
+                <label class="flex items-center gap-2 mt-4">
+                    <input type="checkbox" x-model="agreed" class="w-4 h-4">
+                    <span class="text-xs">I agree to the terms & conditions</span>
+                </label>
+
+                <div class="flex gap-3 mt-6">
+                    <button @click="showAgreement = false" class="flex-1 py-3 border rounded-xl">Cancel</button>
+                    <button @click="confirmBooking()" :disabled="!agreed || bookingLoading" class="flex-1 py-3 bg-brand-olive text-white rounded-xl">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <button x-show="showScrollTop" @click="scrollToTop()" class="fixed bottom-28 right-5 w-11 h-11 bg-brand-gold rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-all z-40"><i class="fas fa-arrow-up text-sm"></i></button>
+    <script>
+        function bookingApp() {
+            return {
+                service: null,
+                selectedSubs: [],
+                showAgreement: false,
+                agreed: false,
+                loading: true,
+                bookingLoading: false,
+                user: null,
+                customerName: '',
+                phone: '',
+                address: '',
+                date: '',
+                time: '',
+                minDate: '',
+                otherIssueText: '',
+
+                get hasOtherIssue() {
+                    return this.selectedSubs.some(s => s.is_inspection === true);
+                },
+
+                get total() {
+                    return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
+                },
+
+                isSelected(sub) {
+                    return this.selectedSubs.some(s => s.n === sub.n);
+                },
+
+                async init() {
+                    const params = new URLSearchParams(window.location.search);
+                    let id = params.get('id');
+                    if (!id) { window.location.href = 'index.html'; return; }
+                    
+                    this.service = servicesDB[id.toLowerCase()] || servicesDB['default'];
+                    
+                    const today = new Date();
+                    this.minDate = today.toISOString().split('T')[0];
+                    this.date = this.minDate;
+                    this.time = '10:00';
+                    
+                    const storedPhone = localStorage.getItem('local_user_phone');
+                    if (storedPhone && window.sb) {
+                        const { data: profile } = await window.sb.from('profiles').select('*').eq('phone', storedPhone).maybeSingle();
+                        if (profile) {
+                            this.user = profile;
+                            this.customerName = profile.full_name;
+                            this.phone = profile.phone?.replace('+91', '');
+                            this.address = profile.address || '';
+                        }
+                    }
+                    
+                    this.loading = false;
+                },
+
+                toggleSub(sub) {
+                    const index = this.selectedSubs.findIndex(s => s.n === sub.n);
+                    if (index > -1) {
+                        this.selectedSubs.splice(index, 1);
+                    } else {
+                        this.selectedSubs.push(sub);
+                    }
+                },
+
+                openAgreement() {
+                    if (this.selectedSubs.length === 0) return;
+                    if (!this.user) {
+                        alert('Please login to book');
+                        window.location.href = 'loginuser.html';
+                        return;
+                    }
+                    this.showAgreement = true;
+                },
+
+                async confirmBooking() {
+                    if (this.bookingLoading) return;
+                    
+                    if (!this.agreed) { alert('Accept terms'); return; }
+                    if (!this.customerName) { alert('Enter name'); return; }
+                    if (!this.phone) { alert('Enter phone'); return; }
+                    if (!this.address) { alert('Enter address'); return; }
+                    
+                    this.bookingLoading = true;
+                    
+                    const hasOtherIssue = this.hasOtherIssue;
+                    const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
+                    const priceBreakdown = {};
+                    this.selectedSubs.forEach(s => { priceBreakdown[s.n] = s.p; });
+                    
+                    const jobPayload = {
+                        user_id: this.user.id,
+                        category: this.service.name,
+                        services_selected: serviceNames,
+                        service_price_breakdown: JSON.stringify(priceBreakdown),
+                        customer_name: this.customerName,
+                        location: this.address,
+                        phone: '+91' + this.phone,
+                        status: 'pending',
+                        scheduled_time: `${this.date}T${this.time}:00`,
+                        original_price: this.total,
+                        discounted_price: this.total,
+                        is_inspection_job: hasOtherIssue,
+                        inspection_fee_amount: hasOtherIssue ? 299 : 0,
+                        other_issue: hasOtherIssue ? this.otherIssueText : ''
+                    };
+                    
+                    const { data, error } = await window.sb.from('jobs').insert([jobPayload]).select().single();
+                    
+                    if (error) {
+                        alert('Error: ' + error.message);
+                        this.bookingLoading = false;
+                        return;
+                    }
+                    
+                    localStorage.setItem('active_job_id', data.id);
+                    window.location.href = 'success.html?job_id=' + data.id;
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </body>
 </html>
