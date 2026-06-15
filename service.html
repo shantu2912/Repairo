@@ -449,6 +449,18 @@
         if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
         if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
         if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+        
+        // ✅ AMRAVATI CITY VALIDATION - Check if address contains Amravati or nearby areas
+        const allowedCities = ['amravati', 'amrawati', 'अमरावती', 'amravti', 'amraoti'];
+        const addressLower = this.address.toLowerCase();
+        const isAmravati = allowedCities.some(city => addressLower.includes(city));
+        
+        if (!isAmravati) {
+            alert('❌ Service is currently available only in Amravati city.\n\nWe are expanding to other cities soon!\n\nPlease check back later or contact support for updates.');
+            this.bookingLoading = false;
+            return;
+        }
+        
         if (!this.date) { alert('Please select a date.'); return; }
         if (!this.time) { alert('Please select a time.'); return; }
         if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
@@ -514,9 +526,10 @@
                     : (this.selectedSubs[0]?.d || 'Service requested via app')),
             other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
             services_selected: serviceNames,
-            service_price_breakdown: JSON.stringify(priceBreakdownObj),  // ✅ STORE INDIVIDUAL PRICES
+            service_price_breakdown: JSON.stringify(priceBreakdownObj),
             customer_name: this.customerName,
             location: this.address,
+            city: 'Amravati',  // ✅ Add city field for tracking
             phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
             status: 'pending',
             urgent: false,
@@ -602,6 +615,15 @@
                 </div>
             </div>
         </div>
+
+        <!-- Amravati Only Banner -->
+<div class="bg-brand-gold/10 border-b border-brand-gold/20 py-2 px-4 text-center">
+    <div class="flex items-center justify-center gap-2 text-xs font-medium text-brand-dark">
+        <i class="fa-solid fa-location-dot text-brand-gold text-sm"></i>
+        <span>📍 Currently serving <span class="font-bold text-brand-gold">Amravati City</span> only</span>
+        <i class="fa-solid fa-truck-fast text-brand-gold text-sm"></i>
+    </div>
+</div>
 
         <div class="px-5 mt-6">
             <!-- Section Header -->
