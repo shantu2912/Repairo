@@ -442,108 +442,119 @@
         },
 
         async confirmBooking() {
-            if (this.bookingLoading) return;
+    if (this.bookingLoading) return;
 
-            try {
-                if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-                if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-                if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-                if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-                if (!this.date) { alert('Please select a date.'); return; }
-                if (!this.time) { alert('Please select a time.'); return; }
-                if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
+    try {
+        if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+        if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+        if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+        if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+        if (!this.date) { alert('Please select a date.'); return; }
+        if (!this.time) { alert('Please select a time.'); return; }
+        if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
 
-                this.bookingLoading = true;
-                if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
+        this.bookingLoading = true;
+        if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
 
-                const { data: blockJobs } = await window.sb
-                    .from('jobs')
-                    .select('id')
-                    .eq('user_id', this.user.id)
-                    .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
+        const { data: blockJobs } = await window.sb
+            .from('jobs')
+            .select('id')
+            .eq('user_id', this.user.id)
+            .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
 
-                if (blockJobs && blockJobs.length > 0) {
-                    alert('You already have an active service booking under development!');
-                    localStorage.setItem('active_job_id', blockJobs[0].id);
-                    window.location.href = `success.html?job_id=${blockJobs[0].id}`;
-                    return;
-                }
+        if (blockJobs && blockJobs.length > 0) {
+            alert('You already have an active service booking under development!');
+            localStorage.setItem('active_job_id', blockJobs[0].id);
+            window.location.href = `success.html?job_id=${blockJobs[0].id}`;
+            return;
+        }
 
-                const scheduledDateTime = `${this.date}T${this.time}:00`;
-                
-                const hasOtherIssue = this.selectedSubs.some(s => s.is_inspection === true);
-                const constantServices = this.selectedSubs.filter(s => !s.is_inspection);
-                const isMixed = hasOtherIssue && constantServices.length > 0;
-                
-                if (hasOtherIssue && (!this.otherIssueText || !this.otherIssueText.trim())) {
-                    alert('Please describe your Other Issue before booking.');
-                    this.bookingLoading = false;
-                    return;
-                }
-                
-                const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
-                const originalPrice = this.total;
-                
-                if (hasOtherIssue) {
-                    const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
-                    if (!paymentConfirmed) {
-                        this.bookingLoading = false;
-                        return;
-                    }
-                }
-
-                const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
-                const firstConstant = constantServices[0];
-                
-                const jobPayload = {
-                    user_id: this.user.id,
-                    category: this.service?.name || 'General Service',
-                    device: isMixed
-                        ? (firstConstant?.n || 'Multiple Services')
-                        : (this.selectedSubs[0]?.n || 'General Service'),
-                    issue: isMixed
-                        ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
-                        : (hasOtherIssue
-                            ? (this.otherIssueText.trim() || 'Other Issue')
-                            : (this.selectedSubs[0]?.d || 'Service requested via app')),
-                    other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
-                    services_selected: serviceNames,
-                    customer_name: this.customerName,
-                    location: this.address,
-                    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
-                    status: 'pending',
-                    urgent: false,
-                    latitude: this.lat || null,
-                    longitude: this.lng || null,
-                    scheduled_time: scheduledDateTime,
-                    original_price: originalPrice,
-                    discounted_price: originalPrice,
-                    is_inspection_job: hasOtherIssue,
-                    inspection_fee_paid: hasOtherIssue,
-                    inspection_fee_amount: inspectionFeeAmount,
-                    quote_status: hasOtherIssue ? 'pending' : null
-                };
-
-                const { data: insertedJob, error: jobError } = await window.sb
-                    .from('jobs')
-                    .insert([jobPayload])
-                    .select()
-                    .single();
-
-                if (jobError) { alert('Booking Error: ' + jobError.message); this.bookingLoading = false; return; }
-
+        const scheduledDateTime = `${this.date}T${this.time}:00`;
+        
+        const hasOtherIssue = this.selectedSubs.some(s => s.is_inspection === true);
+        const constantServices = this.selectedSubs.filter(s => !s.is_inspection);
+        const isMixed = hasOtherIssue && constantServices.length > 0;
+        
+        if (hasOtherIssue && (!this.otherIssueText || !this.otherIssueText.trim())) {
+            alert('Please describe your Other Issue before booking.');
+            this.bookingLoading = false;
+            return;
+        }
+        
+        const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
+        const originalPrice = this.total;
+        
+        if (hasOtherIssue) {
+            const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
+            if (!paymentConfirmed) {
                 this.bookingLoading = false;
-                this.showAgreement = false;
-                
-                localStorage.setItem('active_job_id', insertedJob.id);
-                window.location.href = 'success.html?job_id=' + insertedJob.id;
-
-            } catch (err) {
-                console.error(err);
-                alert('Unexpected Error: ' + err.message);
-                this.bookingLoading = false;
+                return;
             }
         }
+
+        const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
+        const firstConstant = constantServices[0];
+        
+        // ✅ CREATE PRICE BREAKDOWN OBJECT - Each service with its individual price
+        const priceBreakdownObj = {};
+        this.selectedSubs.forEach(s => { 
+            priceBreakdownObj[s.n] = s.p; 
+        });
+
+        const jobPayload = {
+            user_id: this.user.id,
+            category: this.service?.name || 'General Service',
+            device: isMixed
+                ? (firstConstant?.n || 'Multiple Services')
+                : (this.selectedSubs[0]?.n || 'General Service'),
+            issue: isMixed
+                ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
+                : (hasOtherIssue
+                    ? (this.otherIssueText.trim() || 'Other Issue')
+                    : (this.selectedSubs[0]?.d || 'Service requested via app')),
+            other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
+            services_selected: serviceNames,
+            service_price_breakdown: JSON.stringify(priceBreakdownObj),  // ✅ STORE INDIVIDUAL PRICES
+            customer_name: this.customerName,
+            location: this.address,
+            phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
+            status: 'pending',
+            urgent: false,
+            latitude: this.lat || null,
+            longitude: this.lng || null,
+            scheduled_time: scheduledDateTime,
+            original_price: originalPrice,
+            discounted_price: originalPrice,
+            is_inspection_job: hasOtherIssue,
+            inspection_fee_paid: hasOtherIssue,
+            inspection_fee_amount: inspectionFeeAmount,
+            quote_status: hasOtherIssue ? 'pending' : null
+        };
+
+        const { data: insertedJob, error: jobError } = await window.sb
+            .from('jobs')
+            .insert([jobPayload])
+            .select()
+            .single();
+
+        if (jobError) { 
+            alert('Booking Error: ' + jobError.message); 
+            this.bookingLoading = false; 
+            return; 
+        }
+
+        this.bookingLoading = false;
+        this.showAgreement = false;
+        
+        localStorage.setItem('active_job_id', insertedJob.id);
+        window.location.href = 'success.html?job_id=' + insertedJob.id;
+
+    } catch (err) {
+        console.error(err);
+        alert('Unexpected Error: ' + err.message);
+        this.bookingLoading = false;
+    }
+}
     }">
 
     <!-- Premium Header -->
