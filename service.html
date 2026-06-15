@@ -494,6 +494,11 @@
 
                 const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
                 const firstConstant = constantServices[0];
+
+                // Real catalog price for every selected service (e.g. {"Furniture Assembly":440,"Door Hinge Repair":275}).
+                // success.html uses this to show each service's exact price instead of splitting the total evenly.
+                const servicePriceBreakdown = {};
+                this.selectedSubs.forEach(s => { servicePriceBreakdown[s.n] = s.p; });
                 
                 const jobPayload = {
                     user_id: this.user.id,
@@ -508,6 +513,7 @@
                             : (this.selectedSubs[0]?.d || 'Service requested via app')),
                     other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
                     services_selected: serviceNames,
+                    service_price_breakdown: JSON.stringify(servicePriceBreakdown),
                     customer_name: this.customerName,
                     location: this.address,
                     phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
