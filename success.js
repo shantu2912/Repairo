@@ -1,4 +1,25 @@
 
+        const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-green': '#10B981' },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    animation: {
+                        'ripple': 'ripple 2s linear infinite',
+                        'slide-up-fade': 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                    },
+                    keyframes: {
+                        ripple: { '0%': { transform: 'scale(0.8)', opacity: '1' }, '100%': { transform: 'scale(2.5)', opacity: '0' } },
+                        slideUpFade: { '0%': { opacity: '0', transform: 'translateY(40px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    
         document.addEventListener('alpine:init', () => {
     Alpine.data('trackingApp', () => ({
         jobId: null,
