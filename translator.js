@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
         body { top: 0px !important; position: static !important; }
         #google_translate_element { display: none !important; }
         .goog-logo-link { display: none !important; }
-        .goog-te-gadget { color: transparent !important; font-size: 0px !important; }
+        .goog-te-gadget { color: transparent !important; font-size: 0px !important; margin: 0 !important; padding: 0 !important; }
     `;
     document.head.appendChild(style);
 
@@ -18,27 +18,35 @@ document.addEventListener("DOMContentLoaded", function() {
     // 3. Check for saved language, default to English
     const savedLang = localStorage.getItem('fixzen_lang') || 'en';
 
-    // 4. Inject the Top Pill UI exactly like the image
-    // This will automatically appear on ANY page that links this JS file
+    // 4. Inject the Top Right Pill UI
+    // Positioned at top-[85px] and right-4 to sit perfectly under your header
     const uiContainer = document.createElement('div');
-    uiContainer.className = "fixed top-[70px] left-1/2 transform -translate-x-1/2 z-[55] flex justify-center w-full max-w-sm pointer-events-none";
+    uiContainer.id = "fixzen-lang-container";
+    uiContainer.className = "fixed top-[85px] right-4 z-[60] transition-opacity duration-500";
     
-    // We use the brand colors: #5D5646 (Brand Olive) and #EEEAE2 (Brand Cream)
+    // We use your brand colors: #5D5646 (Brand Olive) and #EEEAE2 (Brand Cream)
     uiContainer.innerHTML = `
-        <div id="custom-lang-pill" class="bg-white/95 backdrop-blur-md rounded-full p-1.5 flex shadow-md pointer-events-auto gap-1 border border-[#EEEAE2]">
-            <button onclick="changeAppLanguage('en', true)" id="btn-lang-en" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'en' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">🇬🇧 ENG</button>
-            <button onclick="changeAppLanguage('hi', true)" id="btn-lang-hi" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'hi' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">🇮🇳 हिंदी</button>
-            <button onclick="changeAppLanguage('mr', true)" id="btn-lang-mr" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'mr' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">🇮🇳 मराठी</button>
+        <div id="custom-lang-pill" class="bg-white/95 backdrop-blur-md rounded-full p-1 flex shadow-md border border-[#EEEAE2]">
+            <button onclick="changeAppLanguage('en', true)" id="btn-lang-en" class="text-[10px] font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'en' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">ENG</button>
+            <button onclick="changeAppLanguage('hi', true)" id="btn-lang-hi" class="text-[10px] font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'hi' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">हिंदी</button>
+            <button onclick="changeAppLanguage('mr', true)" id="btn-lang-mr" class="text-[10px] font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'mr' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">मराठी</button>
         </div>
     `;
     
-    // Do not show the UI on index.html until loading is done, show immediately on other pages
-    if(window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-        uiContainer.style.opacity = '0';
-        uiContainer.style.transition = 'opacity 1s ease-in-out';
-        setTimeout(() => { uiContainer.style.opacity = '1'; }, 4500); // Fades in after 4 seconds
-    }
     document.body.appendChild(uiContainer);
+
+    // Handle the 4-second loading screen specifically for index.html
+    const isHomePage = window.location.pathname.includes('index.html') || window.location.pathname === '/';
+    if (isHomePage) {
+        uiContainer.style.opacity = '0';
+        uiContainer.style.pointerEvents = 'none';
+        
+        // Fade it in after 4.2 seconds (right after your loading screen finishes)
+        setTimeout(() => { 
+            uiContainer.style.opacity = '1'; 
+            uiContainer.style.pointerEvents = 'auto';
+        }, 4200); 
+    }
 
     // 5. Initialize Google Translate
     window.googleTranslateElementInit = function() {
@@ -72,9 +80,9 @@ window.changeAppLanguage = function(langCode, userClicked = false) {
             const btn = document.getElementById('btn-lang-' + code);
             if (btn) {
                 if (code === langCode) {
-                    btn.className = "text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 bg-[#5D5646] text-white shadow-sm";
+                    btn.className = "text-[10px] font-bold px-3 py-1.5 rounded-full transition-all duration-300 bg-[#5D5646] text-white shadow-sm";
                 } else {
-                    btn.className = "text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 text-[#5D5646] hover:bg-[#EEEAE2]";
+                    btn.className = "text-[10px] font-bold px-3 py-1.5 rounded-full transition-all duration-300 text-[#5D5646] hover:bg-[#EEEAE2]";
                 }
             }
         });
