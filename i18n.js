@@ -1,14 +1,18 @@
 const translations = {
     en: {
         // --- Navigation / Global ---
-        'home': 'Home',
-        'bookings': 'Bookings',
-        'profile': 'Profile',
-        'privacy': 'Privacy Policy',
-        'terms': 'Terms & Conditions',
-        'contact': 'Contact Us',
+        'home': 'HOME',
+        'bookings': 'MY BOOKINGS',
+        'contact': 'CONTACT US',
+        'app_lang': 'App Language',
+        'select_pref': 'Select preferred experience',
 
         // --- Service & Booking ---
+        'cat_home': 'Construction & Home',
+        'cat_app': 'Appliance Repair',
+        'cat_elec': 'Electronics & IT',
+        'cat_auto': 'Automobile',
+        'cat_other': 'Other Services',
         'book_now': 'Book Now',
         'select_service': 'Select a Service',
         'total_est': 'Total Estimate',
@@ -75,6 +79,16 @@ const translations = {
         'new_job_alert': 'नया जॉब आया है',
 
         // --- Service/Booking ---
+        'home': 'होम',
+        'bookings': 'मेरी बुकिंग',
+        'contact': 'संपर्क करें',
+        'app_lang': 'ऐप भाषा',
+        'select_pref': 'पसंदीदा भाषा चुनें',
+        'cat_home': 'निर्माण और घर',
+        'cat_app': 'उपकरण मरम्मत',
+        'cat_elec': 'इलेक्ट्रॉनिक्स और आईटी',
+        'cat_auto': 'ऑटोमोबाइल',
+        'cat_other': 'अन्य सेवाएं',
         'book_now': 'अभी बुक करें',
         'select_service': 'सेवा चुनें',
         'total_est': 'कुल अनुमान',
@@ -111,7 +125,7 @@ const translations = {
         'warranty': 'FixZen वारंटी',
         'safety_conduct': 'सुरक्षा और आचरण',
         'data_privacy': 'डेटा गोपनीयता',
-        'agree_continue': 'मैं सहमत हूँ और आगे बढ़ें'
+        'agree_continue': 'मैं सहमत हूँ और आगे बढ़ें'
     },
     mr: {
         // --- Admin/Tech ---
@@ -128,6 +142,16 @@ const translations = {
         'new_job_alert': 'नवीन जॉब आला आहे',
 
         // --- Service/Booking ---
+        'home': 'होम',
+        'bookings': 'माझे बुकिंग',
+        'contact': 'संपर्क करा',
+        'app_lang': 'ॲप भाषा',
+        'select_pref': 'पसंतीची भाषा निवडा',
+        'cat_home': 'बांधकाम आणि घर',
+        'cat_app': 'उपकरण दुरुस्ती',
+        'cat_elec': 'इलेक्ट्रॉनिक्स आणि आयटी',
+        'cat_auto': 'ऑटोमोबाईल',
+        'cat_other': 'इतर सेवा',
         'book_now': 'आत्ता बुक करा',
         'select_service': 'सेवा निवडा',
         'total_est': 'एकूण अंदाज',
@@ -168,20 +192,30 @@ const translations = {
     }
 };
 
-// Helper Functions
+// --- Initialization Logic ---
 function changeLanguage(lang) {
     localStorage.setItem('fixzen_lang', lang);
+    
+    // 1. Update elements with data-i18n
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[lang] && translations[lang][key]) {
             el.innerText = translations[lang][key];
         }
     });
-    // Trigger event for dynamic updates
+
+    // 2. Refresh Alpine.js components if they exist
     window.dispatchEvent(new CustomEvent('lang-changed'));
 }
 
+// Global helper for JS/Alpine
 function t(key) {
     const lang = localStorage.getItem('fixzen_lang') || 'en';
-    return translations[lang][key] || key;
+    return translations[lang] && translations[lang][key] ? translations[lang][key] : key;
 }
+
+// Auto-apply on page load
+document.addEventListener("DOMContentLoaded", () => {
+    const savedLang = localStorage.getItem('fixzen_lang') || 'en';
+    changeLanguage(savedLang);
+});
