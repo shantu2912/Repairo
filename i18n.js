@@ -1,297 +1,187 @@
-// ======================================================
-// FIXZENIX GLOBAL LANGUAGE SYSTEM (i18n.js)
-// ======================================================
-
-window.FixZenI18n = {
-  // 1. Get the saved language from previous visits, default to English
-  getSavedLang: function() {
-    return localStorage.getItem('fixzen_lang') || 'en';
-  },
-
-  // 2. Save the new language choice and instantly translate the screen
-  setLang: function(lang) {
-    localStorage.setItem('fixzen_lang', lang);
-    this.translatePage();
-  },
-
-  // 3. The Translator Engine (for standard HTML pages)
-  translatePage: function() {
-    const lang = this.getSavedLang();
-    
-    // Find every element on the page that has a data-i18n attribute
-    const elements = document.querySelectorAll("[data-i18n]");
-
-    elements.forEach((el) => {
-      const key = el.getAttribute("data-i18n");
-      const translatedText = this.translations[lang]?.[key];
-
-      if (translatedText) {
-        // If it's an input box, translate the placeholder. Otherwise, replace text.
-        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-          el.placeholder = translatedText;
-        } else {
-          el.innerText = translatedText;
-        }
-      }
-    });
-  },
-
-  // 4. The Complete Master Dictionary
-  translations: {
+const translations = {
     en: {
-      // -- ALPINE.JS AUTH PAGE KEYS --
-      tagline: 'Premium Home Care',
-      choose_lang: 'Choose Your Language',
-      lang_continue: 'CONTINUE',
-      welcome: 'Welcome to FixZen',
-      create_account: 'Create Account',
-      login: 'Login',
-      full_name: 'Full Name',
-      username: 'Username',
-      password: 'Password',
-      mobile: 'Mobile Number',
-      send_otp: 'Send Verification',
-      check_account: 'Check Account',
-      sign_in: 'Sign In',
-      already_member: 'Already a member? Sign In',
-      new_user: 'New User? Create Account',
-      verify_title: 'Verify Mobile',
-      code_sent: 'Code sent to +91',
-      enter_otp: '000000',
-      verify_btn: 'Verify & Join',
-      change_details: 'Change Details',
-      name_placeholder: 'Rahul Sharma',
-      user_placeholder: 'username',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'ENTER VALID PHONE NUMBER',
-      err_exists: 'ACCOUNT ALREADY EXISTS',
-      err_not_found: 'NO ACCOUNT FOUND',
-      err_otp: 'ENTER VALID OTP',
-      err_pass: 'ENTER PASSWORD',
-      err_login: 'INVALID LOGIN CREDENTIALS',
-      welcome_back: 'Welcome Back',
+        // --- Navigation / Global ---
+        'home': 'Home',
+        'bookings': 'Bookings',
+        'profile': 'Profile',
+        'privacy': 'Privacy Policy',
+        'terms': 'Terms & Conditions',
+        'contact': 'Contact Us',
 
-      // -- DASHBOARD & REGISTER KEYS --
-      "Your Username": "Your Username",
-      "Your Password": "Your Password",
-      "LOGIN": "LOGIN",
-      "Enter username and password": "Enter username and password",
-      "Invalid username or password": "Invalid username or password",
-      "Active Jobs": "Active Jobs",
-      "Earnings": "Earnings",
-      "Today": "Today",
-      "Available for Jobs": "Available for Jobs",
-      "Loading jobs…": "Loading jobs…",
-      "No active jobs": "No active jobs",
-      "Accept": "Accept",
-      "Reject": "Reject",
-      "Mark Arrived": "Mark Arrived",
-      "Complete Job": "Complete Job",
-      "Call Customer": "Call Customer",
-      "Open in Maps": "Open in Maps",
-      "New Job Arrived": "New Job Arrived",
-      "Join FixZenix": "Join FixZenix",
-      "Fill in your details to get jobs and start earning": "Fill in your details to get jobs and start earning",
-      "Full Name": "Full Name",
-      "Mobile Number": "Mobile Number",
-      "Username": "Username",
-      "Password": "Password",
-      "Specialization": "Specialization",
-      "Experience": "Experience",
-      "Aadhaar": "Aadhaar",
-      "Service Area": "Service Area",
-      "Select Specialization": "Select Specialization",
-      "AC Repair": "AC Repair",
-      "Refrigerator": "Refrigerator",
-      "Washing Machine": "Washing Machine",
-      "RO Water Purifier": "RO Water Purifier",
-      "Geyser": "Geyser",
-      "Television": "Television",
-      "Submit Application": "Submit Application",
-      "Registering...": "Registering...",
-      "Application Sent!": "Application Sent!",
-      "Return to Home": "Return to Home"
+        // --- Service & Booking ---
+        'book_now': 'Book Now',
+        'select_service': 'Select a Service',
+        'total_est': 'Total Estimate',
+        'confirm': 'Confirm Booking',
+        'other_issue': 'Describe Your Issue',
+        'inspection_info': '₹299 inspection fee included — adjusted in final bill if work is approved',
+        'terms_agree': 'I agree to the Terms & Conditions and authorize the job broadcast.',
+        'amravati_only': 'Currently serving Amravati City only',
+        'inspect_fee_note': 'Includes ₹299 inspection fee',
+
+        // --- Technician Dashboard ---
+        'pro_partner': 'Pro Partner',
+        'active_jobs': 'Active Jobs',
+        'earnings': 'Earnings',
+        'today': 'Today',
+        'available': 'Available for Jobs',
+        'mark_arrived': 'Mark Arrived at Location',
+        'complete_job': 'Complete Job & Unlock',
+        'quote_pending': 'Quote Pending Approval',
+        'accept': 'Accept',
+        'reject': 'Reject',
+        'new_job_alert': 'New Job Arrived',
+
+        // --- Partner Registration ---
+        'join_fixzenix': 'Join FixZenix',
+        'reg_subtitle': 'Fill in your details to get jobs and start earning',
+        'full_name': 'Full Name',
+        'mobile': 'Mobile Number',
+        'username': 'Username',
+        'password': 'Password',
+        'specialization': 'Specialization',
+        'select_spec': 'Select Specialization',
+        'exp': 'Experience',
+        'aadhaar': 'Aadhaar',
+        'area': 'Service Area',
+        'submit_app': 'Submit Application',
+        'success': 'Application Sent!',
+        'success_sub': 'Our onboarding team will reach out to you within',
+        'hours': '24 hours',
+
+        // --- Legal & Support ---
+        'privacy_title': 'Privacy Policy',
+        'terms_title': 'Terms & Conditions',
+        'service_rules': 'Service Rules & Agreements',
+        'booking_cancellation': 'Booking & Cancellations',
+        'pricing_payment': 'Pricing & Payment',
+        'warranty': 'FixZen Warranty',
+        'safety_conduct': 'Safety & Conduct',
+        'data_privacy': 'Data Privacy',
+        'agree_continue': 'I Agree & Continue'
     },
-
     hi: {
-      // -- ALPINE.JS AUTH PAGE KEYS --
-      tagline: 'प्रीमियम होम केयर',
-      choose_lang: 'अपनी भाषा चुनें',
-      lang_continue: 'आगे बढ़ें',
-      welcome: 'FixZen में आपका स्वागत है',
-      create_account: 'नया खाता बनाएं',
-      login: 'लॉगिन करें',
-      full_name: 'पूरा नाम',
-      username: 'उपयोगकर्ता नाम',
-      password: 'पासवर्ड',
-      mobile: 'मोबाइल नंबर',
-      send_otp: 'OTP भेजें',
-      check_account: 'खाता जांचें',
-      sign_in: 'साइन इन करें',
-      already_member: 'पहले से सदस्य हैं? साइन इन करें',
-      new_user: 'नए उपयोगकर्ता? खाता बनाएं',
-      verify_title: 'मोबाइल सत्यापित करें',
-      code_sent: 'कोड भेजा गया +91',
-      enter_otp: '000000',
-      verify_btn: 'सत्यापित करें और जुड़ें',
-      change_details: 'विवरण बदलें',
-      name_placeholder: 'राहुल शर्मा',
-      user_placeholder: 'उपयोगकर्ता नाम',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'मान्य फ़ोन नंबर दर्ज करें',
-      err_exists: 'खाता पहले से मौजूद है',
-      err_not_found: 'कोई खाता नहीं मिला',
-      err_otp: 'मान्य OTP दर्ज करें',
-      err_pass: 'पासवर्ड दर्ज करें',
-      err_login: 'लॉगिन जानकारी गलत है',
-      welcome_back: 'वापसी पर स्वागत है',
+        // --- Admin/Tech ---
+        'pro_partner': 'प्रो पार्टनर',
+        'active_jobs': 'सक्रिय जॉब्स',
+        'earnings': 'कमाई',
+        'today': 'आज',
+        'available': 'काम के लिए उपलब्ध',
+        'mark_arrived': 'पहुंच गए',
+        'complete_job': 'जॉब पूरा करें',
+        'quote_pending': 'कोट अनुमोदन लंबित',
+        'accept': 'स्वीकारें',
+        'reject': 'अस्वीकार',
+        'new_job_alert': 'नया जॉब आया है',
 
-      // -- DASHBOARD & REGISTER KEYS --
-      "Your Username": "आपका यूजरनेम",
-      "Your Password": "आपका पासवर्ड",
-      "LOGIN": "लॉगिन",
-      "Enter username and password": "यूजरनेम और पासवर्ड डालें",
-      "Invalid username or password": "गलत यूजरनेम या पासवर्ड",
-      "Active Jobs": "सक्रिय कार्य",
-      "Earnings": "कमाई",
-      "Today": "आज",
-      "Available for Jobs": "काम के लिए उपलब्ध",
-      "Loading jobs…": "कार्य लोड हो रहे हैं…",
-      "No active jobs": "कोई सक्रिय कार्य नहीं",
-      "Accept": "स्वीकार करें",
-      "Reject": "अस्वीकार करें",
-      "Mark Arrived": "पहुँच गया",
-      "Complete Job": "कार्य पूर्ण करें",
-      "Call Customer": "ग्राहक को कॉल करें",
-      "Open in Maps": "मैप में खोलें",
-      "New Job Arrived": "नया कार्य आया है",
-      "Join FixZenix": "FixZenix से जुड़ें",
-      "Fill in your details to get jobs and start earning": "काम पाने और कमाई शुरू करने के लिए अपनी जानकारी भरें",
-      "Full Name": "पूरा नाम",
-      "Mobile Number": "मोबाइल नंबर",
-      "Username": "यूजरनेम",
-      "Password": "पासवर्ड",
-      "Specialization": "विशेषज्ञता",
-      "Experience": "अनुभव",
-      "Aadhaar": "आधार",
-      "Service Area": "सेवा क्षेत्र",
-      "Select Specialization": "विशेषज्ञता चुनें",
-      "AC Repair": "एसी रिपेयर",
-      "Refrigerator": "रेफ्रिजरेटर",
-      "Washing Machine": "वॉशिंग मशीन",
-      "RO Water Purifier": "आरओ वॉटर प्यूरिफायर",
-      "Geyser": "गीजर",
-      "Television": "टेलीविजन",
-      "Submit Application": "आवेदन जमा करें",
-      "Registering...": "रजिस्टर हो रहा है...",
-      "Application Sent!": "आवेदन भेज दिया गया!",
-      "Return to Home": "होम पर जाएं"
+        // --- Service/Booking ---
+        'book_now': 'अभी बुक करें',
+        'select_service': 'सेवा चुनें',
+        'total_est': 'कुल अनुमान',
+        'confirm': 'बुकिंग की पुष्टि करें',
+        'other_issue': 'अपनी समस्या बताएं',
+        'inspection_info': '₹299 निरीक्षण शुल्क शामिल - काम स्वीकृत होने पर अंतिम बिल में समायोजित',
+        'terms_agree': 'मैं नियमों और शर्तों से सहमत हूँ और जॉब प्रसारण को अधिकृत करता हूँ।',
+        'amravati_only': 'वर्तमान में केवल अमरावती शहर में सेवा उपलब्ध है',
+        'inspect_fee_note': '₹299 निरीक्षण शुल्क शामिल है',
+
+        // --- Auth/Reg ---
+        'join_fixzenix': 'FixZenix में शामिल हों',
+        'reg_subtitle': 'जॉब पाने और कमाई शुरू करने के लिए अपनी जानकारी भरें',
+        'full_name': 'पूरा नाम',
+        'mobile': 'मोबाइल नंबर',
+        'username': 'यूजरनेम',
+        'password': 'पासवर्ड',
+        'specialization': 'विशेषज्ञता',
+        'select_spec': 'विशेषज्ञता चुनें',
+        'exp': 'अनुभव',
+        'aadhaar': 'आधार',
+        'area': 'सेवा क्षेत्र',
+        'submit_app': 'आवेदन जमा करें',
+        'success': 'आवेदन भेजा गया!',
+        'success_sub': 'हमारी ऑनबोर्डिंग टीम आपसे संपर्क करेगी',
+        'hours': '24 घंटे के भीतर',
+
+        // --- Legal ---
+        'privacy_title': 'गोपनीयता नीति',
+        'terms_title': 'नियम और शर्तें',
+        'service_rules': 'सेवा नियम और समझौते',
+        'booking_cancellation': 'बुकिंग और रद्दीकरण',
+        'pricing_payment': 'मूल्य निर्धारण और भुगतान',
+        'warranty': 'FixZen वारंटी',
+        'safety_conduct': 'सुरक्षा और आचरण',
+        'data_privacy': 'डेटा गोपनीयता',
+        'agree_continue': 'मैं सहमत हूँ और आगे बढ़ें'
     },
-
     mr: {
-      // -- ALPINE.JS AUTH PAGE KEYS --
-      tagline: 'प्रीमियम होम केअर',
-      choose_lang: 'तुमची भाषा निवडा',
-      lang_continue: 'पुढे जा',
-      welcome: 'FixZen मध्ये स्वागत आहे',
-      create_account: 'नवीन खाते तयार करा',
-      login: 'लॉगिन करा',
-      full_name: 'पूर्ण नाव',
-      username: 'वापरकर्ता नाव',
-      password: 'पासवर्ड',
-      mobile: 'मोबाइल नंबर',
-      send_otp: 'OTP पाठवा',
-      check_account: 'खाते तपासा',
-      sign_in: 'साइन इन करा',
-      already_member: 'आधीच सदस्य आहात? साइन इन करा',
-      new_user: 'नवीन वापरकर्ता? खाते तयार करा',
-      verify_title: 'मोबाइल सत्यापित करा',
-      code_sent: 'कोड पाठवला +91',
-      enter_otp: '000000',
-      verify_btn: 'सत्यापित करा आणि सामील व्हा',
-      change_details: 'तपशील बदला',
-      name_placeholder: 'राहुल शर्मा',
-      user_placeholder: 'वापरकर्ता नाव',
-      pass_placeholder: '••••••••',
-      phone_placeholder: '9876543210',
-      err_phone: 'वैध फोन नंबर टाका',
-      err_exists: 'खाते आधीपासून अस्तित्वात आहे',
-      err_not_found: 'खाते सापडले नाही',
-      err_otp: 'वैध OTP टाका',
-      err_pass: 'पासवर्ड टाका',
-      err_login: 'चुकीची लॉगिन माहिती',
-      welcome_back: 'पुन्हा स्वागत आहे',
+        // --- Admin/Tech ---
+        'pro_partner': 'प्रो पार्टनर',
+        'active_jobs': 'सक्रिय जॉब्स',
+        'earnings': 'कमाई',
+        'today': 'आज',
+        'available': 'कामासाठी उपलब्ध',
+        'mark_arrived': 'पोहोचलो',
+        'complete_job': 'जॉब पूर्ण करा',
+        'quote_pending': 'कोट मंजुरी प्रलंबित',
+        'accept': 'स्वीकारा',
+        'reject': 'अस्वीकारा',
+        'new_job_alert': 'नवीन जॉब आला आहे',
 
-      // -- DASHBOARD & REGISTER KEYS --
-      "Your Username": "तुमचे युजरनेम",
-      "Your Password": "तुमचा पासवर्ड",
-      "LOGIN": "लॉगिन",
-      "Enter username and password": "युजरनेम आणि पासवर्ड टाका",
-      "Invalid username or password": "चुकीचे युजरनेम किंवा पासवर्ड",
-      "Active Jobs": "सक्रिय कामे",
-      "Earnings": "कमाई",
-      "Today": "आज",
-      "Available for Jobs": "कामासाठी उपलब्ध",
-      "Loading jobs…": "कामे लोड होत आहेत…",
-      "No active jobs": "सध्या कोणतेही काम नाही",
-      "Accept": "स्वीकारा",
-      "Reject": "नकार द्या",
-      "Mark Arrived": "पोहोचलो",
-      "Complete Job": "काम पूर्ण करा",
-      "Call Customer": "ग्राहकाला कॉल करा",
-      "Open in Maps": "मॅपमध्ये उघडा",
-      "New Job Arrived": "नवीन काम आले आहे",
-      "Join FixZenix": "FixZenix मध्ये सामील व्हा",
-      "Fill in your details to get jobs and start earning": "काम मिळवण्यासाठी आणि कमाई सुरू करण्यासाठी माहिती भरा",
-      "Full Name": "पूर्ण नाव",
-      "Mobile Number": "मोबाईल नंबर",
-      "Username": "युजरनेम",
-      "Password": "पासवर्ड",
-      "Specialization": "विशेषता",
-      "Experience": "अनुभव",
-      "Aadhaar": "आधार",
-      "Service Area": "सेवा क्षेत्र",
-      "Select Specialization": "विशेषता निवडा",
-      "AC Repair": "एसी रिपेअर",
-      "Refrigerator": "फ्रिज",
-      "Washing Machine": "वॉशिंग मशीन",
-      "RO Water Purifier": "आरओ वॉटर प्युरिफायर",
-      "Geyser": "गीझर",
-      "Television": "टीव्ही",
-      "Submit Application": "अर्ज सबमिट करा",
-      "Registering...": "नोंदणी सुरू आहे...",
-      "Application Sent!": "अर्ज पाठवला गेला!",
-      "Return to Home": "होम वर जा"
+        // --- Service/Booking ---
+        'book_now': 'आत्ता बुक करा',
+        'select_service': 'सेवा निवडा',
+        'total_est': 'एकूण अंदाज',
+        'confirm': 'बुकिंगची खात्री करा',
+        'other_issue': 'तुमची समस्या सांगा',
+        'inspection_info': '₹299 तपासणी शुल्क समाविष्ट - काम मंजूर झाल्यास अंतिम बिलात समायोजित',
+        'terms_agree': 'मी नियम आणि अटींशी सहमत आहे आणि जॉब ब्रॉडकास्टला अधिकृत करतो.',
+        'amravati_only': 'सध्या केवळ अमरावती शहरात सेवा उपलब्ध आहे',
+        'inspect_fee_note': '₹299 तपासणी शुल्क समाविष्ट आहे',
+
+        // --- Auth/Reg ---
+        'join_fixzenix': 'FixZenix मध्ये सामील व्हा',
+        'reg_subtitle': 'नोकऱ्या मिळवण्यासाठी आणि कमाई सुरू करण्यासाठी तुमची माहिती भरा',
+        'full_name': 'पूर्ण नाव',
+        'mobile': 'मोबाईल नंबर',
+        'username': 'युजरनेम',
+        'password': 'पासवर्ड',
+        'specialization': 'विशेषज्ञता',
+        'select_spec': 'विशेषज्ञता निवडा',
+        'exp': 'अनुभव',
+        'aadhaar': 'आधार',
+        'area': 'सेवा क्षेत्र',
+        'submit_app': 'अर्ज सादर करा',
+        'success': 'अर्ज पाठवला आहे!',
+        'success_sub': 'आमची ऑनबोर्डिंग टीम तुमच्याशी संपर्क साधेल',
+        'hours': '२४ तासांच्या आत',
+
+        // --- Legal ---
+        'privacy_title': 'गोपनीयता धोरण',
+        'terms_title': 'नियम आणि अटी',
+        'service_rules': 'सेवा नियम आणि करार',
+        'booking_cancellation': 'बुकिंग आणि रद्दीकरण',
+        'pricing_payment': 'किंमत आणि पेमेंट',
+        'warranty': 'FixZen वॉरंटी',
+        'safety_conduct': 'सुरक्षा आणि आचरण',
+        'data_privacy': 'डेटा गोपनीयता',
+        'agree_continue': 'मी सहमत आहे आणि पुढे जा'
     }
-  }
 };
 
-// ======================================================
-// AUTO LOAD & DROPDOWN WIRING
-// ======================================================
-window.addEventListener('DOMContentLoaded', () => {
-  // A small timeout ensures Alpine.js (if present) initializes first, 
-  // preventing conflicts before the vanilla translator takes over.
-  setTimeout(() => {
-    
-    // 1. Translate the page automatically on load
-    FixZenI18n.translatePage();
-    
-    // 2. Find the dropdown if it exists on this specific page
-    const switcher = document.getElementById("global-lang-switcher");
-    
-    if (switcher) {
-        // Make sure the dropdown shows the currently saved language
-        switcher.value = FixZenI18n.getSavedLang();
-        
-        // Listen for the user picking a new language
-        switcher.addEventListener("change", (event) => {
-            const newLang = event.target.value;
-            // This updates localStorage AND instantly translates the screen
-            FixZenI18n.setLang(newLang); 
-        });
-    }
-  }, 50);
-});
+// Helper Functions
+function changeLanguage(lang) {
+    localStorage.setItem('fixzen_lang', lang);
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+            el.innerText = translations[lang][key];
+        }
+    });
+    // Trigger event for dynamic updates
+    window.dispatchEvent(new CustomEvent('lang-changed'));
+}
+
+function t(key) {
+    const lang = localStorage.getItem('fixzen_lang') || 'en';
+    return translations[lang][key] || key;
+}
