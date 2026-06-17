@@ -396,6 +396,27 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
 <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-gold scale-y-0 group-hover:scale-y-100 transition-transform origin-top"></div>
 </a>
 
+<!-- PREMIUM LANGUAGE SETTINGS TILE -->
+<div class="px-5 my-2">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-brand-beige/30" x-data="{ currentLang: localStorage.getItem('fixzen_lang') || 'en' }">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-brand-cream flex items-center justify-center text-brand-olive">
+                <i class="fa-solid fa-language text-lg"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-brand-dark text-sm">App Language</h3>
+                <p class="text-[10px] text-brand-dark/50">Select preferred experience</p>
+            </div>
+        </div>
+        <div class="flex gap-2 bg-brand-cream/40 p-1.5 rounded-xl border border-brand-beige/50">
+            <button @click="currentLang = 'en'; localStorage.setItem('fixzen_lang', 'en'); window.location.reload();" :class="currentLang === 'en' ? 'bg-brand-olive text-white shadow-md' : 'text-brand-dark/60 hover:bg-white'" class="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all duration-300">🇬🇧 ENG</button>
+            <button @click="currentLang = 'hi'; localStorage.setItem('fixzen_lang', 'hi'); window.location.reload();" :class="currentLang === 'hi' ? 'bg-brand-olive text-white shadow-md' : 'text-brand-dark/60 hover:bg-white'" class="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all duration-300 font-deva">🇮🇳 हिंदी</button>
+            <button @click="currentLang = 'mr'; localStorage.setItem('fixzen_lang', 'mr'); window.location.reload();" :class="currentLang === 'mr' ? 'bg-brand-olive text-white shadow-md' : 'text-brand-dark/60 hover:bg-white'" class="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all duration-300 font-deva">🇮🇳 मराठी</button>
+        </div>
+    </div>
+</div>
+<!-- END OF LANGUAGE TILE -->
+
 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
 
