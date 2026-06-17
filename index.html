@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#5D5646">
 <meta name="description" content="Premium home services at your doorstep. Expert technicians for all your repair needs.">
 
+<script src="i18n.js"></script>
+
 <style>
 /* Force the app to snap to the top and remove Google Translate gaps */
 html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
@@ -127,8 +129,7 @@ html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-<script src="i18n.js"></script>    
+    
 <script src="index.js"></script>
 
 </head>
@@ -145,7 +146,10 @@ x-data="{
          currentJobStatus: '',
          showScrollTop: false,
          
-         // Service Categories (clean - no fake reviews/ratings)
+         // Helper to let Alpine use i18n
+         t(key) { return window.t ? window.t(key) : key; },
+         
+         // Service Categories
          masterList: [
             // HOME
             {n:'Carpenter', cat:'Home_cat', img:'carpenter1.jpg'},
@@ -183,7 +187,6 @@ x-data="{
              );
          },
 
-         // User Functions
          async checkUser() {
              const checkLogged = localStorage.getItem('local_user_logged');
              const userPhone = localStorage.getItem('local_user_phone');
@@ -262,7 +265,6 @@ x-data="{
              }
          },
 
-         // Admin Functions
          adminBanners: [],
          async loadAdminBanners() {
              if (!window.sb) return;
@@ -289,16 +291,13 @@ x-data="{
                     .eq('active', true);
 
                 if (error) throw error;
-
                 this.offerMessages = data.map(x => x.message);
-
             } catch (err) {
                 console.error('Ticker Error:', err.message);
             }
         },
          tickerPaused: false,
          
-         // Scroll Handling
          handleScroll() {
              this.showScrollTop = window.scrollY > 300;
          },
@@ -391,11 +390,10 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
 <nav class="flex-1 overflow-y-auto py-2 hide-scroll">
 <a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group relative">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide">HOME</span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="home">HOME</span>
 <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-gold scale-y-0 group-hover:scale-y-100 transition-transform origin-top"></div>
 </a>
 
-<!-- PREMIUM LANGUAGE SETTINGS TILE -->
 <div class="px-5 my-2">
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-brand-beige/30" x-data="{ currentLang: localStorage.getItem('fixzen_lang') || 'en' }">
         <div class="flex items-center gap-3 mb-4">
@@ -411,64 +409,60 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
             <button @click="currentLang = 'en'; changeLanguage('en');" 
                     :class="currentLang === 'en' ? 'bg-brand-olive text-white shadow-md' : 'text-brand-dark/60 hover:bg-white'" 
                     class="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all duration-300">🇬🇧 ENG</button>
-            
             <button @click="currentLang = 'hi'; changeLanguage('hi');" 
                     :class="currentLang === 'hi' ? 'bg-brand-olive text-white shadow-md' : 'text-brand-dark/60 hover:bg-white'" 
                     class="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all duration-300 font-deva">🇮🇳 हिंदी</button>
-            
             <button @click="currentLang = 'mr'; changeLanguage('mr');" 
                     :class="currentLang === 'mr' ? 'bg-brand-olive text-white shadow-md' : 'text-brand-dark/60 hover:bg-white'" 
                     class="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all duration-300 font-deva">🇮🇳 मराठी</button>
         </div>
     </div>
 </div>
-<!-- END OF LANGUAGE TILE -->
-
 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Utility</p>
 
 <button @click="handleCartNavigation()" class="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all text-left group bg-transparent border-none outline-none relative">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? 'LIVE TRACKING' : 'MY BOOKINGS'"></span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? 'LIVE TRACKING' : t('bookings')"></span>
 </button>
 
 <a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group relative">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide">CONTACT US</span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="contact">CONTACT US</span>
 </a>
 
 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">Legal</p>
 <a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide">PRIVACY POLICY</span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="privacy_title">PRIVACY POLICY</span>
 </a>
 <a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide">TERMS & POLICY</span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="terms_title">TERMS & POLICY</span>
 </a>
 
 <div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
 <p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2">For Experts</p>
 <a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide">REGISTER AS TECHNICIAN</span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="join_fixzenix">REGISTER AS TECHNICIAN</span>
 </a>
 <a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
 <div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide">TECHNICIAN LOGIN</span>
+<span class="text-sm font-bold text-brand-dark tracking-wide" data-i18n="tech_login">TECHNICIAN LOGIN</span>
 </a>
 </nav>
 
 <div class="p-6 bg-gradient-to-r from-brand-cream/50 to-white/50">
 <template x-if="user">
 <button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest block text-center">
-<i class="fas fa-sign-out-alt mr-2"></i><span>Log Out</span>
+<i class="fas fa-sign-out-alt mr-2"></i><span data-i18n="logout">Log Out</span>
 </button>
 </template>
 <template x-if="!user">
 <a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white transition-all uppercase tracking-widest block text-center">
-<i class="fas fa-sign-in-alt mr-2"></i><span>Log In</span>
+<i class="fas fa-sign-in-alt mr-2"></i><span data-i18n="login">Log In</span>
 </a>
 </template>
 </div>
@@ -519,7 +513,7 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
                 </span>
                 <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-3" x-text="slideIndex===0 ? 'Expert Electricians' : (slideIndex===1 ? 'Summer Sale' : 'Deep Cleaning')"></h2>
                 <p class="text-white/80 text-sm mt-2">Quality service at your doorstep</p>
-                <button class="mt-4 bg-white text-brand-olive px-5 py-2.5 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform">
+                <button class="mt-4 bg-white text-brand-olive px-5 py-2.5 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform" data-i18n="book_now">
                     Book Now →
                 </button>
             </div>
@@ -566,7 +560,7 @@ x-transition:enter="transform transition ease-out duration-300" x-transition:ent
 </div>
 <div class="flex-1 h-12 relative flex items-center">
 <div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
-<span class="text-brand-dark/40 text-sm font-medium mr-1">Search for</span>
+<span class="text-brand-dark/40 text-sm font-medium mr-1" data-i18n="search">Search for</span>
 <div class="relative h-5 w-32 overflow-hidden">
 <div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
 <div class="h-5 flex items-center">AC Tech</div>
@@ -638,7 +632,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <div class="category-section px-5">
   <div class="flex items-center gap-2 mb-4">
     <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive">Construction & Home</h2>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" data-i18n="cat_home">Construction & Home</h2>
   </div>
   
   <div class="grid grid-cols-3 gap-3">
@@ -660,7 +654,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <div class="category-section px-5">
   <div class="flex items-center gap-2 mb-4">
     <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive">Appliance Repair</h2>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" data-i18n="cat_app">Appliance Repair</h2>
   </div>
   
   <div class="grid grid-cols-3 gap-3">
@@ -682,7 +676,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <div class="category-section px-5">
   <div class="flex items-center gap-2 mb-4">
     <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive">Electronics & IT</h2>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" data-i18n="cat_elec">Electronics & IT</h2>
   </div>
   
   <div class="grid grid-cols-3 gap-3">
@@ -704,7 +698,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <div class="category-section px-5">
   <div class="flex items-center gap-2 mb-4">
     <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive">Automobile</h2>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" data-i18n="cat_auto">Automobile</h2>
   </div>
   
   <div class="grid grid-cols-3 gap-3">
@@ -726,7 +720,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <div class="category-section px-5 pb-8">
   <div class="flex items-center gap-2 mb-4">
     <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive">Other Services</h2>
+    <h2 class="font-sans font-bold text-xl text-brand-olive" data-i18n="cat_other">Other Services</h2>
   </div>
   
   <div class="grid grid-cols-3 gap-3">
@@ -772,12 +766,12 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 <div class="glass rounded-2xl px-2 py-2 flex justify-around items-center shadow-xl border border-white/40">
 <a href="index.html" class="flex flex-col items-center gap-1 bg-brand-olive text-white px-5 py-2 rounded-xl transition-all shadow-md hover:shadow-lg">
 <i class="fa-solid fa-house text-sm"></i>
-<span class="text-[8px] font-bold">Home</span>
+<span class="text-[8px] font-bold" data-i18n="home">Home</span>
 </a>
 
 <button @click="handleCartNavigation()" class="relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-brand-dark/60 hover:text-brand-gold transition-all group">
 <i class="fa-solid fa-calendar-check text-lg group-hover:scale-110 transition-transform"></i>
-<span class="text-[8px] font-bold" x-text="currentActiveJobId ? 'Track' : 'Bookings'"></span>
+<span class="text-[8px] font-bold" x-text="currentActiveJobId ? 'Track' : t('bookings')"></span>
 <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
 <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -788,7 +782,7 @@ class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounde
 
 <button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-brand-dark/60 hover:text-brand-gold transition-all group">
 <i :class="user ? 'fa-solid fa-user-circle' : 'fa-regular fa-user'" class="text-xl group-hover:scale-110 transition-transform"></i>
-<span class="text-[8px] font-bold" x-text="user ? 'Profile' : 'Login'"></span>
+<span class="text-[8px] font-bold" x-text="user ? 'Profile' : t('login')"></span>
 </button>
 </div>
 </div>
