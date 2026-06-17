@@ -1,12 +1,23 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Inject CSS to completely hide Google Translate UI and fix spacing
+    // 1. Inject CSS to completely hide Google Translate UI, tooltips, and popups
     const style = document.createElement('style');
     style.innerHTML = `
+        /* Hide the top banner */
         .skiptranslate iframe, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; position: static !important; }
+        
+        /* Hide the default widget and logo */
         #google_translate_element { display: none !important; }
         .goog-logo-link { display: none !important; }
         .goog-te-gadget { color: transparent !important; font-size: 0px !important; margin: 0 !important; padding: 0 !important; }
+        
+        /* HIDE THE "RATE THIS TRANSLATION" POPUP AND HOVER EFFECTS */
+        .goog-tooltip { display: none !important; }
+        .goog-tooltip:hover { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+        
+        /* Ensure no extra spacing is added to the body */
+        body { min-height: 100vh; }
     `;
     document.head.appendChild(style);
 
@@ -19,12 +30,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const savedLang = localStorage.getItem('fixzen_lang') || 'en';
 
     // 4. Inject the Top Right Pill UI
-    // Positioned at top-[85px] and right-4 to sit perfectly under your header
     const uiContainer = document.createElement('div');
     uiContainer.id = "fixzen-lang-container";
     uiContainer.className = "fixed top-[85px] right-4 z-[60] transition-opacity duration-500";
     
-    // We use your brand colors: #5D5646 (Brand Olive) and #EEEAE2 (Brand Cream)
     uiContainer.innerHTML = `
         <div id="custom-lang-pill" class="bg-white/95 backdrop-blur-md rounded-full p-1 flex shadow-md border border-[#EEEAE2]">
             <button onclick="changeAppLanguage('en', true)" id="btn-lang-en" class="text-[10px] font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${savedLang === 'en' ? 'bg-[#5D5646] text-white shadow-sm' : 'text-[#5D5646] hover:bg-[#EEEAE2]'}">ENG</button>
@@ -41,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function() {
         uiContainer.style.opacity = '0';
         uiContainer.style.pointerEvents = 'none';
         
-        // Fade it in after 4.2 seconds (right after your loading screen finishes)
+        // Fade it in after 4.2 seconds
         setTimeout(() => { 
             uiContainer.style.opacity = '1'; 
             uiContainer.style.pointerEvents = 'auto';
