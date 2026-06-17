@@ -1,843 +1,195 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" style="top: 0px !important;">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<script src="translator.js"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>FixZenix - Premium Home Services</title>
-<meta name="theme-color" content="#5D5646">
-<meta name="description" content="Premium home services at your doorstep. Expert technicians for all your repair needs.">
-
-<style>
-/* Force the app to snap to the top and remove Google Translate gaps */
-html, body { top: 0px !important; margin: 0 !important; padding: 0 !important; }
-
-/* Modern Premium Animations */
-@keyframes tickerScroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInScale {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
-@keyframes glowPulse {
-    0%, 100% { box-shadow: 0 0 5px rgba(160,125,84,0.3); }
-    50% { box-shadow: 0 0 25px rgba(160,125,84,0.6); }
-}
-
-.ticker-track { display: flex; width: max-content; animation: tickerScroll 28s linear infinite; }
-.ticker-track:hover, .ticker-paused .ticker-track { animation-play-state: paused; }
-.hide-scroll::-webkit-scrollbar { display: none; }
-.hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Modern Card Styles */
-.service-card {
-    transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-.service-card:active {
-    transform: scale(0.96);
-}
-
-/* Category Animation */
-.category-section {
-    animation: fadeInUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
-    opacity: 0;
-}
-
-.category-section:nth-child(1) { animation-delay: 0.05s; }
-.category-section:nth-child(2) { animation-delay: 0.12s; }
-.category-section:nth-child(3) { animation-delay: 0.19s; }
-.category-section:nth-child(4) { animation-delay: 0.26s; }
-.category-section:nth-child(5) { animation-delay: 0.33s; }
-
-/* Gradient Effects */
-.gradient-border {
-    background: linear-gradient(135deg, #A07D54, #5D5646);
-}
-
-.gradient-text {
-    background: linear-gradient(135deg, #A07D54 0%, #5D5646 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.fixzen-svg-text { fill: transparent; stroke: #A07D54; stroke-width: 1.5; stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; }
-.fixzen-filled-text { background: linear-gradient(90deg, #A07D54, #EEEAE2, #A07D54); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.deva { font-family: 'Noto Sans Devanagari', sans-serif; }
-
-/* Modern Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-}
-::-webkit-scrollbar-track {
-    background: #EEEAE2;
-    border-radius: 10px;
-}
-::-webkit-scrollbar-thumb {
-    background: #A07D54;
-    border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #5D5646;
-}
-
-/* Glass Morphism */
-.glass {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Hover Effects */
-.hover-lift {
-    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-.hover-lift:hover {
-    transform: translateY(-4px);
-}
-
-/* Floating Animation */
-.float-animation {
-    animation: float 3s ease-in-out infinite;
-}
-</style>
-
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZenix - Premium Home Services</title>
     
-<script src="index.js"></script>
-
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- TRANSLATOR SCRIPT (Universal Language Switcher handles the top buttons automatically) -->
+    <script src="translator.js"></script>
+    
+    <style>
+        /* Hide scrollbar for horizontal scrolling categories */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
+<body x-data="appData()" class="bg-[#EEEAE2] text-[#5D5646] font-sans overflow-x-hidden pb-24">
 
-<body class="bg-brand-cream text-brand-dark antialiased"
-x-data="{ 
-         loading: true, 
-         searchOpen: false, 
-         sidebarOpen: false, 
-         slideIndex: 0,
-         searchQuery: '',
-         user: null,
-         currentActiveJobId: null,
-         currentJobStatus: '',
-         showScrollTop: false,
-
-         // --- TRANSLATION LOGIC ---
-         lang: localStorage.getItem('fixzen_lang') || 'en',
-         t: {
-             en: {
-                 'Top Rated': 'Top Rated', 'Expert Electricians': 'Expert Electricians', 'Summer Sale': 'Summer Sale', 'Deep Cleaning': 'Deep Cleaning',
-                 'Search for': 'Search for', 'Construction & Home': 'Construction & Home', 'Appliance Repair': 'Appliance Repair',
-                 'Electronics & IT': 'Electronics & IT', 'Automobile': 'Automobile', 'Other Services': 'Other Services',
-                 'HOME': 'HOME', 'Utility': 'Utility', 'LIVE TRACKING': 'LIVE TRACKING', 'MY BOOKINGS': 'MY BOOKINGS',
-                 'CONTACT US': 'CONTACT US', 'Legal': 'Legal', 'PRIVACY POLICY': 'PRIVACY POLICY', 'TERMS & POLICY': 'TERMS & POLICY',
-                 'For Experts': 'For Experts', 'REGISTER AS TECHNICIAN': 'REGISTER AS TECHNICIAN', 'TECHNICIAN LOGIN': 'TECHNICIAN LOGIN',
-                 'Log Out': 'Log Out', 'Log In': 'Log In', 'Guest User': 'Guest User', 'Please Log In': 'Please Log In', 'Home': 'Home',
-                 'Carpenter': 'Carpenter', 'Plumber': 'Plumber', 'Electrician': 'Electrician', 'Painter': 'Painter', 'Mason': 'Mason', 'Welder': 'Welder',
-                 'AC Tech': 'AC Tech', 'Fridge': 'Fridge', 'Washing M.': 'Washing M.', 'Microwave': 'Microwave', 'RO Filter': 'RO Filter',
-                 'TV / LED': 'TV / LED', 'CCTV': 'CCTV', 'Car Mech': 'Car Mech', 'Bike Mech': 'Bike Mech', 'Pest Ctrl': 'Pest Ctrl', 'Grass Cutting': 'Grass Cutting',
-                 'Home_cat': 'Home', 'Appliance': 'Appliance', 'Electronics': 'Electronics', 'Auto': 'Auto', 'Other': 'Other',
-                 'Limited Time Offer': 'Limited Time Offer', 'Book Now': 'Book Now', 'Available 24/7': 'Available 24/7', 
-                 'Certified Experts': 'Certified Experts', '100% Guarantee': '100% Guarantee', 'Quality Service': 'Quality Service'
-             },
-             hi: {
-                 'Top Rated': 'शीर्ष रेटेड', 'Expert Electricians': 'विशेषज्ञ इलेक्ट्रीशियन', 'Summer Sale': 'ग्रीष्मकालीन सेल', 'Deep Cleaning': 'डीप क्लीनिंग',
-                 'Search for': 'खोजें', 'Construction & Home': 'निर्माण और घर', 'Appliance Repair': 'उपकरण मरम्मत',
-                 'Electronics & IT': 'इलेक्ट्रॉनिक्स और आईटी', 'Automobile': 'ऑटोमोबाइल', 'Other Services': 'अन्य सेवाएं',
-                 'HOME': 'होम', 'Utility': 'उपयोगिता', 'LIVE TRACKING': 'लाइव ट्रैकिंग', 'MY BOOKINGS': 'मेरी बुकिंग',
-                 'CONTACT US': 'संपर्क करें', 'Legal': 'कानूनी', 'PRIVACY POLICY': 'गोपनीयता नीति', 'TERMS & POLICY': 'नियम और नीति',
-                 'For Experts': 'विशेषज्ञों के लिए', 'REGISTER AS TECHNICIAN': 'तकनीशियन के रूप में रजिस्टर करें', 'TECHNICIAN LOGIN': 'तकनीशियन लॉगिन',
-                 'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथि उपयोगकर्ता', 'Please Log In': 'कृपया लॉग इन करें', 'Home': 'होम',
-                 'Carpenter': 'बढ़ई', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रीशियन', 'Painter': 'पेंटर', 'Mason': 'राजमिस्त्री', 'Welder': 'वेल्डर',
-                 'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वॉशिंग मशीन', 'Microwave': 'माइक्रोवेव', 'RO Filter': 'आरओ फ़िल्टर',
-                 'TV / LED': 'टीवी / एलईडी', 'CCTV': 'सीसीटीवी', 'Car Mech': 'कार मैकेनिक', 'Bike Mech': 'बाइक मैकेनिक', 'Pest Ctrl': 'कीट नियंत्रण', 'Grass Cutting': 'घास काटना',
-                 'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑटो', 'Other': 'अन्य',
-                 'Limited Time Offer': 'सीमित समय का ऑफर', 'Book Now': 'अभी बुक करें', 'Available 24/7': 'उपलब्ध 24/7', 
-                 'Certified Experts': 'प्रमाणित विशेषज्ञ', '100% Guarantee': '100% गारंटी', 'Quality Service': 'गुणवत्तापूर्ण सेवा'
-             },
-             mr: {
-                 'Top Rated': 'सर्वाधिक रेटेड', 'Expert Electricians': 'तज्ञ इलेक्ट्रिशियन', 'Summer Sale': 'उन्हाळी सेल', 'Deep Cleaning': 'डीप क्लिनिंग',
-                 'Search for': 'शोधा', 'Construction & Home': 'बांधकाम आणि घर', 'Appliance Repair': 'उपकरण दुरुस्ती',
-                 'Electronics & IT': 'इलेक्ट्रॉनिक्स आणि आयटी', 'Automobile': 'ऑटोमोबाईल', 'Other Services': 'इतर सेवा',
-                 'HOME': 'होम', 'Utility': 'उपयुक्तता', 'LIVE TRACKING': 'लाइव्ह ट्रॅकिंग', 'MY BOOKINGS': 'माझे बुकिंग',
-                 'CONTACT US': 'संपर्क साधा', 'Legal': 'कायदेशीर', 'PRIVACY POLICY': 'गोपनीयता धोरण', 'TERMS & POLICY': 'अटी आणि धोरण',
-                 'For Experts': 'तज्ञांसाठी', 'REGISTER AS TECHNICIAN': 'तंत्रज्ञ म्हणून नोंदणी करा', 'TECHNICIAN LOGIN': 'तंत्रज्ञ लॉगिन',
-                 'Log Out': 'लॉग आउट', 'Log In': 'लॉग इन', 'Guest User': 'अतिथी वापरकर्ता', 'Please Log In': 'कृपया लॉग इन करा', 'Home': 'होम',
-                 'Carpenter': 'सुतार', 'Plumber': 'प्लंबर', 'Electrician': 'इलेक्ट्रिशियन', 'Painter': 'पेंटर', 'Mason': 'गवंडी', 'Welder': 'वेल्डर',
-                 'AC Tech': 'एसी टेक', 'Fridge': 'फ्रिज', 'Washing M.': 'वॉशिंग मशीन', 'Microwave': 'मायक्रोवेव्ह', 'RO Filter': 'आरओ फिल्टर',
-                 'TV / LED': 'टीव्ही / एलईडी', 'CCTV': 'सीसीटीवी', 'Car Mech': 'कार मेकॅनिक', 'Bike Mech': 'बाईक मेकॅनिक', 'Pest Ctrl': 'कीटक नियंत्रण', 'Grass Cutting': 'गवत कापणे',
-                 'Home_cat': 'घर', 'Appliance': 'उपकरण', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Auto': 'ऑतो', 'Other': 'इतर',
-                 'Limited Time Offer': 'मर्यादित वेळ ऑफर', 'Book Now': 'आत्ताच बुक करा', 'Available 24/7': 'उपलब्ध 24/7', 
-                 'Certified Experts': 'प्रमाणित तज्ञ', '100% Guarantee': '100% हमी', 'Quality Service': 'गुणवत्तापूर्ण सेवा'
-             }
-         },
-         tx(key) { return this.t[this.lang]?.[key] || key; },
-         setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
-         
-         // Service Categories (clean - no fake reviews/ratings)
-         masterList: [
-            // HOME
-            {n:'Carpenter', cat:'Home_cat', img:'carpenter1.jpg'},
-            {n:'Plumber', cat:'Home_cat', img:'plumber2.jpg'},
-            {n:'Electrician', cat:'Home_cat', img:'electircian3.jpg'},
-            {n:'Painter', cat:'Home_cat', img:'painter4.jpg'},
-            {n:'Mason', cat:'Home_cat', img:'mason5.jpg'},
-            {n:'Welder', cat:'Home_cat', img:'welder6.jpg'},
-
-            // APPLIANCE
-            {n:'AC Tech', cat:'Appliance', img:'acrepair7.jpg'},
-            {n:'Fridge', cat:'Appliance', img:'fridge8.jpg'},
-            {n:'Washing M.', cat:'Appliance', img:'washingmachine9.jpg'},
-            {n:'Microwave', cat:'Appliance', img:'microwave10.jpg'},
-            {n:'RO Filter', cat:'Appliance', img:'rofilter11.jpg'},
-
-            // ELECTRONICS
-            {n:'TV / LED', cat:'Electronics', img:'tv12.jpg'},
-            {n:'CCTV', cat:'Electronics', img:'cctv13.jpg'},
-
-            // AUTO
-            {n:'Car Mech', cat:'Auto', img:'car14.jpg'},
-            {n:'Bike Mech', cat:'Auto', img:'bike15.jpg'},
-
-            // OTHER
-            {n:'Pest Ctrl', cat:'Other', img:'pestctrl16.jpg'},
-            {n:'Grass Cutting', cat:'Other', img:'grasscut17.jpg'}
-        ],
-         
-         get filteredServices() {
-             if (this.searchQuery === '') return [];
-             return this.masterList.filter(item => 
-                 item.n.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                 this.tx(item.n).toLowerCase().includes(this.searchQuery.toLowerCase())
-             );
-         },
-
-         // User Functions
-         async checkUser() {
-             const checkLogged = localStorage.getItem('local_user_logged');
-             const userPhone = localStorage.getItem('local_user_phone');
-
-             if (checkLogged === 'true' && userPhone && window.sb) {
-                 try {
-                     const { data: profile, error } = await window.sb
-                         .from('profiles')
-                         .select('*')
-                         .eq('phone', userPhone.trim())
-                         .maybeSingle();
-
-                     if (error) throw error;
-
-                     if (profile) {
-                         this.user = profile;
-                         await this.checkActiveJobsFromDatabase(profile.id);
-                     } else {
-                         this.user = { full_name: 'Valued Customer', phone: userPhone };
-                     }
-                 } catch (err) {
-                     console.error('Error parsing profile indices: ', err.message);
-                     this.user = { full_name: 'Valued Customer', phone: userPhone };
-                 }
-             } else {
-                 this.user = null;
-             }
-         },
-
-         async checkActiveJobsFromDatabase(userId) {
-             try {
-                 const { data: activeJobs, error } = await window.sb
-                     .from('jobs')
-                     .select('id, status')
-                     .eq('user_id', userId)
-                     .in('status', ['pending', 'accepted', 'searching', 'assigned', 'arrived', 'started'])
-                     .order('created_at', { ascending: false });
-
-                 if (error) throw error;
-
-                 if (activeJobs && activeJobs.length > 0) {
-                     this.currentActiveJobId = activeJobs[0].id;
-                     this.currentJobStatus = activeJobs[0].status;
-                     localStorage.setItem('active_job_id', this.currentActiveJobId);
-                 } else {
-                     this.currentActiveJobId = null;
-                     this.currentJobStatus = '';
-                     localStorage.removeItem('active_job_id');
-                 }
-             } catch (err) {
-                 this.currentActiveJobId = localStorage.getItem('active_job_id');
-             }
-         },
-
-         async logout() {
-             localStorage.removeItem('local_user_logged');
-             localStorage.removeItem('local_user_phone');
-             localStorage.removeItem('active_job_id');
-             window.location.reload();
-         },
-
-         navigate(url) {
-             if (this.user) {
-                 window.location.href = url;
-             } else {
-                 sessionStorage.setItem('redirect_to', url);
-                 window.location.href = 'loginuser.html';
-             }
-         },
-
-         handleCartNavigation() {
-             if (this.currentActiveJobId && this.currentActiveJobId !== 'null' && this.currentActiveJobId !== '') {
-                 window.location.href = `success.html?job_id=${this.currentActiveJobId}`;
-             } else {
-                 this.navigate('bookings.html');
-             }
-         },
-
-         // Admin Functions
-         adminBanners: [],
-         async loadAdminBanners() {
-             if (!window.sb) return;
-             try {
-                 const { data, error } = await window.sb
-                     .from('banners')
-                     .select('*')
-                     .eq('active', true)
-                     .order('sort_order');
-                 if (!error && data && data.length > 0) {
-                     this.adminBanners = data;
-                 }
-             } catch(e) { console.warn('Banner load error', e); }
-         },
-
-         offerMessages: [],
-         async loadTickerMessages() {
-    if (!window.sb) return;
-
-    try {
-        const { data, error } = await window.sb
-            .from('ticker_messages')
-            .select('message')
-            .eq('active', true);
-
-        if (error) throw error;
-
-        this.offerMessages = data.map(x => x.message);
-
-    } catch (err) {
-        console.error('Ticker Error:', err.message);
-    }
-},
-         tickerPaused: false,
-         
-         // Scroll Handling
-         handleScroll() {
-             this.showScrollTop = window.scrollY > 300;
-         },
-         
-         scrollToTop() {
-             window.scrollTo({ top: 0, behavior: 'smooth' });
-         }
-     }"
-x-init="
-         if (sessionStorage.getItem('introShown')) { loading = false; } 
-         else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
-         
-         this.currentActiveJobId = localStorage.getItem('active_job_id');
-
-         let attempts = 0;
-         let check = setInterval(() => {
-             if(window.sb || attempts > 20) {
-                 clearInterval(check);
-                 checkUser();
-                 loadAdminBanners();
-                 loadTickerMessages();
-             }
-             attempts++;
-         }, 100);
-         
-         setInterval(() => {
-             const total = adminBanners.length > 0 ? adminBanners.length : 3;
-             slideIndex = (slideIndex + 1) % total;
-         }, 5000);
-         
-         window.addEventListener('scroll', () => handleScroll());
-     ">
-
-<div x-show="loading" 
-         x-transition:leave="transition ease-in-out duration-1000" 
-         x-transition:leave-start="opacity-100 transform scale-100" 
-         x-transition:leave-end="opacity-0 transform scale-110" 
-         class="fixed inset-0 z-[100] bg-gradient-to-br from-brand-olive to-brand-dark flex flex-col items-center justify-center overflow-hidden">
-        
-        <div class="absolute inset-0 flex items-center justify-center opacity-20 select-none pointer-events-none">
-            <i class="fa-solid fa-gear text-[200px] text-brand-gold animate-chaos-spin absolute top-1/4 left-[-50px]"></i>
-            <i class="fa-solid fa-screwdriver-wrench text-[150px] text-brand-beige animate-chaos-spin absolute bottom-1/4 right-[-50px]" style="animation-direction: reverse; animation-duration: 3s;"></i>
-        </div>
-        
-        <div class="relative z-10 flex flex-col items-center justify-center text-center">
-            
-            <svg height="80" width="320" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" class="select-none pointer-events-none">
-                <defs>
-                    <linearGradient id="fixzenix-gold-shim" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#A07D54" />
-                        <stop offset="50%" stop-color="#EEEAE2" />
-                        <stop offset="100%" stop-color="#A07D54" />
-                    </linearGradient>
-                </defs>
-
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="font-sans font-extrabold text-5xl tracking-[0.12em] fixzen-svg-text animate-draw-text">FIXZENIX</text>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="url(#fixzenix-gold-shim)" class="font-sans font-extrabold text-5xl tracking-[0.12em] opacity-0 animate-fill-text animate-logo-shine" style="animation-delay: 1.8s; animation-fill-mode: forwards;">FIXZENIX</text>
-            </svg>
-            
-            <p class="text-brand-gold text-[10px] font-bold tracking-[0.32em] uppercase mt-4 opacity-0 animate-sub-text-slide select-none pointer-events-none" 
-               style="animation-delay: 2.6s; animation-fill-mode: forwards !important;">
-                 WE FIX, YOU RELAX
-            </p>
-        </div>
+    <!-- LOADING SCREEN (4 Seconds) -->
+    <div x-show="loading" 
+         class="fixed inset-0 z-[100] bg-[#EEEAE2] flex flex-col items-center justify-center transition-opacity duration-500"
+         x-transition:leave="transition ease-in duration-500"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <h1 class="text-4xl font-serif italic text-[#5D5646] tracking-wider mb-4 animate-pulse">FixZenix</h1>
+        <div class="w-12 h-12 border-4 border-[#A07D54]/30 border-t-[#5D5646] rounded-full animate-spin"></div>
     </div>
 
-<div x-show="sidebarOpen" class="fixed inset-0 z-[90]" style="display: none;">
-<div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300" @click="sidebarOpen = false"></div>
-<aside class="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col"
-x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0">
-
-<div class="p-6 border-b border-brand-beige/30 bg-gradient-to-r from-brand-cream to-white">
-<div class="flex items-center justify-between mb-6">
-<h2 class="font-sans font-extrabold text-2xl gradient-text">FIXZENIX</h2>
-<button @click="sidebarOpen = false" class="w-8 h-8 rounded-full bg-brand-cream border border-brand-beige flex items-center justify-center text-brand-dark hover:rotate-90 transition-all duration-300"><i class="fa-solid fa-xmark"></i></button>
-</div>
-
-<div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-2xl p-4 flex items-center gap-3 shadow-lg relative overflow-hidden group">
-<div class="w-12 h-12 rounded-full border-2 border-brand-gold p-0.5 relative z-10">
-<img :src="user ? 'https://ui-avatars.com/api/?background=A07D54&color=fff&name=' + encodeURIComponent(user.full_name) : 'https://i.pravatar.cc/150?img=3'" class="w-full h-full rounded-full object-cover">
-</div>
-<div class="relative z-10">
-<p class="text-white font-bold text-sm" x-text="user ? user.full_name : tx('Guest User')"></p>
-<p class="text-brand-beige text-xs" x-text="user ? (user.username ? '@' + user.username : user.phone) : tx('Please Log In')"></p>
-</div>
-<div class="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-</div>
-</div>
-
-<nav class="flex-1 overflow-y-auto py-2 hide-scroll">
-<a href="index.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group relative">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-house"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('HOME')"></span>
-<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-gold scale-y-0 group-hover:scale-y-100 transition-transform origin-top"></div>
-</a>
-
-<div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-<p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('Utility')"></p>
-
-<button @click="handleCartNavigation()" class="w-full flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all text-left group bg-transparent border-none outline-none relative">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-calendar-check"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="currentActiveJobId ? tx('LIVE TRACKING') : tx('MY BOOKINGS')"></span>
-</button>
-
-<a href="contact.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group relative">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive"><i class="fa-solid fa-headset"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('CONTACT US')"></span>
-</a>
-
-<div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-<p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('Legal')"></p>
-<a href="privacy.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-shield-halved"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('PRIVACY POLICY')"></span>
-</a>
-<a href="terms.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-file-contract"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('TERMS & POLICY')"></span>
-</a>
-
-<div class="my-2 h-px bg-brand-beige/30 mx-6"></div>
-<p class="px-6 text-[10px] font-bold text-brand-olive/40 uppercase tracking-widest mb-1 mt-2" x-text="tx('For Experts')"></p>
-<a href="partnerregister.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-handshake"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('REGISTER AS TECHNICIAN')"></span>
-</a>
-<a href="techniciandashboard.html" class="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-cream/50 transition-all group">
-<div class="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center text-brand-olive group-hover:bg-brand-gold group-hover:text-white transition-all"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
-<span class="text-sm font-bold text-brand-dark tracking-wide" x-text="tx('TECHNICIAN LOGIN')"></span>
-</a>
-</nav>
-
-<div class="p-6 bg-gradient-to-r from-brand-cream/50 to-white/50">
-<template x-if="user">
-<button @click="logout()" class="w-full py-3 rounded-xl bg-red-500/10 border border-red-500 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest block text-center">
-<i class="fas fa-sign-out-alt mr-2"></i><span x-text="tx('Log Out')"></span>
-</button>
-</template>
-<template x-if="!user">
-<a href="loginuser.html" class="w-full py-3 rounded-xl border border-brand-olive text-brand-olive font-bold text-xs hover:bg-brand-olive hover:text-white transition-all uppercase tracking-widest block text-center">
-<i class="fas fa-sign-in-alt mr-2"></i><span x-text="tx('Log In')"></span>
-</a>
-</template>
-</div>
-</aside>
-</div>
-
-<div class="max-w-md mx-auto min-h-screen bg-brand-cream relative shadow-2xl overflow-hidden pb-40" x-show="!loading">
-
-<header class="fixed top-0 w-full max-w-md mx-auto z-[60] px-5 py-3 flex justify-between items-center bg-white/80 backdrop-blur-lg shadow-sm transition-all duration-300">
-<button @click="sidebarOpen = true" class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-brand-cream transition-all text-brand-olive">
-<i class="fa-solid fa-bars text-lg"></i>
-</button>
-
-<div class="flex items-center gap-1">
-<span class="font-serif italic text-xl font-bold gradient-text">FixZenix</span>
-<span class="text-[8px] font-bold text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-full animate-pulse-slow">PREMIUM</span>
-</div>
-
-<button @click="handleCartNavigation()" class="relative w-10 h-10 rounded-full bg-brand-gold shadow-md flex items-center justify-center hover:bg-brand-olive transition-all text-white">
-<i class="fa-solid fa-clipboard-list text-lg"></i>
-<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
-<span class="absolute -top-1 -right-1 flex h-3 w-3">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-<span class="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white"></span>
-</span>
-</template>
-</button>
-</header>
-
-<div class="relative h-[420px] rounded-b-[40px] overflow-hidden shadow-xl bg-gray-900 group mx-3 mt-14">
-    <template x-if="adminBanners.length === 0">
-        <div>
-            <div class="absolute inset-0 transition-opacity duration-700" x-show="slideIndex === 0">
-                <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=900&h=700&fit=crop&auto=format&q=90" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+    <!-- MAIN APP CONTENT -->
+    <div x-show="!loading" style="display: none;" 
+         x-transition:enter="transition ease-out duration-1000" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100">
+        
+        <!-- HEADER -->
+        <header class="bg-white sticky top-0 z-50 px-4 py-3 shadow-sm flex justify-between items-center h-[70px]">
+            <!-- Hamburger Menu -->
+            <button class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-600 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-1">
+                <h1 class="text-2xl font-serif italic font-bold text-[#5D5646]">FixZenix</h1>
+                <span class="text-[8px] font-bold bg-[#EEEAE2] text-[#A07D54] px-1.5 py-0.5 rounded uppercase tracking-wider">Premium</span>
             </div>
-            <div class="absolute inset-0 transition-opacity duration-700" x-show="slideIndex === 1">
-                <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=900&h=700&fit=crop&auto=format&q=90" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+            
+            <!-- Booking Icon -->
+            <button class="w-10 h-10 bg-[#A07D54] text-white rounded-full flex items-center justify-center shadow-md">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+            </button>
+        </header>
+
+        <!-- HERO SECTION -->
+        <div class="px-4 mt-2 relative">
+            <div class="relative w-full h-[350px] rounded-3xl overflow-hidden shadow-lg">
+                <!-- Using your provided image verbatim -->
+                <img src="image_a595d5.jpg" alt="Painting Service" class="absolute inset-0 w-full h-full object-cover">
+                <!-- Dark Gradient Overlay for text readability -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                
+                <div class="absolute bottom-14 left-5 right-5 text-white">
+                    <span class="bg-[#A07D54] text-white text-[10px] font-bold px-3 py-1 rounded-full mb-3 inline-block uppercase tracking-wide">LIMITED DEAL</span>
+                    <h2 class="text-3xl font-bold leading-tight mb-4">Fresh Walls, Fresh Feel – from ₹299</h2>
+                    <a href="service.html" class="bg-white text-black text-sm font-bold px-5 py-2.5 rounded-full inline-flex items-center gap-2 hover:bg-gray-100 transition shadow-md">
+                        Get Painter 
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                </div>
             </div>
-            <div class="absolute inset-0 transition-opacity duration-700" x-show="slideIndex === 2">
-                <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&h=700&fit=crop&auto=format&q=90" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-            </div>
-            <div class="absolute bottom-20 left-6 right-6 animate-fade-in-scale">
-                <span class="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg inline-flex items-center gap-1">
-                    <i class="fas fa-star text-[8px]"></i> <span x-text="tx('Top Rated')"></span>
-                </span>
-                <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-3" x-text="slideIndex===0 ? tx('Expert Electricians') : (slideIndex===1 ? tx('Summer Sale') : tx('Deep Cleaning'))"></h2>
-                <p class="text-white/80 text-sm mt-2">Quality service at your doorstep</p>
-                <button class="mt-4 bg-white text-brand-olive px-5 py-2.5 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform">
-                    Book Now →
-                </button>
+            
+            <!-- FLOATING SEARCH BAR -->
+            <div class="absolute -bottom-6 left-0 right-0 px-8 z-10">
+                <div class="bg-white rounded-2xl shadow-xl p-2 flex items-center gap-3 border border-gray-100">
+                    <div class="w-12 h-12 bg-[#8C7A6B] rounded-xl flex items-center justify-center text-white shrink-0 shadow-inner">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" placeholder="खोजें डीप क्लीनिंग" class="w-full bg-transparent border-none focus:ring-0 text-sm font-medium text-[#5D5646] placeholder-gray-400 outline-none">
+                </div>
             </div>
         </div>
-    </template>
 
-    <template x-if="adminBanners.length > 0">
-        <div class="absolute inset-0">
-            <template x-for="(banner, idx) in adminBanners" :key="banner.id">
-                <div class="absolute inset-0 transition-opacity duration-700"
-                     :style="slideIndex === idx ? 'opacity:1;z-index:1' : 'opacity:0;z-index:0'">
-                    <img :src="banner.image_url" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                    <div class="absolute bottom-20 left-6 right-6 z-10 animate-fade-in-scale">
-                        <span x-show="banner.tag" class="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg inline-flex items-center gap-1" x-text="banner.tag"></span>
-                        <h2 class="text-3xl font-sans font-bold text-white leading-tight mt-3" x-text="banner.title"></h2>
-                        <template x-if="banner.cta_text && banner.cta_link">
-                            <a :href="banner.cta_link"
-                               class="inline-flex items-center gap-2 mt-4 bg-white text-brand-olive text-xs font-extrabold px-5 py-2.5 rounded-full shadow-lg hover:scale-105 transition-all duration-300">
-                                <span x-text="banner.cta_text"></span>
-                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                            </a>
-                        </template>
+        <!-- HOT OFFERS TICKER -->
+        <div class="px-4 mt-12 mb-6">
+            <div class="bg-[#5D5646] rounded-xl overflow-hidden flex items-center shadow-md relative">
+                <div class="bg-[#A07D54] text-white text-[10px] font-bold px-3 py-2.5 flex items-center gap-1.5 z-10 shrink-0 tracking-wide">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
+                    HOT OFFERS
+                </div>
+                <div class="overflow-hidden whitespace-nowrap py-2.5 w-full">
+                    <div class="animate-[marquee_15s_linear_infinite] inline-block text-white text-xs font-medium">
+                        <span class="mx-4">Welcome to Fixzenix!</span>
+                        <span class="text-[#A07D54]">✦</span>
+                        <span class="mx-4">summer sale 20% off on painting!</span>
                     </div>
                 </div>
-            </template>
-        </div>
-    </template>
-
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        <template x-for="(_, idx) in (adminBanners.length > 0 ? adminBanners : [0,1,2])" :key="idx">
-            <button @click="slideIndex = idx"
-                    :class="slideIndex === idx ? 'bg-brand-gold w-8' : 'bg-white/50 w-2'"
-                    class="h-2 rounded-full transition-all duration-300 cursor-pointer"></button>
-        </template>
-    </div>
-</div>
-
-<div class="px-5 -mt-10 relative z-50">
-<div class="relative">
-<div class="glass rounded-2xl p-2 shadow-xl flex items-center gap-2 border border-white/50">
-<div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-gold to-brand-olive flex items-center justify-center text-white shadow-inner">
-<i class="fa-solid fa-magnifying-glass text-lg"></i>
-</div>
-<div class="flex-1 h-12 relative flex items-center">
-<div x-show="searchQuery === ''" class="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
-<span class="text-brand-dark/40 text-sm font-medium mr-1" x-text="tx('Search for')"></span>
-<div class="relative h-5 w-32 overflow-hidden">
-<div class="absolute animate-text-scroll text-brand-gold font-bold text-sm w-full">
-<div class="h-5 flex items-center" x-text="tx('AC Tech')"></div>
-<div class="h-5 flex items-center" x-text="tx('Plumber')"></div>
-<div class="h-5 flex items-center" x-text="tx('Deep Cleaning')"></div>
-</div>
-</div>
-</div>
-<input type="text" x-model="searchQuery" class="w-full h-full bg-transparent border-none outline-none text-brand-dark font-bold text-lg z-10 placeholder-transparent" placeholder="">
-<button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="mr-2 w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-brand-dark/60 hover:bg-red-500 hover:text-white transition-all">
-<i class="fa-solid fa-times text-xs"></i>
-</button>
-</div>
-</div>
-
-<div x-show="searchQuery.length > 0" 
-x-transition:enter="transition ease-out duration-200"
-x-transition:enter-start="opacity-0 translate-y-[-10px]"
-x-transition:enter-end="opacity-100 translate-y-0"
-x-transition:leave="transition ease-in duration-150"
-x-transition:leave-start="opacity-100 translate-y-0"
-x-transition:leave-end="opacity-0 translate-y-[-10px]"
-@click.outside="searchQuery = ''"
-class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-40 max-h-80 overflow-y-auto">
-
-<div class="divide-y divide-brand-beige/30">
-<template x-for="result in filteredServices">
-<div @click="navigate('service.html?id=' + result.n)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer transition-all group">
-<div class="text-2xl w-12 h-12 rounded-full overflow-hidden bg-brand-cream flex items-center justify-center group-hover:scale-110 transition-transform">
-<img :src="result.img" class="w-full h-full object-cover">
-</div>
-<div class="flex-1">
-<p class="font-bold text-sm text-brand-dark" x-text="tx(result.n)"></p>
-<p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text="tx(result.cat)"></p>
-</div>
-<i class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold transition-all"></i>
-</div>
-</template>
-</div>
-</div>
-</div>
-</div>
-
-<div class="px-4 mt-6" :class="tickerPaused ? 'ticker-paused' : ''">
-    <div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-xl overflow-hidden shadow-lg border border-brand-gold/20 flex items-center">
-        <div class="flex-shrink-0 bg-brand-gold px-4 py-2.5 flex items-center gap-2 self-stretch">
-            <i class="fa-solid fa-fire text-white text-xs animate-pulse"></i>
-            <span class="text-white text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Hot Offers</span>
-        </div>
-        <div class="overflow-hidden flex-1 py-2.5 cursor-pointer" @click="tickerPaused = !tickerPaused">
-            <div class="ticker-track">
-                <template x-for="(msg, i) in [...offerMessages, ...offerMessages]" :key="i">
-                    <span class="text-white/90 text-[11px] font-semibold whitespace-nowrap px-6 flex items-center gap-2">
-                        <i class="fas fa-tag text-[8px] text-brand-gold"></i>
-                        <span x-text="msg"></span>
-                    </span>
-                </template>
+                <!-- Pause Button on Ticker -->
+                <div class="bg-[#5D5646] px-3 z-10 shrink-0 text-gray-300">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                </div>
             </div>
         </div>
-        <button @click.stop="tickerPaused = !tickerPaused"
-                class="flex-shrink-0 w-8 h-full flex items-center justify-center text-white/40 hover:text-white transition-all">
-            <i :class="tickerPaused ? 'fa-play' : 'fa-pause'" class="fa-solid text-[9px]"></i>
-        </button>
+
+        <!-- CATEGORIES SECTION -->
+        <div class="mt-8">
+            <div class="px-4 flex items-center gap-2 mb-4">
+                <div class="w-1 h-6 bg-[#A07D54] rounded-full"></div>
+                <h3 class="text-xl font-bold text-[#5D5646]">निर्माण और घर</h3>
+            </div>
+            
+            <div class="flex overflow-x-auto gap-4 px-4 pb-4 no-scrollbar">
+                <!-- Carpenter -->
+                <a href="service.html" class="block w-[130px] shrink-0 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <img src="https://images.unsplash.com/photo-1581141849291-1125c7b692b5?w=400&q=80" alt="Carpenter" class="w-full h-[110px] object-cover">
+                    <div class="p-2.5 text-center">
+                        <h4 class="font-bold text-xs text-gray-800">बढ़ई</h4>
+                    </div>
+                </a>
+                
+                <!-- Plumber -->
+                <a href="service.html" class="block w-[130px] shrink-0 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <img src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=400&q=80" alt="Plumber" class="w-full h-[110px] object-cover">
+                    <div class="p-2.5 text-center">
+                        <h4 class="font-bold text-xs text-gray-800">प्लंबर</h4>
+                    </div>
+                </a>
+                
+                <!-- Electrician -->
+                <a href="service.html" class="block w-[130px] shrink-0 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&q=80" alt="Electrician" class="w-full h-[110px] object-cover">
+                    <div class="p-2.5 text-center">
+                        <h4 class="font-bold text-xs text-gray-800">इलेक्ट्रीशियन</h4>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
     </div>
-</div>
 
-<div class="pb-12 space-y-8 mt-6">
-
-<div class="category-section px-5">
-  <div class="flex items-center gap-2 mb-4">
-    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Construction & Home')"></h2>
-  </div>
-  
-  <div class="grid grid-cols-3 gap-3">
-    <template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
-      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-          </div>
-          <div class="text-center mt-2">
-            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
-          </div>
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.05)] rounded-t-[30px] z-50">
+        <div class="flex justify-around items-center p-2.5">
+            <a href="index.html" class="flex flex-col items-center justify-center w-24 h-14 bg-[#5D5646] rounded-[20px] text-white shadow-md transition-all">
+                <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-[10px] font-bold">होम</span>
+            </a>
+            
+            <a href="bookings.html" class="flex flex-col items-center justify-center w-24 h-14 text-gray-400 hover:text-[#5D5646] transition-all">
+                <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="text-[10px] font-medium">Bookings</span>
+            </a>
+            
+            <a href="profile.html" class="flex flex-col items-center justify-center w-24 h-14 text-gray-400 hover:text-[#5D5646] transition-all">
+                <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="text-[10px] font-medium">Profile</span>
+            </a>
         </div>
-      </div>
-    </template>
-  </div>
-</div>
+    </nav>
 
-<div class="category-section px-5">
-  <div class="flex items-center gap-2 mb-4">
-    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Appliance Repair')"></h2>
-  </div>
-  
-  <div class="grid grid-cols-3 gap-3">
-    <template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
-      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-          </div>
-          <div class="text-center mt-2">
-            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</div>
-
-<div class="category-section px-5">
-  <div class="flex items-center gap-2 mb-4">
-    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Electronics & IT')"></h2>
-  </div>
-  
-  <div class="grid grid-cols-3 gap-3">
-    <template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
-      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-          </div>
-          <div class="text-center mt-2">
-            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</div>
-
-<div class="category-section px-5">
-  <div class="flex items-center gap-2 mb-4">
-    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Automobile')"></h2>
-  </div>
-  
-  <div class="grid grid-cols-3 gap-3">
-    <template x-for="s in masterList.filter(item => item.cat === 'Auto')">
-      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-          </div>
-          <div class="text-center mt-2">
-            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</div>
-
-<div class="category-section px-5 pb-8">
-  <div class="flex items-center gap-2 mb-4">
-    <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-    <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="tx('Other Services')"></h2>
-  </div>
-  
-  <div class="grid grid-cols-3 gap-3">
-    <template x-for="s in masterList.filter(item => item.cat === 'Other')">
-      <div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-        <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-            <img :src="s.img" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-          </div>
-          <div class="text-center mt-2">
-            <span class="text-[11px] font-semibold text-brand-dark" x-text="tx(s.n)"></span>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</div>
-
-</div>
-
-<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
-<div class="fixed bottom-[140px] left-4 right-4 z-40 animate-pulse">
-<div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-2xl p-4 shadow-2xl border border-brand-gold/30 flex flex-col gap-3">
-<div class="flex items-center gap-3">
-<div class="relative flex h-12 w-12 items-center justify-center bg-white/10 rounded-xl border border-white/20 flex-shrink-0">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
-<i class="fa-solid text-xl text-brand-green relative z-10" :class="currentJobStatus === 'arrived' ? 'fa-door-open animate-bounce' : 'fa-truck-fast animate-pulse'"></i>
-</div>
-<div class="flex-1">
-<h4 class="text-white text-sm font-bold" x-text="currentJobStatus === 'arrived' ? '🎉 Expert Has Arrived!' : '🔧 Expert Is On The Way'"></h4>
-<p class="text-white/60 text-[10px]">Tap to track your service in real-time</p>
-</div>
-<i class="fas fa-chevron-right text-white/40 text-xs"></i>
-</div>
-<button @click="handleCartNavigation()" class="w-full py-2.5 rounded-xl bg-brand-gold text-brand-dark font-bold text-xs uppercase tracking-wide hover:bg-white transition-all">
-<span>Open Live Tracking →</span> 
-</button>
-</div>
-</div>
-</template>
-
-<div x-show="!loading"
-     x-transition:enter="transition ease-out duration-1000 delay-500"
-     x-transition:enter-start="opacity-0 translate-y-8"
-     x-transition:enter-end="opacity-100 translate-y-0"
-     class="fixed bottom-[100px] left-1/2 transform -translate-x-1/2 z-50 flex justify-center w-full max-w-sm pointer-events-none">
-    <div class="glass rounded-full p-1.5 flex shadow-xl pointer-events-auto gap-1 border border-white/30">
-        <button @click="setLang('en')" :class="lang==='en'?'bg-brand-olive text-white shadow-md':'text-brand-dark hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300">🇬🇧 ENG</button>
-        <button @click="setLang('hi')" :class="lang==='hi'?'bg-brand-olive text-white shadow-md':'text-brand-dark hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 deva">🇮🇳 हिंदी</button>
-        <button @click="setLang('mr')" :class="lang==='mr'?'bg-brand-olive text-white shadow-md':'text-brand-dark hover:bg-brand-cream'" class="text-[10px] font-bold px-4 py-1.5 rounded-full transition-all duration-300 deva">🇮🇳 मराठी</button>
-    </div>
-</div>
-
-<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[92%] max-w-sm z-50">
-<div class="glass rounded-2xl px-2 py-2 flex justify-around items-center shadow-xl border border-white/40">
-<a href="index.html" class="flex flex-col items-center gap-1 bg-brand-olive text-white px-5 py-2 rounded-xl transition-all shadow-md hover:shadow-lg">
-<i class="fa-solid fa-house text-sm"></i>
-<span class="text-[8px] font-bold" x-text="tx('Home')"></span>
-</a>
-
-<button @click="handleCartNavigation()" class="relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-brand-dark/60 hover:text-brand-gold transition-all group">
-<i class="fa-solid fa-calendar-check text-lg group-hover:scale-110 transition-transform"></i>
-<span class="text-[8px] font-bold" x-text="currentActiveJobId ? 'Track' : 'Bookings'"></span>
-<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
-<span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-</span>
-</template>
-</button>
-
-<button @click="user ? sidebarOpen = true : window.location.href='loginuser.html'" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-brand-dark/60 hover:text-brand-gold transition-all group">
-<i :class="user ? 'fa-solid fa-user-circle' : 'fa-regular fa-user'" class="text-xl group-hover:scale-110 transition-transform"></i>
-<span class="text-[8px] font-bold" x-text="user ? 'Profile' : 'Login'"></span>
-</button>
-</div>
-</div>
-
-<button x-show="showScrollTop" @click="scrollToTop()" 
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-10"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        class="fixed bottom-28 right-5 w-12 h-12 bg-brand-gold rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-all z-40 hover:shadow-premium-glow">
-  <i class="fas fa-arrow-up"></i>
-</button>
-
-</div>
-
+    <!-- LOGIC SCRIPTS -->
+    <script>
+        // Alpine Logic for the 4-second delay Loading Screen
+        function appData() {
+            return {
+                loading: true,
+                init() {
+                    // Syncs with the translator.js button appearance
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 4000); 
+                }
+            }
+        }
+        
+        // Tailwind config setup for the marquee scrolling animation
+        tailwind.config = {
+            theme: {
+                extend: {
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(-100%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
