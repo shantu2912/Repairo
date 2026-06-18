@@ -1,3 +1,27 @@
+
+
+  
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold': '#A07D54',
+                        'brand-cream': '#F8F5F0',
+                        'brand-dark': '#2D2B28',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'], 
+                        serif: ['"Playfair Display"', 'serif'] 
+                    }
+                }
+            }
+        }
+
+
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabase = createClient(
@@ -5,6 +29,9 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
 )
 window.supabase = supabase;
+
+
+
 
 function authApp() {
     return {
