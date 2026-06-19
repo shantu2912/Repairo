@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Terms & Conditions - FixZen</title>
+    <title>Terms & Conditions - FixZenix</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -77,7 +77,7 @@
                 <div x-show="activeAccordion === 1" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
                     <p>• <strong>Confirmation:</strong> A booking is confirmed only when you receive an in-app notification or SMS.</p>
                     <p>• <strong>Rescheduling:</strong> You may reschedule free of cost up to 2 hours before the service time.</p>
-                    <p>• <strong>Cancellation Fee:</strong> Cancellations made within 60 minutes of the scheduled time will incur a convenience fee of ₹50.</p>
+                    <p>• <strong>Cancellation Fee:</strong> Cancellations made within 10 minutes of the scheduled time will incur a convenience fee of ₹50.</p>
                 </div>
             </div>
 
@@ -92,24 +92,11 @@
                 <div x-show="activeAccordion === 2" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
                     <p>• <strong>Transparency:</strong> Prices shown on the app are final estimates. However, additional spare parts (if needed) are charged separately.</p>
                     <p>• <strong>Visitation Charge:</strong> A minimum visitation fee of ₹99 applies if no service is availed after inspection.</p>
-                    <p>• <strong>Modes:</strong> We accept UPI, Credit/Debit Cards, and Cash after service.</p>
+                    <p>• <strong>Modes:</strong> We accept only UPI.</p>
                 </div>
             </div>
 
-            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
-                <button @click="activeAccordion = activeAccordion === 3 ? null : 3" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive"><i class="fa-solid fa-shield-heart text-sm"></i></div>
-                        <span class="font-bold text-sm text-brand-olive">FixZen Warranty</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 3 ? 'rotate-180' : ''"></i>
-                </button>
-                <div x-show="activeAccordion === 3" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
-                    <p>• <strong>7-Day Guarantee:</strong> We provide a 7-day service warranty on all repairs. If the issue reoccurs, we fix it for free.</p>
-                    <p>• <strong>Scope:</strong> Warranty covers labor charges only. Spare parts carry their own manufacturer warranty.</p>
-                </div>
-            </div>
-
+          
             <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-brand-cream/20">
                 <button @click="activeAccordion = activeAccordion === 4 ? null : 4" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
                     <div class="flex items-center gap-3">
@@ -119,9 +106,9 @@
                     <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activeAccordion === 4 ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="activeAccordion === 4" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-white">
-                    <p>• <strong>Respect:</strong> FixZen has a zero-tolerance policy for harassment or abusive behavior towards our partners.</p>
+                    <p>• <strong>Respect:</strong> FixZenix has a zero-tolerance policy for harassment or abusive behavior towards our partners.</p>
                     <p>• <strong>Access:</strong> Customers must ensure safe access to the premises and keep pets away during the service.</p>
-                    <p>• <strong>Theft/Damages:</strong> FixZen is insured. Any proven theft or damage caused by our partner is covered up to ₹10,000.</p>
+                   
                 </div>
             </div>
 
