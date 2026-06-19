@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -126,13 +126,21 @@
                 </div>
             </div>
 
-        
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <button @click="activePolicy = activePolicy === 4 ? null : 4" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600"><i class="fa-solid fa-shield-halved text-sm"></i></div>
+                        <span class="font-bold text-sm text-brand-olive">Data Security & Retention</span>
+                    </div>
                     <i class="fa-solid fa-chevron-down text-xs text-brand-gold transition-transform duration-300" :class="activePolicy === 4 ? 'rotate-180' : ''"></i>
                 </button>
-               
+                <div x-show="activePolicy === 4" x-collapse class="px-5 pb-5 text-xs text-brand-dark/70 leading-relaxed space-y-2 bg-brand-cream/10 border-t border-brand-beige/20">
+                    <p>• <strong>Storage Safety:</strong> Your information is stored using heavily encrypted cloud firewalls with secure table policies.</p>
+                    <p>• <strong>Retention Span:</strong> We maintain record paths only as long as your profile account remains active to preserve session transactions.</p>
+                </div>
             </div>
 
-             <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <div class="border border-brand-beige/50 rounded-2xl overflow-hidden bg-white shadow-sm">
                 <button @click="activePolicy = activePolicy === 5 ? null : 5" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-brand-cream/30 transition-colors">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i class="fa-solid fa-user-check text-sm"></i></div>
@@ -152,7 +160,7 @@
 
         <div class="mt-8 px-6 pb-8 text-center animate-slide-up" style="animation-delay: 0.3s;">
             <p class="text-[10px] text-brand-dark/40 mb-4">
-                Have questions about your data? <br> Email us at <a href="#" class="text-brand-gold font-bold underline">privacy@fixzen.com</a>
+                Have questions about your data? <br> Email us at <a href="mailto:privacy@fixzen.com" class="text-brand-gold font-bold underline">privacy@fixzen.com</a>
             </p>
             <div class="bg-brand-cream/50 rounded-xl p-4 mb-4">
                 <p class="text-xs text-brand-olive font-medium">FixZen India Pvt Ltd.</p>
@@ -164,3 +172,4 @@
 
 </body>
 </html>
+
