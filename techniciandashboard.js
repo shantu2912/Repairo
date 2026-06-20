@@ -1,31 +1,3 @@
-
-window.sb = supabase.createClient(
-  "https://kzxdxnxgouthsywbsnvl.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
-);
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-};
-
-// Guard: don't init twice if this script re-runs
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-// Expose messaging globally so Alpine can use it safely
-// We create it ONCE here so there's no race condition
-window.firebaseMessaging = firebase.messaging();
-</script>
-
-<!-- ============================================================
-     ALPINE COMPONENT
-     ============================================================ -->
-<script>
 function dashboardHandler() {
   return {
     tech: null,
@@ -266,24 +238,6 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // UPDATED: calculateFee with quote-based pricing support
-    // ─────────────────────────────────────────────────────────
-    calculateFee(job) {
-      const COMMISSION = 0.157; // 15.7% commission
-      
-      // For inspection jobs with an approved quote
-      if (job.is_inspection_job && job.quote_status === 'approved' && job.quoted_amount) {
-        // Use the quoted amount as the service price
-        const servicePrice = job.quoted_amount;
-        return Math.round(servicePrice * (1 - COMMISSION));
-      }
-      
-      // For regular jobs or inspection jobs without quote yet
-      const servicePrice = job.discounted_price || job.original_price || job.price || 0;
-      return Math.round(servicePrice * (1 - COMMISSION));
-    },
-
-    // ─────────────────────────────────────────────────────────
     async fetchJobs() {
       this.loading = true;
       const { data, error } = await window.sb
@@ -422,28 +376,17 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // UPDATED: completeJob with quote-based pricing support
-    // ─────────────────────────────────────────────────────────
     async completeJob(job) {
       const completedAt = new Date().toISOString();
-      
-      // Calculate fee using the updated method
-      let fee = this.calculateFee(job);
-      
-      const updateData = {
-        status: "completed",
-        completed_at: completedAt,
-        technician_earning: fee
-      };
-      
-      // If this is an inspection job, also store the final amount
-      if (job.is_inspection_job && job.quoted_amount) {
-        updateData.final_amount = job.quoted_amount;
-      }
+      const fee = this.calculateFee(job);
 
       const { error } = await window.sb
         .from("jobs")
-        .update(updateData)
+        .update({
+          status: "completed",
+          completed_at: completedAt,
+          technician_earning: fee
+        })
         .eq("id", job.id)
         .eq("tech_id", this.tech.id);
 
@@ -453,7 +396,7 @@ function dashboardHandler() {
         return;
       }
 
-      alert(`✅ Job completed! Your earnings: ₹${fee}`);
+      alert("Job marked as completed!");
       this.fetchJobs();
     },
 
@@ -462,10 +405,7 @@ function dashboardHandler() {
       try {
         const { error } = await window.sb
           .from('jobs')
-          .update({ 
-            arrived_at: new Date().toISOString(),
-            status: "arrived"
-          })
+          .update({ arrived_at: new Date().toISOString() })
           .eq('id', job.id)
           .eq('tech_id', this.tech.id);
 
@@ -478,7 +418,7 @@ function dashboardHandler() {
         job.arrived_at = new Date().toISOString();
         job.status = "arrived";
 
-        alert("✅ Arrival marked successfully");
+        alert("Arrival marked successfully");
 
       } catch (err) {
         console.error("ARRIVAL FULL ERROR:", err);
@@ -537,6 +477,13 @@ function dashboardHandler() {
       const hours = Math.floor(diff / 60);
       if (hours < 24) return hours + " hrs ago";
       return Math.floor(hours / 24) + " days ago";
+    },
+
+    // ─────────────────────────────────────────────────────────
+    calculateFee(job) {
+      const COMMISSION = 0.157;
+      const servicePrice = job.discounted_price || job.original_price || job.price || 0;
+      return Math.round(servicePrice * (1 - COMMISSION));
     },
 
     // ─────────────────────────────────────────────────────────
