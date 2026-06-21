@@ -67,6 +67,15 @@
             },
             "carpenter": { 
                 name: "Expert Carpentry", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
+                desc:"Professional deep cleaning that goes beyond the daily broom. Restore absolute sanity and hygiene to your home instantly.",
+                icon: "deepcleaning",
+                subs: [
+                    {n:"Full House Deep Cleaning", p:1999, d:"Assessment & measurement", popular: false},
+                    
+                ]
+            },
+            "deepcleaning": { 
+                name: "Deep Cleaning", image: "",
                 desc: "Furniture assembly, door repairs, and custom woodwork. Precision craftsmanship guaranteed.",
                 icon: "fa-hammer",
                 subs: [
@@ -80,6 +89,7 @@
                     {n:"Other Issue",p:299,d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true, popular: false}
                 ]
             },
+                
             "plumber": { 
                 name: "Professional Plumbing", image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
                 desc: "Leakage fixing, tap installation, and blockage removal. Same-day service available.",
