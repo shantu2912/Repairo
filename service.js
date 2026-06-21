@@ -83,7 +83,7 @@ const servicesDB = {
         ]
     },
     "cleaning": { 
-        name: "Deep Cleaning Utilities", 
+        name: "Cleaning", 
         image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
         desc: "Professional deep cleaning that goes beyond the daily broom. Restore absolute sanity and hygiene to your home instantly.",
         icon: "fa-broom",
