@@ -82,7 +82,7 @@ const servicesDB = {
             {n:"Other Issue",p:299,d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true, popular: false}
         ]
     },
-    "deepcleaning": { 
+    "cleaning": { 
         name: "Deep Cleaning Utilities", 
         image: "https://images.unsplash.com/photo-1581578731117-104f2a417954?auto=format&fit=crop&w=800",
         desc: "Professional deep cleaning that goes beyond the daily broom. Restore absolute sanity and hygiene to your home instantly.",
