@@ -11,7 +11,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
 
     <style>
         /* Modern Animations */
@@ -91,12 +91,11 @@
             animation: float 3s ease-in-out infinite;
         }
     </style>
-<script src="service.js"></script>
-   
+    <script src="service.js"></script>
 </head>
 
 <body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
-     x-data="{
+      x-data="{
         service: null,
         selectedSubs: [],
         showAgreement: false,
@@ -105,6 +104,17 @@
         bookingLoading: false,
         fetchingLocation: false,
         showScrollTop: false,
+
+        // ── NEW DYNAMIC QUANTITY DRAWER CHECKPOINTS ──
+        showQtyDrawer: false,
+        activeQtySub: null,
+        activeQtyType: '',
+        currentQtySelection: 1,
+        qtyConfig: {
+            bathroom: { label: 'Number of Bathrooms', max: 3, baseName: 'Bathroom Deep Disinfection', labels: {1: '1 Bathroom', 2: '2 Bathrooms', 3: '3 Bathrooms'}, prices: {1: 499, 2: 889, 3: 1299}, desc: 'Hard-water scale removal, tile scrubbing, and sanitization.' },
+            house: { label: 'Select House Size', max: 3, baseName: 'Full House Deep Clean', labels: {1: '1 BHK', 2: '2 BHK', 3: '3 BHK'}, prices: {1: 1999, 2: 2999, 3: 3999}, desc: 'Intensive cleaning and dust elimination based on BHK size.' },
+            sofa: { label: 'Number of Seats', max: 5, baseName: 'Sofa Upholstery Spa', labels: {1: '1 Seat', 2: '2 Seats', 3: '3 Seats', 4: '4 Seats', 5: '5 Seats'}, prices: {1: 199, 2: 398, 3: 597, 4: 796, 5: 995}, desc: 'Mechanized wet shampoo extraction wash per seat.' }
+        },
 
         user: null,
         customerName: '',
@@ -228,6 +238,36 @@
             return selectedDateTime >= minDateTime;
         },
 
+        // New layout click router interceptor logic
+        handleServiceClick(sub) {
+            if (sub.has_options && this.qtyConfig[sub.type]) {
+                this.activeQtySub = sub;
+                this.activeQtyType = sub.type;
+                const matched = this.selectedSubs.find(s => s.qtyType === sub.type);
+                this.currentQtySelection = matched ? matched.qtyCount : 1;
+                this.showQtyDrawer = true;
+            } else {
+                this.toggleSub(sub);
+            }
+        },
+
+        confirmQuantitySelection() {
+            const config = this.qtyConfig[this.activeQtyType];
+            const calculatedPrice = config.prices[this.currentQtySelection];
+            
+            // Clear prior entry matching current selector key parameters
+            this.selectedSubs = this.selectedSubs.filter(s => s.qtyType !== this.activeQtyType);
+            
+            this.selectedSubs.push({
+                n: `${config.labels[this.currentQtySelection]} - ${config.baseName}`,
+                p: calculatedPrice,
+                d: config.desc,
+                qtyType: this.activeQtyType,
+                qtyCount: this.currentQtySelection
+            });
+            this.showQtyDrawer = false;
+        },
+
         toggleSub(sub) {
             const index = this.selectedSubs.findIndex(s => s.n === sub.n);
             if (index > -1) {
@@ -298,135 +338,132 @@
         },
 
         async confirmBooking() {
-    if (this.bookingLoading) return;
+            if (this.bookingLoading) return;
 
-    try {
-        if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
-        if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
-        if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
-        if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
-        
-        // ✅ AMRAVATI CITY VALIDATION - Check if address contains Amravati or nearby areas
-        const allowedCities = ['amravati', 'amrawati', 'अमरावती', 'amravti', 'amraoti'];
-        const addressLower = this.address.toLowerCase();
-        const isAmravati = allowedCities.some(city => addressLower.includes(city));
-        
-        if (!isAmravati) {
-            alert('❌ Service is currently available only in Amravati city.\n\nWe are expanding to other cities soon!\n\nPlease check back later or contact support for updates.');
-            this.bookingLoading = false;
-            return;
-        }
-        
-        if (!this.date) { alert('Please select a date.'); return; }
-        if (!this.time) { alert('Please select a time.'); return; }
-        if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
+            try {
+                if (!this.agreed) { alert('Please accept the terms to proceed.'); return; }
+                if (!this.customerName || !this.customerName.trim()) { alert('Please enter your name.'); return; }
+                if (!this.phone || !this.phone.trim()) { alert('Please enter your phone number.'); return; }
+                if (!this.address || !this.address.trim()) { alert('Please enter your address.'); return; }
+                
+                const allowedCities = ['amravati', 'amrawati', 'अमरावती', 'amravti', 'amraoti'];
+                const addressLower = this.address.toLowerCase();
+                const isAmravati = allowedCities.some(city => addressLower.includes(city));
+                
+                if (!isAmravati) {
+                    alert('❌ Service is currently available only in Amravati city.\n\nWe are expanding to other cities soon!\n\nPlease check back later or contact support for updates.');
+                    this.bookingLoading = false;
+                    return;
+                }
+                
+                if (!this.date) { alert('Please select a date.'); return; }
+                if (!this.time) { alert('Please select a time.'); return; }
+                if (!this.isDateTimeValid()) { alert('Please select a time at least 30 minutes from now.'); return; }
 
-        this.bookingLoading = true;
-        if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
+                this.bookingLoading = true;
+                if (!window.sb || !this.user) { alert('Please Log In to book!'); window.location.href = 'loginuser.html'; return; }
 
-        const { data: blockJobs } = await window.sb
-            .from('jobs')
-            .select('id')
-            .eq('user_id', this.user.id)
-            .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
+                const { data: blockJobs } = await window.sb
+                    .from('jobs')
+                    .select('id')
+                    .eq('user_id', this.user.id)
+                    .in('status', ['pending', 'searching', 'accepted', 'assigned', 'arrived', 'started']);
 
-        if (blockJobs && blockJobs.length > 0) {
-            alert('You already have an active service booking under development!');
-            localStorage.setItem('active_job_id', blockJobs[0].id);
-            window.location.href = `success.html?job_id=${blockJobs[0].id}`;
-            return;
-        }
+                if (blockJobs && blockJobs.length > 0) {
+                    alert('You already have an active service booking under development!');
+                    localStorage.setItem('active_job_id', blockJobs[0].id);
+                    window.location.href = `success.html?job_id=${blockJobs[0].id}`;
+                    return;
+                }
 
-        const scheduledDateTime = `${this.date}T${this.time}:00`;
-        
-        const hasOtherIssue = this.selectedSubs.some(s => s.is_inspection === true);
-        const constantServices = this.selectedSubs.filter(s => !s.is_inspection);
-        const isMixed = hasOtherIssue && constantServices.length > 0;
-        
-        if (hasOtherIssue && (!this.otherIssueText || !this.otherIssueText.trim())) {
-            alert('Please describe your Other Issue before booking.');
-            this.bookingLoading = false;
-            return;
-        }
-        
-        const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
-        const originalPrice = this.total;
-        
-        if (hasOtherIssue) {
-            const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
-            if (!paymentConfirmed) {
+                const scheduledDateTime = `${this.date}T${this.time}:00`;
+                
+                const hasOtherIssue = this.selectedSubs.some(s => s.is_inspection === true);
+                const constantServices = this.selectedSubs.filter(s => !s.is_inspection);
+                const isMixed = hasOtherIssue && constantServices.length > 0;
+                
+                if (hasOtherIssue && (!this.otherIssueText || !this.otherIssueText.trim())) {
+                    alert('Please describe your Other Issue before booking.');
+                    this.bookingLoading = false;
+                    return;
+                }
+                
+                const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
+                const originalPrice = this.total;
+                
+                if (hasOtherIssue) {
+                    const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
+                    if (!paymentConfirmed) {
+                        this.bookingLoading = false;
+                        return;
+                    }
+                }
+
+                const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
+                const firstConstant = constantServices[0];
+                
+                const priceBreakdownObj = {};
+                this.selectedSubs.forEach(s => { 
+                    priceBreakdownObj[s.n] = s.p; 
+                });
+
+                const jobPayload = {
+                    user_id: this.user.id,
+                    category: this.service?.name || 'General Service',
+                    device: isMixed
+                        ? (firstConstant?.n || 'Multiple Services')
+                        : (this.selectedSubs[0]?.n || 'General Service'),
+                    issue: isMixed
+                        ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
+                        : (hasOtherIssue
+                            ? (this.otherIssueText.trim() || 'Other Issue')
+                            : (this.selectedSubs[0]?.d || 'Service requested via app')),
+                    other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
+                    services_selected: serviceNames,
+                    service_price_breakdown: JSON.stringify(priceBreakdownObj),
+                    customer_name: this.customerName,
+                    location: this.address,
+                    city: 'Amravati',  
+                    phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
+                    status: 'pending',
+                    urgent: false,
+                    latitude: this.lat || null,
+                    longitude: this.lng || null,
+                    scheduled_time: scheduledDateTime,
+                    original_price: originalPrice,
+                    discounted_price: originalPrice,
+                    is_inspection_job: hasOtherIssue,
+                    inspection_fee_paid: hasOtherIssue,
+                    inspection_fee_amount: inspectionFeeAmount,
+                    quote_status: hasOtherIssue ? 'pending' : null
+                };
+
+                const { data: insertedJob, error: jobError } = await window.sb
+                    .from('jobs')
+                    .insert([jobPayload])
+                    .select()
+                    .single();
+
+                if (jobError) { 
+                    alert('Booking Error: ' + jobError.message); 
+                    this.bookingLoading = false; 
+                    return; 
+                }
+
                 this.bookingLoading = false;
-                return;
+                this.showAgreement = false;
+                
+                localStorage.setItem('active_job_id', insertedJob.id);
+                window.location.href = 'success.html?job_id=' + insertedJob.id;
+
+            } catch (err) {
+                console.error(err);
+                alert('Unexpected Error: ' + err.message);
+                this.bookingLoading = false;
             }
         }
+      }" x-init="init()">
 
-        const serviceNames = this.selectedSubs.map(s => s.n).join(', ');
-        const firstConstant = constantServices[0];
-        
-        // ✅ CREATE PRICE BREAKDOWN OBJECT - Each service with its individual price
-        const priceBreakdownObj = {};
-        this.selectedSubs.forEach(s => { 
-            priceBreakdownObj[s.n] = s.p; 
-        });
-
-        const jobPayload = {
-            user_id: this.user.id,
-            category: this.service?.name || 'General Service',
-            device: isMixed
-                ? (firstConstant?.n || 'Multiple Services')
-                : (this.selectedSubs[0]?.n || 'General Service'),
-            issue: isMixed
-                ? `${constantServices.map(s => s.n).join(', ')} + Other Issue: ${this.otherIssueText.trim()}`
-                : (hasOtherIssue
-                    ? (this.otherIssueText.trim() || 'Other Issue')
-                    : (this.selectedSubs[0]?.d || 'Service requested via app')),
-            other_issue: hasOtherIssue ? (this.otherIssueText.trim() || '') : '',
-            services_selected: serviceNames,
-            service_price_breakdown: JSON.stringify(priceBreakdownObj),
-            customer_name: this.customerName,
-            location: this.address,
-            city: 'Amravati',  // ✅ Add city field for tracking
-            phone: '+91' + this.phone.replace(/\s+/g, '').trim(),
-            status: 'pending',
-            urgent: false,
-            latitude: this.lat || null,
-            longitude: this.lng || null,
-            scheduled_time: scheduledDateTime,
-            original_price: originalPrice,
-            discounted_price: originalPrice,
-            is_inspection_job: hasOtherIssue,
-            inspection_fee_paid: hasOtherIssue,
-            inspection_fee_amount: inspectionFeeAmount,
-            quote_status: hasOtherIssue ? 'pending' : null
-        };
-
-        const { data: insertedJob, error: jobError } = await window.sb
-            .from('jobs')
-            .insert([jobPayload])
-            .select()
-            .single();
-
-        if (jobError) { 
-            alert('Booking Error: ' + jobError.message); 
-            this.bookingLoading = false; 
-            return; 
-        }
-
-        this.bookingLoading = false;
-        this.showAgreement = false;
-        
-        localStorage.setItem('active_job_id', insertedJob.id);
-        window.location.href = 'success.html?job_id=' + insertedJob.id;
-
-    } catch (err) {
-        console.error(err);
-        alert('Unexpected Error: ' + err.message);
-        this.bookingLoading = false;
-    }
-}
-    }">
-
-    <!-- Premium Header -->
     <div class="fixed top-0 w-full z-50 p-5 flex justify-between items-center pointer-events-none">
         <a href="index.html" class="pointer-events-auto w-12 h-12 rounded-full glass-header shadow-glass flex items-center justify-center text-brand-olive hover:scale-110 transition-all duration-300 cursor-pointer border border-white/50">
             <i class="fa-solid fa-arrow-left text-lg"></i>
@@ -436,7 +473,6 @@
         </div>
     </div>
 
-    <!-- Loading Screen -->
     <div x-show="loading" class="h-screen flex flex-col items-center justify-center bg-brand-cream fixed inset-0 z-50">
         <div class="relative">
             <div class="w-20 h-20 rounded-full border-4 border-brand-beige border-t-brand-gold animate-spin"></div>
@@ -445,10 +481,8 @@
         <p class="text-xs font-bold tracking-widest text-brand-olive uppercase mt-4">Loading Service Details...</p>
     </div>
 
-    <!-- Main Content -->
     <div x-show="!loading" class="pb-48 animate__animated animate__fadeIn">
         
-        <!-- Hero Section -->
         <div class="relative h-[45vh] w-full rounded-b-[40px] overflow-hidden shadow-2xl bg-gray-900 group">
             <img :src="service?.image" class="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
@@ -472,17 +506,15 @@
             </div>
         </div>
 
-        <!-- Amravati Only Banner -->
-<div class="bg-brand-gold/10 border-b border-brand-gold/20 py-2 px-4 text-center">
-    <div class="flex items-center justify-center gap-2 text-xs font-medium text-brand-dark">
-        <i class="fa-solid fa-location-dot text-brand-gold text-sm"></i>
-        <span>📍 Currently serving <span class="font-bold text-brand-gold">Amravati City</span> only</span>
-        <i class="fa-solid fa-truck-fast text-brand-gold text-sm"></i>
-    </div>
-</div>
+        <div class="bg-brand-gold/10 border-b border-brand-gold/20 py-2 px-4 text-center">
+            <div class="flex items-center justify-center gap-2 text-xs font-medium text-brand-dark">
+                <i class="fa-solid fa-location-dot text-brand-gold text-sm"></i>
+                <span>📍 Currently serving <span class="font-bold text-brand-gold">Amravati City</span> only</span>
+                <i class="fa-solid fa-truck-fast text-brand-gold text-sm"></i>
+            </div>
+        </div>
 
         <div class="px-5 mt-6">
-            <!-- Section Header -->
             <div class="flex justify-between items-end mb-4">
                 <div>
                     <h3 class="font-bold text-lg text-brand-olive flex items-center gap-2">
@@ -496,14 +528,12 @@
                 </span>
             </div>
             
-            <!-- Service List -->
             <div class="space-y-3">
                 <template x-for="(sub, idx) in service?.subs" :key="idx">
-                    <div @click="toggleSub(sub)" 
+                    <div @click="handleServiceClick(sub)" 
                          class="service-card-hover relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm"
-                         :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-gradient-to-r from-orange-50 to-white ring-2 ring-brand-gold/20' : 'border-transparent hover:border-brand-beige hover:shadow-md'">
+                         :class="selectedSubs.some(s => s.qtyType === sub.type || s.n === sub.n) ? 'border-brand-gold bg-gradient-to-r from-orange-50 to-white ring-2 ring-brand-gold/20' : 'border-transparent hover:border-brand-beige hover:shadow-md'">
                         
-                        <!-- Popular Badge -->
                         <div x-show="sub.popular" class="absolute top-0 right-0">
                             <div class="bg-brand-gold text-white text-[8px] font-bold px-3 py-0.5 rounded-bl-xl rounded-tr-xl">
                                 🔥 Most Popular
@@ -512,25 +542,28 @@
                         
                         <div class="flex items-start gap-4 z-10">
                             <div class="mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300"
-                                 :class="selectedSubs.includes(sub) ? 'border-brand-gold bg-brand-gold text-white scale-110 shadow-sm' : 'border-brand-olive/30 text-transparent'">
+                                 :class="selectedSubs.some(s => s.qtyType === sub.type || s.n === sub.n) ? 'border-brand-gold bg-brand-gold text-white scale-110 shadow-sm' : 'border-brand-olive/30 text-transparent'">
                                 <i class="fa-solid fa-check text-[10px]"></i>
                             </div>
                             <div>
                                 <p class="font-bold text-brand-dark text-sm transition-colors" 
-                                   :class="selectedSubs.includes(sub) ? 'text-brand-olive' : ''" x-text="sub.n"></p>
+                                   :class="selectedSubs.some(s => s.qtyType === sub.type || s.n === sub.n) ? 'text-brand-olive' : ''" 
+                                   x-text="selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.n || sub.n"></p>
                                 <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
                             </div>
                         </div>
                         
                         <div class="text-right">
-                            <span class="font-bold text-brand-olive text-sm">₹<span x-text="sub.p"></span></span>
+                            <span class="font-bold text-brand-olive text-sm">₹<span x-text="selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.p || sub.p"></span></span>
                             <p x-show="sub.is_inspection" class="text-[8px] text-brand-gold mt-0.5">Adjusted in final bill</p>
+                            <template x-if="sub.has_options">
+                                <span class="block text-[8px] font-bold text-brand-gold bg-brand-gold/10 px-1.5 py-0.5 rounded mt-1">Options Available</span>
+                            </template>
                         </div>
                     </div>
                 </template>
             </div>
 
-            <!-- Other Issue Description Box -->
             <div x-show="hasOtherIssueSelected" 
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 -translate-y-2"
@@ -555,7 +588,6 @@
                 </div>
             </div>
 
-            <!-- Bill Breakdown -->
             <div x-show="hasOtherIssueSelected && selectedSubs.length > 1"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-y-2"
@@ -588,7 +620,45 @@
         </div>
     </div>
 
-    <!-- Sticky Bottom Bar -->
+    <div x-show="showQtyDrawer" 
+         class="fixed inset-0 z-[70] bg-brand-dark/50 backdrop-blur-sm flex items-end justify-center" x-cloak x-transition>
+        
+        <div @click.away="showQtyDrawer = false" 
+             class="w-full max-w-md bg-white rounded-t-[2.5rem] p-6 shadow-2xl border-t border-brand-beige animate__animated animate__slideInUp">
+            <div class="w-12 h-1 bg-brand-beige rounded-full mx-auto mb-6"></div>
+
+            <template x-if="activeQtySub">
+                <div>
+                    <h3 class="font-serif text-2xl text-brand-olive mb-1" x-text="qtyConfig[activeQtyType].baseName"></h3>
+                    <p class="text-xs text-brand-dark/60 mb-6" x-text="qtyConfig[activeQtyType].desc"></p>
+                    
+                    <label class="block text-[10px] font-bold tracking-wider text-brand-gold uppercase mb-3" x-text="qtyConfig[activeQtyType].label"></label>
+                    
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <template x-for="count in qtyConfig[activeQtyType].max">
+                            <button @click="currentQtySelection = count" 
+                                    :class="currentQtySelection === count ? 'bg-brand-olive text-white border-brand-olive' : 'bg-white border-brand-beige text-brand-olive'"
+                                    class="flex-1 min-w-[60px] py-3 text-xs font-bold border-2 rounded-xl transition-all shadow-sm">
+                                <span x-text="qtyConfig[activeQtyType].labels[count]"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div class="pt-4 border-t border-brand-beige/30 flex justify-between items-center">
+                        <div>
+                            <span class="text-[9px] font-bold text-brand-dark/40 uppercase block">Selected Price</span>
+                            <span class="text-2xl font-extrabold text-brand-olive">₹<span x-text="qtyConfig[activeQtyType].prices[currentQtySelection]"></span></span>
+                        </div>
+                        <button @click="confirmQuantitySelection()" 
+                                class="px-6 py-3 bg-brand-olive text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md">
+                            Confirm Options
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
     <div x-show="!loading" class="fixed bottom-0 w-full z-40 glass-card rounded-t-[30px] border-t border-white/50 p-5 shadow-up animate-slide-up">
         <div class="flex justify-between items-center mb-3">
             <div>
@@ -627,13 +697,11 @@
         </p>
     </div>
 
-    <!-- Booking Agreement Modal -->
     <div x-show="showAgreement" 
          class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
          x-transition.opacity style="display: none;">
         
         <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl animate__animated animate__slideInUp max-h-[90vh] overflow-y-auto">
-            <!-- Modal Header -->
             <div class="sticky top-0 bg-white z-10 px-6 pt-6 pb-3 border-b border-brand-beige/30">
                 <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
                 <div class="flex justify-between items-center">
@@ -642,15 +710,12 @@
                 </div>
             </div>
             
-            <!-- Modal Body -->
             <div class="p-6 space-y-4">
-                <!-- Name Field -->
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40 transition-all">
                     <i class="fas fa-user text-brand-gold text-sm"></i>
                     <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <!-- Phone Field -->
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40 transition-all">
                     <i class="fas fa-phone text-brand-gold text-sm"></i>
                     <div class="flex items-center w-full">
@@ -659,26 +724,22 @@
                     </div>
                 </div>
 
-                <!-- GPS Location Button -->
                 <button @click="fetchGPS()" type="button"
                         class="w-full py-3 rounded-xl border-2 border-brand-green/30 bg-gradient-to-r from-green-50 to-emerald-50 text-brand-green text-sm font-bold hover:from-green-100 hover:to-emerald-100 transition-all flex justify-center items-center gap-2 shadow-sm">
                     <i class="fas fa-location-crosshairs text-base" :class="fetchingLocation ? 'fa-spin' : ''"></i>
                     <span x-text="fetchingLocation ? 'Fetching Location...' : '📍 Use Current Location'"></span>
                 </button>
 
-                <!-- Address Field -->
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40 transition-all" :class="lat ? 'ring-2 ring-brand-green border-transparent bg-green-50/50' : ''">
                     <i class="fas fa-location-dot text-brand-gold text-sm" :class="lat ? 'text-brand-green' : ''"></i>
                     <input type="text" x-model="address" placeholder="Enter Full Address" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
                 </div>
 
-                <!-- Date Picker -->
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40 transition-all">
                     <i class="fas fa-calendar text-brand-gold text-sm"></i>
                     <input type="date" x-model="date" :min="minDate" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none">
                 </div>
 
-                <!-- Time Picker -->
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40 transition-all" :class="!isDateTimeValid() && date && time ? 'ring-2 ring-brand-red border-transparent' : ''">
                     <i class="fas fa-clock text-brand-gold text-sm"></i>
                     <div class="flex-1">
@@ -689,7 +750,6 @@
                     </div>
                 </div>
 
-                <!-- Terms & Conditions -->
                 <div class="bg-gradient-to-br from-brand-cream/50 to-white rounded-xl p-4 border border-brand-beige/30 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed">
                     <p class="font-bold mb-2 text-brand-olive flex items-center gap-1">
                         <i class="fas fa-file-contract text-brand-gold text-[10px]"></i> Terms & Conditions:
@@ -705,7 +765,6 @@
                     </ul>
                 </div>
 
-                <!-- Agreement Checkbox -->
                 <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-transparent hover:border-gray-100">
                     <div class="relative flex items-center">
                         <input type="checkbox" x-model="agreed" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-gray-300 shadow-sm checked:border-brand-gold checked:bg-brand-gold transition-all">
@@ -714,7 +773,6 @@
                     <span class="text-xs font-medium text-brand-dark/80 leading-snug select-none">I agree to the Terms & Conditions and authorize the job broadcast.</span>
                 </label>
 
-                <!-- Action Buttons -->
                 <div class="flex gap-3 pt-2">
                     <button @click="showAgreement = false" class="flex-1 py-3.5 rounded-xl border border-gray-200 font-bold text-gray-500 hover:bg-gray-50 transition-all text-sm">
                         Cancel
@@ -732,7 +790,6 @@
         </div>
     </div>
 
-    <!-- Scroll to Top Button -->
     <button x-show="showScrollTop" @click="scrollToTop()" 
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-10"
