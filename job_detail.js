@@ -10,6 +10,17 @@ if (!jobId) {
   window.location.href = "techniciandashboard.html";
 }
 
+// ── LOCK VEHICLE & HISTORICAL NAVIGATION STATES ──
+// Pushes dummy states onto the history stack to intercept and completely block back button/swipes
+function lockBrowserNavigation() {
+  history.pushState(null, null, window.location.href);
+  window.onpopstate = function () {
+    history.pushState(null, null, window.location.href);
+    alert("🔒 Active Job Console Locked. You must complete verification via the customer Code to leave this window.");
+  };
+}
+lockBrowserNavigation();
+
 let jobData = null;
 let etaInterval = null;
 let destCoordsCache = null;
@@ -141,15 +152,15 @@ function openNavigation(location) {
     navigator.geolocation.getCurrentPosition(
       pos => {
         const origin = `${pos.coords.latitude},${pos.coords.longitude}`;
-        window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encodeURIComponent(location)}&travelmode=driving`, '_blank');
+        window.open(`https://maps.google.com/?saddr=${origin}&destination=${encodeURIComponent(location)}&travelmode=driving`, '_blank');
       },
       () => {
-        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}&travelmode=driving`, '_blank');
+        window.open(`https://maps.google.com/?daddr=${encodeURIComponent(location)}&travelmode=driving`, '_blank');
       },
       { timeout: 3000 }
     );
   } else {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`, '_blank');
+    window.open(`https://maps.google.com/?daddr=${encodeURIComponent(location)}`, '_blank');
   }
 }
 
@@ -173,18 +184,17 @@ async function loadJob() {
     .single();
 
   if (error || !data) {
-    alert("Job not found or session expired.");
+    alert("Job data sync exception or sequence missing.");
     localStorage.removeItem("locked_job_id");
+    window.onpopstate = null; // Open up native navigation scope securely
     window.location.href = "techniciandashboard.html";
     return;
   }
   jobData = data;
 
-  // Show inspection quote card for any job with Other Issue (pure or mixed)
   if (data.is_inspection_job) {
     document.getElementById("inspectionQuoteCard").classList.remove("hidden");
 
-    // Show customer's Other Issue description
     if (data.other_issue && data.other_issue.trim()) {
         const otherBox = document.getElementById("customerOtherIssueBox");
         const otherText = document.getElementById("customerOtherIssueText");
@@ -194,7 +204,6 @@ async function loadJob() {
         }
     }
 
-    // Show booked services list for mixed bookings (stored in device field)
     if (data.device && data.device.includes(',')) {
         const mixedBox = document.getElementById("mixedServicesBox");
         const mixedText = document.getElementById("mixedServicesText");
@@ -204,7 +213,6 @@ async function loadJob() {
         }
     }
 
-    // Update inspection fee label from DB
     const feeLabel = document.getElementById("inspectionFeeLabel");
     if (feeLabel && data.inspection_fee_amount) {
         feeLabel.innerText = data.inspection_fee_amount;
@@ -217,13 +225,11 @@ async function loadJob() {
   }
 
   document.getElementById("category").innerText = data.category || "Service";
-  // device field holds comma-separated service names for mixed bookings
   const deviceNames = (data.device || 'Work Order').split(',');
   document.getElementById("device").querySelector("span").innerText = deviceNames[0].trim();
-// ================= ISSUE DISPLAY FIX =================
-// Show full issue string — handles plain, Other Issue only, and mixed bookings
-const finalIssue = data.issue || (data.other_issue ? `Other Issue: ${data.other_issue}` : "No issue description provided");
-document.getElementById("issue").innerText = finalIssue;
+
+  const finalIssue = data.issue || (data.other_issue ? `Other Issue: ${data.other_issue}` : "No issue description provided");
+  document.getElementById("issue").innerText = finalIssue;
   document.getElementById("customer").innerText = data.customer_name || "Valued Customer";
   document.getElementById("location").innerText = data.location || "Address not specified";
   document.getElementById("jobIdRef").querySelector("span").innerText = `JOB-${data.id.slice(-8).toUpperCase()}`;
@@ -301,7 +307,6 @@ document.getElementById("arrivedBtn").onclick = async () => {
   }
 };
 
-// ── CUSTOM FOCUS SHIFTING ANIMATED INTERFACE UTILITIES ──
 const otpOverlay = document.getElementById("otpOverlay");
 const otpSheet = document.getElementById("otpSheet");
 const otpInputs = document.querySelectorAll(".otp-box");
@@ -331,7 +336,6 @@ function resetOtpFields() {
     otpSheet.classList.remove("animate__headShake");
 }
 
-// Focus control loop
 otpInputs.forEach((input, index) => {
     input.addEventListener("input", (e) => {
         const val = e.target.value;
@@ -352,7 +356,6 @@ otpInputs.forEach((input, index) => {
     });
 });
 
-// Trigger verification prompt flow
 document.getElementById("completeBtn").onclick = async () => {
   if (!jobData) return;
   
@@ -391,19 +394,16 @@ document.getElementById("completeBtn").onclick = async () => {
   }
 };
 
-// Cancel operation action trigger
 document.getElementById("cancelOtpBtn").onclick = async () => {
     if (!confirm("Are you sure you want to cancel the code entry window?")) return;
     closeOtpBottomSheet();
     
-    // Gracefully roll columns back to arrival defaults
     await sb.from("jobs").update({ status: "arrived", otp: null }).eq("id", jobId);
     const badge = document.getElementById("statusBadge");
     badge.innerHTML = '<i class="fas fa-flag-checkered text-[7px] mr-1"></i> Arrived';
     badge.className = "inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-100 text-purple-700";
 };
 
-// Core entry verify string comparison method execution
 document.getElementById("verifyOtpBtn").onclick = async () => {
     let collectedCodeString = "";
     otpInputs.forEach(input => collectedCodeString += input.value.trim());
@@ -428,7 +428,6 @@ document.getElementById("verifyOtpBtn").onclick = async () => {
         return;
     }
 
-    // Success flow execution lifecycle
     try {
         const BASE_FEES = {
           "Carpenter": 800, "Plumber": 600, "Electrician": 600,
@@ -443,6 +442,7 @@ document.getElementById("verifyOtpBtn").onclick = async () => {
         }).eq("id", jobId);
         
         localStorage.removeItem("locked_job_id");
+        window.onpopstate = null; // Unbind system locks on successful validation lifecycle
         if (etaInterval) clearInterval(etaInterval);
         
         verifyBtn.innerHTML = '<i class="fas fa-circle-check"></i> Code Success!';
@@ -458,25 +458,12 @@ document.getElementById("verifyOtpBtn").onclick = async () => {
     }
 };
 
-document.getElementById("exitJobBtn").onclick = () => {
-  if (confirm("Exit this job? You'll need to re-accept from dashboard.")) {
-    localStorage.removeItem("locked_job_id");
-    window.location.href = "techniciandashboard.html";
-  }
-};
-
 document.getElementById("supportFloatBtn").onclick = () => {
   alert("📞 Support: 1800-FIXZEN\nAvailable 24/7 for technicians.");
 };
 
 document.getElementById("refreshLocationBtn").onclick = manualRefresh;
-document.getElementById("refreshLocationBtn").onclick = manualRefresh;
 
-// ============================================================
-// COMPLETE INSPECTION QUOTE SYSTEM WITH PROPER CALCULATIONS
-// ============================================================
-
-// Live preview for quote calculator
 function setupQuotePreview() {
     const inputs = ["labourCost", "materialCost", "extraCharges"];
     const inspectionFee = jobData?.inspection_fee_amount || 149;
@@ -509,7 +496,7 @@ function setupQuotePreview() {
     });
     updatePreview();
 }
-// Quote submission with proper calculations
+
 async function submitInspectionQuote() {
     const labour = Number(document.getElementById("labourCost")?.value) || 0;
     const material = Number(document.getElementById("materialCost")?.value) || 0;
@@ -563,7 +550,7 @@ async function submitInspectionQuote() {
                 quoted_extra: extra,
                 quote_description: description,
                 quote_status: "submitted",
-                status: "in_progress" // ← FIXED: Use existing status value
+                status: "in_progress" 
             })
             .eq("id", jobId);
         
@@ -571,15 +558,12 @@ async function submitInspectionQuote() {
         
         alert(`✅ Quote Submitted!\n\nTotal: ₹${totalQuote}\nCustomer Payable: ₹${customerPayable}\n\nWaiting for customer approval.`);
         
-        // Update UI to show pending state
         submitBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> Waiting for Approval';
         submitBtn.disabled = true;
         
-        // Hide cancel button if exists
         const cancelBtn = document.getElementById("cancelQuoteBtn");
         if (cancelBtn) cancelBtn.style.display = "none";
         
-        // Disable inputs
         ["labourCost", "materialCost", "extraCharges", "quoteDescription"].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.disabled = true;
@@ -595,7 +579,6 @@ async function submitInspectionQuote() {
     }
 }
    
-// Cancel quote button handler
 const cancelQuoteBtn = document.getElementById("cancelQuoteBtn");
 if (cancelQuoteBtn) {
     cancelQuoteBtn.addEventListener("click", () => {
@@ -605,13 +588,11 @@ if (cancelQuoteBtn) {
     });
 }
 
-// Set up quote submission event listener
 const submitQuoteBtn = document.getElementById("submitQuoteBtn");
 if (submitQuoteBtn) {
     submitQuoteBtn.addEventListener("click", submitInspectionQuote);
 }
 
-// Initialize quote preview when card becomes visible
 const quoteCard = document.getElementById("inspectionQuoteCard");
 if (quoteCard) {
     const observer = new MutationObserver((mutations) => {
@@ -626,14 +607,11 @@ if (quoteCard) {
     });
     observer.observe(quoteCard, { attributes: true });
     
-    // Also check if card is already visible
     if (!quoteCard.classList.contains("hidden")) {
         setupQuotePreview();
     }
 }
 
-
-// Real-time listener for quote approval status
 if (jobId) {
     sb.channel("quote-approval-" + jobId)
         .on(
@@ -652,24 +630,18 @@ if (jobId) {
                     if (quoteCardElement) {
                         quoteCardElement.style.display = "none";
                     }
-                    // Optionally update job status to show work can begin
                     sb.from("jobs").update({ status: "accepted" }).eq("id", jobId);
                 }
                 if (payload.new.quote_status === "rejected") {
                     alert("❌ Customer rejected the quote. The job has been closed.");
+                    window.onpopstate = null; // Open native navigation frame safely before redirecting out
                     window.location.href = "techniciandashboard.html";
                 }
             }
         )
         .subscribe();
 }
-// Load the job details
-loadJob();
 
-window.addEventListener("beforeunload", () => {
-    if (etaInterval) clearInterval(etaInterval);
-});
-       
 loadJob();
 
 window.addEventListener("beforeunload", () => {
