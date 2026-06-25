@@ -146,7 +146,7 @@
 
           // Report issue: redirect to Gmail with predefined recipient
           reportIssue() {
-              const recipient = 'shrikrushnasatpute07@gmail.com';
+              const recipient = 'fixzenix@gmail.com';
               const subject = 'FixZen - Report an Issue';
               const body = 'Describe your issue here... (Payment / Website / Service)';
               window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -186,7 +186,7 @@
                 Report an Issue
                 <i class="fa-regular fa-envelope ml-1"></i>
             </button>
-            <p class="text-[10px] text-brand-dark/50 text-center mt-2">Opens Gmail with our support address</p>
+            <p class="text-[10px] text-brand-dark/50 text-center mt-2">Click on Above button</p>
         </div>
 
         <!-- ========== ISSUE CONTACT CARDS ========== -->
@@ -245,67 +245,45 @@
                 <span class="text-[10px] text-brand-gold font-bold uppercase tracking-wider">The Visionaries</span>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-                    <div class="w-16 h-16 rounded-full mx-auto bg-gradient-to-br from-brand-gold to-brand-olive flex items-center justify-center text-white text-xl font-bold mb-2">TK</div>
-                    <h4 class="font-bold text-sm text-brand-olive">Tanmay Korde</h4>
-                    <p class="text-[9px] text-brand-gold font-bold uppercase mt-1">Founder & CEO</p>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-                    <div class="w-16 h-16 rounded-full mx-auto bg-gradient-to-br from-brand-blue to-brand-olive flex items-center justify-center text-white text-xl font-bold mb-2">SI</div>
-                    <h4 class="font-bold text-sm text-brand-olive">Shantanu Ingole</h4>
-                    <p class="text-[9px] text-brand-blue font-bold uppercase mt-1">Founder & CEO</p>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-                    <div class="w-16 h-16 rounded-full mx-auto bg-gradient-to-br from-brand-olive to-brand-dark flex items-center justify-center text-white text-xl font-bold mb-2">SS</div>
-                    <h4 class="font-bold text-sm text-brand-olive">Shrikrushna Satpute</h4>
-                    <p class="text-[9px] text-brand-olive font-bold uppercase mt-1">Founder & CEO</p>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-                    <div class="w-16 h-16 rounded-full mx-auto bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white text-xl font-bold mb-2">VG</div>
-                    <h4 class="font-bold text-sm text-brand-olive">Vedant Gawande</h4>
-                    <p class="text-[9px] text-red-400 font-bold uppercase mt-1">Founder & CEO</p>
-                </div>
-            </div>
-        </div>
+           <div class="grid grid-cols-2 gap-4">
+    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+        <img src="tanmay-korde.jpg" alt="Tanmay Korde" 
+             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-gold/30 mb-2"
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22%235D5646%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ETK%3C/text%3E%3C/svg%3E';">
+        <h4 class="font-bold text-sm text-brand-olive">Tanmay Korde</h4>
+        <p class="text-[9px] text-brand-gold font-bold uppercase mt-1">Board Of Director</p>
+    </div>
+    
+    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+        <img src="shantanu-ingole.jpg" alt="Shantanu Ingole" 
+             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-blue/30 mb-2"
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%223E5974%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ESI%3C/text%3E%3C/svg%3E';">
+        <h4 class="font-bold text-sm text-brand-olive">Shantanu Ingole</h4>
+        <p class="text-[9px] text-brand-blue font-bold uppercase mt-1">Board Of Director</p>
+    </div>
+    
+    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+        <img src="shrikrushna-satpute.jpg" alt="Shrikrushna Satpute" 
+             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-olive/30 mb-2"
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%225D5646%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ESS%3C/text%3E%3C/svg%3E';">
+        <h4 class="font-bold text-sm text-brand-olive">Shrikrushna Satpute</h4>
+        <p class="text-[9px] text-brand-olive font-bold uppercase mt-1">Board Of Director</p>
+    </div>
+    
+    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+        <img src="vedant-gawande.jpg" alt="Vedant Gawande" 
+             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-red-400/30 mb-2"
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22EF4444%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3EVG%3C/text%3E%3C/svg%3E';">
+        <h4 class="font-bold text-sm text-brand-olive">Vedant Gawande</h4>
+        <p class="text-[9px] text-red-400 font-bold uppercase mt-1">Board Of Director</p>
+    </div>
+</div>
 
-        <!-- ========== MESSAGE FORM + OTHER INFO ========== -->
-        <div class="px-6 mt-8 animate-slide-up space-y-8" style="animation-delay: 0.4s;">
-            <div>
-                <h3 class="font-sans font-bold text-lg text-brand-olive mb-4">Send a Message</h3>
-                
-                <div x-show="errorMsg" x-text="errorMsg" class="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm border border-red-200" style="display: none;"></div>
-                
-                <form class="space-y-4" @submit.prevent="submitForm">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="text" x-model="firstName" required placeholder="First Name" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium">
-                        <input type="text" x-model="lastName" required placeholder="Last Name" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium">
-                    </div>
-                    <input type="email" x-model="email" required placeholder="Email Address" class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium">
-                    <textarea x-model="message" rows="4" required placeholder="How can we help? Please describe your query..." class="glass-input w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all placeholder:text-brand-dark/40 font-medium resize-none"></textarea>
-                    
-                    <button type="submit" 
-                            class="w-full py-4 rounded-xl font-bold shadow-lg shadow-brand-olive/20 transition-all flex items-center justify-center gap-2"
-                            :class="sending ? 'bg-brand-beige text-brand-olive cursor-wait' : 'bg-brand-olive text-white hover:bg-brand-gold active:scale-95'"
-                            :disabled="sending">
-                        <span x-show="!sending" class="flex items-center gap-2">Send Message <i class="fa-solid fa-paper-plane"></i></span>
-                        <span x-show="sending" class="flex items-center gap-2"><i class="fa-solid fa-circle-notch animate-spin"></i> Sending...</span>
-                    </button>
-                </form>
-                
-                <div class="mt-4 p-3 bg-brand-gold/10 rounded-xl border border-brand-gold/20">
-                    <p class="text-xs text-brand-olive font-medium mb-1">📧 How to receive messages on YOUR email:</p>
-                    <p class="text-[10px] text-brand-dark/70">1. Get FREE EmailJS account → 2. Replace credentials in code → 3. Messages arrive in your inbox!</p>
-                    <button @click="showSetupGuide" class="mt-2 text-xs text-brand-gold underline font-semibold hover:text-brand-olive transition">
-                        🔧 Click here for setup guide
-                    </button>
-                </div>
-            </div>
-
+        
             <div class="bg-brand-cream/50 rounded-2xl p-6 flex flex-col gap-6 border border-brand-beige/30 mb-6">
                 <div class="flex gap-4">
                     <div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0"><i class="fa-solid fa-location-dot"></i></div>
-                    <div><h4 class="font-bold text-brand-olive text-sm mb-1">Headquarters</h4><p class="text-xs text-brand-dark/70 leading-relaxed">FixZen Tower, <br>Amravati, MH - 444601</p></div>
+                    <div><h4 class="font-bold text-brand-olive text-sm mb-1">www.fixzenix.com</h4><p class="text-xs text-brand-dark/70 leading-relaxed">FixZenix, <br>Amravati, MH - 444601</p></div>
                 </div>
                 <div class="flex gap-4">
                     <div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0"><i class="fa-solid fa-clock"></i></div>
