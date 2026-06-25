@@ -15,8 +15,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
-<script src="contact.js"></script>
-   
     
     <style>
         .hide-scroll::-webkit-scrollbar { display: none; }
@@ -29,6 +27,17 @@
         .glass-input:focus {
             border-color: #A07D54;
             box-shadow: 0 0 0 3px rgba(160, 125, 84, 0.1);
+        }
+        .issue-card {
+            transition: all 0.25s ease;
+        }
+        .issue-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px -8px rgba(93, 86, 70, 0.20);
+        }
+        .contact-badge {
+            background: rgba(160, 125, 84, 0.08);
+            border: 1px solid rgba(160, 125, 84, 0.15);
         }
     </style>
 </head>
@@ -44,25 +53,14 @@
           message: '',
           
           // WORKING EMAILJS CONFIGURATION - REPLACE WITH YOUR CREDENTIALS
-          // To get this working for YOUR email, follow these steps:
-          // STEP 1: Go to https://www.emailjs.com/ and sign up for FREE
-          // STEP 2: Verify your email
-          // STEP 3: Click 'Add New Service' and connect your Gmail/Outlook
-          // STEP 4: Go to 'Email Templates' and create a new template
-          // STEP 5: In template, use these variables: {{firstName}} {{lastName}} {{email}} {{message}}
-          // STEP 6: Go to Account > API Keys and copy your Public Key
-          // STEP 7: Replace the 3 values below with your actual credentials
-          
-          // YOUR CREDENTIALS GO HERE (replace these with your actual values):
           EMAILJS_PUBLIC_KEY: 'YOUR_PUBLIC_KEY_HERE',
           EMAILJS_SERVICE_ID: 'YOUR_SERVICE_ID_HERE', 
           EMAILJS_TEMPLATE_ID: 'YOUR_TEMPLATE_ID_HERE',
-          RECIPIENT_EMAIL: 'your-email@example.com', // The email where you want to receive messages
+          RECIPIENT_EMAIL: 'your-email@example.com',
           
           async submitForm() {
               this.errorMsg = '';
               
-              // Validation
               if (!this.firstName.trim() || !this.lastName.trim() || !this.email.trim() || !this.message.trim()) {
                   this.errorMsg = '⚠️ Please fill in all fields.';
                   setTimeout(() => this.errorMsg = '', 3000);
@@ -78,7 +76,6 @@
               
               this.sending = true;
               
-              // Check if EmailJS is configured
               if (this.EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY_HERE' || 
                   this.EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID_HERE' || 
                   this.EMAILJS_TEMPLATE_ID === 'YOUR_TEMPLATE_ID_HERE') {
@@ -89,7 +86,6 @@
               }
               
               try {
-                  // Initialize EmailJS with your public key
                   emailjs.init(this.EMAILJS_PUBLIC_KEY);
                   
                   const templateParams = {
@@ -110,7 +106,6 @@
                   this.sending = false;
                   this.success = true;
                   
-                  // Reset form
                   this.firstName = '';
                   this.lastName = '';
                   this.email = '';
@@ -131,27 +126,30 @@
 ╔════════════════════════════════════════════════════════════╗
 ║           📧 EMAILJS SETUP GUIDE - 5 MINUTES              ║
 ╠════════════════════════════════════════════════════════════╣
-║                                                            ║
 ║  1. Go to https://www.emailjs.com/ (FREE account)         ║
 ║  2. Sign up with Google/GitHub or email                   ║
-║  3. Click "Add New Service" → Connect your Gmail          ║
-║  4. Go to "Email Templates" → Create New Template         ║
-║  5. Add these variables in your template:                 ║
-║     {{firstName}} {{lastName}} {{email}} {{message}}       ║
-║  6. Save the template and copy its ID                     ║
+║  3. Click 'Add New Service' → Connect your Gmail          ║
+║  4. Go to 'Email Templates' → Create New Template         ║
+║  5. Add these variables: {{firstName}} {{lastName}} {{email}} {{message}} ║
+║  6. Save template and copy its ID                         ║
 ║  7. Go to Account → API Keys → Copy Public Key            ║
-║                                                            ║
 ║  Then edit the HTML file and replace:                     ║
 ║  - YOUR_PUBLIC_KEY_HERE with your Public Key              ║
 ║  - YOUR_SERVICE_ID_HERE with your Service ID              ║
 ║  - YOUR_TEMPLATE_ID_HERE with your Template ID            ║
 ║  - your-email@example.com with YOUR email address         ║
-║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
               `;
               alert(guide);
-              // Also open EmailJS website
               window.open('https://www.emailjs.com/', '_blank');
+          },
+
+          // Report issue: redirect to Gmail with predefined recipient
+          reportIssue() {
+              const recipient = 'shrikrushnasatpute07@gmail.com';
+              const subject = 'FixZen - Report an Issue';
+              const body = 'Describe your issue here... (Payment / Website / Service)';
+              window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
           }
       }">
 
@@ -180,8 +178,69 @@
             </div>
         </div>
 
-        <div class="px-6 mt-10 animate-slide-up" style="animation-delay: 0.2s;">
-            <div class="flex items-center justify-between mb-5">
+        <!-- ========== NEW: REPORT ISSUE BUTTON ========== -->
+        <div class="px-6 mt-6 animate-slide-up" style="animation-delay: 0.1s;">
+            <button @click="reportIssue()" 
+                    class="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-olive to-brand-gold text-white font-bold shadow-lg shadow-brand-olive/20 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95">
+                <i class="fa-regular fa-flag text-lg"></i>
+                Report an Issue
+                <i class="fa-regular fa-envelope ml-1"></i>
+            </button>
+            <p class="text-[10px] text-brand-dark/50 text-center mt-2">Opens Gmail with our support address</p>
+        </div>
+
+        <!-- ========== ISSUE CONTACT CARDS ========== -->
+        <div class="px-6 mt-5 animate-slide-up" style="animation-delay: 0.15s;">
+            <h3 class="font-sans font-bold text-md text-brand-olive mb-3 flex items-center gap-2">
+                <i class="fa-regular fa-circle-exclamation text-brand-gold"></i>
+                Quick issue contacts
+            </h3>
+            <div class="grid grid-cols-1 gap-3">
+                <!-- Payment issues -->
+                <div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
+                    <div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shrink-0"><i class="fa-regular fa-credit-card"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-brand-olive">💳 Payment issues</p>
+                        <div class="flex flex-wrap gap-2 mt-1.5">
+                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Shrikrushna Satpute</span>
+                            <a href="tel:7028736490" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>70287 36490</a>
+                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Tanmay Korde</span>
+                            <a href="tel:9356337279" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>93563 37279</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Website issues -->
+                <div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
+                    <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 shrink-0"><i class="fa-regular fa-window-maximize"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-brand-olive">🌐 Website issues</p>
+                        <div class="flex flex-wrap gap-2 mt-1.5">
+                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Shantanu Ingole</span>
+                            <a href="tel:7219628145" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>72196 28145</a>
+                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Vedant Gawande</span>
+                            <a href="tel:7741880910" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>77418 80910</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Service issues -->
+                <div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
+                    <div class="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center text-rose-700 shrink-0"><i class="fa-regular fa-handshake"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-brand-olive">🛠️ Service issues</p>
+                        <div class="flex flex-wrap gap-2 mt-1.5">
+                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Vedant Gawande</span>
+                            <a href="tel:7741880910" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>77418 80910</a>
+                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Tanmay Korde</span>
+                            <a href="tel:9356337279" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>93563 37279</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== LEADERSHIP SECTION (moved to bottom) ========== -->
+        <div class="px-6 mt-8 animate-slide-up" style="animation-delay: 0.25s;">
+            <div class="flex items-center justify-between mb-4">
                 <h3 class="font-sans font-bold text-lg text-brand-olive">Meet Leadership</h3>
                 <span class="text-[10px] text-brand-gold font-bold uppercase tracking-wider">The Visionaries</span>
             </div>
@@ -210,6 +269,7 @@
             </div>
         </div>
 
+        <!-- ========== MESSAGE FORM + OTHER INFO ========== -->
         <div class="px-6 mt-8 animate-slide-up space-y-8" style="animation-delay: 0.4s;">
             <div>
                 <h3 class="font-sans font-bold text-lg text-brand-olive mb-4">Send a Message</h3>
@@ -265,6 +325,6 @@
             <button @click="success = false" class="w-full py-4 bg-brand-olive text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">Okay, Got it</button>
         </div>
     </div>
-
+<script src="contact.js"></script>
 </body>
 </html>
