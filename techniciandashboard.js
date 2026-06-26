@@ -469,6 +469,25 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
+    // Formats the customer-chosen scheduled date + time for display
+    // ─────────────────────────────────────────────────────────
+    formatScheduled(job) {
+      const raw = job?.scheduled_time;
+      if (!raw) return null;
+
+      const d = new Date(raw);
+      if (!isNaN(d)) {
+        return d.toLocaleString('en-IN', {
+          day: 'numeric', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: true
+        });
+      }
+
+      // Fallback: return raw string as-is if not a parseable datetime
+      return raw;
+    },
+
+    // ─────────────────────────────────────────────────────────
     formatTime(dt) {
       if (!dt) return "-";
       const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
