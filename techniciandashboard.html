@@ -149,6 +149,17 @@ class="font-sans antialiased pb-36"
       <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
       <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
       <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
+
+      <!-- CUSTOMER REQUESTED DATE & TIME -->
+      <div x-show="formatScheduled(job)"
+           class="mt-2 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+        <span class="text-amber-500 text-sm">📅</span>
+        <div>
+          <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wide">Customer Requested</p>
+          <p class="text-xs font-semibold text-amber-900" x-text="formatScheduled(job)"></p>
+        </div>
+      </div>
+
       <p class="text-xs text-gray-500 mt-1">
         Started: <span x-text="formatTime(job.started_at)"></span>
       </p>
@@ -313,6 +324,16 @@ window.firebaseMessaging = firebase.messaging();
 
     <p class="text-xs text-gray-500 italic mt-2"
        x-text="incomingJob?.issue"></p>
+
+    <!-- Scheduled time in modal -->
+    <div x-show="formatScheduled(incomingJob)"
+         class="mt-3 flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+      <span class="text-amber-500">📅</span>
+      <div class="text-left">
+        <p class="text-[9px] font-bold text-amber-700 uppercase">Customer Requested</p>
+        <p class="text-xs font-semibold text-amber-900" x-text="formatScheduled(incomingJob)"></p>
+      </div>
+    </div>
 
     <div class="flex gap-3 mt-6">
       <button
