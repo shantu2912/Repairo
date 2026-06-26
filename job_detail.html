@@ -1,445 +1,481 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#5D5646">
-    <title>FixZen Pro | Active Job - Technician Console</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#5D5646" />
+  <title>FixZen Pro · Active Job Console</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonts + Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght=1,600&display=swap" rel="stylesheet" />
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-olive': '#5D5646',
-                        'brand-gold': '#A07D54',
-                        'brand-cream': '#F8F5F0',
-                        'brand-dark': '#2D2B28',
-                        'brand-beige': '#DFD4C3',
-                        'success': '#10B981',
-                        'warning': '#F59E0B',
-                        'danger': '#EF4444',
-                        'info': '#3B82F6'
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                        'serif-italic': ['Playfair Display', 'serif']
-                    },
-                    animation: {
-                        'pulse-ring': 'pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'slide-up': 'slideUp 0.3s ease-out',
-                        'fade-in': 'fadeIn 0.2s ease-out',
-                        'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
-                        'glow-pulse': 'glowPulse 2s ease-in-out infinite'
-                    },
-                    keyframes: {
-                        pulseRing: {
-                            '0%': { boxShadow: '0 0 0 0 rgba(160,125,84,0.4)' },
-                            '70%': { boxShadow: '0 0 0 6px rgba(160,125,84,0)' },
-                            '100%': { boxShadow: '0 0 0 0 rgba(160,125,84,0)' }
-                        },
-                        slideUp: {
-                            '0%': { opacity: '0', transform: 'translateY(12px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' }
-                        },
-                        bounceSubtle: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-3px)' }
-                        },
-                        glowPulse: {
-                            '0%, 100%': { opacity: '1' },
-                            '50%': { opacity: '0.6' }
-                        }
-                    }
-                }
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-olive': '#5D5646',
+            'brand-gold': '#A07D54',
+            'brand-cream': '#F8F5F0',
+            'brand-dark': '#2D2B28',
+            'brand-beige': '#DFD4C3',
+            'success': '#10B981',
+            'warning': '#F59E0B',
+            'danger': '#EF4444',
+            'info': '#3B82F6'
+          },
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', 'sans-serif'],
+            'serif-italic': ['Playfair Display', 'serif']
+          },
+          animation: {
+            'pulse-ring': 'pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'fade-in': 'fadeIn 0.2s ease-out',
+            'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
+            'glow-pulse': 'glowPulse 2s ease-in-out infinite'
+          },
+          keyframes: {
+            pulseRing: {
+              '0%': { boxShadow: '0 0 0 0 rgba(160,125,84,0.4)' },
+              '70%': { boxShadow: '0 0 0 6px rgba(160,125,84,0)' },
+              '100%': { boxShadow: '0 0 0 0 rgba(160,125,84,0)' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(12px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            bounceSubtle: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-3px)' }
+            },
+            glowPulse: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' }
             }
+          }
         }
-    </script>
+      }
+    }
+  </script>
 
-    <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: #F8F5F0;
-            background-image: radial-gradient(circle at 10% 20%, rgba(160,125,84,0.03) 0%, transparent 60%);
-            font-family: 'Inter', system-ui, sans-serif;
-        }
-        .glass-card {
-            background: rgba(255,255,255,0.96);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.7);
-            box-shadow: 0 8px 32 rgba(93,86,70,0.06);
-            transition: all 0.2s ease;
-        }
-        .btn-touch { transition: transform 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1), background 0.2s; }
-        .btn-touch:active { transform: scale(0.97); }
-        .skeleton {
-            background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s linear infinite;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        .status-live-dot { position: relative; padding-left: 12px; }
-        .status-live-dot::before {
-            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-            width: 8px; height: 8px; background-color: #10b981; border-radius: 50%;
-            animation: livePulse 1.2s ease-in-out infinite;
-        }
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
-            50% { opacity: 0.4; transform: translateY(-50%) scale(0.8); }
-        }
-        .progress-fill { background: linear-gradient(90deg, #A07D54, #5D5646); transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
-        .otp-box {
-            width: 3.25rem; height: 3.75rem; text-align: center; font-size: 1.5rem;
-            font-weight: 800; border: 2px solid #DFD4C3; background: #F8F5F0;
-            color: #2D2B28; border-radius: 1rem; outline: none; transition: all 0.2s ease;
-        }
-        .otp-box:focus { border-color: #A07D54; background: white; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.15); }
-        .otp-box.filled { border-color: #5D5646; background: #FFF; }
-        @supports (padding: max(0px)) { .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); } }
-    </style>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #F8F5F0;
+      background-image: radial-gradient(circle at 10% 20%, rgba(160,125,84,0.04) 0%, transparent 60%);
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .glass-card {
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 8px 32px rgba(93,86,70,0.06);
+      transition: all 0.2s ease;
+    }
+    .btn-touch { transition: transform 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1), background 0.2s; }
+    .btn-touch:active { transform: scale(0.97); }
+    .skeleton {
+      background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s linear infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .status-live-dot { position: relative; padding-left: 12px; }
+    .status-live-dot::before {
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 8px; height: 8px; background-color: #10b981; border-radius: 50%;
+      animation: livePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+      50% { opacity: 0.4; transform: translateY(-50%) scale(0.8); }
+    }
+    .progress-fill { background: linear-gradient(90deg, #A07D54, #5D5646); transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    .otp-box {
+      width: 3.25rem; height: 3.75rem; text-align: center; font-size: 1.5rem;
+      font-weight: 800; border: 2px solid #DFD4C3; background: #F8F5F0;
+      color: #2D2B28; border-radius: 1rem; outline: none; transition: all 0.2s ease;
+    }
+    .otp-box:focus { border-color: #A07D54; background: white; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.15); }
+    .otp-box.filled { border-color: #5D5646; background: #FFF; }
+    @supports (padding: max(0px)) { .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); } }
+
+    /* ── brand accent border ── */
+    .brand-border { border-left: 3px solid #A07D54; }
+
+    /* ── status badges ── */
+    .badge-arrived { background: #EDE9FE; color: #5B21B6; }
+    .badge-progress { background: #DBEAFE; color: #1E40AF; }
+    .badge-pending { background: #FEF3C7; color: #92400E; }
+    .badge-completed { background: #D1FAE5; color: #065F46; }
+  </style>
 </head>
 
-<body class="min-h-screen pb-24 safe-bottom">
+<body class="min-h-screen pb-28 safe-bottom">
 
-<header class="sticky top-0 z-50 bg-brand-cream/85 backdrop-blur-xl border-b border-brand-beige/40 shadow-sm">
+  <!-- ═══════════════════════════════════════════
+       HEADER – brand themed
+  ═══════════════════════════════════════════ -->
+  <header class="sticky top-0 z-50 bg-brand-cream/88 backdrop-blur-xl border-b border-brand-beige/40 shadow-sm">
     <div class="max-w-md mx-auto px-5 py-3.5">
-        <div class="flex items-center justify-between">
-            <div class="flex flex-col">
-                <div class="flex items-center gap-1.5">
-                    <i class="fas fa-lock text-brand-gold text-[10px]"></i>
-                    <p class="text-[9px] uppercase tracking-wider text-brand-gold font-black">Active Job · Console Locked</p>
-                </div>
-                <h1 class="font-serif-italic text-lg text-brand-olive leading-tight">Technician Work Mode</h1>
-            </div>
-            <div class="text-brand-gold/60 p-2 text-sm font-bold">
-                <i class="fa-solid fa-shield-halved animate-pulse"></i> Securing Job
-            </div>
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <i class="fas fa-lock text-brand-gold text-[10px]"></i>
+            <p class="text-[9px] uppercase tracking-wider text-brand-gold font-black">Active Job · Console</p>
+          </div>
+          <h1 class="font-serif-italic text-lg text-brand-olive leading-tight">Technician Work Mode</h1>
         </div>
+        <div class="text-brand-gold/60 p-2 text-sm font-bold">
+          <i class="fa-solid fa-shield-halved animate-pulse"></i> Secured
+        </div>
+      </div>
     </div>
-</header>
+  </header>
 
-<main class="max-w-md mx-auto p-5 space-y-5">
+  <!-- ═══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
+  <main class="max-w-md mx-auto p-5 space-y-5">
 
+    <!-- ── Loading ── -->
     <div id="loading" class="space-y-5 animate-fade-in">
-        <div class="glass-card p-6 rounded-2xl">
-            <div class="skeleton h-2.5 w-20 rounded-full mb-4"></div>
-            <div class="skeleton h-7 w-36 rounded-lg mb-2"></div>
-            <div class="skeleton h-4 w-full rounded mb-3"></div>
-            <div class="skeleton h-5 w-28 rounded-full"></div>
-        </div>
-        <div class="glass-card p-6 rounded-2xl">
-            <div class="skeleton h-4 w-32 rounded mb-4"></div>
-            <div class="skeleton h-10 w-full rounded-xl mb-2"></div>
-            <div class="skeleton h-10 w-full rounded-xl"></div>
-        </div>
-        <div class="text-center py-6">
-            <i class="fas fa-circle-notch fa-spin text-brand-gold/50 text-xl"></i>
-            <p class="text-xs text-brand-dark/40 mt-2">Syncing job details...</p>
-        </div>
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="skeleton h-2.5 w-20 rounded-full mb-4"></div>
+        <div class="skeleton h-7 w-36 rounded-lg mb-2"></div>
+        <div class="skeleton h-4 w-full rounded mb-3"></div>
+        <div class="skeleton h-5 w-28 rounded-full"></div>
+      </div>
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="skeleton h-4 w-32 rounded mb-4"></div>
+        <div class="skeleton h-10 w-full rounded-xl mb-2"></div>
+        <div class="skeleton h-10 w-full rounded-xl"></div>
+      </div>
+      <div class="text-center py-6">
+        <i class="fas fa-circle-notch fa-spin text-brand-gold/50 text-xl"></i>
+        <p class="text-xs text-brand-dark/40 mt-2">Syncing job details...</p>
+      </div>
     </div>
 
+    <!-- ── Job Box ── -->
     <div id="jobBox" class="hidden space-y-5">
 
-        <div class="glass-card p-5 rounded-2xl border-l-[3px] border-brand-gold shadow-sm">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 flex-wrap mb-2">
-                        <span id="category" class="text-[9px] font-black text-brand-gold uppercase tracking-wider bg-brand-gold/10 px-2 py-0.5 rounded-full"></span>
-                        <span id="statusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-blue-100 text-blue-700">
-                            <i class="fas fa-play text-[7px]"></i>
-                            <span>In Progress</span>
-                        </span>
-                    </div>
-                    <h2 id="device" class="text-xl font-extrabold text-brand-olive flex items-center gap-2">
-                        <i class="fas fa-microchip text-brand-gold/70 text-sm"></i>
-                        <span class="break-words"></span>
-                    </h2>
-                    <p id="issue" class="text-sm text-brand-dark/60 mt-1.5 leading-relaxed"></p>
-                    <p id="jobIdRef" class="text-[9px] font-mono text-brand-dark/30 mt-2 flex items-center gap-1">
-                        <i class="fas fa-barcode"></i> <span></span>
-                    </p>
-                </div>
+      <!-- JOB HEADER CARD -->
+      <div class="glass-card p-5 rounded-2xl brand-border shadow-sm">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 flex-wrap mb-2">
+              <span id="category" class="text-[9px] font-black text-brand-gold uppercase tracking-wider bg-brand-gold/10 px-2 py-0.5 rounded-full"></span>
+              <span id="statusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full badge-progress">
+                <i class="fas fa-play text-[7px]"></i>
+                <span>In Progress</span>
+              </span>
             </div>
+            <h2 id="device" class="text-xl font-extrabold text-brand-olive flex items-center gap-2">
+              <i class="fas fa-microchip text-brand-gold/70 text-sm"></i>
+              <span class="break-words"></span>
+            </h2>
+            <p id="issue" class="text-sm text-brand-dark/60 mt-1.5 leading-relaxed"></p>
+            <p id="jobIdRef" class="text-[9px] font-mono text-brand-dark/30 mt-2 flex items-center gap-1">
+              <i class="fas fa-barcode"></i> <span></span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMER + NAVIGATION -->
+      <div class="glass-card p-5 rounded-2xl">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-md">
+            <i class="fas fa-user-astronaut text-sm"></i>
+          </div>
+          <div>
+            <p class="text-[8px] uppercase tracking-wider text-brand-gold font-bold">Customer</p>
+            <p id="customer" class="text-base font-extrabold text-brand-dark leading-tight"></p>
+          </div>
         </div>
 
-        <div class="glass-card p-5 rounded-2xl">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-md">
-                    <i class="fas fa-user-astronaut text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-[8px] uppercase tracking-wider text-brand-gold font-bold">Customer</p>
-                    <p id="customer" class="text-base font-extrabold text-brand-dark leading-tight"></p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <a id="callBtn" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
-                    <i class="fas fa-phone-alt text-xs"></i> Call
-                </a>
-                <a id="smsBtn" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
-                    <i class="fas fa-comment-dots text-xs"></i> Message
-                </a>
-            </div>
-
-            <div class="bg-brand-beige/15 rounded-xl p-3.5 border border-brand-beige/30">
-                <div class="flex gap-2">
-                    <i class="fas fa-map-pin text-brand-gold text-sm mt-0.5"></i>
-                    <div class="flex-1">
-                        <p class="text-[9px] font-bold text-brand-gold uppercase tracking-wider">Service Address</p>
-                        <p id="location" class="text-sm text-brand-dark font-medium leading-relaxed mt-0.5"></p>
-                    </div>
-                </div>
-            </div>
-
-            <button id="routeBtn" class="w-full mt-4 bg-brand-olive hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
-                <i class="fas fa-location-dot"></i> Navigate (Turn-by-Turn)
-            </button>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <a id="callBtn" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+            <i class="fas fa-phone-alt text-xs"></i> Call
+          </a>
+          <a id="smsBtn" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+            <i class="fas fa-comment-dots text-xs"></i> Message
+          </a>
         </div>
 
-        <div class="glass-card p-4 rounded-2xl overflow-hidden border border-brand-beige/40">
-            <div class="flex items-center justify-between mb-3">
-                <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold flex items-center gap-1 status-live-dot">
-                    Live Route Intelligence
-                </p>
-                <span class="text-[7px] text-brand-dark/40 bg-white/50 px-2 py-0.5 rounded-full">
-                    <i class="fas fa-satellite-dish"></i> GPS RT
-                </span>
+        <div class="bg-brand-beige/15 rounded-xl p-3.5 border border-brand-beige/30">
+          <div class="flex gap-2">
+            <i class="fas fa-map-pin text-brand-gold text-sm mt-0.5"></i>
+            <div class="flex-1">
+              <p class="text-[9px] font-bold text-brand-gold uppercase tracking-wider">Service Address</p>
+              <p id="location" class="text-sm text-brand-dark font-medium leading-relaxed mt-0.5"></p>
             </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
-                    <i class="fas fa-road text-brand-gold text-sm mb-1.5 block"></i>
-                    <p class="text-[8px] text-brand-dark/50 uppercase">Distance</p>
-                    <p id="distanceText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
-                </div>
-                <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
-                    <i class="fas fa-hourglass-half text-brand-gold text-sm mb-1.5 block"></i>
-                    <p class="text-[8px] text-brand-dark/50 uppercase">ETA</p>
-                    <p id="etaText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
-                </div>
-            </div>
-
-            <div class="mt-1">
-                <div class="flex justify-between text-[7px] text-brand-dark/40 mb-1 px-1">
-                    <span><i class="fas fa-flag-checkered"></i> Start</span>
-                    <span><i class="fas fa-chart-line"></i> Progress</span>
-                    <span><i class="fas fa-location-dot"></i> Arrival</span>
-                </div>
-                <div class="h-1.5 bg-brand-beige/50 rounded-full overflow-hidden">
-                    <div id="etaProgressBar" class="progress-fill h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between mt-3 pt-2 border-t border-brand-beige/30">
-                <div class="flex items-center gap-1.5">
-                    <i class="fas fa-clock text-[9px] text-brand-gold/60"></i>
-                    <span id="lastUpdateTime" class="text-[8px] text-brand-dark/40">Waiting for GPS</span>
-                </div>
-                <button id="refreshLocationBtn" class="text-[9px] text-brand-gold hover:text-brand-olive transition flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
-                    <i class="fas fa-sync-alt text-[8px]"></i> Refresh
-                </button>
-            </div>
+          </div>
         </div>
 
-        <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden">
-            <div class="flex items-center gap-2 mb-4">
-                <i class="fas fa-clipboard-list text-brand-gold text-lg"></i>
-                <h3 class="font-bold text-brand-dark text-base">Inspection Quote</h3>
-                <span class="ml-auto text-[9px] bg-brand-cream px-2 py-1 rounded-full text-brand-olive">
-                    <i class="fas fa-rupee-sign"></i> Inspection: ₹299 paid
-                </span>
-            </div>
+        <button id="routeBtn" class="w-full mt-4 bg-brand-olive hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+          <i class="fas fa-location-dot"></i> Navigate (Turn-by-Turn)
+        </button>
+      </div>
 
-            <div id="customerOtherIssueBox" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
-                <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <i class="fas fa-comment-dots"></i> Customer's Issue Description
-                </p>
-                <p id="customerOtherIssueText" class="text-sm text-brand-dark font-medium leading-relaxed"></p>
-            </div>
-
-            <div id="mixedServicesBox" class="hidden bg-brand-cream/50 border border-brand-beige rounded-xl p-3 mb-3">
-                <p class="text-[9px] font-bold text-brand-olive uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <i class="fas fa-list-check text-brand-gold"></i> Booked Services
-                </p>
-                <p id="mixedServicesText" class="text-xs text-brand-dark/70 leading-relaxed"></p>
-            </div>
-
-            <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
-                <i class="fas fa-info-circle text-brand-gold mr-1"></i>
-                Customer has already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. This will be adjusted from the final quote amount.
-            </div>
-
-            <div class="space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
-                        <i class="fas fa-tools mr-1"></i> Labour Cost
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
-                        <input type="number" id="labourCost" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
-                        <i class="fas fa-cubes mr-1"></i> Material Cost
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
-                        <input type="number" id="materialCost" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
-                        <i class="fas fa-plus-circle mr-1"></i> Extra Charges (if any)
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
-                        <input type="number" id="extraCharges" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
-                        <i class="fas fa-file-alt mr-1"></i> Work Description
-                    </label>
-                    <textarea id="quoteDescription" rows="3" placeholder="Describe the issue found, recommended repairs, parts needed, and any additional notes..." class="w-full border border-brand-beige rounded-xl p-3 text-brand-dark text-sm focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition resize-none"></textarea>
-                </div>
-
-                <div class="bg-gradient-to-r from-brand-olive/5 to-brand-gold/5 rounded-xl p-3 mt-2">
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-brand-dark/60">Labour:</span>
-                        <span class="font-mono font-bold" id="previewLabour">₹0</span>
-                    </div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-brand-dark/60">Material:</span>
-                        <span class="font-mono font-bold" id="previewMaterial">₹0</span>
-                    </div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-brand-dark/60">Extra:</span>
-                        <span class="font-mono font-bold" id="previewExtra">₹0</span>
-                    </div>
-                    <div class="border-t border-brand-beige/50 my-2"></div>
-                    <div class="flex justify-between text-base font-bold">
-                        <span class="text-brand-olive">Total Quote:</span>
-                        <span class="font-mono text-brand-gold" id="previewTotal">₹0</span>
-                    </div>
-                    <div class="flex justify-between text-xs mt-2 text-green-600">
-                        <span>Inspection fee adjustment:</span>
-                        <span id="adjustmentInfo">-₹299 (already paid)</span>
-                    </div>
-                    <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200">
-                        <span class="text-brand-dark">Customer Payable:</span>
-                        <span class="font-mono text-green-700" id="previewPayable">₹0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mt-4">
-                <button id="cancelQuoteBtn" class="py-3 rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition-all btn-touch">
-                    Cancel
-                </button>
-                <button id="submitQuoteBtn" class="py-3 rounded-xl bg-brand-gold text-white font-bold hover:bg-brand-olive transition-all btn-touch shadow-md flex items-center justify-center gap-2">
-                    <i class="fas fa-paper-plane"></i> Submit Quote
-                </button>
-            </div>
+      <!-- LIVE ROUTE INTELLIGENCE -->
+      <div class="glass-card p-4 rounded-2xl overflow-hidden border border-brand-beige/40">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold flex items-center gap-1 status-live-dot">
+            Live Route Intelligence
+          </p>
+          <span class="text-[7px] text-brand-dark/40 bg-white/50 px-2 py-0.5 rounded-full">
+            <i class="fas fa-satellite-dish"></i> GPS RT
+          </span>
         </div>
 
-        <div class="glass-card p-5 rounded-2xl text-center">
-            <div class="flex items-center justify-center gap-2 mb-2">
-                <div class="w-6 h-6 rounded-full bg-brand-gold/10 flex items-center justify-center">
-                    <i class="fas fa-qrcode text-brand-gold text-xs"></i>
-                </div>
-                <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Secure Payment</p>
-            </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
+            <i class="fas fa-road text-brand-gold text-sm mb-1.5 block"></i>
+            <p class="text-[8px] text-brand-dark/50 uppercase">Distance</p>
+            <p id="distanceText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
+          </div>
+          <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
+            <i class="fas fa-hourglass-half text-brand-gold text-sm mb-1.5 block"></i>
+            <p class="text-[8px] text-brand-dark/50 uppercase">ETA</p>
+            <p id="etaText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
+          </div>
+        </div>
 
-            <div class="relative inline-block mx-auto">
-                <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" onerror="this.onerror=null;this.src='https://placehold.co/200x200/F8F5F0/A07D54?text=SCAN+QR';this.alt='Payment QR'">
-                <div class="absolute -top-1.5 -right-1.5 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] shadow-md">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-            </div>
+        <div class="mt-1">
+          <div class="flex justify-between text-[7px] text-brand-dark/40 mb-1 px-1">
+            <span><i class="fas fa-flag-checkered"></i> Start</span>
+            <span><i class="fas fa-chart-line"></i> Progress</span>
+            <span><i class="fas fa-location-dot"></i> Arrival</span>
+          </div>
+          <div class="h-1.5 bg-brand-beige/50 rounded-full overflow-hidden">
+            <div id="etaProgressBar" class="progress-fill h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
 
-            <div class="mt-3 flex items-center justify-center gap-1.5 text-amber-700 bg-amber-50 inline-flex px-3 py-1 rounded-full mx-auto">
-                <i class="fas fa-exclamation-triangle text-[8px]"></i>
-                <p class="text-[9px] font-semibold">Collect payment before completing job</p>
-            </div>
+        <div class="flex items-center justify-between mt-3 pt-2 border-t border-brand-beige/30">
+          <div class="flex items-center gap-1.5">
+            <i class="fas fa-clock text-[9px] text-brand-gold/60"></i>
+            <span id="lastUpdateTime" class="text-[8px] text-brand-dark/40">Waiting for GPS</span>
+          </div>
+          <button id="refreshLocationBtn" class="text-[9px] text-brand-gold hover:text-brand-olive transition flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
+            <i class="fas fa-sync-alt text-[8px]"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- INSPECTION QUOTE CARD -->
+      <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden">
+        <div class="flex items-center gap-2 mb-4">
+          <i class="fas fa-clipboard-list text-brand-gold text-lg"></i>
+          <h3 class="font-bold text-brand-dark text-base">Inspection Quote</h3>
+          <span class="ml-auto text-[9px] bg-brand-cream px-2 py-1 rounded-full text-brand-olive">
+            <i class="fas fa-rupee-sign"></i> Inspection: ₹299 paid
+          </span>
+        </div>
+
+        <div id="customerOtherIssueBox" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+          <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fas fa-comment-dots"></i> Customer's Issue Description
+          </p>
+          <p id="customerOtherIssueText" class="text-sm text-brand-dark font-medium leading-relaxed"></p>
+        </div>
+
+        <div id="mixedServicesBox" class="hidden bg-brand-cream/50 border border-brand-beige rounded-xl p-3 mb-3">
+          <p class="text-[9px] font-bold text-brand-olive uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fas fa-list-check text-brand-gold"></i> Booked Services
+          </p>
+          <p id="mixedServicesText" class="text-xs text-brand-dark/70 leading-relaxed"></p>
+        </div>
+
+        <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
+          <i class="fas fa-info-circle text-brand-gold mr-1"></i>
+          Customer has already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. This will be adjusted from the final quote amount.
         </div>
 
         <div class="space-y-3">
-            <button id="arrivedBtn" class="w-full bg-info hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-sm">
-                <i class="fas fa-flag-checkered"></i> Mark Arrived at Location
-            </button>
-
-            <button id="completeBtn" class="w-full bg-gradient-to-r from-success to-emerald-600 hover:from-emerald-600 hover:to-green-700 text-white py-3.5 rounded-xl font-black tracking-wide transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
-                <i class="fas fa-circle-check"></i> Complete Job & Unlock
-            </button>
-        </div>
-    </div>
-</main>
-
-<div id="otpOverlay" class="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
-    <div id="otpSheet" class="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 shadow-2xl border-t border-white transform translate-y-full transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
-
-        <div class="text-center mb-6">
-            <div class="w-14 h-14 bg-brand-gold/10 text-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
-                <i class="fas fa-shield-keyhole text-2xl"></i>
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-tools mr-1"></i> Labour Cost
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" id="labourCost" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
             </div>
-            <h3 class="text-xl font-black text-brand-dark">Verify Completion Code</h3>
-            <p class="text-xs text-gray-500 mt-1">Enter the 6-digit security code generated on customer's display sheet to finalize payment.</p>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-cubes mr-1"></i> Material Cost
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" id="materialCost" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-plus-circle mr-1"></i> Extra Charges (if any)
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" id="extraCharges" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-file-alt mr-1"></i> Work Description
+            </label>
+            <textarea id="quoteDescription" rows="3" placeholder="Describe the issue found, recommended repairs, parts needed, and any additional notes..." class="w-full border border-brand-beige rounded-xl p-3 text-brand-dark text-sm focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition resize-none"></textarea>
+          </div>
+
+          <div class="bg-gradient-to-r from-brand-olive/5 to-brand-gold/5 rounded-xl p-3 mt-2">
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-brand-dark/60">Labour:</span>
+              <span class="font-mono font-bold" id="previewLabour">₹0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-brand-dark/60">Material:</span>
+              <span class="font-mono font-bold" id="previewMaterial">₹0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-brand-dark/60">Extra:</span>
+              <span class="font-mono font-bold" id="previewExtra">₹0</span>
+            </div>
+            <div class="border-t border-brand-beige/50 my-2"></div>
+            <div class="flex justify-between text-base font-bold">
+              <span class="text-brand-olive">Total Quote:</span>
+              <span class="font-mono text-brand-gold" id="previewTotal">₹0</span>
+            </div>
+            <div class="flex justify-between text-xs mt-2 text-green-600">
+              <span>Inspection fee adjustment:</span>
+              <span id="adjustmentInfo">-₹299 (already paid)</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200">
+              <span class="text-brand-dark">Customer Payable:</span>
+              <span class="font-mono text-green-700" id="previewPayable">₹0</span>
+            </div>
+          </div>
         </div>
 
-        <div class="flex justify-center gap-2 mb-6" id="otpFieldsContainer">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="0">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="1">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="2">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="3">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="4">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="5">
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <button id="cancelQuoteBtn" class="py-3 rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition-all btn-touch">
+            Cancel
+          </button>
+          <button id="submitQuoteBtn" class="py-3 rounded-xl bg-brand-gold text-white font-bold hover:bg-brand-olive transition-all btn-touch shadow-md flex items-center justify-center gap-2">
+            <i class="fas fa-paper-plane"></i> Submit Quote
+          </button>
+        </div>
+      </div>
+
+      <!-- PAYMENT QR -->
+      <div class="glass-card p-5 rounded-2xl text-center">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <div class="w-6 h-6 rounded-full bg-brand-gold/10 flex items-center justify-center">
+            <i class="fas fa-qrcode text-brand-gold text-xs"></i>
+          </div>
+          <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Secure Payment</p>
         </div>
 
-        <div id="otpErrorMessage" class="hidden text-center text-xs text-red-500 font-bold mb-4 animate__animated animate__headShake">
-            <i class="fas fa-circle-exclamation mr-1"></i> Mismatched verification digits. Please check and retry.
+        <div class="relative inline-block mx-auto">
+          <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" onerror="this.onerror=null;this.src='https://placehold.co/200x200/F8F5F0/A07D54?text=SCAN+QR';this.alt='Payment QR'" />
+          <div class="absolute -top-1.5 -right-1.5 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] shadow-md">
+            <i class="fas fa-shield-alt"></i>
+          </div>
         </div>
 
-        <div class="flex gap-3">
-            <button id="cancelOtpBtn" class="flex-1 py-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors">
-                Cancel Verify
-            </button>
-            <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-brand-gold hover:bg-brand-olive text-white rounded-xl text-sm font-black tracking-wider shadow-md transition-colors flex items-center justify-center gap-2">
-                <span>Verify Code</span> <i class="fas fa-arrow-right text-xs"></i>
-            </button>
+        <div class="mt-3 flex items-center justify-center gap-1.5 text-amber-700 bg-amber-50 inline-flex px-3 py-1 rounded-full mx-auto">
+          <i class="fas fa-exclamation-triangle text-[8px]"></i>
+          <p class="text-[9px] font-semibold">Collect payment before completing job</p>
         </div>
+      </div>
 
-        <p class="text-center text-[9px] text-gray-400 mt-4 uppercase font-bold tracking-widest">
-            <i class="fas fa-lock-keyhole"></i> FixZen Verified Lifecycle
-        </p>
+      <!-- ACTION BUTTONS -->
+      <div class="space-y-3">
+        <button id="arrivedBtn" class="w-full bg-info hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-sm">
+          <i class="fas fa-flag-checkered"></i> Mark Arrived at Location
+        </button>
+
+        <button id="completeBtn" class="w-full bg-gradient-to-r from-success to-emerald-600 hover:from-emerald-600 hover:to-green-700 text-white py-3.5 rounded-xl font-black tracking-wide transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+          <i class="fas fa-circle-check"></i> Complete Job & Unlock
+        </button>
+      </div>
+
     </div>
-</div>
+  </main>
 
-<div class="fixed bottom-5 right-5 z-40 flex flex-col gap-2">
+  <!-- ═══════════════════════════════════════════
+       OTP VERIFICATION SHEET (brand themed)
+  ═══════════════════════════════════════════ -->
+  <div id="otpOverlay" class="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
+    <div id="otpSheet" class="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 shadow-2xl border-t border-white transform translate-y-full transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
+
+      <div class="w-12 h-1 bg-brand-beige/60 rounded-full mx-auto mb-6"></div>
+
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-brand-gold/10 text-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
+          <i class="fas fa-shield-keyhole text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-brand-dark">Verify Completion Code</h3>
+        <p class="text-xs text-gray-500 mt-1">Enter the 6-digit security code from the customer's display sheet to finalize payment.</p>
+      </div>
+
+      <div class="flex justify-center gap-2 mb-6" id="otpFieldsContainer">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="0">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="1">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="2">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="3">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="4">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="5">
+      </div>
+
+      <div id="otpErrorMessage" class="hidden text-center text-xs text-red-500 font-bold mb-4 animate__animated animate__headShake">
+        <i class="fas fa-circle-exclamation mr-1"></i> Mismatched verification digits. Please check and retry.
+      </div>
+
+      <div class="flex gap-3">
+        <button id="cancelOtpBtn" class="flex-1 py-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors">
+          Cancel Verify
+        </button>
+        <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-brand-gold hover:bg-brand-olive text-white rounded-xl text-sm font-black tracking-wider shadow-md transition-colors flex items-center justify-center gap-2">
+          <span>Verify Code</span> <i class="fas fa-arrow-right text-xs"></i>
+        </button>
+      </div>
+
+      <p class="text-center text-[9px] text-gray-400 mt-4 uppercase font-bold tracking-widest">
+        <i class="fas fa-lock-keyhole"></i> FixZen Verified Lifecycle
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FAB: Support ── -->
+  <div class="fixed bottom-5 right-5 z-40 flex flex-col gap-2">
     <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-brand-beige hover:bg-brand-gold/10 transition-all active:scale-95">
-        <i class="fas fa-headset text-brand-olive text-sm"></i>
+      <i class="fas fa-headset text-brand-olive text-sm"></i>
     </button>
-</div>
+  </div>
 
-<script src="job_detail.js"></script>
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
+  <script src="job_detail.js"></script>
 </body>
 </html>
