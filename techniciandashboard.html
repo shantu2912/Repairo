@@ -1,361 +1,606 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FixZen Pro | Technician Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="i18n.js"></script>
-<!-- Tailwind -->
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixZen Pro · Technician</title>
 
-<!-- Alpine -->
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+  <!-- Tailwind + Alpine + Supabase + Firebase -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
-<!-- Icons / Fonts -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+  <style>
+    /* ── reset & base ── */
+    [x-cloak] { display: none !important; }
+    * { box-sizing: border-box; }
 
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        'brand-olive': '#5D5646',
-        'brand-gold': '#A07D54',
-        'brand-cream': '#F8F5F0',
-        'brand-dark': '#2D2B28',
-        'brand-beige': '#DFD4C3'
-      }
+    body {
+      background: #F8F5F0;
+      color: #2D2B28;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-  }
-}
-</script>
-<style>
-[x-cloak]{display:none}
-body{background:#F8F5F0;color:#2D2B28}
-.glass-card{
-  background:rgba(255,255,255,.95);
-  backdrop-filter:blur(18px);
-  border:1px solid #fff;
-  box-shadow:0 15px 35px rgba(93,86,70,.08)
-}
-</style>
 
-<!-- ✅ SUPABASE CLIENT -->
-<script>
-window.sb = supabase.createClient(
-  "https://kzxdxnxgouthsywbsnvl.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
-);
-</script>
+    /* ── glass / cards ── */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 12px 28px -8px rgba(93, 86, 70, 0.08);
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 20px;
+      padding: 1rem 1rem 0.9rem;
+      box-shadow: 0 4px 12px rgba(93, 86, 70, 0.04);
+    }
+
+    .job-card {
+      background: #ffffff;
+      border: 1px solid #E8E2D8;
+      border-radius: 24px;
+      box-shadow: 0 2px 10px rgba(93, 86, 70, 0.04);
+      transition: box-shadow 0.2s ease, transform 0.18s ease;
+      overflow: hidden;
+    }
+    .job-card:hover {
+      box-shadow: 0 12px 32px -8px rgba(93, 86, 70, 0.12);
+      transform: translateY(-2px);
+    }
+
+    /* ── status pills ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .pill-pending   { background: #FEF3C7; color: #92400E; }
+    .pill-progress  { background: #DBEAFE; color: #1E40AF; }
+    .pill-arrived   { background: #EDE9FE; color: #5B21B6; }
+    .pill-completed { background: #D1FAE5; color: #065F46; }
+
+    /* ── action buttons (brand olive/gold) ── */
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+
+    .btn-accept   { background: #5D5646; color: #fff; }
+    .btn-accept:hover { background: #4A4436; }
+
+    .btn-arrived  { background: #A07D54; color: #fff; }
+    .btn-arrived:hover { background: #8A6C47; }
+
+    .btn-complete { background: #2D2B28; color: #DFD4C3; }
+    .btn-complete:hover { background: #1E1C1A; }
+
+    .btn-reject   { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .btn-reject:hover { background: #FEE2E2; }
+
+    /* ── toggle switch (brand) ── */
+    .avail-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #DFD4C3;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      border: none;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .avail-toggle.on { background: #5D5646; }
+    .avail-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .avail-toggle.on::after { transform: translateX(20px); }
+
+    /* ── header & nav ── */
+    .header-blur {
+      background: rgba(255, 252, 248, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(223, 212, 195, 0.4);
+    }
+
+    .bottom-nav {
+      background: rgba(255, 252, 248, 0.92);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(223, 212, 195, 0.3);
+      border-radius: 32px 32px 0 0;
+      box-shadow: 0 -8px 30px rgba(93, 86, 70, 0.06);
+    }
+    .nav-btn {
+      color: rgba(45, 43, 40, 0.35);
+      transition: color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .nav-btn.active, .nav-btn:hover { color: #5D5646; }
+    .nav-btn i { font-size: 20px; }
+
+    /* ── FAB (camera removed – now brand accent) ── */
+    .fab-center {
+      background: #A07D54;
+      color: #fff;
+      border: 3px solid #F8F5F0;
+      box-shadow: 0 6px 20px rgba(160, 125, 84, 0.25);
+      transition: transform 0.15s ease;
+    }
+    .fab-center:active { transform: scale(0.92); }
+
+    /* ── schedule badge ── */
+    .sched-badge {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* ── earnings chip ── */
+    .earn-chip {
+      background: #F3F0EA;
+      border: 1px solid #DFD4C3;
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── notification banners ── */
+    .notif-banner {
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .notif-denied  { background: #FFF1F2; border: 1px solid #FECDD3; }
+    .notif-prompt  { background: #FFFBEB; border: 1px solid #FDE68A; }
+
+    /* ── modal ── */
+    .modal-backdrop {
+      background: rgba(45, 43, 40, 0.55);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── skeleton ── */
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #f0ede8 25%, #e5dfd6 50%, #f0ede8 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    /* ── section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #A07D54;
+    }
+  </style>
+
+  <!-- Supabase client -->
+  <script>
+    window.sb = supabase.createClient(
+      "https://kzxdxnxgouthsywbsnvl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+    );
+  </script>
 </head>
 
-<body
-x-data="dashboardHandler()"
-x-init="init()"
-x-cloak
-class="font-sans antialiased pb-36"
->
+<body x-data="dashboardHandler()" x-init="init()" x-cloak class="pb-28">
 
-<!-- HEADER -->
-<header class="sticky top-0 z-50 bg-brand-cream/80 backdrop-blur border-b p-5">
-  <div class="max-w-md mx-auto flex justify-between items-center">
+<!-- ═══════════════════════════════════════════
+     HEADER  (brand cream / olive)
+════════════════════════════════════════════ -->
+<header class="sticky top-0 z-50 header-blur">
+  <div class="max-w-md mx-auto flex justify-between items-center px-5 py-4">
+
+    <!-- Identity -->
     <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-full bg-brand-olive text-white flex items-center justify-center font-bold">
-        <span x-text="techName.charAt(0)"></span>
+      <div class="relative">
+        <div class="w-11 h-11 rounded-full bg-brand-olive flex items-center justify-center text-white font-bold text-sm">
+          <span x-text="techName.charAt(0).toUpperCase()"></span>
+        </div>
+        <span x-show="available"
+              class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>
       </div>
       <div>
-        <p class="text-[10px] uppercase tracking-widest text-brand-gold font-black">Pro Partner</p>
-        <p class="font-serif italic text-lg text-brand-olive" x-text="techName"></p>
+        <p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
+        <p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text="techName"></p>
       </div>
     </div>
-    <button @click="logout()" class="text-brand-olive hover:text-red-500">
-      <i class="fa-solid fa-power-off"></i>
-    </button>
+
+    <!-- Right: toggle + logout -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-brand-dark/40 font-medium" x-text="available ? 'Online' : 'Offline'"></span>
+        <button :class="available ? 'on' : ''" class="avail-toggle"
+                @click="toggleAvailability({target:{checked:!available}})"></button>
+      </div>
+      <button @click="logout()"
+              class="w-9 h-9 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+      </button>
+    </div>
+
   </div>
 </header>
 
-<main class="max-w-md mx-auto p-6 space-y-8">
+<!-- ═══════════════════════════════════════════
+     STATS ROW  (glass cards)
+════════════════════════════════════════════ -->
+<section class="max-w-md mx-auto px-5 pt-5 pb-2">
+  <div class="grid grid-cols-3 gap-3">
 
-<!-- STATS -->
-<section>
-  <div class="grid grid-cols-2 gap-4">
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Active Jobs</p>
-      <h3 class="text-3xl font-extrabold text-brand-olive" x-text="stats.activeJobs"></h3>
+    <div class="stat-card text-center">
+      <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Active</p>
+      <p class="font-bold text-2xl text-brand-dark mt-0.5" x-text="stats.activeJobs"></p>
+      <p class="text-[9px] text-brand-dark/30 mt-0.5">jobs</p>
     </div>
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Earnings</p>
-      <h3 class="text-3xl font-extrabold text-green-700">
-        ₹<span x-text="stats.earnings"></span>
-      </h3>
-    </div>
-    <div class="glass-card p-5 rounded-[2rem]">
-      <p class="text-[9px] font-bold text-brand-gold uppercase">Today</p>
-      <h3 class="text-3xl font-extrabold text-purple-700">
+
+    <div class="stat-card text-center">
+      <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Today</p>
+      <p class="font-bold text-2xl text-emerald-700 mt-0.5">
         ₹<span x-text="stats.todayEarnings"></span>
-      </h3>
-    </div>
-    <div class="flex items-center gap-4">
-      <label class="flex items-center gap-2 text-xs bg-white px-3 py-2 rounded-xl shadow">
-        <input
-          type="checkbox"
-          class="accent-green-600"
-          :checked="available"
-          @change="toggleAvailability($event)"
-        >
-        <span class="font-semibold">Available for Jobs</span>
-      </label>
-    </div>
-  </div>
-</section>
-
-<!-- Notification permission banner -->
-<div x-show="notifStatus === 'denied'"
-     class="bg-red-50 border border-red-200 rounded-2xl p-4 text-xs text-red-700">
-  <strong>🔕 Notifications blocked.</strong> You won't receive job alerts.
-  Please enable notifications in your browser settings and reload.
-</div>
-
-<div x-show="notifStatus === 'prompt'"
-     class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-xs text-yellow-800">
-  <strong>🔔 Enable notifications</strong> to receive instant job alerts.
-  <button @click="setupNotifications()" class="ml-2 underline font-bold">Enable now</button>
-</div>
-
-<!-- JOBS -->
-<section id="jobsSection" class="space-y-4">
-
-  <div x-show="loading" class="text-center text-sm text-brand-dark/50 mt-20">
-    Loading jobs…
-  </div>
-
-  <div x-show="!loading && jobs.length === 0"
-       class="text-center text-sm text-brand-dark/50 mt-20">
-    No active jobs
-  </div>
-
-  <template x-for="job in jobs" :key="job.id">
-    <div class="glass-card p-6 rounded-[2.5rem] border-l-4"
-         :class="job.urgent ? 'border-red-500':'border-brand-gold'">
-
-      <!-- TITLE -->
-      <span class="text-[9px] font-bold text-brand-gold uppercase" x-text="job.category"></span>
-      <h4 class="text-lg font-extrabold text-brand-olive" x-text="job.device"></h4>
-      <p class="text-xs italic text-brand-dark/60" x-text="job.issue"></p>
-
-      <!-- CUSTOMER REQUESTED DATE & TIME -->
-      <div x-show="formatScheduled(job)"
-           class="mt-2 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-        <span class="text-amber-500 text-sm">📅</span>
-        <div>
-          <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wide">Customer Requested</p>
-          <p class="text-xs font-semibold text-amber-900" x-text="formatScheduled(job)"></p>
-        </div>
-      </div>
-
-      <p class="text-xs text-gray-500 mt-1">
-        Started: <span x-text="formatTime(job.started_at)"></span>
       </p>
-
-      <!-- EARNINGS BADGE -->
-      <div x-show="calculateFee(job) > 0"
-           class="mt-3 flex items-center justify-between bg-green-50 border border-green-100 rounded-xl px-3 py-2">
-        <span class="text-[10px] font-semibold text-green-700 uppercase tracking-wide">Your Earnings</span>
-        <span class="font-extrabold text-green-700 text-sm">₹<span x-text="calculateFee(job)"></span></span>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="flex justify-between items-center border-t mt-4 pt-4">
-
-        <!-- CUSTOMER -->
-        <div>
-          <p class="text-sm font-bold" x-text="job.customer_name"></p>
-          <a
-            :href="'tel:' + job.phone"
-            class="text-xs text-green-600 font-bold mt-1 block">
-            📞 Call Customer
-          </a>
-
-          <p class="text-[9px] uppercase text-brand-dark/40" x-text="job.location"></p>
-          <button
-            @click="openMaps(job.location)"
-            class="text-xs text-blue-600 font-bold mt-1">
-            Open in Maps →
-          </button>
-
-          <p class="text-[9px] font-mono text-red-600 mt-1"
-             x-show="job.slaRemaining">
-             SLA: <span x-text="job.slaRemaining"></span>
-          </p>
-        </div>
-
-        <!-- STATUS + ACTION -->
-        <div class="flex flex-col items-end gap-2">
-
-          <span
-           :class=" job.status === 'pending' ? 'bg-gray-100 text-gray-700' :
-                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                    job.status === 'arrived' ? 'bg-purple-100 text-purple-700' :
-                    'bg-green-100 text-green-700'
-                  "
-            x-text="job.status.replace('_',' ')"
-          ></span>
-
-          <!-- ACCEPT / REJECT (only when job is free) -->
-          <button
-            x-show="job.status === 'pending'"
-            @click="acceptJob(job.id)"
-            class="px-4 py-2 bg-green-600 text-white text-xs rounded-xl">
-            Accept
-          </button>
-
-          <button
-            x-show="job.status === 'pending'"
-            @click="rejectJob(job.id)"
-            class="px-4 py-2 bg-red-500 text-white text-xs rounded-xl">
-            Reject
-          </button>
-
-          <!-- MARK ARRIVED (after accepting job) -->
-          <button
-            x-show="job.status === 'in_progress'"
-            @click="markArrived(job)"
-            class="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl">
-            Mark Arrived
-          </button>
-
-          <!-- COMPLETE (ONLY after arrival) -->
-          <button
-            x-show="job.status === 'arrived'"
-            @click="completeJob(job)"
-            class="px-5 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase">
-            Complete Job
-          </button>
-
-        </div>
-      </div>
+      <p class="text-[9px] text-brand-dark/30 mt-0.5">earned</p>
     </div>
-  </template>
 
+    <div class="stat-card text-center">
+      <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Total</p>
+      <p class="font-bold text-2xl text-brand-olive mt-0.5">
+        ₹<span x-text="stats.earnings"></span>
+      </p>
+      <p class="text-[9px] text-brand-dark/30 mt-0.5">all time</p>
+    </div>
+
+  </div>
 </section>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════ -->
+<main class="max-w-md mx-auto px-5 pt-4 space-y-5">
+
+  <!-- Notification banners -->
+  <div x-show="notifStatus === 'denied'" class="notif-banner notif-denied">
+    <i class="fa-regular fa-bell-slash text-rose-500 text-sm flex-shrink-0"></i>
+    <div>
+      <p class="text-[13px] font-semibold text-rose-800">Notifications blocked</p>
+      <p class="text-xs text-rose-600">Enable in browser settings to get alerts.</p>
+    </div>
+  </div>
+
+  <div x-show="notifStatus === 'prompt'" class="notif-banner notif-prompt">
+    <i class="fa-regular fa-bell text-amber-500 text-sm flex-shrink-0"></i>
+    <div class="flex-1">
+      <p class="text-[13px] font-semibold text-amber-800">Enable job alerts</p>
+    </div>
+    <button @click="setupNotifications()"
+            class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
+      Turn on
+    </button>
+  </div>
+
+  <!-- Section header -->
+  <div class="flex items-center justify-between pt-1">
+    <span class="section-label">Active jobs</span>
+    <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
+  </div>
+
+  <!-- Loading skeletons -->
+  <div x-show="loading" class="space-y-4">
+    <div class="job-card p-5 space-y-3">
+      <div class="skeleton h-3 w-20 rounded"></div>
+      <div class="skeleton h-5 w-48 rounded"></div>
+      <div class="skeleton h-3 w-full rounded"></div>
+      <div class="skeleton h-3 w-3/4 rounded"></div>
+    </div>
+    <div class="job-card p-5 space-y-3">
+      <div class="skeleton h-3 w-24 rounded"></div>
+      <div class="skeleton h-5 w-40 rounded"></div>
+      <div class="skeleton h-3 w-full rounded"></div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div x-show="!loading && jobs.length === 0"
+       class="flex flex-col items-center justify-center py-20 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-brand-cream/60 flex items-center justify-center mb-4">
+      <i class="fa-regular fa-inbox text-2xl text-brand-gold/40"></i>
+    </div>
+    <p class="font-semibold text-brand-dark text-[15px]">No active jobs</p>
+    <p class="text-xs text-brand-dark/40 mt-1">New jobs will appear here instantly</p>
+  </div>
+
+  <!-- JOB CARDS -->
+  <section id="jobsSection" class="space-y-4 pb-4">
+    <template x-for="job in jobs" :key="job.id">
+      <div class="job-card">
+
+        <!-- status stripe -->
+        <div class="h-1 w-full"
+             :class="job.status === 'pending'     ? 'bg-amber-400' :
+                     job.status === 'in_progress' ? 'bg-blue-500'  :
+                     job.status === 'arrived'     ? 'bg-violet-500': 'bg-emerald-500'">
+        </div>
+
+        <div class="p-5">
+
+          <!-- top row: category + status pill -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest"
+                  x-text="job.category"></span>
+            <span class="pill"
+                  :class="job.status === 'pending'     ? 'pill-pending'   :
+                          job.status === 'in_progress' ? 'pill-progress'  :
+                          job.status === 'arrived'     ? 'pill-arrived'   : 'pill-completed'">
+              <span class="w-1.5 h-1.5 rounded-full inline-block"
+                    :class="job.status === 'pending'     ? 'bg-amber-500'  :
+                            job.status === 'in_progress' ? 'bg-blue-500'   :
+                            job.status === 'arrived'     ? 'bg-violet-500' : 'bg-emerald-500'">
+              </span>
+              <span x-text="job.status === 'in_progress' ? 'In Progress' :
+                             job.status === 'pending'     ? 'Pending'     :
+                             job.status === 'arrived'     ? 'Arrived'     : 'Completed'">
+              </span>
+            </span>
+          </div>
+
+          <!-- device + issue -->
+          <h4 class="text-[17px] font-semibold text-brand-dark leading-snug" x-text="job.device"></h4>
+          <p class="text-[13px] text-brand-dark/60 mt-1 leading-relaxed" x-text="job.issue"></p>
+
+          <!-- scheduled badge -->
+          <div x-show="formatScheduled(job)" class="sched-badge mt-3">
+            <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
+            <div>
+              <p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
+              <p class="text-[13px] font-medium text-amber-900" x-text="formatScheduled(job)"></p>
+            </div>
+          </div>
+
+          <!-- earnings chip -->
+          <div x-show="calculateFee(job) > 0" class="earn-chip mt-3">
+            <div class="flex items-center gap-2">
+              <i class="fa-regular fa-circle-dollar text-brand-olive text-xs"></i>
+              <span class="text-[12px] font-semibold text-brand-dark/70">Your Earnings</span>
+            </div>
+            <span class="font-mono font-bold text-brand-olive text-[15px]">
+              ₹<span x-text="calculateFee(job)"></span>
+            </span>
+          </div>
+
+          <!-- divider + customer -->
+          <div class="border-t border-brand-beige/50 mt-4 pt-4">
+
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-[14px] font-semibold text-brand-dark truncate" x-text="job.customer_name"></p>
+                <p class="text-[11px] text-brand-dark/50 truncate flex items-center gap-1.5 mt-0.5">
+                  <i class="fa-regular fa-location-dot text-[10px]"></i> <span x-text="job.location"></span>
+                </p>
+                <p x-show="job.slaRemaining"
+                   class="text-[11px] font-mono text-rose-500 mt-1">
+                  SLA: <span x-text="job.slaRemaining"></span>
+                </p>
+                <p class="text-[10px] text-brand-dark/30 mt-1">
+                  <i class="fa-regular fa-clock mr-1"></i> <span x-text="formatTime(job.started_at)"></span>
+                </p>
+              </div>
+
+              <!-- quick actions -->
+              <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                <a :href="'tel:' + job.phone"
+                   class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-olive bg-brand-cream hover:bg-brand-beige/50 px-3 py-1.5 rounded-full transition-colors">
+                  <i class="fa-solid fa-phone text-[10px]"></i> Call
+                </a>
+                <button @click="openMaps(job.location)"
+                        class="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
+                  <i class="fa-solid fa-location-dot text-[10px]"></i> Map
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- primary actions -->
+          <div class="mt-4 space-y-2">
+
+            <template x-if="job.status === 'pending'">
+              <div class="space-y-2">
+                <button @click="acceptJob(job.id)" class="btn-primary btn-accept">
+                  <i class="fa-regular fa-check-circle text-sm"></i> Accept Job
+                </button>
+                <button @click="rejectJob(job.id)" class="btn-primary btn-reject">
+                  <i class="fa-regular fa-xmark text-sm"></i> Decline
+                </button>
+              </div>
+            </template>
+
+            <template x-if="job.status === 'in_progress'">
+              <button @click="markArrived(job)" class="btn-primary btn-arrived">
+                <i class="fa-regular fa-location-crosshairs text-sm"></i> Mark as Arrived
+              </button>
+            </template>
+
+            <template x-if="job.status === 'arrived'">
+              <button @click="completeJob(job)" class="btn-primary btn-complete">
+                <i class="fa-regular fa-flag-checkered text-sm"></i> Complete Job
+              </button>
+            </template>
+
+          </div>
+
+        </div>
+      </div>
+    </template>
+  </section>
 
 </main>
 
-<!-- BOTTOM NAV -->
-<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm z-50">
-  <div class="relative bg-white/90 backdrop-blur border rounded-full px-4 py-3 flex justify-between items-center shadow-2xl">
+<!-- ═══════════════════════════════════════════
+     BOTTOM NAV  (brand, camera removed)
+════════════════════════════════════════════ -->
+<nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
+  <div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
 
-    <button class="w-12 h-12 text-brand-gold">
-      <i class="fa-solid fa-house"></i>
+    <button class="nav-btn active">
+      <i class="fa-regular fa-house-chimney"></i>
+      <span>Home</span>
     </button>
 
-    <button @click="scrollToJobs()" class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
-      <i class="fa-solid fa-box-open"></i>
+    <button @click="scrollToJobs()" class="nav-btn">
+      <i class="fa-regular fa-briefcase"></i>
+      <span>Jobs</span>
     </button>
 
-    <div class="w-14 h-12"></div>
+    <!-- centre FAB (camera removed → brand accent with icon) -->
+    <div class="relative -mt-5">
+      <button class="w-14 h-14 fab-center rounded-full flex items-center justify-center text-white text-xl">
+        <i class="fa-regular fa-circle-check"></i>
+      </button>
+    </div>
 
-    <button onclick="window.location.href='completed_jobs.html'"
-            class="w-12 h-12 text-brand-olive/40 hover:text-brand-gold">
-      <i class="fa-solid fa-book-open"></i>
+    <button onclick="window.location.href='completed_jobs.html'" class="nav-btn">
+      <i class="fa-regular fa-clock-rotate-left"></i>
+      <span>History</span>
     </button>
 
-    <button @click="logout()" class="w-12 h-12 text-brand-olive/40">
-      <i class="fa-solid fa-circle-user"></i>
-    </button>
-
-    <button
-      class="absolute left-1/2 -translate-x-1/2 -top-6
-             w-14 h-14 bg-brand-gold rounded-full
-             flex items-center justify-center text-white
-             shadow-lg border-4 border-white">
-      <i class="fa-solid fa-camera"></i>
+    <button @click="logout()" class="nav-btn">
+      <i class="fa-regular fa-circle-user"></i>
+      <span>Profile</span>
     </button>
 
   </div>
 </nav>
 
-<!-- ============================================================
-     🔥 FIREBASE INIT (must happen before Alpine uses it)
-     ============================================================ -->
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-};
+<!-- ═══════════════════════════════════════════
+     INCOMING JOB MODAL
+════════════════════════════════════════════ -->
+<div x-show="incomingJob"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0 scale-95"
+     x-transition:enter-end="opacity-100 scale-100"
+     class="fixed inset-0 modal-backdrop flex items-end sm:items-center justify-center z-50 p-4">
 
-// Guard: don't init twice if this script re-runs
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+  <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
 
-// Expose messaging globally so Alpine can use it safely
-// We create it ONCE here so there's no race condition
-window.firebaseMessaging = firebase.messaging();
-</script>
-
-<!-- 🔔 JOB ALERT MODAL (Alpine-driven) -->
-<div
-  x-show="incomingJob"
-  x-transition
-  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
->
-  <div class="bg-white rounded-3xl p-6 w-[90%] max-w-sm text-center shadow-2xl">
-
-    <p class="text-xs uppercase tracking-widest text-brand-gold font-bold">
-      New Job Arrived
-    </p>
-
-    <h3 class="text-xl font-extrabold text-brand-olive mt-2"
-        x-text="incomingJob?.category"></h3>
-
-    <p class="text-sm text-gray-600 mt-1"
-       x-text="incomingJob?.location"></p>
-
-    <p class="text-xs text-gray-500 italic mt-2"
-       x-text="incomingJob?.issue"></p>
-
-    <!-- Scheduled time in modal -->
-    <div x-show="formatScheduled(incomingJob)"
-         class="mt-3 flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-      <span class="text-amber-500">📅</span>
-      <div class="text-left">
-        <p class="text-[9px] font-bold text-amber-700 uppercase">Customer Requested</p>
-        <p class="text-xs font-semibold text-amber-900" x-text="formatScheduled(incomingJob)"></p>
+    <!-- modal header (brand) -->
+    <div class="bg-brand-olive px-6 py-5 text-center">
+      <div class="inline-flex items-center gap-2 bg-brand-gold/20 text-brand-gold text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+        <span class="w-1.5 h-1.5 bg-brand-gold rounded-full animate-pulse"></span>
+        New Job Request
       </div>
+      <h3 class="text-xl font-semibold text-white" x-text="incomingJob?.category"></h3>
+      <p class="text-sm text-white/60 mt-1" x-text="incomingJob?.issue"></p>
     </div>
 
-    <div class="flex gap-3 mt-6">
-      <button
-        @click="acceptIncoming()"
-        class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">
-        Accept
-      </button>
+    <!-- modal body -->
+    <div class="px-6 py-5 space-y-3">
 
-      <button
-        @click="rejectIncoming()"
-        class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">
-        Reject
-      </button>
+      <div class="flex items-center gap-3 bg-brand-cream rounded-xl px-4 py-3">
+        <i class="fa-regular fa-location-dot text-brand-olive text-sm flex-shrink-0"></i>
+        <p class="text-[13px] font-medium text-brand-dark" x-text="incomingJob?.location"></p>
+      </div>
+
+      <div x-show="formatScheduled(incomingJob)" class="sched-badge">
+        <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
+        <div>
+          <p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
+          <p class="text-[13px] font-medium text-amber-900" x-text="formatScheduled(incomingJob)"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-1">
+        <button @click="rejectIncoming()"
+                class="flex-1 py-3 rounded-xl text-[13px] font-semibold text-brand-dark/60 bg-brand-cream hover:bg-brand-beige/50 transition-colors">
+          Decline
+        </button>
+        <button @click="acceptIncoming()"
+                class="flex-2 flex-1 py-3 rounded-xl text-[13px] font-semibold text-white bg-brand-olive hover:bg-brand-dark transition-colors">
+          <i class="fa-regular fa-check-circle mr-1"></i> Accept
+        </button>
+      </div>
+
     </div>
-
   </div>
 </div>
 
-<!-- ============================================================
-     📦 DASHBOARD LOGIC (loaded from external JS)
-     ============================================================ -->
-<script src="techniciandashboard.js"></script>
+<!-- ═══════════════════════════════════════════
+     FIREBASE INIT
+════════════════════════════════════════════ -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+    authDomain: "fixzen-73d68.firebaseapp.com",
+    projectId: "fixzen-73d68",
+    messagingSenderId: "816193738840",
+    appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  window.firebaseMessaging = firebase.messaging();
+</script>
 
+<!-- Dashboard logic -->
+<script src="techniciandashboard.js"></script>
 </body>
 </html>
