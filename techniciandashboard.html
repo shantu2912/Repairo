@@ -60,7 +60,7 @@
       transform: translateY(-3px);
     }
 
-    /* ── status pill ── */
+    /* ── status pills ── */
     .pill {
       display: inline-flex;
       align-items: center;
@@ -72,6 +72,7 @@
       letter-spacing: 0.02em;
     }
     .pill-pending { background: #FEF3C7; color: #92400E; }
+    .pill-completed { background: #D1FAE5; color: #065F46; }
 
     /* ── action buttons ── */
     .btn-primary {
@@ -107,6 +108,14 @@
       box-shadow: 0 2px 8px rgba(185, 28, 28, 0.06);
     }
     .btn-reject:hover { background: #FFF1F2; border-color: #FCA5A5; transform: translateY(-1px); }
+
+    .btn-completed {
+      background: #ECFDF5;
+      color: #065F46;
+      border: 2px solid #A7F3D0;
+      cursor: default;
+      opacity: 0.7;
+    }
 
     /* ── toggle switch ── */
     .avail-toggle {
@@ -231,6 +240,9 @@
       width: 100%;
       height: 4px;
       background: linear-gradient(90deg, #5D5646, #A07D54, #DFD4C3);
+    }
+    .card-accent.completed {
+      background: linear-gradient(90deg, #059669, #34D399, #A7F3D0);
     }
 
     /* ── earnings chip ── */
@@ -365,7 +377,7 @@
     <div class="flex items-center justify-between pt-1">
       <span class="section-label flex items-center gap-2">
         <i class="fa-regular fa-list-check text-brand-gold"></i>
-        Pending jobs
+        Your Jobs
       </span>
       <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
     </div>
@@ -392,7 +404,7 @@
         <i class="fa-regular fa-inbox text-3xl text-brand-gold/30"></i>
       </div>
       <p class="font-semibold text-brand-dark text-[17px]">All caught up! ✨</p>
-      <p class="text-xs text-brand-dark/40 mt-1">No pending jobs at the moment</p>
+      <p class="text-xs text-brand-dark/40 mt-1">No jobs at the moment</p>
     </div>
 
     <!-- JOB CARDS -->
@@ -401,7 +413,7 @@
         <div class="job-card">
 
           <!-- decorative gradient accent -->
-          <div class="card-accent"></div>
+          <div class="card-accent" :class="job.status === 'completed' ? 'completed' : ''"></div>
 
           <div class="p-5">
 
@@ -411,9 +423,9 @@
                 <i class="fa-regular fa-tag text-[9px]"></i>
                 <span x-text="job.category"></span>
               </span>
-              <span class="pill pill-pending">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                Pending
+              <span class="pill" :class="job.status === 'completed' ? 'pill-completed' : 'pill-pending'">
+                <span class="w-1.5 h-1.5 rounded-full inline-block" :class="job.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
+                <span x-text="job.status === 'completed' ? 'Completed' : 'Pending'"></span>
               </span>
             </div>
 
@@ -454,7 +466,7 @@
                     <i class="fa-regular fa-location-dot text-[10px]"></i>
                     <span x-text="job.location"></span>
                   </p>
-                  <p x-show="job.slaRemaining"
+                  <p x-show="job.slaRemaining && job.status !== 'completed'"
                      class="text-[11px] font-mono text-rose-500 mt-1 flex items-center gap-1">
                     <i class="fa-regular fa-clock"></i>
                     <span>SLA: <span x-text="job.slaRemaining"></span></span>
@@ -462,6 +474,11 @@
                   <p class="text-[10px] text-brand-dark/30 mt-1">
                     <i class="fa-regular fa-clock mr-1"></i>
                     <span x-text="formatTime(job.started_at)"></span>
+                  </p>
+                  <!-- Completed timestamp -->
+                  <p x-show="job.status === 'completed' && job.completed_at" class="text-[10px] text-emerald-600 mt-1 flex items-center gap-1">
+                    <i class="fa-regular fa-check-circle"></i>
+                    <span>Completed <span x-text="formatTime(job.completed_at)"></span></span>
                   </p>
                 </div>
 
@@ -480,8 +497,8 @@
 
             </div>
 
-            <!-- ONLY ACCEPT / REJECT buttons -->
-            <div class="mt-4 space-y-2.5">
+            <!-- ACTION BUTTONS - only show for pending jobs -->
+            <div class="mt-4 space-y-2.5" x-show="job.status === 'pending'">
               <button @click="acceptJob(job.id)" class="btn-primary btn-accept">
                 <i class="fa-regular fa-check-circle text-lg"></i>
                 Accept Job
@@ -492,6 +509,14 @@
               </button>
             </div>
 
+            <!-- COMPLETED BADGE - show for completed jobs -->
+            <div class="mt-4" x-show="job.status === 'completed'">
+              <div class="btn-primary btn-completed">
+                <i class="fa-regular fa-circle-check text-lg"></i>
+                Job Completed ✓
+              </div>
+            </div>
+
           </div>
         </div>
       </template>
@@ -500,7 +525,7 @@
   </main>
 
   <!-- ═══════════════════════════════════════════
-       BOTTOM NAV - Fixed icons, removed tick
+       BOTTOM NAV
   ══════════════════════════════════════════ -->
   <nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
     <div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
@@ -515,7 +540,7 @@
         <span>Jobs</span>
       </button>
 
-      <!-- centre FAB removed - replaced with empty spacer -->
+      <!-- centre spacer -->
       <div class="w-14 h-14"></div>
 
       <button onclick="window.location.href='completed_jobs.html'" class="nav-btn">
