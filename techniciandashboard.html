@@ -1,341 +1,349 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FixZen Pro | Technician Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="i18n.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixZen Pro · Technician</title>
 
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        'fz-navy':  '#0F1923',
-        'fz-navy2': '#1A2635',
-        'fz-gold':  '#C9963A',
-        'fz-gold2': '#E8B84B',
-        'fz-ink':   '#1C2B3A',
-        'fz-slate': '#64748B',
-        'fz-mist':  '#F1F5F9',
-        'fz-paper': '#FAFAF8',
-      },
-      fontFamily: {
-        sans: ['"DM Sans"', 'sans-serif'],
-        mono: ['"DM Mono"', 'monospace'],
-      }
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Tailwind + Alpine + Supabase + Firebase -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+
+  <style>
+    /* ── reset & base ── */
+    [x-cloak] { display: none !important; }
+    * { box-sizing: border-box; }
+
+    body {
+      background: #F8F5F0;
+      color: #2D2B28;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-  }
-}
-</script>
 
-<style>
-[x-cloak]{display:none}
+    /* ── glass / cards ── */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 12px 28px -8px rgba(93, 86, 70, 0.08);
+    }
 
-* { box-sizing: border-box; }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 20px;
+      padding: 1rem 1rem 0.9rem;
+      box-shadow: 0 4px 12px rgba(93, 86, 70, 0.04);
+    }
 
-body {
-  background: #FAFAF8;
-  color: #1C2B3A;
-  font-family: 'DM Sans', sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+    .job-card {
+      background: #ffffff;
+      border: 1px solid #E8E2D8;
+      border-radius: 24px;
+      box-shadow: 0 2px 10px rgba(93, 86, 70, 0.04);
+      transition: box-shadow 0.2s ease, transform 0.18s ease;
+      overflow: hidden;
+    }
+    .job-card:hover {
+      box-shadow: 0 12px 32px -8px rgba(93, 86, 70, 0.12);
+      transform: translateY(-2px);
+    }
 
-/* ── Header command deck ── */
-.command-deck {
-  background: #0F1923;
-  background-image:
-    radial-gradient(ellipse at 80% 0%, rgba(201,150,58,0.12) 0%, transparent 60%),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 39px,
-      rgba(255,255,255,0.025) 39px,
-      rgba(255,255,255,0.025) 40px
+    /* ── status pills ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .pill-pending   { background: #FEF3C7; color: #92400E; }
+    .pill-progress  { background: #DBEAFE; color: #1E40AF; }
+    .pill-arrived   { background: #EDE9FE; color: #5B21B6; }
+    .pill-completed { background: #D1FAE5; color: #065F46; }
+
+    /* ── action buttons (brand olive/gold) ── */
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+
+    .btn-accept   { background: #5D5646; color: #fff; }
+    .btn-accept:hover { background: #4A4436; }
+
+    .btn-arrived  { background: #A07D54; color: #fff; }
+    .btn-arrived:hover { background: #8A6C47; }
+
+    .btn-complete { background: #2D2B28; color: #DFD4C3; }
+    .btn-complete:hover { background: #1E1C1A; }
+
+    .btn-reject   { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .btn-reject:hover { background: #FEE2E2; }
+
+    /* ── toggle switch (brand) ── */
+    .avail-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #DFD4C3;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      border: none;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .avail-toggle.on { background: #5D5646; }
+    .avail-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .avail-toggle.on::after { transform: translateX(20px); }
+
+    /* ── header & nav ── */
+    .header-blur {
+      background: rgba(255, 252, 248, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(223, 212, 195, 0.4);
+    }
+
+    .bottom-nav {
+      background: rgba(255, 252, 248, 0.92);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(223, 212, 195, 0.3);
+      border-radius: 32px 32px 0 0;
+      box-shadow: 0 -8px 30px rgba(93, 86, 70, 0.06);
+    }
+    .nav-btn {
+      color: rgba(45, 43, 40, 0.35);
+      transition: color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .nav-btn.active, .nav-btn:hover { color: #5D5646; }
+    .nav-btn i { font-size: 20px; }
+
+    /* ── FAB (camera removed – now brand accent) ── */
+    .fab-center {
+      background: #A07D54;
+      color: #fff;
+      border: 3px solid #F8F5F0;
+      box-shadow: 0 6px 20px rgba(160, 125, 84, 0.25);
+      transition: transform 0.15s ease;
+    }
+    .fab-center:active { transform: scale(0.92); }
+
+    /* ── schedule badge ── */
+    .sched-badge {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* ── earnings chip ── */
+    .earn-chip {
+      background: #F3F0EA;
+      border: 1px solid #DFD4C3;
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── notification banners ── */
+    .notif-banner {
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .notif-denied  { background: #FFF1F2; border: 1px solid #FECDD3; }
+    .notif-prompt  { background: #FFFBEB; border: 1px solid #FDE68A; }
+
+    /* ── modal ── */
+    .modal-backdrop {
+      background: rgba(45, 43, 40, 0.55);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── skeleton ── */
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #f0ede8 25%, #e5dfd6 50%, #f0ede8 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    /* ── section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #A07D54;
+    }
+  </style>
+
+  <!-- Supabase client -->
+  <script>
+    window.sb = supabase.createClient(
+      "https://kzxdxnxgouthsywbsnvl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
     );
-}
-
-/* ── Stat cards ── */
-.stat-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-}
-
-/* ── Job card ── */
-.job-card {
-  background: #fff;
-  border: 1px solid #E8EAED;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(15,25,35,0.06), 0 0 0 0 transparent;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-  overflow: hidden;
-}
-.job-card:hover {
-  box-shadow: 0 8px 24px rgba(15,25,35,0.10);
-  transform: translateY(-1px);
-}
-
-/* ── Status pill ── */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-.pill-pending   { background:#FEF3C7; color:#92400E; }
-.pill-progress  { background:#DBEAFE; color:#1E40AF; }
-.pill-arrived   { background:#EDE9FE; color:#5B21B6; }
-.pill-completed { background:#D1FAE5; color:#065F46; }
-
-/* ── Action buttons ── */
-.btn-primary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 13px 20px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  transition: opacity 0.15s, transform 0.1s;
-  cursor: pointer;
-  border: none;
-}
-.btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-
-.btn-accept   { background:#059669; color:#fff; }
-.btn-arrived  { background:#2563EB; color:#fff; }
-.btn-complete { background:#0F1923; color:#C9963A; }
-.btn-reject   { background:#FEF2F2; color:#DC2626; border: 1px solid #FECACA; }
-
-/* ── Availability toggle ── */
-.avail-toggle {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.2s;
-  border: none;
-  outline: none;
-}
-.avail-toggle.on { background: #059669; }
-.avail-toggle::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.avail-toggle.on::after { transform: translateX(20px); }
-
-/* ── Bottom nav ── */
-.bottom-nav {
-  background: #0F1923;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-.nav-btn { color: rgba(255,255,255,0.35); transition: color 0.15s; }
-.nav-btn.active, .nav-btn:hover { color: #C9963A; }
-
-/* ── Divider label ── */
-.section-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94A3B8;
-}
-
-/* ── Schedule badge ── */
-.sched-badge {
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
-  border-radius: 10px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* ── Earnings chip ── */
-.earn-chip {
-  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
-  border: 1px solid #A7F3D0;
-  border-radius: 10px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* ── Modal backdrop ── */
-.modal-backdrop {
-  background: rgba(15,25,35,0.75);
-  backdrop-filter: blur(4px);
-}
-
-/* ── Notification banners ── */
-.notif-denied  { background:#FFF1F2; border:1px solid #FECDD3; border-radius:14px; }
-.notif-prompt  { background:#FFFBEB; border:1px solid #FDE68A; border-radius:14px; }
-
-/* ── Loading skeleton pulse ── */
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 800px 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 8px;
-}
-
-/* ── Camera FAB pulse ring ── */
-@keyframes ring-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(201,150,58,0.5); }
-  70%  { box-shadow: 0 0 0 10px rgba(201,150,58,0); }
-  100% { box-shadow: 0 0 0 0 rgba(201,150,58,0); }
-}
-</style>
-
-<!-- SUPABASE CLIENT -->
-<script>
-window.sb = supabase.createClient(
-  "https://kzxdxnxgouthsywbsnvl.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
-);
-</script>
+  </script>
 </head>
 
-<body x-data="dashboardHandler()" x-init="init()" x-cloak class="pb-24">
+<body x-data="dashboardHandler()" x-init="init()" x-cloak class="pb-28">
 
 <!-- ═══════════════════════════════════════════
-     COMMAND DECK  (header + stats, dark band)
+     HEADER  (brand cream / olive)
 ════════════════════════════════════════════ -->
-<div class="command-deck">
+<header class="sticky top-0 z-50 header-blur">
+  <div class="max-w-md mx-auto flex justify-between items-center px-5 py-4">
 
-  <!-- Header row -->
-  <header class="sticky top-0 z-50 command-deck border-b border-white/[0.06]">
-    <div class="max-w-md mx-auto flex justify-between items-center px-5 py-4">
-
-      <!-- Identity -->
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <div class="w-10 h-10 rounded-full bg-fz-gold flex items-center justify-center font-bold text-fz-navy text-sm font-mono">
-            <span x-text="techName.charAt(0).toUpperCase()"></span>
-          </div>
-          <!-- Online dot -->
-          <span x-show="available"
-                class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-fz-navy"></span>
+    <!-- Identity -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <div class="w-11 h-11 rounded-full bg-brand-olive flex items-center justify-center text-white font-bold text-sm">
+          <span x-text="techName.charAt(0).toUpperCase()"></span>
         </div>
-        <div>
-          <p class="text-[10px] uppercase tracking-[0.12em] text-fz-gold font-semibold">Pro Partner</p>
-          <p class="text-white font-semibold text-[15px] leading-tight" x-text="techName"></p>
-        </div>
+        <span x-show="available"
+              class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>
       </div>
-
-      <!-- Right controls -->
-      <div class="flex items-center gap-3">
-        <!-- Availability toggle -->
-        <div class="flex items-center gap-2">
-          <span class="text-[11px] text-white/50" x-text="available ? 'Online' : 'Offline'"></span>
-          <button
-            :class="available ? 'on' : ''"
-            class="avail-toggle"
-            @click="toggleAvailability({target:{checked:!available}})"
-          ></button>
-        </div>
-        <button @click="logout()" class="w-8 h-8 rounded-full bg-white/[0.07] flex items-center justify-center text-white/50 hover:text-red-400 hover:bg-red-400/10 transition-colors">
-          <i class="fa-solid fa-power-off text-xs"></i>
-        </button>
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
+        <p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text="techName"></p>
       </div>
-
     </div>
-  </header>
 
-  <!-- Stats strip -->
-  <div class="max-w-md mx-auto px-5 pt-2 pb-6">
-    <div class="grid grid-cols-3 gap-3">
-
-      <div class="stat-card p-4">
-        <p class="text-[10px] text-white/40 uppercase tracking-widest mb-1">Active</p>
-        <p class="font-mono text-2xl font-medium text-white" x-text="stats.activeJobs"></p>
-        <p class="text-[10px] text-white/30 mt-0.5">jobs</p>
+    <!-- Right: toggle + logout -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-brand-dark/40 font-medium" x-text="available ? 'Online' : 'Offline'"></span>
+        <button :class="available ? 'on' : ''" class="avail-toggle"
+                @click="toggleAvailability({target:{checked:!available}})"></button>
       </div>
-
-      <div class="stat-card p-4">
-        <p class="text-[10px] text-white/40 uppercase tracking-widest mb-1">Today</p>
-        <p class="font-mono text-2xl font-medium text-fz-gold2">
-          ₹<span x-text="stats.todayEarnings"></span>
-        </p>
-        <p class="text-[10px] text-white/30 mt-0.5">earned</p>
-      </div>
-
-      <div class="stat-card p-4">
-        <p class="text-[10px] text-white/40 uppercase tracking-widest mb-1">Total</p>
-        <p class="font-mono text-2xl font-medium text-emerald-400">
-          ₹<span x-text="stats.earnings"></span>
-        </p>
-        <p class="text-[10px] text-white/30 mt-0.5">all time</p>
-      </div>
-
+      <button @click="logout()"
+              class="w-9 h-9 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+      </button>
     </div>
+
   </div>
+</header>
 
-</div>
-<!-- end command deck -->
+<!-- ═══════════════════════════════════════════
+     STATS ROW  (glass cards)
+════════════════════════════════════════════ -->
+<section class="max-w-md mx-auto px-5 pt-5 pb-2">
+  <div class="grid grid-cols-3 gap-3">
+
+    <div class="stat-card text-center">
+      <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Active</p>
+      <p class="font-bold text-2xl text-brand-dark mt-0.5" x-text="stats.activeJobs"></p>
+      <p class="text-[9px] text-brand-dark/30 mt-0.5">jobs</p>
+    </div>
+
+    <div class="stat-card text-center">
+      <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Today</p>
+      <p class="font-bold text-2xl text-emerald-700 mt-0.5">
+        ₹<span x-text="stats.todayEarnings"></span>
+      </p>
+      <p class="text-[9px] text-brand-dark/30 mt-0.5">earned</p>
+    </div>
+
+    <div class="stat-card text-center">
+      <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Total</p>
+      <p class="font-bold text-2xl text-brand-olive mt-0.5">
+        ₹<span x-text="stats.earnings"></span>
+      </p>
+      <p class="text-[9px] text-brand-dark/30 mt-0.5">all time</p>
+    </div>
+
+  </div>
+</section>
 
 <!-- ═══════════════════════════════════════════
      MAIN CONTENT
 ════════════════════════════════════════════ -->
-<main class="max-w-md mx-auto px-4 pt-5 space-y-5">
+<main class="max-w-md mx-auto px-5 pt-4 space-y-5">
 
   <!-- Notification banners -->
-  <div x-show="notifStatus === 'denied'" class="notif-denied px-4 py-3 flex items-start gap-3">
-    <i class="fa-solid fa-bell-slash text-rose-500 mt-0.5 text-sm flex-shrink-0"></i>
+  <div x-show="notifStatus === 'denied'" class="notif-banner notif-denied">
+    <i class="fa-regular fa-bell-slash text-rose-500 text-sm flex-shrink-0"></i>
     <div>
-      <p class="text-[13px] font-semibold text-rose-800">Notifications are blocked</p>
-      <p class="text-xs text-rose-600 mt-0.5">Enable them in browser settings to get job alerts.</p>
+      <p class="text-[13px] font-semibold text-rose-800">Notifications blocked</p>
+      <p class="text-xs text-rose-600">Enable in browser settings to get alerts.</p>
     </div>
   </div>
 
-  <div x-show="notifStatus === 'prompt'" class="notif-prompt px-4 py-3 flex items-center justify-between gap-3">
-    <div class="flex items-center gap-3">
-      <i class="fa-solid fa-bell text-amber-500 text-sm flex-shrink-0"></i>
-      <p class="text-[13px] font-medium text-amber-900">Turn on job alerts</p>
+  <div x-show="notifStatus === 'prompt'" class="notif-banner notif-prompt">
+    <i class="fa-regular fa-bell text-amber-500 text-sm flex-shrink-0"></i>
+    <div class="flex-1">
+      <p class="text-[13px] font-semibold text-amber-800">Enable job alerts</p>
     </div>
     <button @click="setupNotifications()"
-            class="text-[12px] font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors">
-      Enable
+            class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
+      Turn on
     </button>
   </div>
 
   <!-- Section header -->
   <div class="flex items-center justify-between pt-1">
-    <span class="section-label">Your Jobs</span>
-    <span class="text-[11px] text-fz-slate font-mono" x-text="jobs.length + ' total'"></span>
+    <span class="section-label">Active jobs</span>
+    <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
   </div>
 
   <!-- Loading skeletons -->
@@ -356,11 +364,11 @@ window.sb = supabase.createClient(
   <!-- Empty state -->
   <div x-show="!loading && jobs.length === 0"
        class="flex flex-col items-center justify-center py-20 text-center">
-    <div class="w-16 h-16 rounded-2xl bg-fz-mist flex items-center justify-center mb-4">
-      <i class="fa-solid fa-inbox text-2xl text-fz-slate/50"></i>
+    <div class="w-16 h-16 rounded-2xl bg-brand-cream/60 flex items-center justify-center mb-4">
+      <i class="fa-regular fa-inbox text-2xl text-brand-gold/40"></i>
     </div>
-    <p class="font-semibold text-fz-ink text-[15px]">No active jobs</p>
-    <p class="text-xs text-fz-slate mt-1">New jobs will appear here instantly</p>
+    <p class="font-semibold text-brand-dark text-[15px]">No active jobs</p>
+    <p class="text-xs text-brand-dark/40 mt-1">New jobs will appear here instantly</p>
   </div>
 
   <!-- JOB CARDS -->
@@ -368,7 +376,7 @@ window.sb = supabase.createClient(
     <template x-for="job in jobs" :key="job.id">
       <div class="job-card">
 
-        <!-- Status stripe at top -->
+        <!-- status stripe -->
         <div class="h-1 w-full"
              :class="job.status === 'pending'     ? 'bg-amber-400' :
                      job.status === 'in_progress' ? 'bg-blue-500'  :
@@ -377,9 +385,9 @@ window.sb = supabase.createClient(
 
         <div class="p-5">
 
-          <!-- Top row: category + status pill -->
+          <!-- top row: category + status pill -->
           <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-semibold text-fz-slate uppercase tracking-widest"
+            <span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest"
                   x-text="job.category"></span>
             <span class="pill"
                   :class="job.status === 'pending'     ? 'pill-pending'   :
@@ -397,11 +405,11 @@ window.sb = supabase.createClient(
             </span>
           </div>
 
-          <!-- Device + issue -->
-          <h4 class="text-[17px] font-semibold text-fz-ink leading-snug" x-text="job.device"></h4>
-          <p class="text-[13px] text-fz-slate mt-1 leading-relaxed" x-text="job.issue"></p>
+          <!-- device + issue -->
+          <h4 class="text-[17px] font-semibold text-brand-dark leading-snug" x-text="job.device"></h4>
+          <p class="text-[13px] text-brand-dark/60 mt-1 leading-relaxed" x-text="job.issue"></p>
 
-          <!-- Scheduled time badge -->
+          <!-- scheduled badge -->
           <div x-show="formatScheduled(job)" class="sched-badge mt-3">
             <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
             <div>
@@ -410,42 +418,43 @@ window.sb = supabase.createClient(
             </div>
           </div>
 
-          <!-- Earnings chip -->
+          <!-- earnings chip -->
           <div x-show="calculateFee(job) > 0" class="earn-chip mt-3">
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-indian-rupee-sign text-emerald-600 text-xs"></i>
-              <span class="text-[12px] font-semibold text-emerald-700">Your Earnings</span>
+              <i class="fa-regular fa-circle-dollar text-brand-olive text-xs"></i>
+              <span class="text-[12px] font-semibold text-brand-dark/70">Your Earnings</span>
             </div>
-            <span class="font-mono font-medium text-emerald-800 text-[15px]">
+            <span class="font-mono font-bold text-brand-olive text-[15px]">
               ₹<span x-text="calculateFee(job)"></span>
             </span>
           </div>
 
-          <!-- Divider -->
-          <div class="border-t border-slate-100 mt-4 pt-4">
+          <!-- divider + customer -->
+          <div class="border-t border-brand-beige/50 mt-4 pt-4">
 
-            <!-- Customer row -->
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-[14px] font-semibold text-fz-ink truncate" x-text="job.customer_name"></p>
-                <p class="text-[11px] text-fz-slate mt-0.5 truncate" x-text="job.location"></p>
+                <p class="text-[14px] font-semibold text-brand-dark truncate" x-text="job.customer_name"></p>
+                <p class="text-[11px] text-brand-dark/50 truncate flex items-center gap-1.5 mt-0.5">
+                  <i class="fa-regular fa-location-dot text-[10px]"></i> <span x-text="job.location"></span>
+                </p>
                 <p x-show="job.slaRemaining"
-                   class="text-[11px] font-mono text-red-500 mt-1">
+                   class="text-[11px] font-mono text-rose-500 mt-1">
                   SLA: <span x-text="job.slaRemaining"></span>
                 </p>
-                <p class="text-[11px] text-fz-slate/60 mt-1">
-                  Started <span x-text="formatTime(job.started_at)"></span>
+                <p class="text-[10px] text-brand-dark/30 mt-1">
+                  <i class="fa-regular fa-clock mr-1"></i> <span x-text="formatTime(job.started_at)"></span>
                 </p>
               </div>
 
-              <!-- Quick actions column -->
+              <!-- quick actions -->
               <div class="flex flex-col items-end gap-2 flex-shrink-0">
                 <a :href="'tel:' + job.phone"
-                   class="flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
+                   class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-olive bg-brand-cream hover:bg-brand-beige/50 px-3 py-1.5 rounded-full transition-colors">
                   <i class="fa-solid fa-phone text-[10px]"></i> Call
                 </a>
                 <button @click="openMaps(job.location)"
-                        class="flex items-center gap-1.5 text-[12px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                        class="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
                   <i class="fa-solid fa-location-dot text-[10px]"></i> Map
                 </button>
               </div>
@@ -453,32 +462,29 @@ window.sb = supabase.createClient(
 
           </div>
 
-          <!-- Primary action buttons — full width, thumb-friendly -->
+          <!-- primary actions -->
           <div class="mt-4 space-y-2">
 
-            <!-- Pending: accept + reject -->
             <template x-if="job.status === 'pending'">
               <div class="space-y-2">
                 <button @click="acceptJob(job.id)" class="btn-primary btn-accept">
-                  <i class="fa-solid fa-circle-check text-sm"></i> Accept Job
+                  <i class="fa-regular fa-check-circle text-sm"></i> Accept Job
                 </button>
                 <button @click="rejectJob(job.id)" class="btn-primary btn-reject">
-                  <i class="fa-solid fa-xmark text-sm"></i> Decline
+                  <i class="fa-regular fa-xmark text-sm"></i> Decline
                 </button>
               </div>
             </template>
 
-            <!-- In progress: mark arrived -->
             <template x-if="job.status === 'in_progress'">
               <button @click="markArrived(job)" class="btn-primary btn-arrived">
-                <i class="fa-solid fa-location-crosshairs text-sm"></i> Mark as Arrived
+                <i class="fa-regular fa-location-crosshairs text-sm"></i> Mark as Arrived
               </button>
             </template>
 
-            <!-- Arrived: complete job -->
             <template x-if="job.status === 'arrived'">
               <button @click="completeJob(job)" class="btn-primary btn-complete">
-                <i class="fa-solid fa-flag-checkered text-sm"></i> Complete Job
+                <i class="fa-regular fa-flag-checkered text-sm"></i> Complete Job
               </button>
             </template>
 
@@ -492,38 +498,36 @@ window.sb = supabase.createClient(
 </main>
 
 <!-- ═══════════════════════════════════════════
-     BOTTOM NAV
+     BOTTOM NAV  (brand, camera removed)
 ════════════════════════════════════════════ -->
 <nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
-  <div class="max-w-md mx-auto flex justify-around items-center px-2 py-2">
+  <div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
 
-    <button class="nav-btn active flex flex-col items-center gap-1 px-4 py-2">
-      <i class="fa-solid fa-house-chimney text-lg"></i>
-      <span class="text-[9px] font-semibold tracking-wide">Home</span>
+    <button class="nav-btn active">
+      <i class="fa-regular fa-house-chimney"></i>
+      <span>Home</span>
     </button>
 
-    <button @click="scrollToJobs()" class="nav-btn flex flex-col items-center gap-1 px-4 py-2">
-      <i class="fa-solid fa-briefcase text-lg"></i>
-      <span class="text-[9px] font-semibold tracking-wide">Jobs</span>
+    <button @click="scrollToJobs()" class="nav-btn">
+      <i class="fa-regular fa-briefcase"></i>
+      <span>Jobs</span>
     </button>
 
-    <!-- Centre FAB -->
-    <div class="relative -mt-6">
-      <button class="w-14 h-14 bg-fz-gold rounded-full flex items-center justify-center text-fz-navy shadow-lg border-4 border-fz-paper"
-              style="animation: ring-pulse 2s infinite;">
-        <i class="fa-solid fa-camera text-lg"></i>
+    <!-- centre FAB (camera removed → brand accent with icon) -->
+    <div class="relative -mt-5">
+      <button class="w-14 h-14 fab-center rounded-full flex items-center justify-center text-white text-xl">
+        <i class="fa-regular fa-circle-check"></i>
       </button>
     </div>
 
-    <button onclick="window.location.href='completed_jobs.html'"
-            class="nav-btn flex flex-col items-center gap-1 px-4 py-2">
-      <i class="fa-solid fa-clock-rotate-left text-lg"></i>
-      <span class="text-[9px] font-semibold tracking-wide">History</span>
+    <button onclick="window.location.href='completed_jobs.html'" class="nav-btn">
+      <i class="fa-regular fa-clock-rotate-left"></i>
+      <span>History</span>
     </button>
 
-    <button @click="logout()" class="nav-btn flex flex-col items-center gap-1 px-4 py-2">
-      <i class="fa-solid fa-circle-user text-lg"></i>
-      <span class="text-[9px] font-semibold tracking-wide">Profile</span>
+    <button @click="logout()" class="nav-btn">
+      <i class="fa-regular fa-circle-user"></i>
+      <span>Profile</span>
     </button>
 
   </div>
@@ -540,26 +544,24 @@ window.sb = supabase.createClient(
 
   <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
 
-    <!-- Modal header stripe -->
-    <div class="bg-fz-navy px-6 py-5 text-center">
-      <div class="inline-flex items-center gap-2 bg-fz-gold/20 text-fz-gold2 text-[11px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-        <span class="w-1.5 h-1.5 bg-fz-gold2 rounded-full animate-pulse"></span>
+    <!-- modal header (brand) -->
+    <div class="bg-brand-olive px-6 py-5 text-center">
+      <div class="inline-flex items-center gap-2 bg-brand-gold/20 text-brand-gold text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+        <span class="w-1.5 h-1.5 bg-brand-gold rounded-full animate-pulse"></span>
         New Job Request
       </div>
       <h3 class="text-xl font-semibold text-white" x-text="incomingJob?.category"></h3>
-      <p class="text-sm text-white/50 mt-1" x-text="incomingJob?.issue"></p>
+      <p class="text-sm text-white/60 mt-1" x-text="incomingJob?.issue"></p>
     </div>
 
-    <!-- Modal body -->
+    <!-- modal body -->
     <div class="px-6 py-5 space-y-3">
 
-      <!-- Location -->
-      <div class="flex items-center gap-3 bg-fz-mist rounded-xl px-4 py-3">
-        <i class="fa-solid fa-location-dot text-fz-slate text-sm flex-shrink-0"></i>
-        <p class="text-[13px] font-medium text-fz-ink" x-text="incomingJob?.location"></p>
+      <div class="flex items-center gap-3 bg-brand-cream rounded-xl px-4 py-3">
+        <i class="fa-regular fa-location-dot text-brand-olive text-sm flex-shrink-0"></i>
+        <p class="text-[13px] font-medium text-brand-dark" x-text="incomingJob?.location"></p>
       </div>
 
-      <!-- Scheduled time -->
       <div x-show="formatScheduled(incomingJob)" class="sched-badge">
         <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
         <div>
@@ -568,15 +570,14 @@ window.sb = supabase.createClient(
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="flex gap-3 pt-1">
         <button @click="rejectIncoming()"
-                class="flex-1 py-3 rounded-xl text-[13px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
+                class="flex-1 py-3 rounded-xl text-[13px] font-semibold text-brand-dark/60 bg-brand-cream hover:bg-brand-beige/50 transition-colors">
           Decline
         </button>
         <button @click="acceptIncoming()"
-                class="flex-2 flex-1 py-3 rounded-xl text-[13px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
-          <i class="fa-solid fa-circle-check mr-1"></i> Accept
+                class="flex-2 flex-1 py-3 rounded-xl text-[13px] font-semibold text-white bg-brand-olive hover:bg-brand-dark transition-colors">
+          <i class="fa-regular fa-check-circle mr-1"></i> Accept
         </button>
       </div>
 
@@ -584,19 +585,22 @@ window.sb = supabase.createClient(
   </div>
 </div>
 
-<!-- FIREBASE INIT -->
+<!-- ═══════════════════════════════════════════
+     FIREBASE INIT
+════════════════════════════════════════════ -->
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-  authDomain: "fixzen-73d68.firebaseapp.com",
-  projectId: "fixzen-73d68",
-  messagingSenderId: "816193738840",
-  appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-};
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-window.firebaseMessaging = firebase.messaging();
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
+    authDomain: "fixzen-73d68.firebaseapp.com",
+    projectId: "fixzen-73d68",
+    messagingSenderId: "816193738840",
+    appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  window.firebaseMessaging = firebase.messaging();
 </script>
 
+<!-- Dashboard logic -->
 <script src="techniciandashboard.js"></script>
 </body>
 </html>
