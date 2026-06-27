@@ -265,6 +265,21 @@
       pointer-events: none;
       z-index: 0;
     }
+
+    /* ── tech id badge ── */
+    .tech-id-badge {
+      background: linear-gradient(135deg, #5D5646 0%, #7A6F5A 100%);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      font-family: 'Courier New', monospace;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
   </style>
 
   <!-- Supabase client -->
@@ -283,35 +298,46 @@
   <div class="bg-blob w-96 h-96 bg-brand-olive -bottom-40 -left-40"></div>
 
   <!-- ═══════════════════════════════════════════
-       HEADER
+       HEADER - UPDATED WITH TECH ID
   ══════════════════════════════════════════ -->
   <header class="sticky top-0 z-50 header-blur relative">
-    <div class="max-w-md mx-auto flex justify-between items-center px-5 py-4">
+    <div class="max-w-md mx-auto px-5 py-4">
 
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white font-bold text-sm shadow-lg">
-            <span x-text="techName.charAt(0).toUpperCase()"></span>
+      <!-- Top row: Avatar, Name, Status -->
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white font-bold text-sm shadow-lg">
+              <span x-text="techName.charAt(0).toUpperCase()"></span>
+            </div>
+            <span x-show="available"
+                  class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
           </div>
-          <span x-show="available"
-                class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
+            <p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text="techName"></p>
+            <!-- Tech ID Badge - Displayed prominently -->
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="tech-id-badge">
+                <i class="fa-regular fa-id-card text-[8px]"></i>
+                <span x-text="tech?.tech_id || 'Loading...'"></span>
+              </span>
+              <span x-show="tech?.status" class="text-[9px] font-medium text-brand-dark/40 uppercase tracking-wider" x-text="tech?.status"></span>
+            </div>
+          </div>
         </div>
-        <div>
-          <p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
-          <p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text="techName"></p>
-        </div>
-      </div>
 
-      <div class="flex items-center gap-3">
         <div class="flex items-center gap-2">
-          <span class="text-[11px] font-medium" :class="available ? 'text-emerald-600' : 'text-brand-dark/30'" x-text="available ? 'Online' : 'Offline'"></span>
-          <button :class="available ? 'on' : ''" class="avail-toggle"
-                  @click="toggleAvailability({target:{checked:!available}})"></button>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-medium" :class="available ? 'text-emerald-600' : 'text-brand-dark/30'" x-text="available ? 'Online' : 'Offline'"></span>
+            <button :class="available ? 'on' : ''" class="avail-toggle" style="width:36px;height:20px;"
+                    @click="toggleAvailability({target:{checked:!available}})"></button>
+          </div>
+          <button @click="logout()"
+                  class="w-8 h-8 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+            <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+          </button>
         </div>
-        <button @click="logout()"
-                class="w-9 h-9 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
-          <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-        </button>
       </div>
 
     </div>
