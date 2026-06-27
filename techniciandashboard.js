@@ -2,6 +2,7 @@ function dashboardHandler() {
   return {
     tech: null,
     techName: '',
+    techImage: '', // Add this for profile image
     loading: true,
     jobs: [],
     stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
@@ -23,6 +24,9 @@ function dashboardHandler() {
         window.location.href = "partnerlogin.html";
         return;
       }
+
+      // ✅ Set tech image
+      this.techImage = this.tech.image_url || '';
 
       // ✅ Load tech_id if not present
       if (!this.tech.tech_id) {
@@ -61,20 +65,26 @@ function dashboardHandler() {
       try {
         const { data, error } = await window.sb
           .from('technicians')
-          .select('tech_id')
+          .select('tech_id, image_url')
           .eq('id', this.tech.id)
           .single();
 
-        if (!error && data?.tech_id) {
-          this.tech.tech_id = data.tech_id;
+        if (!error && data) {
+          if (data.tech_id) {
+            this.tech.tech_id = data.tech_id;
+          }
+          if (data.image_url) {
+            this.tech.image_url = data.image_url;
+            this.techImage = data.image_url;
+          }
           // Update localStorage
           localStorage.setItem("active_tech", JSON.stringify(this.tech));
-          console.log(`✅ Loaded technician ID: ${data.tech_id}`);
+          console.log(`✅ Loaded technician data: ID ${data.tech_id}, Image ${data.image_url ? 'Yes' : 'No'}`);
         } else {
           console.warn("⚠️ No tech_id found for this technician");
         }
       } catch (err) {
-        console.error("Failed to load tech_id:", err);
+        console.error("Failed to load tech data:", err);
       }
     },
 
@@ -84,12 +94,17 @@ function dashboardHandler() {
     async loadTechProfile() {
       const { data, error } = await window.sb
         .from('technicians')
-        .select('is_available')
+        .select('is_available, image_url')
         .eq('id', this.tech.id)
         .single();
 
       if (!error && data) {
         this.available = data.is_available ?? false;
+        if (data.image_url && !this.techImage) {
+          this.techImage = data.image_url;
+          this.tech.image_url = data.image_url;
+          localStorage.setItem("active_tech", JSON.stringify(this.tech));
+        }
       }
     },
 
