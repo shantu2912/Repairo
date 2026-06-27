@@ -16,31 +16,55 @@ async function login() {
     return;
   }
 
-  const { data, error } = await supabaseClient
-    .from("technicians")
-    .select("*")
-    .eq("username", username)
-    .eq("password", password)
-    .single();
+  try {
+    // 🔥 FIX: Use maybeSingle() instead of single() to avoid 406 error
+    const { data, error } = await supabaseClient
+      .from("technicians")
+      .select("*")
+      .eq("username", username)
+      .eq("password", password)
+      .maybeSingle();  // ✅ Changed from .single() to .maybeSingle()
 
-  if (error || !data) {
-    showError("Invalid username or password");
-    return;
+    if (error) {
+      console.error("Login error:", error);
+      showError("Database error. Please try again.");
+      return;
+    }
+
+    if (!data) {
+      showError("Invalid username or password");
+      return;
+    }
+
+    // Check if technician is approved
+    if (data.status === 'pending') {
+      showError("Your account is pending approval. Please wait for admin confirmation.");
+      return;
+    }
+
+    if (data.status === 'rejected') {
+      showError("Your application was rejected. Please contact support.");
+      return;
+    }
+
+    // ✅ SAVE LANGUAGE
+    localStorage.setItem("preferred_language", selectedLanguage);
+
+    // ✅ APPLY LANGUAGE
+    if (typeof setLanguage === "function") {
+      setLanguage(selectedLanguage);
+    }
+
+    // ✅ SAVE LOGIN SESSION (includes image_url)
+    localStorage.setItem("active_tech", JSON.stringify(data));
+
+    // ✅ REDIRECT
+    window.location.href = "techniciandashboard.html";
+
+  } catch (err) {
+    console.error("Login error:", err);
+    showError("Something went wrong. Please try again.");
   }
-
-  // ✅ SAVE LANGUAGE
-  localStorage.setItem("preferred_language", selectedLanguage);
-
-  // ✅ APPLY LANGUAGE
-  if (typeof setLanguage === "function") {
-    setLanguage(selectedLanguage);
-  }
-
-  // ✅ SAVE LOGIN SESSION
-  localStorage.setItem("active_tech", JSON.stringify(data));
-
-  // ✅ REDIRECT
-  window.location.href = "techniciandashboard.html";
 }
 
 function showError(msg) {
@@ -58,5 +82,26 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   if (typeof setLanguage === "function") {
     setLanguage(savedLang);
+  }
+});
+
+// ✅ Add Enter key support
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordInput = document.getElementById("password");
+  if (passwordInput) {
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        login();
+      }
+    });
+  }
+  
+  const usernameInput = document.getElementById("username");
+  if (usernameInput) {
+    usernameInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        document.getElementById("password").focus();
+      }
+    });
   }
 });
