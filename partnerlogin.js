@@ -9,41 +9,67 @@ async function login() {
   const password = document.getElementById("password").value;
   const selectedLanguage = document.getElementById("languageSelect").value;
   const errorEl = document.getElementById("error");
-  errorEl.classList.add("hidden");
+  const errorText = document.getElementById("errorText");
+  
+  // Reset error
+  errorEl.classList.remove("show");
+  errorText.textContent = "";
+
+  // Show loading
+  const loginBtn = document.getElementById("loginBtn");
+  const loginText = document.getElementById("loginText");
+  const loginSpinner = document.getElementById("loginSpinner");
+  loginBtn.disabled = true;
+  loginText.textContent = "Logging in...";
+  loginSpinner.style.display = "inline-block";
 
   if (!username || !password) {
-    showError("Enter username and password");
+    showError("Please enter username and password");
+    resetButton();
     return;
   }
 
   try {
-    // 🔥 FIX: Use maybeSingle() instead of single() to avoid 406 error
+    // 🔥 FIX: Use .then() approach instead of await to avoid single() issues
     const { data, error } = await supabaseClient
       .from("technicians")
-      .select("*")
+      .select("id, name, username, phone, category, tech_id, is_available, status, image_url, experience, area")
       .eq("username", username)
-      .eq("password", password)
-      .maybeSingle();  // ✅ Changed from .single() to .maybeSingle()
+      .eq("password", password);
 
     if (error) {
       console.error("Login error:", error);
       showError("Database error. Please try again.");
+      resetButton();
       return;
     }
 
-    if (!data) {
+    // Check if we got any results
+    if (!data || data.length === 0) {
       showError("Invalid username or password");
+      resetButton();
       return;
     }
+
+    // Get the first matching user (should only be one)
+    const user = data[0];
 
     // Check if technician is approved
-    if (data.status === 'pending') {
+    if (user.status === 'pending') {
       showError("Your account is pending approval. Please wait for admin confirmation.");
+      resetButton();
       return;
     }
 
-    if (data.status === 'rejected') {
+    if (user.status === 'rejected') {
       showError("Your application was rejected. Please contact support.");
+      resetButton();
+      return;
+    }
+
+    if (user.status === 'inactive') {
+      showError("Your account is inactive. Please contact support.");
+      resetButton();
       return;
     }
 
@@ -56,7 +82,7 @@ async function login() {
     }
 
     // ✅ SAVE LOGIN SESSION (includes image_url)
-    localStorage.setItem("active_tech", JSON.stringify(data));
+    localStorage.setItem("active_tech", JSON.stringify(user));
 
     // ✅ REDIRECT
     window.location.href = "techniciandashboard.html";
@@ -64,13 +90,24 @@ async function login() {
   } catch (err) {
     console.error("Login error:", err);
     showError("Something went wrong. Please try again.");
+    resetButton();
   }
+}
+
+function resetButton() {
+  const loginBtn = document.getElementById("loginBtn");
+  const loginText = document.getElementById("loginText");
+  const loginSpinner = document.getElementById("loginSpinner");
+  loginBtn.disabled = false;
+  loginText.textContent = "Login";
+  loginSpinner.style.display = "none";
 }
 
 function showError(msg) {
   const el = document.getElementById("error");
-  el.innerText = msg;
-  el.classList.remove("hidden");
+  const errorText = document.getElementById("errorText");
+  errorText.textContent = msg;
+  el.classList.add("show");
 }
 
 // ✅ AUTO LOAD SAVED LANGUAGE
