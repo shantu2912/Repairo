@@ -298,7 +298,7 @@
   <div class="bg-blob w-96 h-96 bg-brand-olive -bottom-40 -left-40"></div>
 
   <!-- ═══════════════════════════════════════════
-       HEADER - WITH PROFILE IMAGE
+       HEADER - UPDATED WITH TECH ID
   ══════════════════════════════════════════ -->
   <header class="sticky top-0 z-50 header-blur relative">
     <div class="max-w-md mx-auto px-5 py-4">
@@ -307,14 +307,8 @@
       <div class="flex justify-between items-start">
         <div class="flex items-center gap-3">
           <div class="relative">
-            <!-- Profile Image Circle -->
-            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden">
-              <template x-if="techImage">
-                <img :src="techImage" alt="Profile" class="w-full h-full object-cover">
-              </template>
-              <template x-if="!techImage">
-                <span x-text="techName.charAt(0).toUpperCase()"></span>
-              </template>
+            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white font-bold text-sm shadow-lg">
+              <span x-text="techName.charAt(0).toUpperCase()"></span>
             </div>
             <span x-show="available"
                   class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
