@@ -205,16 +205,24 @@ document.addEventListener('alpine:init', () => {
                 // First, generate technician ID
                 const techId = await this.generateTechnicianId();
                 
-                // Upload photo if exists
-                let imageUrl = null;
-                if (this.form.photoFile) {
-                    imageUrl = await this.uploadPhoto(techId, this.form.photoFile);
-                }
-
-                // Submit technician data
-                const result = await this.submitTechnician(techId, imageUrl);
+                // Submit technician data first (without image)
+                const result = await this.submitTechnician(techId);
                 
                 if (result.success) {
+                    // If technician created successfully, upload photo if exists
+                    if (this.form.photoFile) {
+                        try {
+                            const imageUrl = await this.uploadPhoto(techId, this.form.photoFile);
+                            if (imageUrl) {
+                                // Update technician record with image URL
+                                await this.updateTechnicianImage(techId, imageUrl);
+                            }
+                        } catch (photoError) {
+                            console.warn('Photo upload failed but registration successful:', photoError);
+                            // Don't fail registration if photo upload fails
+                        }
+                    }
+                    
                     this.techId = techId;
                     this.submitted = true;
                     this.submitting = false;
@@ -253,6 +261,7 @@ document.addEventListener('alpine:init', () => {
                 return `FZ${String(nextNumber).padStart(3, '0')}`;
             } catch (err) {
                 console.error("Error generating technician ID:", err);
+                // Fallback to timestamp-based ID
                 return `FZ${String(Date.now()).slice(-3)}`;
             }
         },
@@ -263,6 +272,7 @@ document.addEventListener('alpine:init', () => {
                 const fileName = `${techId}.${fileExt}`;
                 const filePath = `technician-images/${fileName}`;
 
+                // Try to upload with public bucket
                 const { error: uploadError } = await sb.storage
                     .from('technician-profiles')
                     .upload(filePath, file, {
@@ -270,7 +280,25 @@ document.addEventListener('alpine:init', () => {
                         upsert: true
                     });
 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    console.error('Upload error:', uploadError);
+                    // If upload fails, try with a different path
+                    const fallbackPath = `public/${fileName}`;
+                    const { error: fallbackError } = await sb.storage
+                        .from('technician-profiles')
+                        .upload(fallbackPath, file, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+                    
+                    if (fallbackError) throw fallbackError;
+                    
+                    const { data: urlData } = sb.storage
+                        .from('technician-profiles')
+                        .getPublicUrl(fallbackPath);
+                    
+                    return urlData.publicUrl;
+                }
 
                 const { data: urlData } = sb.storage
                     .from('technician-profiles')
@@ -279,11 +307,27 @@ document.addEventListener('alpine:init', () => {
                 return urlData.publicUrl;
             } catch (err) {
                 console.error('Image upload error:', err);
+                // Return null but don't throw - registration should continue
                 return null;
             }
         },
 
-        async submitTechnician(techId, imageUrl) {
+        async updateTechnicianImage(techId, imageUrl) {
+            try {
+                const { error } = await sb
+                    .from('technicians')
+                    .update({ image_url: imageUrl })
+                    .eq('tech_id', techId);
+
+                if (error) {
+                    console.error('Failed to update image URL:', error);
+                }
+            } catch (err) {
+                console.error('Update image error:', err);
+            }
+        },
+
+        async submitTechnician(techId) {
             try {
                 // Hash password
                 const encoder = new TextEncoder();
@@ -304,7 +348,6 @@ document.addEventListener('alpine:init', () => {
                     area: this.form.area.trim(),
                     status: 'pending',
                     is_active: true,
-                    image_url: imageUrl,
                     created_at: new Date().toISOString()
                 };
 
@@ -320,6 +363,8 @@ document.addEventListener('alpine:init', () => {
                 let errorMsg = 'Registration failed. ';
                 if (err.code === '23505') {
                     errorMsg += 'Username or phone already exists.';
+                } else if (err.message.includes('row-level security')) {
+                    errorMsg += 'Please contact support. (RLS policy error)';
                 } else {
                     errorMsg += err.message;
                 }
