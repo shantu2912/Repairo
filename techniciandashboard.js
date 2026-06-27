@@ -79,17 +79,28 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // Load tech profile (availability, etc.)
+    // Load tech profile (availability, image, etc.)
     // ─────────────────────────────────────────────────────────
     async loadTechProfile() {
-      const { data, error } = await window.sb
-        .from('technicians')
-        .select('is_available')
-        .eq('id', this.tech.id)
-        .single();
+      try {
+        const { data, error } = await window.sb
+          .from('technicians')
+          .select('is_available, image_url')
+          .eq('id', this.tech.id)
+          .single();
 
-      if (!error && data) {
-        this.available = data.is_available ?? false;
+        if (!error && data) {
+          this.available = data.is_available ?? false;
+          
+          // Store the image URL in the tech object
+          if (data.image_url) {
+            this.tech.image_url = data.image_url;
+            // Update localStorage with the image URL
+            localStorage.setItem("active_tech", JSON.stringify(this.tech));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load tech profile:", err);
       }
     },
 
