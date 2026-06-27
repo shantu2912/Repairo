@@ -24,6 +24,11 @@ function dashboardHandler() {
         return;
       }
 
+      // ✅ Load tech_id if not present
+      if (!this.tech.tech_id) {
+        await this.loadTechId();
+      }
+
       // Hard lock: if a job is in progress redirect to detail
       const lockedJobId = localStorage.getItem("locked_job_id");
       if (lockedJobId) {
@@ -45,6 +50,32 @@ function dashboardHandler() {
 
       await this.fetchJobs();
       this.subscribeRealtime();
+    },
+
+    // ─────────────────────────────────────────────────────────
+    // Load tech_id from database if not in local storage
+    // ─────────────────────────────────────────────────────────
+    async loadTechId() {
+      if (this.tech?.tech_id) return; // Already have it
+      
+      try {
+        const { data, error } = await window.sb
+          .from('technicians')
+          .select('tech_id')
+          .eq('id', this.tech.id)
+          .single();
+
+        if (!error && data?.tech_id) {
+          this.tech.tech_id = data.tech_id;
+          // Update localStorage
+          localStorage.setItem("active_tech", JSON.stringify(this.tech));
+          console.log(`✅ Loaded technician ID: ${data.tech_id}`);
+        } else {
+          console.warn("⚠️ No tech_id found for this technician");
+        }
+      } catch (err) {
+        console.error("Failed to load tech_id:", err);
+      }
     },
 
     // ─────────────────────────────────────────────────────────
