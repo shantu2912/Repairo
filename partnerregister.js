@@ -275,45 +275,54 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ── insert technician row ────────────────────────────────
-        async submitTechnician(techId) {
-            try {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(this.form.password);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashedPassword = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        // ── insert technician row ────────────────────────────────
+async submitTechnician(techId) {
+    try {
 
-                const insertData = {
-                    tech_id:    techId,
-                    name:       this.form.name.trim(),
-                    phone:      '+91' + this.form.phone.trim(),
-                    username:   this.form.username.trim(),
-                    password:   hashedPassword,
-                    category:   this.form.category,
-                    experience: parseFloat(this.form.experience),
-                    aadhaar:    this.form.aadhaar.replace(/\s/g, ''),
-                    area:       this.form.area.trim(),
-                    status:     'pending',
-                    is_active:  true,
-                    created_at: new Date().toISOString(),
-                };
+        const insertData = {
+            tech_id: techId,
+            name: this.form.name.trim(),
+            phone: '+91' + this.form.phone.trim(),
+            username: this.form.username.trim(),
 
-                const { error } = await sb.from('technicians').insert([insertData]);
-                if (error) throw error;
-                return { success: true };
+            // Store password as plain text
+            password: this.form.password,
 
-            } catch (err) {
-                console.error('Submit error:', err);
-                let errorMsg = 'Registration failed. ';
-                if (err.code === '23505') {
-                    errorMsg += 'Username or phone already exists.';
-                } else if (err.message?.includes('row-level security')) {
-                    errorMsg += 'Database permissions error — please contact support. (RLS on technicians table)';
-                } else {
-                    errorMsg += err.message;
-                }
-                return { success: false, error: errorMsg };
-            }
-        },
+            category: this.form.category,
+            experience: parseFloat(this.form.experience),
+            aadhaar: this.form.aadhaar.replace(/\s/g, ''),
+            area: this.form.area.trim(),
+            status: 'pending',
+            is_active: true,
+            created_at: new Date().toISOString(),
+        };
+
+        const { error } = await sb
+            .from('technicians')
+            .insert([insertData]);
+
+        if (error) throw error;
+
+        return { success: true };
+
+    } catch (err) {
+        console.error('Submit error:', err);
+
+        let errorMsg = 'Registration failed. ';
+
+        if (err.code === '23505') {
+            errorMsg += 'Username or phone already exists.';
+        } else if (err.message?.includes('row-level security')) {
+            errorMsg += 'Database permissions error.';
+        } else {
+            errorMsg += err.message;
+        }
+
+        return {
+            success: false,
+            error: errorMsg
+        };
+    }
+},
     }));
 });
