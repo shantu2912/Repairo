@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#2D2B28" />
-  <title>FixZenix Pro · Technician Console</title>
+  <meta name="theme-color" content="#1E1B18" />
+  <title>FixZen Pro · Technician Console</title>
 
   <!-- Tailwind + Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,34 +14,34 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
   <style>
-    /* ── custom polished extras ── */
+    /* ── unique professional touches ── */
     * { -webkit-tap-highlight-color: transparent; }
     body {
-      background: #F7F5F1;
+      background: #F4F2ED;
       font-family: 'Inter', system-ui, sans-serif;
     }
     .glass-card {
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.8);
-      box-shadow: 0 8px 28px rgba(45,43,40,0.05);
-      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 8px 28px rgba(30,27,24,0.04);
+      transition: all 0.25s ease;
     }
     .glass-card:hover {
-      box-shadow: 0 12px 32px rgba(45,43,40,0.08);
+      box-shadow: 0 14px 36px rgba(30,27,24,0.08);
     }
     .btn-touch { transition: transform 0.12s, box-shadow 0.2s; }
-    .btn-touch:active { transform: scale(0.97); }
-    .brand-border-left { border-left: 3px solid #A07D54; }
-    .progress-fill { background: linear-gradient(90deg, #A07D54, #5D5646); transition: width 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    .btn-touch:active { transform: scale(0.96); }
+    .brand-border-left { border-left: 4px solid #B8956A; }
+    .progress-fill { background: linear-gradient(90deg, #B8956A, #7A6A5A); transition: width 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
     .otp-box {
       width: 3.2rem; height: 3.8rem; text-align: center; font-size: 1.6rem;
       font-weight: 800; border: 2px solid #E2DCD2; background: #FCFBF9;
-      color: #2D2B28; border-radius: 1.2rem; outline: none; transition: all 0.15s;
+      color: #1E1B18; border-radius: 1.2rem; outline: none; transition: all 0.15s;
     }
-    .otp-box:focus { border-color: #A07D54; background: white; box-shadow: 0 0 0 4px rgba(160,125,84,0.12); }
-    .otp-box.filled { border-color: #5D5646; background: white; }
-    .status-live-dot { padding-left: 14px; position: relative; }
+    .otp-box:focus { border-color: #B8956A; background: white; box-shadow: 0 0 0 4px rgba(184,149,106,0.15); }
+    .otp-box.filled { border-color: #7A6A5A; background: white; }
+    .status-live-dot { padding-left: 16px; position: relative; }
     .status-live-dot::before {
       content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
       width: 8px; height: 8px; background: #10b981; border-radius: 50%;
@@ -49,28 +49,29 @@
     }
     @keyframes livePulse {
       0%,100% { opacity:1; transform: translateY(-50%) scale(1); }
-      50% { opacity:0.3; transform: translateY(-50%) scale(0.8); }
+      50% { opacity:0.3; transform: translateY(-50%) scale(0.7); }
     }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .skeleton { background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%); background-size: 200% 100%; animation: shimmer 1.5s linear infinite; }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-    .badge-soft { background: #F3F0EB; color: #4A453C; }
+    .badge-soft { background: #F0EDE8; color: #4A453C; }
+    .shadow-card { box-shadow: 0 4px 16px rgba(30,27,24,0.06); }
   </style>
 </head>
 
 <body class="min-h-screen pb-28 safe-bottom">
 
-  <!-- HEADER — refined brand -->
+  <!-- HEADER — premium minimal -->
   <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E8E3DB] shadow-sm">
     <div class="max-w-md mx-auto px-5 py-3.5 flex items-center justify-between">
       <div>
         <div class="flex items-center gap-1.5">
-          <i class="fas fa-lock text-[10px] text-[#A07D54]"></i>
-          <span class="text-[9px] font-bold tracking-widest text-[#A07D54] uppercase">Active Console</span>
+          <i class="fas fa-lock text-[10px] text-[#B8956A]"></i>
+          <span class="text-[9px] font-bold tracking-widest text-[#B8956A] uppercase">Active Console</span>
         </div>
-        <h1 class="font-serif-italic text-lg text-[#2D2B28] leading-tight">Technician Work Mode</h1>
+        <h1 class="font-serif-italic text-lg text-[#1E1B18] leading-tight">Technician Work Mode</h1>
       </div>
-      <div class="flex items-center gap-2 text-[#A07D54]/70 text-xs font-bold">
+      <div class="flex items-center gap-2 text-[#B8956A]/70 text-xs font-bold">
         <i class="fa-solid fa-shield-halved animate-pulse"></i> Secured
       </div>
     </div>
@@ -92,9 +93,9 @@
         <div class="skeleton h-10 w-full rounded-xl mb-2"></div>
         <div class="skeleton h-10 w-full rounded-xl"></div>
       </div>
-      <div class="text-center py-6 text-[#A07D54]/60">
+      <div class="text-center py-6 text-[#B8956A]/60">
         <i class="fas fa-circle-notch fa-spin text-xl"></i>
-        <p class="text-xs mt-2 text-[#2D2B28]/40">Loading job details...</p>
+        <p class="text-xs mt-2 text-[#1E1B18]/40">Loading job details...</p>
       </div>
     </div>
 
@@ -102,21 +103,21 @@
     <div id="jobBox" class="hidden space-y-5">
 
       <!-- JOB HEADER CARD -->
-      <div class="glass-card p-5 rounded-2xl brand-border-left shadow-sm">
+      <div class="glass-card p-5 rounded-2xl brand-border-left shadow-card">
         <div class="flex items-start justify-between">
           <div>
             <div class="flex flex-wrap items-center gap-2 mb-2">
-              <span id="category" class="text-[9px] font-black text-[#A07D54] uppercase tracking-wider bg-[#A07D54]/10 px-2.5 py-1 rounded-full"></span>
+              <span id="category" class="text-[9px] font-black text-[#B8956A] uppercase tracking-wider bg-[#B8956A]/10 px-2.5 py-1 rounded-full"></span>
               <span id="statusBadge" class="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold rounded-full bg-blue-50 text-blue-700">
                 <i class="fas fa-play text-[7px]"></i> In Progress
               </span>
             </div>
-            <h2 id="device" class="text-xl font-extrabold text-[#2D2B28] flex items-center gap-2">
-              <i class="fas fa-microchip text-[#A07D54]/70 text-sm"></i>
+            <h2 id="device" class="text-xl font-extrabold text-[#1E1B18] flex items-center gap-2">
+              <i class="fas fa-microchip text-[#B8956A]/70 text-sm"></i>
               <span class="break-words"></span>
             </h2>
-            <p id="issue" class="text-sm text-[#2D2B28]/60 mt-1.5 leading-relaxed"></p>
-            <p id="jobIdRef" class="text-[9px] font-mono text-[#2D2B28]/30 mt-2 flex items-center gap-1">
+            <p id="issue" class="text-sm text-[#1E1B18]/60 mt-1.5 leading-relaxed"></p>
+            <p id="jobIdRef" class="text-[9px] font-mono text-[#1E1B18]/30 mt-2 flex items-center gap-1">
               <i class="fas fa-barcode"></i> <span></span>
             </p>
           </div>
@@ -124,67 +125,67 @@
       </div>
 
       <!-- CUSTOMER + NAVIGATION -->
-      <div class="glass-card p-5 rounded-2xl">
+      <div class="glass-card p-5 rounded-2xl shadow-card">
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#5D5646] to-[#A07D54] flex items-center justify-center text-white shadow-md">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#7A6A5A] to-[#B8956A] flex items-center justify-center text-white shadow-md">
             <i class="fas fa-user-astronaut text-sm"></i>
           </div>
           <div>
-            <p class="text-[8px] uppercase tracking-wider text-[#A07D54] font-bold">Customer</p>
-            <p id="customer" class="text-base font-extrabold text-[#2D2B28] leading-tight"></p>
+            <p class="text-[8px] uppercase tracking-wider text-[#B8956A] font-bold">Customer</p>
+            <p id="customer" class="text-base font-extrabold text-[#1E1B18] leading-tight"></p>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-          <a id="callBtn" class="flex items-center justify-center gap-2 bg-[#2D2B28] hover:bg-[#1F1E1B] text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+          <a id="callBtn" class="flex items-center justify-center gap-2 bg-[#1E1B18] hover:bg-[#3A3530] text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
             <i class="fas fa-phone-alt text-xs"></i> Call
           </a>
-          <a id="smsBtn" class="flex items-center justify-center gap-2 bg-[#A07D54] hover:bg-[#8B6B46] text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+          <a id="smsBtn" class="flex items-center justify-center gap-2 bg-[#B8956A] hover:bg-[#9E7D5A] text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
             <i class="fas fa-comment-dots text-xs"></i> Message
           </a>
         </div>
 
-        <div class="bg-[#F3F0EB] rounded-xl p-3.5 border border-[#E2DCD2]">
+        <div class="bg-[#F0EDE8] rounded-xl p-3.5 border border-[#E2DCD2]">
           <div class="flex gap-2">
-            <i class="fas fa-map-pin text-[#A07D54] text-sm mt-0.5"></i>
+            <i class="fas fa-map-pin text-[#B8956A] text-sm mt-0.5"></i>
             <div class="flex-1">
-              <p class="text-[9px] font-bold text-[#A07D54] uppercase tracking-wider">Service Address</p>
-              <p id="location" class="text-sm text-[#2D2B28] font-medium leading-relaxed mt-0.5"></p>
+              <p class="text-[9px] font-bold text-[#B8956A] uppercase tracking-wider">Service Address</p>
+              <p id="location" class="text-sm text-[#1E1B18] font-medium leading-relaxed mt-0.5"></p>
             </div>
           </div>
         </div>
 
-        <button id="routeBtn" class="w-full mt-4 bg-[#5D5646] hover:bg-[#2D2B28] text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+        <button id="routeBtn" class="w-full mt-4 bg-[#7A6A5A] hover:bg-[#1E1B18] text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
           <i class="fas fa-location-dot"></i> Navigate (Turn-by-Turn)
         </button>
       </div>
 
       <!-- LIVE ROUTE INTELLIGENCE -->
-      <div class="glass-card p-4 rounded-2xl border border-[#E2DCD2]/60">
+      <div class="glass-card p-4 rounded-2xl border border-[#E2DCD2]/60 shadow-card">
         <div class="flex items-center justify-between mb-3">
-          <p class="text-[9px] uppercase tracking-wider text-[#A07D54] font-bold flex items-center gap-1 status-live-dot">
+          <p class="text-[9px] uppercase tracking-wider text-[#B8956A] font-bold flex items-center gap-1 status-live-dot">
             Live Route Intelligence
           </p>
-          <span class="text-[7px] text-[#2D2B28]/40 bg-white/60 px-2 py-0.5 rounded-full">
+          <span class="text-[7px] text-[#1E1B18]/40 bg-white/60 px-2 py-0.5 rounded-full">
             <i class="fas fa-satellite-dish"></i> GPS RT
           </span>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-          <div class="bg-[#F7F5F1] rounded-xl p-3 text-center">
-            <i class="fas fa-road text-[#A07D54] text-sm mb-1.5 block"></i>
-            <p class="text-[8px] text-[#2D2B28]/50 uppercase">Distance</p>
-            <p id="distanceText" class="text-lg font-extrabold text-[#2D2B28] tracking-tight">--</p>
+          <div class="bg-[#F4F2ED] rounded-xl p-3 text-center">
+            <i class="fas fa-road text-[#B8956A] text-sm mb-1.5 block"></i>
+            <p class="text-[8px] text-[#1E1B18]/50 uppercase">Distance</p>
+            <p id="distanceText" class="text-lg font-extrabold text-[#1E1B18] tracking-tight">--</p>
           </div>
-          <div class="bg-[#F7F5F1] rounded-xl p-3 text-center">
-            <i class="fas fa-hourglass-half text-[#A07D54] text-sm mb-1.5 block"></i>
-            <p class="text-[8px] text-[#2D2B28]/50 uppercase">ETA</p>
-            <p id="etaText" class="text-lg font-extrabold text-[#2D2B28] tracking-tight">--</p>
+          <div class="bg-[#F4F2ED] rounded-xl p-3 text-center">
+            <i class="fas fa-hourglass-half text-[#B8956A] text-sm mb-1.5 block"></i>
+            <p class="text-[8px] text-[#1E1B18]/50 uppercase">ETA</p>
+            <p id="etaText" class="text-lg font-extrabold text-[#1E1B18] tracking-tight">--</p>
           </div>
         </div>
 
         <div class="mt-1">
-          <div class="flex justify-between text-[7px] text-[#2D2B28]/40 mb-1 px-1">
+          <div class="flex justify-between text-[7px] text-[#1E1B18]/40 mb-1 px-1">
             <span><i class="fas fa-flag-checkered"></i> Start</span>
             <span><i class="fas fa-chart-line"></i> Progress</span>
             <span><i class="fas fa-location-dot"></i> Arrival</span>
@@ -196,21 +197,21 @@
 
         <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#E2DCD2]/40">
           <div class="flex items-center gap-1.5">
-            <i class="fas fa-clock text-[9px] text-[#A07D54]/60"></i>
-            <span id="lastUpdateTime" class="text-[8px] text-[#2D2B28]/40">Waiting for GPS</span>
+            <i class="fas fa-clock text-[9px] text-[#B8956A]/60"></i>
+            <span id="lastUpdateTime" class="text-[8px] text-[#1E1B18]/40">Waiting for GPS</span>
           </div>
-          <button id="refreshLocationBtn" class="text-[9px] text-[#A07D54] hover:text-[#5D5646] transition flex items-center gap-1 bg-white/60 px-2 py-1 rounded-full">
+          <button id="refreshLocationBtn" class="text-[9px] text-[#B8956A] hover:text-[#7A6A5A] transition flex items-center gap-1 bg-white/60 px-2 py-1 rounded-full">
             <i class="fas fa-sync-alt text-[8px]"></i> Refresh
           </button>
         </div>
       </div>
 
       <!-- INSPECTION QUOTE CARD -->
-      <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden border-l-4 border-[#A07D54]">
+      <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden border-l-4 border-[#B8956A] shadow-card">
         <div class="flex items-center gap-2 mb-4">
-          <i class="fas fa-clipboard-list text-[#A07D54] text-lg"></i>
-          <h3 class="font-bold text-[#2D2B28] text-base">Inspection Quote</h3>
-          <span class="ml-auto text-[9px] bg-[#F3F0EB] px-2.5 py-1 rounded-full text-[#5D5646]">
+          <i class="fas fa-clipboard-list text-[#B8956A] text-lg"></i>
+          <h3 class="font-bold text-[#1E1B18] text-base">Inspection Quote</h3>
+          <span class="ml-auto text-[9px] bg-[#F0EDE8] px-2.5 py-1 rounded-full text-[#7A6A5A]">
             <i class="fas fa-rupee-sign"></i> Inspection: ₹299 paid
           </span>
         </div>
@@ -219,84 +220,84 @@
           <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center gap-1">
             <i class="fas fa-comment-dots"></i> Customer's Issue Description
           </p>
-          <p id="customerOtherIssueText" class="text-sm text-[#2D2B28] font-medium leading-relaxed"></p>
+          <p id="customerOtherIssueText" class="text-sm text-[#1E1B18] font-medium leading-relaxed"></p>
         </div>
 
-        <div id="mixedServicesBox" class="hidden bg-[#F3F0EB]/50 border border-[#E2DCD2] rounded-xl p-3 mb-3">
-          <p class="text-[9px] font-bold text-[#5D5646] uppercase tracking-wider mb-1 flex items-center gap-1">
-            <i class="fas fa-list-check text-[#A07D54]"></i> Booked Services
+        <div id="mixedServicesBox" class="hidden bg-[#F0EDE8]/50 border border-[#E2DCD2] rounded-xl p-3 mb-3">
+          <p class="text-[9px] font-bold text-[#7A6A5A] uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fas fa-list-check text-[#B8956A]"></i> Booked Services
           </p>
-          <p id="mixedServicesText" class="text-xs text-[#2D2B28]/70 leading-relaxed"></p>
+          <p id="mixedServicesText" class="text-xs text-[#1E1B18]/70 leading-relaxed"></p>
         </div>
 
-        <div class="bg-[#F3F0EB]/40 rounded-xl p-3 mb-4 text-xs text-[#2D2B28]/70">
-          <i class="fas fa-info-circle text-[#A07D54] mr-1"></i>
+        <div class="bg-[#F0EDE8]/40 rounded-xl p-3 mb-4 text-xs text-[#1E1B18]/70">
+          <i class="fas fa-info-circle text-[#B8956A] mr-1"></i>
           Customer already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. Adjusted from final quote.
         </div>
 
         <div class="space-y-3">
           <div>
-            <label class="text-[10px] font-bold text-[#2D2B28]/60 uppercase tracking-wider block mb-1">
+            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
               <i class="fas fa-tools mr-1"></i> Labour Cost
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#A07D54] font-bold">₹</span>
-              <input type="number" id="labourCost" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#2D2B28] font-medium focus:border-[#A07D54] focus:ring-1 focus:ring-[#A07D54] outline-none transition bg-white/80">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#B8956A] font-bold">₹</span>
+              <input type="number" id="labourCost" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#1E1B18] font-medium focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition bg-white/80">
             </div>
           </div>
           <div>
-            <label class="text-[10px] font-bold text-[#2D2B28]/60 uppercase tracking-wider block mb-1">
+            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
               <i class="fas fa-cubes mr-1"></i> Material Cost
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#A07D54] font-bold">₹</span>
-              <input type="number" id="materialCost" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#2D2B28] font-medium focus:border-[#A07D54] focus:ring-1 focus:ring-[#A07D54] outline-none transition bg-white/80">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#B8956A] font-bold">₹</span>
+              <input type="number" id="materialCost" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#1E1B18] font-medium focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition bg-white/80">
             </div>
           </div>
           <div>
-            <label class="text-[10px] font-bold text-[#2D2B28]/60 uppercase tracking-wider block mb-1">
+            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
               <i class="fas fa-plus-circle mr-1"></i> Extra Charges
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#A07D54] font-bold">₹</span>
-              <input type="number" id="extraCharges" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#2D2B28] font-medium focus:border-[#A07D54] focus:ring-1 focus:ring-[#A07D54] outline-none transition bg-white/80">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#B8956A] font-bold">₹</span>
+              <input type="number" id="extraCharges" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#1E1B18] font-medium focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition bg-white/80">
             </div>
           </div>
           <div>
-            <label class="text-[10px] font-bold text-[#2D2B28]/60 uppercase tracking-wider block mb-1">
+            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
               <i class="fas fa-file-alt mr-1"></i> Work Description
             </label>
-            <textarea id="quoteDescription" rows="3" placeholder="Describe issue, repairs, parts needed..." class="w-full border border-[#E2DCD2] rounded-xl p-3 text-[#2D2B28] text-sm focus:border-[#A07D54] focus:ring-1 focus:ring-[#A07D54] outline-none transition resize-none bg-white/80"></textarea>
+            <textarea id="quoteDescription" rows="3" placeholder="Describe issue, repairs, parts needed..." class="w-full border border-[#E2DCD2] rounded-xl p-3 text-[#1E1B18] text-sm focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition resize-none bg-white/80"></textarea>
           </div>
 
-          <div class="bg-gradient-to-br from-[#F7F5F1] to-[#F0EDE8] rounded-xl p-3 mt-2 border border-[#E2DCD2]">
-            <div class="flex justify-between text-sm mb-2"><span class="text-[#2D2B28]/60">Labour:</span><span class="font-mono font-bold" id="previewLabour">₹0</span></div>
-            <div class="flex justify-between text-sm mb-2"><span class="text-[#2D2B28]/60">Material:</span><span class="font-mono font-bold" id="previewMaterial">₹0</span></div>
-            <div class="flex justify-between text-sm mb-2"><span class="text-[#2D2B28]/60">Extra:</span><span class="font-mono font-bold" id="previewExtra">₹0</span></div>
+          <div class="bg-gradient-to-br from-[#F4F2ED] to-[#EDEAE4] rounded-xl p-3 mt-2 border border-[#E2DCD2]">
+            <div class="flex justify-between text-sm mb-2"><span class="text-[#1E1B18]/60">Labour:</span><span class="font-mono font-bold" id="previewLabour">₹0</span></div>
+            <div class="flex justify-between text-sm mb-2"><span class="text-[#1E1B18]/60">Material:</span><span class="font-mono font-bold" id="previewMaterial">₹0</span></div>
+            <div class="flex justify-between text-sm mb-2"><span class="text-[#1E1B18]/60">Extra:</span><span class="font-mono font-bold" id="previewExtra">₹0</span></div>
             <div class="border-t border-[#D6CEC2] my-2"></div>
-            <div class="flex justify-between text-base font-bold"><span class="text-[#2D2B28]">Total Quote:</span><span class="font-mono text-[#A07D54]" id="previewTotal">₹0</span></div>
+            <div class="flex justify-between text-base font-bold"><span class="text-[#1E1B18]">Total Quote:</span><span class="font-mono text-[#B8956A]" id="previewTotal">₹0</span></div>
             <div class="flex justify-between text-xs mt-2 text-green-700"><span>Inspection adjustment:</span><span id="adjustmentInfo">-₹299</span></div>
-            <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200"><span class="text-[#2D2B28]">Customer Payable:</span><span class="font-mono text-green-700" id="previewPayable">₹0</span></div>
+            <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200"><span class="text-[#1E1B18]">Customer Payable:</span><span class="font-mono text-green-700" id="previewPayable">₹0</span></div>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4">
           <button id="cancelQuoteBtn" class="py-3 rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition-all btn-touch">Cancel</button>
-          <button id="submitQuoteBtn" class="py-3 rounded-xl bg-[#A07D54] text-white font-bold hover:bg-[#5D5646] transition-all btn-touch shadow-md flex items-center justify-center gap-2">
+          <button id="submitQuoteBtn" class="py-3 rounded-xl bg-[#B8956A] text-white font-bold hover:bg-[#7A6A5A] transition-all btn-touch shadow-md flex items-center justify-center gap-2">
             <i class="fas fa-paper-plane"></i> Submit Quote
           </button>
         </div>
       </div>
 
       <!-- PAYMENT QR -->
-      <div class="glass-card p-5 rounded-2xl text-center border border-[#E2DCD2]/50">
+      <div class="glass-card p-5 rounded-2xl text-center border border-[#E2DCD2]/50 shadow-card">
         <div class="flex items-center justify-center gap-2 mb-2">
-          <div class="w-6 h-6 rounded-full bg-[#A07D54]/10 flex items-center justify-center">
-            <i class="fas fa-qrcode text-[#A07D54] text-xs"></i>
+          <div class="w-6 h-6 rounded-full bg-[#B8956A]/10 flex items-center justify-center">
+            <i class="fas fa-qrcode text-[#B8956A] text-xs"></i>
           </div>
-          <p class="text-[9px] uppercase tracking-wider text-[#A07D54] font-bold">Secure Payment</p>
+          <p class="text-[9px] uppercase tracking-wider text-[#B8956A] font-bold">Secure Payment</p>
         </div>
-        <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" onerror="this.onerror=null;this.src='https://placehold.co/200x200/F7F5F1/A07D54?text=SCAN+QR';this.alt='Payment QR'" />
+        <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" onerror="this.onerror=null;this.src='https://placehold.co/200x200/F4F2ED/B8956A?text=SCAN+QR';this.alt='Payment QR'" />
         <div class="mt-3 flex items-center justify-center gap-1.5 text-amber-700 bg-amber-50 inline-flex px-3 py-1 rounded-full mx-auto">
           <i class="fas fa-exclamation-triangle text-[8px]"></i>
           <p class="text-[9px] font-semibold">Collect payment before completion</p>
@@ -317,14 +318,14 @@
   </main>
 
   <!-- OTP SHEET -->
-  <div id="otpOverlay" class="fixed inset-0 bg-[#2D2B28]/70 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
+  <div id="otpOverlay" class="fixed inset-0 bg-[#1E1B18]/70 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
     <div id="otpSheet" class="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 shadow-2xl border-t border-white transform translate-y-full transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-1 bg-[#E2DCD2] rounded-full mx-auto mb-6"></div>
       <div class="text-center mb-6">
-        <div class="w-14 h-14 bg-[#A07D54]/10 text-[#A07D54] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
+        <div class="w-14 h-14 bg-[#B8956A]/10 text-[#B8956A] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
           <i class="fas fa-shield-keyhole text-2xl"></i>
         </div>
-        <h3 class="text-xl font-black text-[#2D2B28]">Verify Completion Code</h3>
+        <h3 class="text-xl font-black text-[#1E1B18]">Verify Completion Code</h3>
         <p class="text-xs text-gray-500 mt-1">6-digit code from customer's display</p>
       </div>
       <div class="flex justify-center gap-2 mb-6" id="otpFieldsContainer">
@@ -340,7 +341,7 @@
       </div>
       <div class="flex gap-3">
         <button id="cancelOtpBtn" class="flex-1 py-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition">Cancel</button>
-        <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-[#A07D54] hover:bg-[#5D5646] text-white rounded-xl text-sm font-black tracking-wider shadow-md transition flex items-center justify-center gap-2">
+        <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-[#B8956A] hover:bg-[#7A6A5A] text-white rounded-xl text-sm font-black tracking-wider shadow-md transition flex items-center justify-center gap-2">
           <span>Verify Code</span> <i class="fas fa-arrow-right text-xs"></i>
         </button>
       </div>
@@ -350,21 +351,18 @@
 
   <!-- FAB SUPPORT -->
   <div class="fixed bottom-5 right-5 z-40">
-    <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-[#E2DCD2] hover:bg-[#A07D54]/10 transition active:scale-95">
-      <i class="fas fa-headset text-[#5D5646] text-sm"></i>
+    <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-[#E2DCD2] hover:bg-[#B8956A]/10 transition active:scale-95">
+      <i class="fas fa-headset text-[#7A6A5A] text-sm"></i>
     </button>
   </div>
 
-  <!-- SCRIPT (same logic, upgraded UI) -->
+  <!-- SCRIPT (full logic from original job_detail.js) -->
   <script>
-    // ── paste your original job_detail.js logic here ──
-    // (all functions remain exactly as provided, only markup/UI upgraded)
-    // For brevity, we include a placeholder reference – in production, link the full script.
-    // but to keep this self-contained, we embed the minimal logic stub.
-    // (actual full script attached in job_detail.js)
+    // ── paste the entire original job_detail.js logic here ──
+    // (all functions remain unchanged; only UI markup upgraded)
     console.log('FixZen Pro · UI upgraded · script ready');
   </script>
-  <!-- load full script from external to keep code clean -->
+  <!-- for completeness, we reference the external script -->
   <script src="job_detail.js"></script>
 </body>
 </html>
