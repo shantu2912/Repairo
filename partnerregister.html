@@ -13,7 +13,6 @@
         
         body { font-family: 'Inter', sans-serif; }
 
-        /* Custom Scrollbar for sleekness */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #F3F0EA; }
         ::-webkit-scrollbar-thumb { background: #A9A39B; border-radius: 10px; }
@@ -58,7 +57,6 @@
         .btn-theme:active { transform: scale(0.98); }
         .btn-theme:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-        /* Custom Select Arrow */
         .select-wrapper { position: relative; }
         .select-wrapper::after {
             content: '▼'; font-size: 0.8rem; color: #B58B5B;
@@ -66,7 +64,6 @@
             pointer-events: none;
         }
 
-        /* Ambient Background Animations */
         @keyframes float {
             0%, 100% { transform: translateY(0px) scale(1); }
             50% { transform: translateY(-30px) scale(1.05); }
@@ -74,7 +71,6 @@
         .animate-float-1 { animation: float 8s ease-in-out infinite; }
         .animate-float-2 { animation: float 10s ease-in-out infinite reverse; }
         
-        /* Staggered Form Entry Animations */
         @keyframes slideUpFade {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -86,6 +82,7 @@
         .stagger-5 { animation: slideUpFade 0.5s ease-out 0.5s forwards; opacity: 0; }
         .stagger-6 { animation: slideUpFade 0.5s ease-out 0.6s forwards; opacity: 0; }
         .stagger-7 { animation: slideUpFade 0.5s ease-out 0.7s forwards; opacity: 0; }
+        .stagger-8 { animation: slideUpFade 0.5s ease-out 0.8s forwards; opacity: 0; }
     </style>
 
     <script>
@@ -127,28 +124,14 @@
             <form @submit.prevent="submitTechnician($data)" class="space-y-5">
                 <div class="space-y-1.5 stagger-2">
                     <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Full Name</label>
-                    <input 
-                        type="text"
-                        id="regName"
-                        class="premium-input"
-                        placeholder="e.g. Rahul Sharma"
-                        pattern="[A-Za-z ]{3,40}"
-                        title="Only letters allowed"
-                    required>
+                    <input type="text" id="regName" class="premium-input" placeholder="e.g. Rahul Sharma" pattern="[A-Za-z ]{3,40}" title="Only letters allowed" required>
                 </div>
 
                 <div class="space-y-1.5 stagger-3">
                     <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Mobile Number</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary font-bold">+91</span>
-                        <input 
-                            type="tel"
-                            id="regPhone"
-                            class="premium-input pl-14"
-                            placeholder="9876543210"
-                            maxlength="10"
-                            pattern="[6-9]{1}[0-9]{9}"
-                            required>
+                        <input type="tel" id="regPhone" class="premium-input pl-14" placeholder="9876543210" maxlength="10" pattern="[6-9]{1}[0-9]{9}" required>
                     </div>
                 </div>
                 
@@ -157,10 +140,10 @@
                         <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Username</label>
                         <input type="text" id="regUsername" class="premium-input" placeholder="Username" required>
                     </div>
-                    
                     <div class="space-y-1.5">
                         <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Password</label>
-                        <input type="password" id="regPassword" class="premium-input" placeholder="••••••••" required>
+                        <input type="password" id="regPassword" class="premium-input" placeholder="••••••••" required minlength="8">
+                        <p class="text-xs text-theme-muted mt-1">Min 8 chars, with letter, number & special (@$!%*#?&)</p>
                     </div>
                 </div>
 
@@ -200,34 +183,41 @@
                     </div>
                     <div class="space-y-1.5 col-span-3">
                         <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Aadhaar</label>
-                        <input 
-                            type="text"
-                            id="regAadhaar"
-                            class="premium-input tracking-widest font-mono"
-                            placeholder="0000 0000 0000"
-                            maxlength="12"
-                            pattern="[0-9]{12}"
-                            required>
+                        <input type="text" id="regAadhaar" class="premium-input tracking-widest font-mono" placeholder="0000 0000 0000" maxlength="12" pattern="[0-9]{12}" required>
                     </div>
                 </div>
 
-                <div class="space-y-1.5 pb-2 stagger-7">
+                <div class="space-y-1.5 stagger-7">
                     <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Service Area</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         </span>
-                        <input 
-                            type="text"
-                            id="regArea"
-                            class="premium-input pl-12"
-                            placeholder="City or Locality"
-                            pattern="[A-Za-z ]{3,40}"
-                            required>
+                        <input type="text" id="regArea" class="premium-input pl-12" placeholder="City or Locality" pattern="[A-Za-z ]{3,40}" required>
                     </div>
                 </div>
 
-                <div class="stagger-7 pt-2">
+                <!-- ✅ Profile Image Upload -->
+                <div class="space-y-1.5 stagger-8">
+                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Profile Photo</label>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <div id="profilePreview" class="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                                <i class="fa-regular fa-user text-3xl text-gray-400"></i>
+                            </div>
+                            <label for="profileImage" class="absolute bottom-0 right-0 w-7 h-7 bg-theme-secondary rounded-full flex items-center justify-center cursor-pointer hover:bg-theme-primary transition shadow-md border-2 border-white">
+                                <i class="fa-solid fa-camera text-white text-xs"></i>
+                            </label>
+                        </div>
+                        <div>
+                            <input type="file" id="profileImage" accept="image/*" class="hidden" @change="handleImageUpload($event)">
+                            <p class="text-xs text-theme-muted">Upload a clear photo (JPG, PNG)</p>
+                            <p class="text-[10px] text-theme-muted/60 mt-0.5">Max 2MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stagger-8 pt-2">
                     <button type="submit" class="btn-theme group relative overflow-hidden" :disabled="isSubmitting">
                         <span class="relative z-10 flex items-center justify-center gap-2">
                             <span x-text="isSubmitting ? 'Registering...' : 'Submit Application'"></span>
@@ -252,7 +242,6 @@
             </a>
         </div>
     </div>
-
 
     <script src="partnerregister.js"></script>
 </body>
