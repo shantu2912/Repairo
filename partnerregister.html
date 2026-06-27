@@ -2,247 +2,640 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FixZen - TECHNICIAN Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FixZen - Technician Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F5F3F0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #F3F0EA; }
-        ::-webkit-scrollbar-thumb { background: #A9A39B; border-radius: 10px; }
+        .main-card {
+            background: white;
+            border-radius: 32px;
+            max-width: 480px;
+            width: 100%;
+            padding: 32px 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            position: relative;
+        }
 
-        .premium-input { 
-            width: 100%; 
-            background: #FFFFFF;
-            border: 1.5px solid #E5E1DA; 
-            padding: 1rem; 
-            border-radius: 12px; 
-            outline: none; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 4px;
+            border-radius: 4px;
+            background: #E5E1DA;
+            transition: all 0.4s ease;
+        }
+
+        .step-dot.active {
+            background: #B58B5B;
+            width: 60px;
+        }
+
+        .step-dot.done {
+            background: #B58B5B;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4A4A4A;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-label .required {
+            color: #DC2626;
+            margin-left: 2px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E8E2D8;
+            border-radius: 14px;
+            font-size: 16px;
+            color: #1A1A1A;
+            background: #FAFAFA;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            border-color: #B58B5B;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(181, 139, 91, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #B0A89E;
+            font-size: 15px;
+        }
+
+        .form-input.error {
+            border-color: #DC2626;
+            background: #FEF2F2;
+        }
+
+        .form-input.success {
+            border-color: #10B981;
+            background: #F0FDF4;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+        }
+
+        .input-icon-wrapper .icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #B0A89E;
+            font-size: 18px;
+        }
+
+        .input-icon-wrapper .form-input {
+            padding-left: 48px;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #8B8580;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-hint .check {
+            color: #10B981;
+        }
+
+        .input-hint .cross {
+            color: #DC2626;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #B58B5B 0%, #9a764d 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(181, 139, 91, 0.35);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 14px;
+            background: #F5F3F0;
+            color: #4A4A4A;
+            border: 2px solid #E8E2D8;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #EDE8E0;
+            border-color: #D5CDC2;
+        }
+
+        .photo-upload {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            background: #FAFAFA;
+            border: 2px dashed #D5CDC2;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload:hover {
+            border-color: #B58B5B;
+            background: #FDF8F3;
+        }
+
+        .photo-preview {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #E8E2D8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-preview .placeholder {
+            color: #8B8580;
+            font-size: 28px;
+        }
+
+        .photo-info {
+            flex: 1;
+        }
+
+        .photo-info .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .photo-info .sub {
+            font-size: 12px;
+            color: #8B8580;
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 32px 16px;
+        }
+
+        .success-icon {
+            width: 96px;
+            height: 96px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 16px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .success-icon svg {
+            width: 48px;
+            height: 48px;
+            color: white;
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+
+        .success-sub {
+            font-size: 16px;
+            color: #4A4A4A;
+            margin-bottom: 8px;
+        }
+
+        .success-id {
+            display: inline-block;
+            background: #F5F3F0;
+            padding: 6px 20px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: #B58B5B;
+            letter-spacing: 2px;
+            margin: 12px 0 24px;
+        }
+
+        .success-note {
+            font-size: 14px;
+            color: #6B6560;
+            line-height: 1.6;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
             appearance: none;
-            color: #534E46;
+            -webkit-appearance: none;
+            padding-right: 44px;
         }
 
-        .premium-input::placeholder { color: #A9A39B; }
-
-        .premium-input:focus { 
-            border-color: #B58B5B; 
-            box-shadow: 0 0 0 4px rgba(181, 139, 91, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .btn-theme { 
-            width: 100%; 
-            padding: 1.2rem; 
-            background: linear-gradient(135deg, #B58B5B 0%, #9a764d 100%); 
-            color: #FFFFFF; 
-            border-radius: 14px; 
-            font-weight: 700; 
-            letter-spacing: 0.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 20px -5px rgba(181, 139, 91, 0.4);
-        }
-
-        .btn-theme:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(181, 139, 91, 0.5);
-        }
-
-        .btn-theme:active { transform: scale(0.98); }
-        .btn-theme:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-
-        .select-wrapper { position: relative; }
         .select-wrapper::after {
-            content: '▼'; font-size: 0.8rem; color: #B58B5B;
-            position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%);
+            content: '▾';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8B8580;
+            font-size: 18px;
             pointer-events: none;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-30px) scale(1.05); }
+        .error-message {
+            color: #DC2626;
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+            align-items: center;
+            gap: 4px;
         }
-        .animate-float-1 { animation: float 8s ease-in-out infinite; }
-        .animate-float-2 { animation: float 10s ease-in-out infinite reverse; }
-        
-        @keyframes slideUpFade {
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .main-card {
+                padding: 20px 16px;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .photo-upload {
+                flex-direction: column;
+                text-align: center;
+                padding: 16px;
+            }
+        }
+
+        @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .stagger-1 { animation: slideUpFade 0.5s ease-out 0.1s forwards; opacity: 0; }
-        .stagger-2 { animation: slideUpFade 0.5s ease-out 0.2s forwards; opacity: 0; }
-        .stagger-3 { animation: slideUpFade 0.5s ease-out 0.3s forwards; opacity: 0; }
-        .stagger-4 { animation: slideUpFade 0.5s ease-out 0.4s forwards; opacity: 0; }
-        .stagger-5 { animation: slideUpFade 0.5s ease-out 0.5s forwards; opacity: 0; }
-        .stagger-6 { animation: slideUpFade 0.5s ease-out 0.6s forwards; opacity: 0; }
-        .stagger-7 { animation: slideUpFade 0.5s ease-out 0.7s forwards; opacity: 0; }
-        .stagger-8 { animation: slideUpFade 0.5s ease-out 0.8s forwards; opacity: 0; }
-    </style>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        theme: {
-                            primary: '#6A6251',
-                            secondary: '#B58B5B',
-                            bg: '#F3F0EA',
-                            surface: '#FFFFFF',
-                            txt: '#534E46',
-                            muted: '#A9A39B'
-                        }
-                    }
-                }
-            }
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
         }
-    </script>
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse-once {
+            animation: pulse 0.6s ease 3;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-theme-bg min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden text-theme-txt">
-
-    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-theme-secondary opacity-20 rounded-full mix-blend-multiply filter blur-[80px] animate-float-1 pointer-events-none"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-theme-primary opacity-10 rounded-full mix-blend-multiply filter blur-[100px] animate-float-2 pointer-events-none"></div>
-
-    <div class="w-full max-w-md bg-theme-surface p-8 rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(106,98,81,0.15)] border border-white/60 relative z-10 my-8" x-data="{ isSubmitting: false, isSuccess: false }" x-cloak>
-        
-        <div x-show="!isSuccess" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-4">
-            <div class="text-center mb-8 stagger-1">
-                <div class="w-16 h-16 bg-theme-bg rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-inner border border-theme-muted/20">
-                    <svg class="w-8 h-8 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                </div>
-                <h1 class="text-3xl font-extrabold text-theme-primary tracking-tight">Join FixZenix</h1>
-                <p class="text-theme-muted mt-2 text-sm font-medium">Fill in your details to get jobs and start earning</p>
-            </div>
-            
-            <form @submit.prevent="submitTechnician($data)" class="space-y-5">
-                <div class="space-y-1.5 stagger-2">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Full Name</label>
-                    <input type="text" id="regName" class="premium-input" placeholder="e.g. Rahul Sharma" pattern="[A-Za-z ]{3,40}" title="Only letters allowed" required>
-                </div>
-
-                <div class="space-y-1.5 stagger-3">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Mobile Number</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary font-bold">+91</span>
-                        <input type="tel" id="regPhone" class="premium-input pl-14" placeholder="9876543210" maxlength="10" pattern="[6-9]{1}[0-9]{9}" required>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 stagger-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Username</label>
-                        <input type="text" id="regUsername" class="premium-input" placeholder="Username" required>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Password</label>
-                        <input type="password" id="regPassword" class="premium-input" placeholder="••••••••" required minlength="8">
-                        <p class="text-xs text-theme-muted mt-1">Min 8 chars, with letter, number & special (@$!%*#?&)</p>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5 stagger-5">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Specialization</label>
-                    <div class="select-wrapper">
-                       <select id="regCategory" class="premium-input bg-white" required>
-                            <option value="" disabled selected>Select Specialization</option>
-                            <option value="AC Tech">AC Tech</option>
-                            <option value="Fridge">Fridge</option>
-                            <option value="Washing Machine">Washing Machine</option>
-                            <option value="RO filter">RO filter</option>
-                            <option value="Carpenter">Carpenter</option>
-                            <option value="Plumber">Plumber</option>
-                            <option value="Electrician">Electrician</option>
-                            <option value="TV/LED">TV/LED</option>
-                            <option value="CCTV">CCTV</option>
-                            <option value="Mason">Mason</option>
-                            <option value="Welder">Welder</option>
-                            <option value="Painter">Painter</option>
-                            <option value="Car Mech">Car Mech</option>
-                            <option value="Bike Mech">Bike Mech</option>
-                            <option value="Pest Ctrl">Pest Ctrl</option>
-                            <option value="Microwave">Microwave</option>
-                            <option value="Grass Cutting">Grass Cutting</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-5 gap-4 stagger-6">
-                    <div class="space-y-1.5 col-span-2">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Experience</label>
-                        <div class="relative">
-                            <input type="number" id="regExp" class="premium-input pr-10" placeholder="0" required>
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-theme-muted text-sm font-medium">Yrs</span>
-                        </div>
-                    </div>
-                    <div class="space-y-1.5 col-span-3">
-                        <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Aadhaar</label>
-                        <input type="text" id="regAadhaar" class="premium-input tracking-widest font-mono" placeholder="0000 0000 0000" maxlength="12" pattern="[0-9]{12}" required>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5 stagger-7">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Service Area</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        </span>
-                        <input type="text" id="regArea" class="premium-input pl-12" placeholder="City or Locality" pattern="[A-Za-z ]{3,40}" required>
-                    </div>
-                </div>
-
-                <!-- ✅ Profile Image Upload -->
-                <div class="space-y-1.5 stagger-8">
-                    <label class="text-xs font-bold text-theme-muted ml-1 uppercase tracking-wider">Profile Photo</label>
-                    <div class="flex items-center gap-4">
-                        <div class="relative">
-                            <div id="profilePreview" class="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                                <i class="fa-regular fa-user text-3xl text-gray-400"></i>
-                            </div>
-                            <label for="profileImage" class="absolute bottom-0 right-0 w-7 h-7 bg-theme-secondary rounded-full flex items-center justify-center cursor-pointer hover:bg-theme-primary transition shadow-md border-2 border-white">
-                                <i class="fa-solid fa-camera text-white text-xs"></i>
-                            </label>
-                        </div>
-                        <div>
-                            <input type="file" id="profileImage" accept="image/*" class="hidden" @change="handleImageUpload($event)">
-                            <p class="text-xs text-theme-muted">Upload a clear photo (JPG, PNG)</p>
-                            <p class="text-[10px] text-theme-muted/60 mt-0.5">Max 2MB</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stagger-8 pt-2">
-                    <button type="submit" class="btn-theme group relative overflow-hidden" :disabled="isSubmitting">
-                        <span class="relative z-10 flex items-center justify-center gap-2">
-                            <span x-text="isSubmitting ? 'Registering...' : 'Submit Application'"></span>
-                            <svg x-show="!isSubmitting" class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                        </span>
-                        <div x-show="isSubmitting" class="absolute inset-0 bg-white/20 animate-pulse"></div>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div x-show="isSuccess" x-transition:enter="transition ease-out duration-500 delay-200" x-transition:enter-start="opacity-0 translate-y-8 scale-95" class="text-center py-10">
-            <div class="w-24 h-24 bg-theme-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner relative">
-                <div class="absolute inset-0 border-4 border-theme-secondary rounded-full animate-ping opacity-20"></div>
-                <svg class="w-12 h-12 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-            </div>
-            <h2 class="text-3xl font-extrabold text-theme-primary tracking-tight">Application Sent!</h2>
-            <p class="text-theme-txt mt-4 leading-relaxed">Our onboarding team will reach out to you within <br><span class="font-bold text-theme-secondary text-lg">24 hours</span>.</p>
-            <a href="index.html" class="mt-8 flex items-center justify-center gap-2 w-full py-4 border-2 border-theme-secondary text-theme-secondary rounded-xl font-bold hover:bg-theme-secondary hover:text-white transition-all group">
-                <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                Return to Home
-            </a>
-        </div>
+<div class="main-card" x-data="registrationForm()" x-init="init()">
+    
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step-dot" :class="step >= 1 ? 'done' : ''"></div>
+        <div class="step-dot" :class="step >= 2 ? 'done' : ''"></div>
+        <div class="step-dot" :class="step >= 3 ? 'done' : ''"></div>
+        <div class="step-dot" :class="step >= 4 ? 'done' : ''"></div>
+        <div class="step-dot" :class="step >= 5 ? 'done' : ''"></div>
     </div>
 
-    <script src="partnerregister.js"></script>
+    <!-- Registration Form -->
+    <div x-show="!submitted" x-transition:enter.duration.300ms>
+
+        <div class="text-center mb-8">
+            <h1 class="text-28 font-bold text-[#1A1A1A] mb-2">Become a FixZen Pro</h1>
+            <p class="text-[#6B6560] text-15">Join India's trusted service network</p>
+        </div>
+
+        <form @submit.prevent="submitForm">
+            
+            <!-- Step 1: Personal Info -->
+            <div x-show="step === 1" class="fade-in">
+                <div class="form-group">
+                    <label class="form-label">Full Name <span class="required">*</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="icon">👤</span>
+                        <input type="text" id="regName" class="form-input" placeholder="Enter your full name" 
+                               x-model="form.name" @input="validateName()" required>
+                    </div>
+                    <div class="input-hint" x-show="nameValid === true">
+                        <span class="check">✓</span> Looks good!
+                    </div>
+                    <div class="error-message" :class="nameError ? 'show' : ''">
+                        <span>⚠️</span> <span x-text="nameError"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mobile Number <span class="required">*</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="icon">📱</span>
+                        <input type="tel" id="regPhone" class="form-input" placeholder="9876543210" maxlength="10"
+                               x-model="form.phone" @input="validatePhone()" required>
+                    </div>
+                    <div class="input-hint">
+                        <span>10-digit number starting with 6-9</span>
+                    </div>
+                    <div class="error-message" :class="phoneError ? 'show' : ''">
+                        <span>⚠️</span> <span x-text="phoneError"></span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" @click="nextStep()">
+                    Continue <span>→</span>
+                </button>
+            </div>
+
+            <!-- Step 2: Account -->
+            <div x-show="step === 2" class="fade-in">
+                <div class="form-group">
+                    <label class="form-label">Choose Username <span class="required">*</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="icon">@</span>
+                        <input type="text" id="regUsername" class="form-input" placeholder="e.g. rahul_tech"
+                               x-model="form.username" @input="validateUsername()" required>
+                    </div>
+                    <div class="input-hint">
+                        <span>4-20 characters, letters & numbers only</span>
+                    </div>
+                    <div class="error-message" :class="usernameError ? 'show' : ''">
+                        <span>⚠️</span> <span x-text="usernameError"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password <span class="required">*</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="regPassword" class="form-input" placeholder="Create a strong password"
+                               x-model="form.password" @input="validatePassword()" required>
+                    </div>
+                    <div class="input-hint">
+                        <span :class="passwordChecks.length ? 'check' : ''">✓</span> 
+                        <span>8+ chars with letter, number & special (@$!%*#?&)</span>
+                    </div>
+                    <div class="error-message" :class="passwordError ? 'show' : ''">
+                        <span>⚠️</span> <span x-text="passwordError"></span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" class="btn-secondary" @click="prevStep()">
+                        ← Back
+                    </button>
+                    <button type="button" class="btn-primary flex-1" @click="nextStep()">
+                        Continue →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Professional Details -->
+            <div x-show="step === 3" class="fade-in">
+                <div class="form-group">
+                    <label class="form-label">Specialization <span class="required">*</span></label>
+                    <div class="select-wrapper">
+                        <select id="regCategory" class="form-input" x-model="form.category" required>
+                            <option value="">Select your expertise</option>
+                            <option value="AC Tech">❄️ AC Repair</option>
+                            <option value="Fridge">🧊 Refrigerator</option>
+                            <option value="Washing Machine">👕 Washing Machine</option>
+                            <option value="RO filter">💧 RO Filter</option>
+                            <option value="Carpenter">🪚 Carpenter</option>
+                            <option value="Plumber">🔧 Plumber</option>
+                            <option value="Electrician">⚡ Electrician</option>
+                            <option value="TV/LED">📺 TV/LED</option>
+                            <option value="CCTV">📹 CCTV</option>
+                            <option value="Mason">🧱 Mason</option>
+                            <option value="Welder">🔥 Welder</option>
+                            <option value="Painter">🎨 Painter</option>
+                            <option value="Car Mech">🚗 Car Mechanic</option>
+                            <option value="Bike Mech">🏍️ Bike Mechanic</option>
+                            <option value="Pest Ctrl">🐜 Pest Control</option>
+                            <option value="Microwave">🍕 Microwave</option>
+                            <option value="Grass Cutting">🌿 Grass Cutting</option>
+                        </select>
+                    </div>
+                    <div class="error-message" :class="categoryError ? 'show' : ''">
+                        <span>⚠️</span> Please select your specialization
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Experience <span class="required">*</span></label>
+                        <div class="input-icon-wrapper">
+                            <span class="icon">📅</span>
+                            <input type="number" id="regExp" class="form-input" placeholder="Years"
+                                   x-model="form.experience" @input="validateExperience()" min="0" max="50" required>
+                        </div>
+                        <div class="error-message" :class="expError ? 'show' : ''">
+                            <span>⚠️</span> <span x-text="expError"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Aadhaar <span class="required">*</span></label>
+                        <div class="input-icon-wrapper">
+                            <span class="icon">🆔</span>
+                            <input type="text" id="regAadhaar" class="form-input" placeholder="12-digit number"
+                                   x-model="form.aadhaar" @input="validateAadhaar()" maxlength="12" required>
+                        </div>
+                        <div class="error-message" :class="aadhaarError ? 'show' : ''">
+                            <span>⚠️</span> <span x-text="aadhaarError"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" class="btn-secondary" @click="prevStep()">
+                        ← Back
+                    </button>
+                    <button type="button" class="btn-primary flex-1" @click="nextStep()">
+                        Continue →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Location & Photo -->
+            <div x-show="step === 4" class="fade-in">
+                <div class="form-group">
+                    <label class="form-label">Service Area <span class="required">*</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="icon">📍</span>
+                        <input type="text" id="regArea" class="form-input" placeholder="City or locality"
+                               x-model="form.area" @input="validateArea()" required>
+                    </div>
+                    <div class="input-hint">
+                        <span>Where do you provide services?</span>
+                    </div>
+                    <div class="error-message" :class="areaError ? 'show' : ''">
+                        <span>⚠️</span> <span x-text="areaError"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Profile Photo</label>
+                    <div class="photo-upload" @click="$refs.fileInput.click()">
+                        <div class="photo-preview">
+                            <template x-if="form.photoPreview">
+                                <img :src="form.photoPreview" alt="Profile preview">
+                            </template>
+                            <template x-if="!form.photoPreview">
+                                <span class="placeholder">📷</span>
+                            </template>
+                        </div>
+                        <div class="photo-info">
+                            <div class="title">Upload Photo</div>
+                            <div class="sub">Tap to add a clear photo (JPG, PNG)</div>
+                            <div class="sub" style="font-size:11px;color:#B0A89E;">Max 2MB</div>
+                        </div>
+                        <input type="file" x-ref="fileInput" accept="image/*" class="hidden" @change="handlePhoto($event)">
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" class="btn-secondary" @click="prevStep()">
+                        ← Back
+                    </button>
+                    <button type="submit" class="btn-primary flex-1" :disabled="submitting">
+                        <span x-show="!submitting">Submit Application →</span>
+                        <span x-show="submitting" class="flex items-center gap-2">
+                            <span class="spinner"></span> Submitting...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Success Screen -->
+    <div x-show="submitted" x-transition:enter.duration.500ms class="success-screen">
+        <div class="success-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <div class="success-title">Registration Successful!</div>
+        <div class="success-sub">Welcome to the FixZen family 🎉</div>
+        <div class="success-id" x-text="'ID: ' + techId"></div>
+        <div class="success-note">
+            Our team will review your application within 24 hours.<br>
+            You'll receive a confirmation call shortly.
+        </div>
+        <a href="partnerlogin.html" class="btn-primary mt-8" style="text-decoration:none;">
+            Login to Dashboard →
+        </a>
+    </div>
+
+</div>
+
+<script src="partnerregister.js"></script>
 </body>
 </html>
