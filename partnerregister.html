@@ -405,7 +405,7 @@
             <p class="text-[#6B6560] text-15">Join India's trusted service network</p>
         </div>
 
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm()">
             
             <!-- Step 1: Personal Info -->
             <div x-show="step === 1" class="fade-in">
@@ -619,6 +619,13 @@
         <div class="success-note">
             Our team will review your application within 24 hours.<br>
             You'll receive a confirmation call shortly.
+        </div>
+        <!-- photo upload status (shown only when a photo was selected) -->
+        <div x-show="photoUploadMsg"
+             :class="photoUploadStatus === 'success'
+                     ? 'mt-4 text-sm text-green-700 bg-green-50 rounded-xl px-4 py-2'
+                     : 'mt-4 text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-2'"
+             x-text="photoUploadMsg">
         </div>
         <a href="partnerlogin.html" class="btn-primary mt-8" style="text-decoration:none;">
             Login to Dashboard →
