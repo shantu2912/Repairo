@@ -1,86 +1,214 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#1E1B18" />
-  <title>FixZen Pro · Technician Console</title>
+  <meta name="theme-color" content="#5D5646" />
+  <title>FixZen Pro · Active Job Console</title>
 
-  <!-- Tailwind + Fonts -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonts + Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet" />
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Animate.css -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-olive': '#5D5646',
+            'brand-gold': '#A07D54',
+            'brand-cream': '#F8F5F0',
+            'brand-dark': '#2D2B28',
+            'brand-beige': '#DFD4C3',
+            'success': '#10B981',
+            'warning': '#F59E0B',
+            'danger': '#EF4444',
+            'info': '#3B82F6'
+          },
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', 'sans-serif'],
+            'serif-italic': ['Playfair Display', 'serif']
+          },
+          animation: {
+            'pulse-ring': 'pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'fade-in': 'fadeIn 0.2s ease-out',
+            'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
+            'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+            'toast-in': 'toastIn 0.35s cubic-bezier(0.2,0.9,0.4,1.1)',
+            'pop-in': 'popIn 0.3s cubic-bezier(0.2,0.9,0.4,1.1)'
+          },
+          keyframes: {
+            pulseRing: {
+              '0%': { boxShadow: '0 0 0 0 rgba(160,125,84,0.4)' },
+              '70%': { boxShadow: '0 0 0 6px rgba(160,125,84,0)' },
+              '100%': { boxShadow: '0 0 0 0 rgba(160,125,84,0)' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(12px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            bounceSubtle: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-3px)' }
+            },
+            glowPulse: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' }
+            },
+            toastIn: {
+              '0%': { opacity: '0', transform: 'translateY(-14px) scale(0.96)' },
+              '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+            },
+            popIn: {
+              '0%': { opacity: '0', transform: 'scale(0.92) translateY(6px)' },
+              '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    /* ── unique professional touches ── */
     * { -webkit-tap-highlight-color: transparent; }
+    html, body { overscroll-behavior-y: contain; }
     body {
-      background: #F4F2ED;
+      background: #F8F5F0;
+      background-image:
+        radial-gradient(circle at 10% 0%, rgba(160,125,84,0.07) 0%, transparent 55%),
+        radial-gradient(circle at 100% 30%, rgba(93,86,70,0.05) 0%, transparent 50%);
+      background-attachment: fixed;
       font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
     .glass-card {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(255,255,255,0.7);
-      box-shadow: 0 8px 28px rgba(30,27,24,0.04);
-      transition: all 0.25s ease;
+      box-shadow: 0 8px 28px rgba(93,86,70,0.07), 0 1px 3px rgba(93,86,70,0.05);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
     }
-    .glass-card:hover {
-      box-shadow: 0 14px 36px rgba(30,27,24,0.08);
+    .glass-card:active { transform: scale(0.995); }
+    .btn-touch { transition: transform 0.12s cubic-bezier(0.2, 0.9, 0.4, 1.1), background 0.2s, box-shadow 0.2s, opacity .2s; }
+    .btn-touch:active:not(:disabled) { transform: scale(0.97); }
+    .btn-touch:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+    .skeleton {
+      background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s linear infinite;
     }
-    .btn-touch { transition: transform 0.12s, box-shadow 0.2s; }
-    .btn-touch:active { transform: scale(0.96); }
-    .brand-border-left { border-left: 4px solid #B8956A; }
-    .progress-fill { background: linear-gradient(90deg, #B8956A, #7A6A5A); transition: width 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
-    .otp-box {
-      width: 3.2rem; height: 3.8rem; text-align: center; font-size: 1.6rem;
-      font-weight: 800; border: 2px solid #E2DCD2; background: #FCFBF9;
-      color: #1E1B18; border-radius: 1.2rem; outline: none; transition: all 0.15s;
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
-    .otp-box:focus { border-color: #B8956A; background: white; box-shadow: 0 0 0 4px rgba(184,149,106,0.15); }
-    .otp-box.filled { border-color: #7A6A5A; background: white; }
-    .status-live-dot { padding-left: 16px; position: relative; }
+    .status-live-dot { position: relative; padding-left: 12px; }
     .status-live-dot::before {
       content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      width: 8px; height: 8px; background: #10b981; border-radius: 50%;
+      width: 8px; height: 8px; background-color: #10b981; border-radius: 50%;
       animation: livePulse 1.2s ease-in-out infinite;
     }
     @keyframes livePulse {
-      0%,100% { opacity:1; transform: translateY(-50%) scale(1); }
-      50% { opacity:0.3; transform: translateY(-50%) scale(0.7); }
+      0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+      50% { opacity: 0.4; transform: translateY(-50%) scale(0.8); }
     }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .skeleton { background: linear-gradient(110deg, #ece8e2 8%, #f5f2ed 18%, #ece8e2 33%); background-size: 200% 100%; animation: shimmer 1.5s linear infinite; }
-    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-    .badge-soft { background: #F0EDE8; color: #4A453C; }
-    .shadow-card { box-shadow: 0 4px 16px rgba(30,27,24,0.06); }
+    .progress-fill { background: linear-gradient(90deg, #A07D54, #5D5646); transition: width 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    .otp-box {
+      width: 3.15rem; height: 3.75rem; text-align: center; font-size: 1.5rem;
+      font-weight: 800; border: 2px solid #DFD4C3; background: #F8F5F0;
+      color: #2D2B28; border-radius: 1rem; outline: none; transition: all 0.2s ease;
+    }
+    .otp-box:focus { border-color: #A07D54; background: white; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.15); }
+    .otp-box.filled { border-color: #5D5646; background: #FFF; }
+    @supports (padding: max(0px)) { .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); } }
+
+    /* ── brand accent border ── */
+    .brand-border { border-left: 3px solid #A07D54; }
+
+    /* ── status badges ── */
+    .badge-arrived { background: #EDE9FE; color: #5B21B6; }
+    .badge-progress { background: #DBEAFE; color: #1E40AF; }
+    .badge-pending { background: #FEF3C7; color: #92400E; }
+    .badge-completed { background: #D1FAE5; color: #065F46; }
+    .badge-nearby { background: #D1FAE5; color: #047857; }
+
+    /* ── section stagger entrance ── */
+    #jobBox.reveal > * { animation: slideUp 0.45s cubic-bezier(0.2,0.9,0.4,1.1) both; }
+    #jobBox.reveal > *:nth-child(1) { animation-delay: .02s; }
+    #jobBox.reveal > *:nth-child(2) { animation-delay: .07s; }
+    #jobBox.reveal > *:nth-child(3) { animation-delay: .12s; }
+    #jobBox.reveal > *:nth-child(4) { animation-delay: .17s; }
+    #jobBox.reveal > *:nth-child(5) { animation-delay: .22s; }
+    #jobBox.reveal > *:nth-child(6) { animation-delay: .27s; }
+
+    /* ── toast system ── */
+    #toastContainer { position: fixed; top: max(0.75rem, env(safe-area-inset-top)); left: 0; right: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; pointer-events: none; padding: 0 1rem; }
+    .toast {
+      pointer-events: auto; max-width: 26rem; width: 100%; display: flex; align-items: flex-start; gap: 0.6rem;
+      background: rgba(45,43,40,0.96); color: #fff; padding: 0.8rem 1rem; border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25); animation: toastIn 0.35s cubic-bezier(0.2,0.9,0.4,1.1);
+      backdrop-filter: blur(8px);
+    }
+    .toast.leaving { animation: toastOut 0.25s ease forwards; }
+    @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.96); } }
+    .toast-icon { flex-shrink: 0; width: 1.6rem; height: 1.6rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; margin-top: 1px; }
+    .toast-success .toast-icon { background: rgba(16,185,129,0.2); color: #34D399; }
+    .toast-error .toast-icon { background: rgba(239,68,68,0.2); color: #F87171; }
+    .toast-warning .toast-icon { background: rgba(245,158,11,0.2); color: #FBBF24; }
+    .toast-info .toast-icon { background: rgba(59,130,246,0.2); color: #60A5FA; }
+
+    /* ── generic modal ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(45,43,40,0.6); backdrop-filter: blur(4px); z-index: 150; display: flex; align-items: center; justify-content: center; padding: 1.25rem; }
+    .modal-card { background: #fff; border-radius: 1.75rem; padding: 1.75rem 1.5rem; width: 100%; max-width: 24rem; box-shadow: 0 24px 60px rgba(0,0,0,0.25); animation: popIn 0.3s cubic-bezier(0.2,0.9,0.4,1.1); }
+
+    /* ── misc polish ── */
+    .icon-chip { width: 2.5rem; height: 2.5rem; border-radius: 0.9rem; display: flex; align-items: center; justify-content: center; }
+    ::selection { background: rgba(160,125,84,0.25); }
   </style>
 </head>
 
 <body class="min-h-screen pb-28 safe-bottom">
 
-  <!-- HEADER — premium minimal -->
-  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E8E3DB] shadow-sm">
-    <div class="max-w-md mx-auto px-5 py-3.5 flex items-center justify-between">
-      <div>
-        <div class="flex items-center gap-1.5">
-          <i class="fas fa-lock text-[10px] text-[#B8956A]"></i>
-          <span class="text-[9px] font-bold tracking-widest text-[#B8956A] uppercase">Active Console</span>
+  <!-- ── Toast Container ── -->
+  <div id="toastContainer" aria-live="polite"></div>
+
+  <!-- ═══════════════════════════════════════════
+       HEADER – brand themed
+  ═══════════════════════════════════════════ -->
+  <header class="sticky top-0 z-50 bg-brand-cream/88 backdrop-blur-xl border-b border-brand-beige/40 shadow-sm">
+    <div class="max-w-md mx-auto px-5 py-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <i class="fas fa-lock text-brand-gold text-[10px]"></i>
+            <p class="text-[9px] uppercase tracking-wider text-brand-gold font-black">Active Job · Console</p>
+          </div>
+          <h1 class="font-serif-italic text-lg text-brand-olive leading-tight">Technician Work Mode</h1>
         </div>
-        <h1 class="font-serif-italic text-lg text-[#1E1B18] leading-tight">Technician Work Mode</h1>
-      </div>
-      <div class="flex items-center gap-2 text-[#B8956A]/70 text-xs font-bold">
-        <i class="fa-solid fa-shield-halved animate-pulse"></i> Secured
+        <div class="text-brand-gold/70 p-2 text-sm font-bold flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved animate-pulse"></i>
+          <span class="hidden xs:inline">Secured</span>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- MAIN -->
+  <!-- ═══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
   <main class="max-w-md mx-auto p-5 space-y-5">
 
-    <!-- LOADING -->
+    <!-- ── Loading ── -->
     <div id="loading" class="space-y-5 animate-fade-in">
       <div class="glass-card p-6 rounded-2xl">
         <div class="skeleton h-2.5 w-20 rounded-full mb-4"></div>
@@ -93,126 +221,148 @@
         <div class="skeleton h-10 w-full rounded-xl mb-2"></div>
         <div class="skeleton h-10 w-full rounded-xl"></div>
       </div>
-      <div class="text-center py-6 text-[#B8956A]/60">
-        <i class="fas fa-circle-notch fa-spin text-xl"></i>
-        <p class="text-xs mt-2 text-[#1E1B18]/40">Loading job details...</p>
+      <div class="text-center py-6">
+        <i class="fas fa-circle-notch fa-spin text-brand-gold/50 text-xl"></i>
+        <p class="text-xs text-brand-dark/40 mt-2">Syncing job details...</p>
       </div>
     </div>
 
-    <!-- JOB BOX -->
+    <!-- ── Error / Not Found ── -->
+    <div id="errorState" class="hidden glass-card p-8 rounded-2xl text-center">
+      <div class="w-14 h-14 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-triangle-exclamation text-xl"></i>
+      </div>
+      <h3 class="font-extrabold text-brand-dark text-base mb-1">Job Sync Failed</h3>
+      <p class="text-sm text-brand-dark/50 leading-relaxed mb-5">We couldn't load this job's details. It may have been reassigned or removed.</p>
+      <button id="errorBackBtn" class="w-full bg-brand-olive hover:bg-brand-dark text-white py-3 rounded-xl font-bold btn-touch transition-all">
+        <i class="fas fa-arrow-left mr-1.5"></i> Back to Dashboard
+      </button>
+    </div>
+
+    <!-- ── Job Box ── -->
     <div id="jobBox" class="hidden space-y-5">
 
       <!-- JOB HEADER CARD -->
-      <div class="glass-card p-5 rounded-2xl brand-border-left shadow-card">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="flex flex-wrap items-center gap-2 mb-2">
-              <span id="category" class="text-[9px] font-black text-[#B8956A] uppercase tracking-wider bg-[#B8956A]/10 px-2.5 py-1 rounded-full"></span>
-              <span id="statusBadge" class="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold rounded-full bg-blue-50 text-blue-700">
-                <i class="fas fa-play text-[7px]"></i> In Progress
+      <div class="glass-card p-5 rounded-2xl brand-border shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-2">
+              <span id="category" class="text-[9px] font-black text-brand-gold uppercase tracking-wider bg-brand-gold/10 px-2 py-0.5 rounded-full"></span>
+              <span id="statusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold rounded-full badge-progress">
+                <i class="fas fa-play text-[7px]"></i>
+                <span>In Progress</span>
               </span>
             </div>
-            <h2 id="device" class="text-xl font-extrabold text-[#1E1B18] flex items-center gap-2">
-              <i class="fas fa-microchip text-[#B8956A]/70 text-sm"></i>
+            <h2 id="device" class="text-xl font-extrabold text-brand-olive flex items-center gap-2">
+              <i class="fas fa-microchip text-brand-gold/70 text-sm"></i>
               <span class="break-words"></span>
             </h2>
-            <p id="issue" class="text-sm text-[#1E1B18]/60 mt-1.5 leading-relaxed"></p>
-            <p id="jobIdRef" class="text-[9px] font-mono text-[#1E1B18]/30 mt-2 flex items-center gap-1">
-              <i class="fas fa-barcode"></i> <span></span>
-            </p>
+            <p id="issue" class="text-sm text-brand-dark/60 mt-1.5 leading-relaxed"></p>
+            <div class="flex items-center gap-2 mt-2.5">
+              <p id="jobIdRef" class="text-[9px] font-mono text-brand-dark/30 flex items-center gap-1">
+                <i class="fas fa-barcode"></i> <span></span>
+              </p>
+              <button id="copyIdBtn" title="Copy Job ID" class="text-[9px] text-brand-gold/70 hover:text-brand-gold transition flex items-center gap-1">
+                <i class="fas fa-copy"></i>
+              </button>
+              <span class="text-brand-dark/20">·</span>
+              <p id="elapsedTime" class="text-[9px] font-mono text-brand-dark/30 flex items-center gap-1">
+                <i class="fas fa-stopwatch"></i> <span>--:--</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- CUSTOMER + NAVIGATION -->
-      <div class="glass-card p-5 rounded-2xl shadow-card">
+      <div class="glass-card p-5 rounded-2xl">
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#7A6A5A] to-[#B8956A] flex items-center justify-center text-white shadow-md">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white shadow-md">
             <i class="fas fa-user-astronaut text-sm"></i>
           </div>
-          <div>
-            <p class="text-[8px] uppercase tracking-wider text-[#B8956A] font-bold">Customer</p>
-            <p id="customer" class="text-base font-extrabold text-[#1E1B18] leading-tight"></p>
+          <div class="min-w-0">
+            <p class="text-[8px] uppercase tracking-wider text-brand-gold font-bold">Customer</p>
+            <p id="customer" class="text-base font-extrabold text-brand-dark leading-tight truncate"></p>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-          <a id="callBtn" class="flex items-center justify-center gap-2 bg-[#1E1B18] hover:bg-[#3A3530] text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+          <a id="callBtn" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
             <i class="fas fa-phone-alt text-xs"></i> Call
           </a>
-          <a id="smsBtn" class="flex items-center justify-center gap-2 bg-[#B8956A] hover:bg-[#9E7D5A] text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
+          <a id="smsBtn" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold transition-all btn-touch shadow-sm">
             <i class="fas fa-comment-dots text-xs"></i> Message
           </a>
         </div>
 
-        <div class="bg-[#F0EDE8] rounded-xl p-3.5 border border-[#E2DCD2]">
+        <div class="bg-brand-beige/15 rounded-xl p-3.5 border border-brand-beige/30">
           <div class="flex gap-2">
-            <i class="fas fa-map-pin text-[#B8956A] text-sm mt-0.5"></i>
+            <i class="fas fa-map-pin text-brand-gold text-sm mt-0.5"></i>
             <div class="flex-1">
-              <p class="text-[9px] font-bold text-[#B8956A] uppercase tracking-wider">Service Address</p>
-              <p id="location" class="text-sm text-[#1E1B18] font-medium leading-relaxed mt-0.5"></p>
+              <p class="text-[9px] font-bold text-brand-gold uppercase tracking-wider">Service Address</p>
+              <p id="location" class="text-sm text-brand-dark font-medium leading-relaxed mt-0.5"></p>
             </div>
           </div>
         </div>
 
-        <button id="routeBtn" class="w-full mt-4 bg-[#7A6A5A] hover:bg-[#1E1B18] text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+        <button id="routeBtn" class="w-full mt-4 bg-brand-olive hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
           <i class="fas fa-location-dot"></i> Navigate (Turn-by-Turn)
         </button>
       </div>
 
       <!-- LIVE ROUTE INTELLIGENCE -->
-      <div class="glass-card p-4 rounded-2xl border border-[#E2DCD2]/60 shadow-card">
+      <div class="glass-card p-4 rounded-2xl overflow-hidden border border-brand-beige/40">
         <div class="flex items-center justify-between mb-3">
-          <p class="text-[9px] uppercase tracking-wider text-[#B8956A] font-bold flex items-center gap-1 status-live-dot">
+          <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold flex items-center gap-1 status-live-dot">
             Live Route Intelligence
           </p>
-          <span class="text-[7px] text-[#1E1B18]/40 bg-white/60 px-2 py-0.5 rounded-full">
+          <span class="text-[7px] text-brand-dark/40 bg-white/50 px-2 py-0.5 rounded-full">
             <i class="fas fa-satellite-dish"></i> GPS RT
           </span>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-          <div class="bg-[#F4F2ED] rounded-xl p-3 text-center">
-            <i class="fas fa-road text-[#B8956A] text-sm mb-1.5 block"></i>
-            <p class="text-[8px] text-[#1E1B18]/50 uppercase">Distance</p>
-            <p id="distanceText" class="text-lg font-extrabold text-[#1E1B18] tracking-tight">--</p>
+          <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
+            <i class="fas fa-road text-brand-gold text-sm mb-1.5 block"></i>
+            <p class="text-[8px] text-brand-dark/50 uppercase">Distance</p>
+            <p id="distanceText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
           </div>
-          <div class="bg-[#F4F2ED] rounded-xl p-3 text-center">
-            <i class="fas fa-hourglass-half text-[#B8956A] text-sm mb-1.5 block"></i>
-            <p class="text-[8px] text-[#1E1B18]/50 uppercase">ETA</p>
-            <p id="etaText" class="text-lg font-extrabold text-[#1E1B18] tracking-tight">--</p>
+          <div class="bg-brand-cream/60 rounded-xl p-3 text-center">
+            <i class="fas fa-hourglass-half text-brand-gold text-sm mb-1.5 block"></i>
+            <p class="text-[8px] text-brand-dark/50 uppercase">ETA</p>
+            <p id="etaText" class="text-lg font-extrabold text-brand-olive tracking-tight">--</p>
           </div>
         </div>
 
         <div class="mt-1">
-          <div class="flex justify-between text-[7px] text-[#1E1B18]/40 mb-1 px-1">
+          <div class="flex justify-between text-[7px] text-brand-dark/40 mb-1 px-1">
             <span><i class="fas fa-flag-checkered"></i> Start</span>
             <span><i class="fas fa-chart-line"></i> Progress</span>
             <span><i class="fas fa-location-dot"></i> Arrival</span>
           </div>
-          <div class="h-1.5 bg-[#E2DCD2]/60 rounded-full overflow-hidden">
-            <div id="etaProgressBar" class="progress-fill h-full rounded-full" style="width: 0%"></div>
+          <div class="h-1.5 bg-brand-beige/50 rounded-full overflow-hidden">
+            <div id="etaProgressBar" class="progress-fill h-full rounded-full transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
 
-        <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#E2DCD2]/40">
+        <div class="flex items-center justify-between mt-3 pt-2 border-t border-brand-beige/30">
           <div class="flex items-center gap-1.5">
-            <i class="fas fa-clock text-[9px] text-[#B8956A]/60"></i>
-            <span id="lastUpdateTime" class="text-[8px] text-[#1E1B18]/40">Waiting for GPS</span>
+            <i class="fas fa-clock text-[9px] text-brand-gold/60"></i>
+            <span id="lastUpdateTime" class="text-[8px] text-brand-dark/40">Waiting for GPS</span>
           </div>
-          <button id="refreshLocationBtn" class="text-[9px] text-[#B8956A] hover:text-[#7A6A5A] transition flex items-center gap-1 bg-white/60 px-2 py-1 rounded-full">
+          <button id="refreshLocationBtn" class="text-[9px] text-brand-gold hover:text-brand-olive transition flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full btn-touch">
             <i class="fas fa-sync-alt text-[8px]"></i> Refresh
           </button>
         </div>
       </div>
 
       <!-- INSPECTION QUOTE CARD -->
-      <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden border-l-4 border-[#B8956A] shadow-card">
+      <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden">
         <div class="flex items-center gap-2 mb-4">
-          <i class="fas fa-clipboard-list text-[#B8956A] text-lg"></i>
-          <h3 class="font-bold text-[#1E1B18] text-base">Inspection Quote</h3>
-          <span class="ml-auto text-[9px] bg-[#F0EDE8] px-2.5 py-1 rounded-full text-[#7A6A5A]">
-            <i class="fas fa-rupee-sign"></i> Inspection: ₹299 paid
+          <i class="fas fa-clipboard-list text-brand-gold text-lg"></i>
+          <h3 class="font-bold text-brand-dark text-base">Inspection Quote</h3>
+          <span class="ml-auto text-[9px] bg-brand-cream px-2 py-1 rounded-full text-brand-olive">
+            <i class="fas fa-rupee-sign"></i> Inspection: ₹<span id="inspectionFeeBadge">299</span> paid
           </span>
         </div>
 
@@ -220,96 +370,127 @@
           <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center gap-1">
             <i class="fas fa-comment-dots"></i> Customer's Issue Description
           </p>
-          <p id="customerOtherIssueText" class="text-sm text-[#1E1B18] font-medium leading-relaxed"></p>
+          <p id="customerOtherIssueText" class="text-sm text-brand-dark font-medium leading-relaxed"></p>
         </div>
 
-        <div id="mixedServicesBox" class="hidden bg-[#F0EDE8]/50 border border-[#E2DCD2] rounded-xl p-3 mb-3">
-          <p class="text-[9px] font-bold text-[#7A6A5A] uppercase tracking-wider mb-1 flex items-center gap-1">
-            <i class="fas fa-list-check text-[#B8956A]"></i> Booked Services
+        <div id="mixedServicesBox" class="hidden bg-brand-cream/50 border border-brand-beige rounded-xl p-3 mb-3">
+          <p class="text-[9px] font-bold text-brand-olive uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fas fa-list-check text-brand-gold"></i> Booked Services
           </p>
-          <p id="mixedServicesText" class="text-xs text-[#1E1B18]/70 leading-relaxed"></p>
+          <p id="mixedServicesText" class="text-xs text-brand-dark/70 leading-relaxed"></p>
         </div>
 
-        <div class="bg-[#F0EDE8]/40 rounded-xl p-3 mb-4 text-xs text-[#1E1B18]/70">
-          <i class="fas fa-info-circle text-[#B8956A] mr-1"></i>
-          Customer already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. Adjusted from final quote.
+        <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
+          <i class="fas fa-info-circle text-brand-gold mr-1"></i>
+          Customer has already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. This will be adjusted from the final quote amount.
         </div>
 
         <div class="space-y-3">
           <div>
-            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
               <i class="fas fa-tools mr-1"></i> Labour Cost
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#B8956A] font-bold">₹</span>
-              <input type="number" id="labourCost" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#1E1B18] font-medium focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition bg-white/80">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" inputmode="numeric" min="0" id="labourCost" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
             </div>
           </div>
+
           <div>
-            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
               <i class="fas fa-cubes mr-1"></i> Material Cost
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#B8956A] font-bold">₹</span>
-              <input type="number" id="materialCost" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#1E1B18] font-medium focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition bg-white/80">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" inputmode="numeric" min="0" id="materialCost" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
             </div>
-          </div>
-          <div>
-            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
-              <i class="fas fa-plus-circle mr-1"></i> Extra Charges
-            </label>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#B8956A] font-bold">₹</span>
-              <input type="number" id="extraCharges" placeholder="0" class="w-full border border-[#E2DCD2] rounded-xl p-3 pl-8 text-[#1E1B18] font-medium focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition bg-white/80">
-            </div>
-          </div>
-          <div>
-            <label class="text-[10px] font-bold text-[#1E1B18]/60 uppercase tracking-wider block mb-1">
-              <i class="fas fa-file-alt mr-1"></i> Work Description
-            </label>
-            <textarea id="quoteDescription" rows="3" placeholder="Describe issue, repairs, parts needed..." class="w-full border border-[#E2DCD2] rounded-xl p-3 text-[#1E1B18] text-sm focus:border-[#B8956A] focus:ring-1 focus:ring-[#B8956A] outline-none transition resize-none bg-white/80"></textarea>
           </div>
 
-          <div class="bg-gradient-to-br from-[#F4F2ED] to-[#EDEAE4] rounded-xl p-3 mt-2 border border-[#E2DCD2]">
-            <div class="flex justify-between text-sm mb-2"><span class="text-[#1E1B18]/60">Labour:</span><span class="font-mono font-bold" id="previewLabour">₹0</span></div>
-            <div class="flex justify-between text-sm mb-2"><span class="text-[#1E1B18]/60">Material:</span><span class="font-mono font-bold" id="previewMaterial">₹0</span></div>
-            <div class="flex justify-between text-sm mb-2"><span class="text-[#1E1B18]/60">Extra:</span><span class="font-mono font-bold" id="previewExtra">₹0</span></div>
-            <div class="border-t border-[#D6CEC2] my-2"></div>
-            <div class="flex justify-between text-base font-bold"><span class="text-[#1E1B18]">Total Quote:</span><span class="font-mono text-[#B8956A]" id="previewTotal">₹0</span></div>
-            <div class="flex justify-between text-xs mt-2 text-green-700"><span>Inspection adjustment:</span><span id="adjustmentInfo">-₹299</span></div>
-            <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200"><span class="text-[#1E1B18]">Customer Payable:</span><span class="font-mono text-green-700" id="previewPayable">₹0</span></div>
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-plus-circle mr-1"></i> Extra Charges (if any)
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" inputmode="numeric" min="0" id="extraCharges" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-file-alt mr-1"></i> Work Description
+            </label>
+            <textarea id="quoteDescription" rows="3" placeholder="Describe the issue found, recommended repairs, parts needed, and any additional notes..." class="w-full border border-brand-beige rounded-xl p-3 text-brand-dark text-sm focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition resize-none"></textarea>
+          </div>
+
+          <div class="bg-gradient-to-r from-brand-olive/5 to-brand-gold/5 rounded-xl p-3 mt-2">
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-brand-dark/60">Labour:</span>
+              <span class="font-mono font-bold" id="previewLabour">₹0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-brand-dark/60">Material:</span>
+              <span class="font-mono font-bold" id="previewMaterial">₹0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-brand-dark/60">Extra:</span>
+              <span class="font-mono font-bold" id="previewExtra">₹0</span>
+            </div>
+            <div class="border-t border-brand-beige/50 my-2"></div>
+            <div class="flex justify-between text-base font-bold">
+              <span class="text-brand-olive">Total Quote:</span>
+              <span class="font-mono text-brand-gold" id="previewTotal">₹0</span>
+            </div>
+            <div class="flex justify-between text-xs mt-2 text-green-600">
+              <span>Inspection fee adjustment:</span>
+              <span id="adjustmentInfo">-₹299 (already paid)</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200">
+              <span class="text-brand-dark">Customer Payable:</span>
+              <span class="font-mono text-green-700" id="previewPayable">₹0</span>
+            </div>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4">
-          <button id="cancelQuoteBtn" class="py-3 rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition-all btn-touch">Cancel</button>
-          <button id="submitQuoteBtn" class="py-3 rounded-xl bg-[#B8956A] text-white font-bold hover:bg-[#7A6A5A] transition-all btn-touch shadow-md flex items-center justify-center gap-2">
+          <button id="cancelQuoteBtn" class="py-3 rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition-all btn-touch">
+            Cancel
+          </button>
+          <button id="submitQuoteBtn" class="py-3 rounded-xl bg-brand-gold text-white font-bold hover:bg-brand-olive transition-all btn-touch shadow-md flex items-center justify-center gap-2">
             <i class="fas fa-paper-plane"></i> Submit Quote
           </button>
         </div>
       </div>
 
       <!-- PAYMENT QR -->
-      <div class="glass-card p-5 rounded-2xl text-center border border-[#E2DCD2]/50 shadow-card">
+      <div class="glass-card p-5 rounded-2xl text-center">
         <div class="flex items-center justify-center gap-2 mb-2">
-          <div class="w-6 h-6 rounded-full bg-[#B8956A]/10 flex items-center justify-center">
-            <i class="fas fa-qrcode text-[#B8956A] text-xs"></i>
+          <div class="w-6 h-6 rounded-full bg-brand-gold/10 flex items-center justify-center">
+            <i class="fas fa-qrcode text-brand-gold text-xs"></i>
           </div>
-          <p class="text-[9px] uppercase tracking-wider text-[#B8956A] font-bold">Secure Payment</p>
+          <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Secure Payment</p>
         </div>
-        <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" onerror="this.onerror=null;this.src='https://placehold.co/200x200/F4F2ED/B8956A?text=SCAN+QR';this.alt='Payment QR'" />
+
+        <div class="relative inline-block mx-auto">
+          <img id="qrCodeImg" src="gpay-qr.jpeg" class="w-36 mx-auto rounded-xl border-2 border-white shadow-md bg-white" onerror="this.onerror=null;this.src='https://placehold.co/200x200/F8F5F0/A07D54?text=SCAN+QR';this.alt='Payment QR'" />
+          <div class="absolute -top-1.5 -right-1.5 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px] shadow-md">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+        </div>
+
         <div class="mt-3 flex items-center justify-center gap-1.5 text-amber-700 bg-amber-50 inline-flex px-3 py-1 rounded-full mx-auto">
           <i class="fas fa-exclamation-triangle text-[8px]"></i>
-          <p class="text-[9px] font-semibold">Collect payment before completion</p>
+          <p class="text-[9px] font-semibold">Collect payment before completing job</p>
         </div>
       </div>
 
-      <!-- ACTIONS -->
+      <!-- ACTION BUTTONS -->
       <div class="space-y-3">
-        <button id="arrivedBtn" class="w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-sm">
-          <i class="fas fa-flag-checkered"></i> Mark Arrived
+        <button id="arrivedBtn" class="w-full bg-info hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all btn-touch flex items-center justify-center gap-2 shadow-sm">
+          <i class="fas fa-flag-checkered"></i> <span>Mark Arrived at Location</span>
         </button>
-        <button id="completeBtn" class="w-full bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white py-3.5 rounded-xl font-black tracking-wide transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
+
+        <button id="completeBtn" class="w-full bg-gradient-to-r from-success to-emerald-600 hover:from-emerald-600 hover:to-green-700 text-white py-3.5 rounded-xl font-black tracking-wide transition-all btn-touch flex items-center justify-center gap-2 shadow-md">
           <i class="fas fa-circle-check"></i> Complete Job & Unlock
         </button>
       </div>
@@ -317,52 +498,110 @@
     </div>
   </main>
 
-  <!-- OTP SHEET -->
-  <div id="otpOverlay" class="fixed inset-0 bg-[#1E1B18]/70 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
+  <!-- ═══════════════════════════════════════════
+       OTP VERIFICATION SHEET (brand themed)
+  ═══════════════════════════════════════════ -->
+  <div id="otpOverlay" class="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
     <div id="otpSheet" class="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 shadow-2xl border-t border-white transform translate-y-full transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
-      <div class="w-12 h-1 bg-[#E2DCD2] rounded-full mx-auto mb-6"></div>
+
+      <div class="w-12 h-1 bg-brand-beige/60 rounded-full mx-auto mb-6"></div>
+
       <div class="text-center mb-6">
-        <div class="w-14 h-14 bg-[#B8956A]/10 text-[#B8956A] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
+        <div class="w-14 h-14 bg-brand-gold/10 text-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner animate-bounce">
           <i class="fas fa-shield-keyhole text-2xl"></i>
         </div>
-        <h3 class="text-xl font-black text-[#1E1B18]">Verify Completion Code</h3>
-        <p class="text-xs text-gray-500 mt-1">6-digit code from customer's display</p>
+        <h3 class="text-xl font-black text-brand-dark">Verify Completion Code</h3>
+        <p class="text-xs text-gray-500 mt-1">Enter the 6-digit security code from the customer's display sheet to finalize payment.</p>
       </div>
+
       <div class="flex justify-center gap-2 mb-6" id="otpFieldsContainer">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="0">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="1">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="2">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="3">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="4">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-box" data-idx="5">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1" class="otp-box" data-idx="0">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2" class="otp-box" data-idx="1">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3" class="otp-box" data-idx="2">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4" class="otp-box" data-idx="3">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5" class="otp-box" data-idx="4">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6" class="otp-box" data-idx="5">
       </div>
+
       <div id="otpErrorMessage" class="hidden text-center text-xs text-red-500 font-bold mb-4 animate__animated animate__headShake">
-        <i class="fas fa-circle-exclamation mr-1"></i> Mismatched digits. Try again.
+        <i class="fas fa-circle-exclamation mr-1"></i> Mismatched verification digits. Please check and retry.
       </div>
+
       <div class="flex gap-3">
-        <button id="cancelOtpBtn" class="flex-1 py-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition">Cancel</button>
-        <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-[#B8956A] hover:bg-[#7A6A5A] text-white rounded-xl text-sm font-black tracking-wider shadow-md transition flex items-center justify-center gap-2">
+        <button id="cancelOtpBtn" class="flex-1 py-3.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors btn-touch">
+          Cancel Verify
+        </button>
+        <button id="verifyOtpBtn" class="flex-1 py-3.5 bg-brand-gold hover:bg-brand-olive text-white rounded-xl text-sm font-black tracking-wider shadow-md transition-colors flex items-center justify-center gap-2 btn-touch">
           <span>Verify Code</span> <i class="fas fa-arrow-right text-xs"></i>
         </button>
       </div>
-      <p class="text-center text-[9px] text-gray-400 mt-4 uppercase font-bold tracking-widest"><i class="fas fa-lock-keyhole"></i> FixZen Verified</p>
+
+      <p class="text-center text-[9px] text-gray-400 mt-4 uppercase font-bold tracking-widest">
+        <i class="fas fa-lock-keyhole"></i> FixZen Verified Lifecycle
+      </p>
     </div>
   </div>
 
-  <!-- FAB SUPPORT -->
-  <div class="fixed bottom-5 right-5 z-40">
-    <button id="supportFloatBtn" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-[#E2DCD2] hover:bg-[#B8956A]/10 transition active:scale-95">
-      <i class="fas fa-headset text-[#7A6A5A] text-sm"></i>
+  <!-- ═══════════════════════════════════════════
+       COMPLETION CELEBRATION MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="completionOverlay" class="modal-overlay hidden">
+    <div class="modal-card text-center">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-success to-emerald-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i class="fas fa-check text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-black text-brand-dark mb-1">Code Verified!</h3>
+      <p class="text-sm text-brand-dark/50 mb-4">Job closed successfully. Thank you for your premium service.</p>
+      <div class="bg-brand-cream rounded-xl p-4 mb-5">
+        <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold mb-1">Earnings Apportioned</p>
+        <p id="completionFeeText" class="text-2xl font-black text-brand-olive">₹0</p>
+      </div>
+      <button id="completionDoneBtn" class="w-full bg-brand-olive hover:bg-brand-dark text-white py-3 rounded-xl font-bold btn-touch transition-all">
+        Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       SUPPORT MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="supportOverlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="icon-chip bg-brand-gold/10 text-brand-gold">
+          <i class="fas fa-headset"></i>
+        </div>
+        <div>
+          <h3 class="font-black text-brand-dark text-base">FixZen Support</h3>
+          <p class="text-[10px] text-brand-dark/40">Available 24/7 for technicians</p>
+        </div>
+      </div>
+      <div class="space-y-2 mb-5">
+        <a href="tel:18003493936" class="flex items-center gap-3 bg-brand-cream/60 rounded-xl p-3 hover:bg-brand-cream transition">
+          <i class="fas fa-phone text-brand-gold"></i>
+          <span class="text-sm font-bold text-brand-dark">1800-FIXZEN</span>
+        </a>
+        <a href="mailto:support@fixzenpro.com" class="flex items-center gap-3 bg-brand-cream/60 rounded-xl p-3 hover:bg-brand-cream transition">
+          <i class="fas fa-envelope text-brand-gold"></i>
+          <span class="text-sm font-bold text-brand-dark">support@fixzenpro.com</span>
+        </a>
+      </div>
+      <button id="closeSupportBtn" class="w-full py-3 rounded-xl border border-brand-beige text-brand-dark/60 font-bold hover:bg-brand-cream transition btn-touch">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- ── FAB: Support ── -->
+  <div class="fixed bottom-5 right-5 z-40 flex flex-col gap-2">
+    <button id="supportFloatBtn" aria-label="Contact support" class="bg-white/90 backdrop-blur rounded-full w-11 h-11 flex items-center justify-center shadow-lg border border-brand-beige hover:bg-brand-gold/10 transition-all active:scale-95 btn-touch">
+      <i class="fas fa-headset text-brand-olive text-sm"></i>
     </button>
   </div>
 
-  <!-- SCRIPT (full logic from original job_detail.js) -->
-  <script>
-    // ── paste the entire original job_detail.js logic here ──
-    // (all functions remain unchanged; only UI markup upgraded)
-    console.log('FixZen Pro · UI upgraded · script ready');
-  </script>
-  <!-- for completeness, we reference the external script -->
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
   <script src="job_detail.js"></script>
 </body>
 </html>
