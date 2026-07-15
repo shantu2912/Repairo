@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -128,20 +129,6 @@
         lat: null,
         lng: null,
         otherIssueText: '',
-
-        // ── COUPON / PROMO STATE ──
-        couponCode: '',
-        couponApplied: null,   // { code, discount, promoId } once successfully applied
-        couponLoading: false,
-        couponError: '',
-
-        get discount() {
-            return this.couponApplied ? this.couponApplied.discount : 0;
-        },
-
-        get finalTotal() {
-            return Math.max(this.total - this.discount, 0);
-        },
 
         get hasOtherIssueSelected() {
             return this.selectedSubs.some(s => s.is_inspection === true);
@@ -341,87 +328,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         },
 
-        // ── COUPON / PROMO METHODS ──
-        async applyCoupon() {
-            this.couponError = '';
-            const code = this.couponCode.trim().toUpperCase();
-
-            if (!code) {
-                this.couponError = 'Enter a coupon code';
-                return;
-            }
-            if (!window.sb) {
-                this.couponError = 'Could not verify coupon right now';
-                return;
-            }
-
-            this.couponLoading = true;
-            try {
-                const { data: promo, error } = await window.sb
-                    .from('promos')
-                    .select('*')
-                    .eq('code', code)
-                    .maybeSingle();
-
-                if (error) throw error;
-
-                if (!promo) {
-                    this.couponError = 'Invalid coupon code';
-                    this.couponApplied = null;
-                    return;
-                }
-
-                const isExpired = new Date(promo.expiry) < new Date();
-                if (isExpired) {
-                    this.couponError = 'This coupon has expired';
-                    this.couponApplied = null;
-                    return;
-                }
-
-                const discountAmount = promo.type === 'flat'
-                    ? Math.min(promo.value, this.total)
-                    : Math.round(this.total * (promo.value / 100));
-
-                this.couponApplied = { code: promo.code, discount: discountAmount, promoId: promo.id };
-                this.couponError = '';
-            } catch (err) {
-                console.error('Coupon lookup failed:', err);
-                this.couponError = 'Could not verify coupon right now';
-                this.couponApplied = null;
-            } finally {
-                this.couponLoading = false;
-            }
-        },
-
-        removeCoupon() {
-            this.couponApplied = null;
-            this.couponCode = '';
-            this.couponError = '';
-        },
-
-        // Called after a booking is actually confirmed — increments the
-        // promo's usage_count so admin's "Redemptions" stat reflects real bookings.
-        async recordCouponRedemption(promoId) {
-            try {
-                const { data: promo, error: fetchError } = await window.sb
-                    .from('promos')
-                    .select('usage_count')
-                    .eq('id', promoId)
-                    .single();
-
-                if (fetchError) throw fetchError;
-
-                const { error: updateError } = await window.sb
-                    .from('promos')
-                    .update({ usage_count: (promo.usage_count || 0) + 1 })
-                    .eq('id', promoId);
-
-                if (updateError) throw updateError;
-            } catch (err) {
-                console.error('Failed to record coupon redemption:', err);
-            }
-        },
-
         async processInspectionPayment(amount, isMixed = false) {
             return new Promise((resolve) => {
                 const msg = isMixed
@@ -485,7 +391,6 @@
                 
                 const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
                 const originalPrice = this.total;
-                const finalPrice = this.finalTotal;
                 
                 if (hasOtherIssue) {
                     const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
@@ -527,8 +432,7 @@
                     longitude: this.lng || null,
                     scheduled_time: scheduledDateTime,
                     original_price: originalPrice,
-                    discounted_price: finalPrice,
-                    promo_code: this.couponApplied ? this.couponApplied.code : null,
+                    discounted_price: originalPrice,
                     is_inspection_job: hasOtherIssue,
                     inspection_fee_paid: hasOtherIssue,
                     inspection_fee_amount: inspectionFeeAmount,
@@ -545,10 +449,6 @@
                     alert('Booking Error: ' + jobError.message); 
                     this.bookingLoading = false; 
                     return; 
-                }
-
-                if (this.couponApplied) {
-                    await this.recordCouponRedemption(this.couponApplied.promoId);
                 }
 
                 this.bookingLoading = false;
@@ -711,10 +611,7 @@
                 </div>
                 <div class="flex justify-between items-center pt-3 mt-2 border-t-2 border-brand-gold/20">
                     <p class="font-bold text-brand-olive text-base">Total Estimate</p>
-                    <div class="text-right">
-                        <p class="font-bold text-brand-gold text-xl">₹<span x-text="finalTotal"></span></p>
-                        <p x-show="discount > 0" class="text-[10px] text-brand-dark/30 line-through">₹<span x-text="total"></span></p>
-                    </div>
+                    <p class="font-bold text-brand-gold text-xl">₹<span x-text="total"></span></p>
                 </div>
                 <p class="text-[9px] text-brand-dark/40 text-center mt-2">
                     <i class="fas fa-shield-alt mr-1"></i> 
@@ -767,17 +664,10 @@
         <div class="flex justify-between items-center mb-3">
             <div>
                 <p class="text-[9px] text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
-                <div class="flex items-baseline gap-2">
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-lg font-bold text-brand-olive">₹</span>
-                        <h2 class="text-3xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="finalTotal"></h2>
-                    </div>
-                    <span x-show="discount > 0" class="text-sm text-brand-dark/30 line-through" x-text="'₹' + total"></span>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-lg font-bold text-brand-olive">₹</span>
+                    <h2 class="text-3xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="total"></h2>
                 </div>
-                <p x-show="discount > 0" class="text-[9px] text-brand-green font-bold mt-0.5 flex items-center gap-1">
-                    <i class="fa-solid fa-tag"></i>
-                    Coupon applied — you saved ₹<span x-text="discount"></span>
-                </p>
                 <p x-show="hasOtherIssueSelected && selectedSubs.length > 1" 
                    class="text-[9px] text-brand-gold mt-0.5 flex items-center gap-1">
                     <i class="fa-solid fa-circle-info"></i>
@@ -817,7 +707,7 @@
                 <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
                 <div class="flex justify-between items-center">
                     <h3 class="text-xl font-serif font-bold gradient-text">Confirm Booking</h3>
-                    <span class="text-sm font-bold bg-brand-gold/10 px-3 py-1 rounded-full text-brand-gold">₹<span x-text="finalTotal"></span></span>
+                    <span class="text-sm font-bold bg-brand-gold/10 px-3 py-1 rounded-full text-brand-gold">₹<span x-text="total"></span></span>
                 </div>
             </div>
             
@@ -859,40 +749,6 @@
                             <i class="fas fa-exclamation-triangle"></i> Please select a time at least 30 minutes from now
                         </p>
                     </div>
-                </div>
-
-                <!-- COUPON CODE -->
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                    <template x-if="!couponApplied">
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-tag text-brand-gold text-sm"></i>
-                            <input type="text" x-model="couponCode"
-                                   @keyup.enter="applyCoupon()"
-                                   placeholder="Have a coupon code?"
-                                   class="bg-transparent w-full text-sm font-medium uppercase tracking-wide text-brand-dark focus:outline-none placeholder:text-gray-400 placeholder:normal-case">
-                            <button @click="applyCoupon()" :disabled="couponLoading"
-                                    class="text-xs font-bold text-brand-gold px-3 py-1.5 rounded-lg hover:bg-brand-gold/10 transition-colors disabled:opacity-50 flex-shrink-0">
-                                <span x-show="!couponLoading">Apply</span>
-                                <i x-show="couponLoading" class="fas fa-circle-notch fa-spin"></i>
-                            </button>
-                        </div>
-                    </template>
-                    <template x-if="couponApplied">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2 text-brand-green">
-                                <i class="fas fa-circle-check text-sm"></i>
-                                <span class="text-sm font-bold" x-text="couponApplied.code"></span>
-                                <span class="text-xs text-brand-dark/50">(−₹<span x-text="couponApplied.discount"></span>)</span>
-                            </div>
-                            <button @click="removeCoupon()" class="text-xs font-bold text-brand-dark/40 hover:text-brand-red transition-colors">
-                                Remove
-                            </button>
-                        </div>
-                    </template>
-                    <p x-show="couponError" class="text-[10px] text-brand-red mt-1.5 flex items-center gap-1">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span x-text="couponError"></span>
-                    </p>
                 </div>
 
                 <div class="bg-gradient-to-br from-brand-cream/50 to-white rounded-xl p-4 border border-brand-beige/30 max-h-40 overflow-y-auto text-xs text-brand-dark/70 leading-relaxed">
@@ -945,3 +801,4 @@
 
 </body>
 </html>
+
