@@ -409,43 +409,56 @@
       </button>
     </div>
 
-    <!-- Section header -->
-    <div class="flex items-center justify-between pt-1">
-      <span class="section-label flex items-center gap-2">
-        <i class="fa-regular fa-list-check text-brand-gold"></i>
-        Your Jobs
-      </span>
-      <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
-    </div>
-
-    <!-- Loading -->
-    <div x-show="loading" class="space-y-4">
-      <div class="job-card p-5 space-y-3">
-        <div class="skeleton h-3 w-20 rounded"></div>
-        <div class="skeleton h-5 w-48 rounded"></div>
-        <div class="skeleton h-3 w-full rounded"></div>
-        <div class="skeleton h-3 w-3/4 rounded"></div>
-      </div>
-      <div class="job-card p-5 space-y-3">
-        <div class="skeleton h-3 w-24 rounded"></div>
-        <div class="skeleton h-5 w-40 rounded"></div>
-        <div class="skeleton h-3 w-full rounded"></div>
-      </div>
-    </div>
-
-    <!-- Empty -->
-    <div x-show="!loading && jobs.length === 0"
-         class="flex flex-col items-center justify-center py-20 text-center">
+    <!-- OFFLINE STATE: shown only when technician has toggled themselves offline -->
+    <div x-show="!available" class="flex flex-col items-center justify-center py-20 text-center">
       <div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
-        <i class="fa-regular fa-inbox text-3xl text-brand-gold/30"></i>
+        <i class="fa-solid fa-power-off text-3xl text-brand-dark/20"></i>
       </div>
-      <p class="font-semibold text-brand-dark text-[17px]">All caught up! ✨</p>
-      <p class="text-xs text-brand-dark/40 mt-1">No jobs at the moment</p>
+      <p class="font-semibold text-brand-dark text-[17px]">You're offline</p>
+      <p class="text-xs text-brand-dark/40 mt-1">Turn on availability above to start receiving jobs</p>
     </div>
 
-    <!-- JOB CARDS -->
-    <section id="jobsSection" class="space-y-4 pb-4">
-      <template x-for="job in jobs" :key="job.id">
+    <!-- ONLINE STATE: jobs list only renders while technician is available -->
+    <template x-if="available">
+      <div class="space-y-5">
+
+        <!-- Section header -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="section-label flex items-center gap-2">
+            <i class="fa-regular fa-list-check text-brand-gold"></i>
+            Your Jobs
+          </span>
+          <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="space-y-4">
+          <div class="job-card p-5 space-y-3">
+            <div class="skeleton h-3 w-20 rounded"></div>
+            <div class="skeleton h-5 w-48 rounded"></div>
+            <div class="skeleton h-3 w-full rounded"></div>
+            <div class="skeleton h-3 w-3/4 rounded"></div>
+          </div>
+          <div class="job-card p-5 space-y-3">
+            <div class="skeleton h-3 w-24 rounded"></div>
+            <div class="skeleton h-5 w-40 rounded"></div>
+            <div class="skeleton h-3 w-full rounded"></div>
+          </div>
+        </div>
+
+        <!-- Empty -->
+        <div x-show="!loading && jobs.length === 0"
+             class="flex flex-col items-center justify-center py-20 text-center">
+          <div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
+            <i class="fa-regular fa-inbox text-3xl text-brand-gold/30"></i>
+          </div>
+          <p class="font-semibold text-brand-dark text-[17px]">All caught up! ✨</p>
+          <p class="text-xs text-brand-dark/40 mt-1">No jobs at the moment</p>
+        </div>
+
+        <!-- JOB CARDS -->
+        <section id="jobsSection" class="space-y-4 pb-4">
+          <template x-for="job in jobs" :key="job.id">
         <div class="job-card">
 
           <!-- decorative gradient accent -->
@@ -557,6 +570,9 @@
         </div>
       </template>
     </section>
+
+      </div>
+    </template>
 
   </main>
 
