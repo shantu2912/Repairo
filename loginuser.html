@@ -172,7 +172,7 @@
                         <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length >= 3 && !errors.name}" :placeholder="tx('name_placeholder')">
                         <p x-show="errors.name" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('msg_name_req')"></p>
                     </div>
-                    
+                     
                     <div>
                         <label class="input-label deva" x-text="tx('username')"></label>
                         <input type="text" x-model="form.user" x-on:input="validateField('user')" class="fixzen-input" :class="{'error': errors.user, 'success': form.user.trim().length > 0 && !errors.user}" :placeholder="tx('user_placeholder')">
