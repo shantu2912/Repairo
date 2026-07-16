@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FixZen - Premium Access</title>
+    <title>FixZen · Secure Access</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght=1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -76,6 +76,15 @@
         .lang-btn:hover { border-color: #A07D54; background: rgba(160,125,84,0.05); }
         .lang-btn.active { border-color: #5D5646; background: #5D5646; color: white; }
         .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
+
+        /* attempt indicator */
+        .attempt-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            margin: 0 2px; transition: all 0.2s;
+        }
+        .attempt-dot.active { background-color: #5D5646; }
+        .attempt-dot.used { background-color: #EF4444; }
+        .attempt-dot.empty { background-color: #DFD4C3; }
     </style>
 </head>
 
@@ -91,6 +100,7 @@
 
     <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white">
 
+        <!-- ========== LANGUAGE SELECT ========== -->
         <div x-show="step==='lang'" class="space-y-6 text-center">
             <div class="w-12 h-12 bg-brand-cream rounded-full flex items-center justify-center mx-auto mb-2">
                 <i class="fa-solid fa-language text-brand-gold text-xl"></i>
@@ -119,6 +129,7 @@
             </button>
         </div>
 
+        <!-- ========== CHOOSE ========== -->
         <div x-show="step==='choose'" x-cloak class="space-y-4 text-center">
             <div class="flex justify-center gap-2 mb-4">
                 <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all">EN</button>
@@ -127,10 +138,11 @@
             </div>
 
             <h2 class="font-serif italic text-2xl text-brand-olive mb-6 deva" x-text="tx('welcome')"></h2>
-            <button @click="isNewUser=true; step='auth'; resetErrors()" class="btn-primary deva" x-text="tx('create_account')"></button>
-            <button @click="isNewUser=false; step='auth'; resetErrors()" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
+            <button @click="isNewUser=true; step='auth'; resetErrors(); resetAttempts()" class="btn-primary deva" x-text="tx('create_account')"></button>
+            <button @click="isNewUser=false; step='auth'; resetErrors(); resetAttempts()" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
         </div>
 
+        <!-- ========== AUTH (LOGIN / REGISTER) ========== -->
         <div x-show="step==='auth'" x-cloak>
             <div class="flex justify-end gap-2 mb-4">
                 <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all">EN</button>
@@ -140,7 +152,20 @@
 
             <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-6 deva" x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
 
+            <!-- attempt indicator (only for login) -->
+            <div x-show="!isNewUser" class="flex justify-center items-center gap-1 mb-4">
+                <template x-for="i in 5" :key="i">
+                    <span class="attempt-dot" 
+                          :class="i <= loginAttempts ? 'used' : (i === loginAttempts + 1 ? 'active' : 'empty')"
+                          x-text="''"></span>
+                </template>
+                <span class="text-[10px] font-bold text-brand-dark/40 ml-2 deva">
+                    <span x-text="5 - loginAttempts"></span> <span x-text="tx('attempts_left')"></span>
+                </span>
+            </div>
+
             <div class="space-y-4">
+                <!-- NAME (only for register) -->
                 <div x-show="isNewUser" class="space-y-4" x-collapse>
                     <div>
                         <label class="input-label deva" x-text="tx('full_name')"></label>
@@ -160,6 +185,7 @@
                     </div>
                 </div>
 
+                <!-- PHONE -->
                 <div>
                     <label class="input-label deva" x-text="tx('mobile')"></label>
                     <div class="relative">
@@ -169,33 +195,43 @@
                     <p x-show="errors.phone" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_phone')"></p>
                 </div>
 
+                <!-- PASSWORD -->
                 <div>
                     <label class="input-label deva" x-text="tx('password')"></label>
                     <input type="password" x-model="form.pass" x-on:input="validateField('pass')" class="fixzen-input" :class="{'error': errors.pass, 'success': form.pass.length >= 6 && !errors.pass}" :placeholder="tx('pass_placeholder')">
                     <p x-show="errors.pass" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_pass')"></p>
                 </div>
 
+                <!-- FORGOT PASSWORD link (login only) -->
                 <div x-show="!isNewUser" class="text-right pr-1">
-                    <button type="button" @click="step='forgot'; message=''" class="text-xs font-bold text-brand-gold hover:underline underline-offset-2 tracking-wide deva" x-text="tx('forgot_link')"></button>
+                    <button type="button" @click="step='forgot'; message=''; resetErrors()" class="text-xs font-bold text-brand-gold hover:underline underline-offset-2 tracking-wide deva" x-text="tx('forgot_link')"></button>
                 </div>
 
-                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading">
+                <!-- SUBMIT -->
+                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading || (isNewUser ? false : loginAttempts >= 5)">
                     <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('sign_in')"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
 
+                <!-- LOCKED MESSAGE -->
+                <div x-show="!isNewUser && loginAttempts >= 5" class="p-3 bg-red-100 border border-red-300 rounded-xl mt-4">
+                    <p class="text-xs text-red-700 font-bold text-center deva" x-text="tx('locked_msg')"></p>
+                </div>
+
+                <!-- ERROR MESSAGE -->
                 <div x-show="message" class="p-3 bg-red-50 border border-red-200 rounded-xl mt-4 animate__animated animate__shakeX">
                     <p class="text-xs text-red-600 font-bold text-center leading-normal deva" x-text="message"></p>
                 </div>
 
                 <div class="mt-6 pt-6 border-t border-brand-beige/30 text-center">
-                    <button @click="isNewUser = !isNewUser; resetErrors();" class="text-xs font-bold text-brand-gold hover:underline tracking-widest decoration-brand-gold/30 underline-offset-4 deva">
+                    <button @click="isNewUser = !isNewUser; resetErrors(); resetAttempts(); message=''" class="text-xs font-bold text-brand-gold hover:underline tracking-widest decoration-brand-gold/30 underline-offset-4 deva">
                         <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- ========== FORGOT PASSWORD ========== -->
         <div x-show="step==='forgot'" x-cloak class="space-y-4 animate__animated animate__fadeIn">
             <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-1 deva" x-text="tx('reset_title')"></h2>
             <p class="text-center text-xs text-gray-500 leading-normal mb-4 deva" x-text="tx('reset_subtitle')"></p>
@@ -236,7 +272,7 @@
             </div>
 
             <div class="mt-6 pt-4 border-t border-brand-beige/30 text-center">
-                <button @click="step='auth'; forgotVerified=false; forgot={phone:'',birthplace:'',newPass:''}; message=''" class="text-xs font-bold text-brand-dark/50 hover:text-brand-dark tracking-wide deva">
+                <button @click="step='auth'; forgotVerified=false; forgot={phone:'',birthplace:'',newPass:''}; message=''; resetAttempts()" class="text-xs font-bold text-brand-dark/50 hover:text-brand-dark tracking-wide deva">
                     <i class="fa-solid fa-arrow-left mr-1"></i> Back to Sign In
                 </button>
             </div>
@@ -262,9 +298,317 @@
 </script>
 
 <!-- ============================================================
-     📦 AUTH LOGIC (loaded from external JS)
+     📦 AUTH LOGIC (embedded with 5-attempt limit)
      ============================================================ -->
-<script src="loginuser.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('authApp', () => ({
+            // ---------- STATE ----------
+            lang: 'en',
+            step: 'lang',        // lang | choose | auth | forgot
+            isNewUser: true,
+            loading: false,
+            message: '',
+            loginAttempts: 0,     // 0..5 (5 = locked)
+            forgotVerified: false,
 
+            // form data
+            form: { name: '', user: '', birthplace: '', phone: '', pass: '' },
+            forgot: { phone: '', birthplace: '', newPass: '' },
+            errors: { name: false, user: false, phone: false, pass: false },
+
+            // ---------- TRANSLATIONS ----------
+            translations: {
+                en: {
+                    tagline: 'Premium Access',
+                    choose_lang: 'Choose your language',
+                    lang_continue: 'Continue',
+                    welcome: 'Welcome to FixZen',
+                    create_account: 'Create Account',
+                    login: 'Sign In',
+                    welcome_back: 'Welcome Back',
+                    full_name: 'Full Name',
+                    name_placeholder: 'e.g. Rajesh Kumar',
+                    username: 'Username (unique)',
+                    user_placeholder: 'e.g. rajesh123',
+                    secret_question: 'Secret (birthplace)',
+                    secret_placeholder: 'Your birthplace',
+                    mobile: 'Mobile Number',
+                    phone_placeholder: '9876543210',
+                    password: 'Password (min 6 chars)',
+                    pass_placeholder: '••••••••',
+                    sign_in: 'Sign In',
+                    already_member: 'Already a member? Sign In',
+                    new_user: 'New user? Create Account',
+                    forgot_link: 'Forgot password?',
+                    reset_title: 'Reset Password',
+                    reset_subtitle: 'Enter your mobile & birthplace to verify.',
+                    verify_btn: 'Verify Identity',
+                    new_password: 'New Password',
+                    save_pass_btn: 'Save Password',
+                    attempts_left: 'attempts left',
+                    locked_msg: '🔒 Account locked. Too many failed attempts. Contact support.',
+                    // errors
+                    msg_name_req: 'Name is required (min 3 chars)',
+                    err_user_format: 'Username required',
+                    err_phone: 'Enter a valid 10-digit number',
+                    err_pass: 'Password must be at least 6 characters',
+                    err_login_fail: 'Invalid credentials. Please try again.',
+                    err_register_fail: 'Registration failed. Try again.',
+                    err_unknown: 'Something went wrong.',
+                },
+                hi: {
+                    tagline: 'प्रीमियम एक्सेस',
+                    choose_lang: 'अपनी भाषा चुनें',
+                    lang_continue: 'जारी रखें',
+                    welcome: 'FixZen में स्वागत है',
+                    create_account: 'खाता बनाएं',
+                    login: 'साइन इन करें',
+                    welcome_back: 'वापसी पर स्वागत है',
+                    full_name: 'पूरा नाम',
+                    name_placeholder: 'जैसे राजेश कुमार',
+                    username: 'उपयोगकर्ता नाम (अद्वितीय)',
+                    user_placeholder: 'जैसे rajesh123',
+                    secret_question: 'गुप्त प्रश्न (जन्मस्थान)',
+                    secret_placeholder: 'आपका जन्मस्थान',
+                    mobile: 'मोबाइल नंबर',
+                    phone_placeholder: '9876543210',
+                    password: 'पासवर्ड (कम से कम 6 अक्षर)',
+                    pass_placeholder: '••••••••',
+                    sign_in: 'साइन इन करें',
+                    already_member: 'पहले से सदस्य हैं? साइन इन करें',
+                    new_user: 'नए उपयोगकर्ता? खाता बनाएं',
+                    forgot_link: 'पासवर्ड भूल गए?',
+                    reset_title: 'पासवर्ड रीसेट करें',
+                    reset_subtitle: 'सत्यापन के लिए अपना मोबाइल और जन्मस्थान दर्ज करें।',
+                    verify_btn: 'पहचान सत्यापित करें',
+                    new_password: 'नया पासवर्ड',
+                    save_pass_btn: 'पासवर्ड सहेजें',
+                    attempts_left: 'प्रयास शेष',
+                    locked_msg: '🔒 खाता लॉक हो गया। बहुत अधिक असफल प्रयास। सहायता से संपर्क करें।',
+                    msg_name_req: 'नाम आवश्यक है (कम से कम 3 अक्षर)',
+                    err_user_format: 'उपयोगकर्ता नाम आवश्यक है',
+                    err_phone: '10 अंकों का मान्य नंबर दर्ज करें',
+                    err_pass: 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए',
+                    err_login_fail: 'अमान्य क्रेडेंशियल। कृपया पुनः प्रयास करें।',
+                    err_register_fail: 'पंजीकरण विफल। पुनः प्रयास करें।',
+                    err_unknown: 'कुछ गलत हो गया।',
+                },
+                mr: {
+                    tagline: 'प्रीमियम प्रवेश',
+                    choose_lang: 'तुमची भाषा निवडा',
+                    lang_continue: 'पुढे जा',
+                    welcome: 'FixZen मध्ये स्वागत आहे',
+                    create_account: 'खाते तयार करा',
+                    login: 'साइन इन करा',
+                    welcome_back: 'पुन्हा स्वागत आहे',
+                    full_name: 'पूर्ण नाव',
+                    name_placeholder: 'उदा. राजेश कुमार',
+                    username: 'वापरकर्तानाव (अद्वितीय)',
+                    user_placeholder: 'उदा. rajesh123',
+                    secret_question: 'गुप्त प्रश्न (जन्मस्थान)',
+                    secret_placeholder: 'तुमचे जन्मस्थान',
+                    mobile: 'मोबाइल क्रमांक',
+                    phone_placeholder: '9876543210',
+                    password: 'पासवर्ड (किमान ६ अक्षरे)',
+                    pass_placeholder: '••••••••',
+                    sign_in: 'साइन इन करा',
+                    already_member: 'आधीच सदस्य आहात? साइन इन करा',
+                    new_user: 'नवीन वापरकर्ता? खाते तयार करा',
+                    forgot_link: 'पासवर्ड विसरलात?',
+                    reset_title: 'पासवर्ड रीसेट करा',
+                    reset_subtitle: 'सत्यापनासाठी तुमचा मोबाइल आणि जन्मस्थान प्रविष्ट करा.',
+                    verify_btn: 'ओळख सत्यापित करा',
+                    new_password: 'नवीन पासवर्ड',
+                    save_pass_btn: 'पासवर्ड जतन करा',
+                    attempts_left: 'प्रयास शिल्लक',
+                    locked_msg: '🔒 खाते लॉक झाले. खूप अपयशी प्रयत्न. समर्थनाशी संपर्क साधा.',
+                    msg_name_req: 'नाव आवश्यक आहे (किमान ३ अक्षरे)',
+                    err_user_format: 'वापरकर्तानाव आवश्यक आहे',
+                    err_phone: '१० अंकी वैध क्रमांक प्रविष्ट करा',
+                    err_pass: 'पासवर्ड किमान ६ अक्षरांचा असावा',
+                    err_login_fail: 'अवैध क्रेडेन्शियल्स. कृपया पुन्हा प्रयत्न करा.',
+                    err_register_fail: 'नोंदणी अयशस्वी. पुन्हा प्रयत्न करा.',
+                    err_unknown: 'काहीतरी चूक झाली.',
+                }
+            },
+
+            // ---------- HELPERS ----------
+            tx(key) {
+                return this.translations[this.lang]?.[key] || this.translations.en[key] || key;
+            },
+            setLang(l) {
+                this.lang = l;
+            },
+            proceedFromLang() {
+                this.step = 'choose';
+            },
+            resetErrors() {
+                this.errors = { name: false, user: false, phone: false, pass: false };
+                this.message = '';
+            },
+            resetAttempts() {
+                this.loginAttempts = 0;
+            },
+            validateField(field) {
+                if (field === 'name') {
+                    this.errors.name = this.form.name.trim().length < 3 && this.form.name.length > 0;
+                } else if (field === 'user') {
+                    this.errors.user = this.form.user.trim().length === 0;
+                } else if (field === 'phone') {
+                    const p = this.form.phone.trim();
+                    this.errors.phone = !/^[0-9]{10}$/.test(p) && p.length > 0;
+                } else if (field === 'pass') {
+                    this.errors.pass = this.form.pass.length < 6 && this.form.pass.length > 0;
+                }
+            },
+
+            // ---------- MAIN FORM PROCESS ----------
+            async processForm() {
+                // prevent if locked
+                if (!this.isNewUser && this.loginAttempts >= 5) {
+                    this.message = this.tx('locked_msg');
+                    return;
+                }
+
+                // Validate required fields
+                this.errors = { name: false, user: false, phone: false, pass: false };
+                let valid = true;
+                if (this.isNewUser) {
+                    if (this.form.name.trim().length < 3) { this.errors.name = true; valid = false; }
+                    if (this.form.user.trim().length === 0) { this.errors.user = true; valid = false; }
+                }
+                const phone = this.form.phone.trim();
+                if (!/^[0-9]{10}$/.test(phone)) { this.errors.phone = true; valid = false; }
+                if (this.form.pass.length < 6) { this.errors.pass = true; valid = false; }
+
+                if (!valid) {
+                    this.message = 'Please fix the errors above.';
+                    return;
+                }
+
+                this.loading = true;
+                this.message = '';
+
+                try {
+                    const sb = window.supabase;
+                    if (!sb) throw new Error('Supabase not loaded');
+
+                    if (this.isNewUser) {
+                        // ---------- REGISTER ----------
+                        const { data, error } = await sb
+                            .from('users')
+                            .insert([{
+                                name: this.form.name.trim(),
+                                username: this.form.user.trim(),
+                                birthplace: this.form.birthplace.trim(),
+                                phone: phone,
+                                password: this.form.pass
+                            }])
+                            .select();
+
+                        if (error) {
+                            if (error.code === '23505') this.message = 'Username or phone already exists.';
+                            else this.message = this.tx('err_register_fail') + ' ' + error.message;
+                        } else {
+                            this.message = '✅ Account created! Please sign in.';
+                            this.isNewUser = false;
+                            this.form = { name: '', user: '', birthplace: '', phone: '', pass: '' };
+                            this.resetErrors();
+                            this.resetAttempts();
+                        }
+                    } else {
+                        // ---------- LOGIN (with attempt limit) ----------
+                        const { data, error } = await sb
+                            .from('users')
+                            .select('phone, password')
+                            .eq('phone', phone)
+                            .eq('password', this.form.pass)
+                            .maybeSingle();
+
+                        if (error || !data) {
+                            this.loginAttempts += 1;
+                            const left = 5 - this.loginAttempts;
+                            if (this.loginAttempts >= 5) {
+                                this.message = this.tx('locked_msg');
+                            } else {
+                                this.message = this.tx('err_login_fail') + ` (${left} ${this.tx('attempts_left')})`;
+                            }
+                        } else {
+                            // success
+                            this.message = '✅ Login successful! Redirecting...';
+                            this.resetAttempts();
+                            // in real app, redirect or set session
+                        }
+                    }
+                } catch (e) {
+                    this.message = this.tx('err_unknown') + ' ' + e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            // ---------- FORGOT PASSWORD ----------
+            async verifyRecoveryDetails() {
+                const phone = this.forgot.phone.trim();
+                const birthplace = this.forgot.birthplace.trim();
+                if (!phone || !birthplace) {
+                    this.message = 'Please enter both mobile and birthplace.';
+                    return;
+                }
+                this.loading = true;
+                this.message = '';
+                try {
+                    const sb = window.supabase;
+                    const { data, error } = await sb
+                        .from('users')
+                        .select('phone')
+                        .eq('phone', phone)
+                        .eq('birthplace', birthplace)
+                        .maybeSingle();
+
+                    if (error || !data) {
+                        this.message = '❌ No matching account found.';
+                    } else {
+                        this.forgotVerified = true;
+                        this.message = '✅ Verified! Set new password.';
+                    }
+                } catch (e) {
+                    this.message = 'Error: ' + e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async saveNewPassword() {
+                const newPass = this.forgot.newPass.trim();
+                if (newPass.length < 6) {
+                    this.message = 'Password must be at least 6 characters.';
+                    return;
+                }
+                this.loading = true;
+                this.message = '';
+                try {
+                    const sb = window.supabase;
+                    const { error } = await sb
+                        .from('users')
+                        .update({ password: newPass })
+                        .eq('phone', this.forgot.phone.trim());
+
+                    if (error) throw error;
+                    this.message = '✅ Password updated! Please sign in.';
+                    this.forgotVerified = false;
+                    this.forgot = { phone: '', birthplace: '', newPass: '' };
+                    this.step = 'auth';
+                    this.resetAttempts();
+                } catch (e) {
+                    this.message = 'Update failed: ' + e.message;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }));
+    });
+</script>
 </body>
 </html>
