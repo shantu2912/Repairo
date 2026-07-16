@@ -64,6 +64,9 @@ Alpine.data('trackingApp', () => ({
     feedbackTags: [],
     feedbackLoading: false,
     feedbackDone: false,
+
+    loyaltyReward: null,
+    loyaltyChecked: false,
     
     map: null,
     techMarker: null,
@@ -95,6 +98,10 @@ Alpine.data('trackingApp', () => ({
                             this.jobStatus = payload.new.status;
                             if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
                                 this.technicianFound = true;
+                            }
+                            if (this.jobStatus === 'completed') {
+                                const uid = payload.new.user_id || this.fullJobData?.user_id;
+                                if (uid) this.checkLoyaltyReward(uid);
                             }
                         }
                         
@@ -147,6 +154,65 @@ Alpine.data('trackingApp', () => ({
 
     updateBillAmounts(job) {
         this.fullJobData = job;
+    },
+
+    // Every 5th completed job earns the customer a one-time reward code.
+    // Tied to milestone_job_id so reopening the page never creates duplicates.
+    async checkLoyaltyReward(userId) {
+        if (this.loyaltyChecked || !userId) return;
+        this.loyaltyChecked = true;
+
+        try {
+            // See if this specific completion already generated a reward
+            const { data: existing } = await sb
+                .from('promos')
+                .select('*')
+                .eq('milestone_job_id', this.jobId)
+                .maybeSingle();
+
+            if (existing) {
+                this.loyaltyReward = existing;
+                return;
+            }
+
+            const { count, error: countError } = await sb
+                .from('jobs')
+                .select('id', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .eq('status', 'completed');
+
+            if (countError) throw countError;
+            if (!count || count % 5 !== 0) return;
+
+            const code = 'LOYAL' + Math.floor(1000 + Math.random() * 9000);
+            const expiry = new Date();
+            expiry.setDate(expiry.getDate() + 60);
+
+            const { data: created, error: insertError } = await sb
+                .from('promos')
+                .insert([{
+                    code: code,
+                    type: 'percent',
+                    value: 15,
+                    expiry: expiry.toISOString().split('T')[0],
+                    usage_count: 0,
+                    created_at: new Date().toISOString(),
+                    user_id: userId,
+                    milestone_job_id: this.jobId
+                }])
+                .select()
+                .single();
+
+            if (insertError) {
+                // Someone else's tab may have inserted it first, or schema isn't migrated yet
+                console.error('Loyalty reward creation failed:', insertError.message);
+                return;
+            }
+
+            this.loyaltyReward = created;
+        } catch (err) {
+            console.error('Loyalty reward check failed:', err);
+        }
     },
 
     // Converts a number to Indian-style words for the invoice
@@ -399,6 +465,10 @@ Alpine.data('trackingApp', () => ({
             if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
                 this.technicianFound = true;
                 if (this.timerInterval) clearInterval(this.timerInterval);
+            }
+
+            if (this.jobStatus === 'completed' && job.user_id) {
+                this.checkLoyaltyReward(job.user_id);
             }
         }
     },
