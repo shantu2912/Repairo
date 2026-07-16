@@ -258,6 +258,24 @@
                 <h2 class="text-3xl font-black text-brand-dark mb-2">Job Completed!</h2>
                 <p class="text-sm text-gray-500 mb-6 px-2">Thank you for choosing FixZenix. The technician has successfully verified your code and completed the service.</p>
 
+                <div x-show="loyaltyReward" x-cloak x-transition
+                     class="mb-6 mx-1 rounded-2xl p-5 text-left relative overflow-hidden"
+                     style="background: linear-gradient(135deg,#A07D54 0%,#5D5646 100%);">
+                    <p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">
+                        <i class="fa-solid fa-gift mr-1"></i> 5 Services Completed — Reward Unlocked!
+                    </p>
+                    <div class="flex items-center justify-between mt-2">
+                        <div>
+                            <p class="text-white font-black text-2xl tracking-wider" x-text="loyaltyReward?.code"></p>
+                            <p class="text-white/70 text-xs mt-1" x-text="'Get ' + loyaltyReward?.value + '% off your next booking'"></p>
+                        </div>
+                        <button @click="navigator.clipboard.writeText(loyaltyReward.code)"
+                                class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
                 <button x-show="!feedbackDone" @click="showFeedback = true"
                         class="w-full py-4 mb-3 rounded-2xl font-extrabold text-sm uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
                         style="background: linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%); background-size:200% auto; animation: shimmer 2.5s linear infinite; color:white;">
@@ -445,6 +463,17 @@
                     <span x-text="billAmountInWords"></span> Rupees Only
                 </p>
 
+                <div x-show="loyaltyReward" x-cloak
+                     class="mb-4 rounded-xl p-3 border-2 border-dashed border-brand-gold bg-brand-gold/5 flex items-center justify-between">
+                    <div>
+                        <p class="text-[9px] font-bold uppercase tracking-wide text-brand-gold">
+                            <i class="fa-solid fa-gift"></i> Loyalty Reward — 5th Service Completed
+                        </p>
+                        <p class="font-black text-lg text-brand-dark tracking-wider" x-text="loyaltyReward?.code"></p>
+                    </div>
+                    <span class="text-xs font-bold text-brand-dark" x-text="loyaltyReward?.value + '% off next booking'"></span>
+                </div>
+
                 <!-- Notes + seal -->
                 <div class="flex items-end justify-between border-t border-gray-100 pt-4 mb-2">
                     <div class="text-[9px] text-gray-400 leading-relaxed pr-3">
@@ -601,4 +630,3 @@
     <script src="success.js"></script>
 </body>
 </html>
-
