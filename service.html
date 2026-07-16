@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -130,6 +129,12 @@
         lng: null,
         otherIssueText: '',
 
+        promoCode: '',
+        appliedPromo: null,
+        promoChecking: false,
+        promoMessage: '',
+        promoMessageType: '',
+
         get hasOtherIssueSelected() {
             return this.selectedSubs.some(s => s.is_inspection === true);
         },
@@ -140,6 +145,83 @@
         
         get total() {
             return this.selectedSubs.reduce((sum, item) => sum + item.p, 0);
+        },
+
+        get discountAmount() {
+            if (!this.appliedPromo) return 0;
+            const p = this.appliedPromo;
+            const raw = p.type === 'percent' ? (this.total * (p.value / 100)) : p.value;
+            return Math.min(Math.round(raw), this.total);
+        },
+
+        get finalTotal() {
+            return Math.max(0, this.total - this.discountAmount);
+        },
+
+        async applyPromoCode() {
+            const code = (this.promoCode || '').trim().toUpperCase();
+            if (!code) {
+                this.promoMessage = 'Please enter a code.';
+                this.promoMessageType = 'error';
+                return;
+            }
+            if (!window.sb) {
+                this.promoMessage = 'Unable to verify code right now.';
+                this.promoMessageType = 'error';
+                return;
+            }
+
+            this.promoChecking = true;
+            this.promoMessage = '';
+
+            try {
+                const { data, error } = await window.sb
+                    .from('promos')
+                    .select('*')
+                    .eq('code', code)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (!data) {
+                    this.appliedPromo = null;
+                    this.promoMessage = 'Invalid promo code.';
+                    this.promoMessageType = 'error';
+                    return;
+                }
+
+                if (data.user_id && (!this.user || data.user_id !== this.user.id)) {
+                    this.appliedPromo = null;
+                    this.promoMessage = 'This code is linked to a different account.';
+                    this.promoMessageType = 'error';
+                    return;
+                }
+
+                const expiryDate = new Date(data.expiry);
+                if (expiryDate < new Date()) {
+                    this.appliedPromo = null;
+                    this.promoMessage = 'This promo code has expired.';
+                    this.promoMessageType = 'error';
+                    return;
+                }
+
+                this.appliedPromo = data;
+                this.promoCode = code;
+                this.promoMessageType = 'success';
+                this.promoMessage = 'Code applied! You saved ₹' + this.discountAmount + '.';
+            } catch (err) {
+                this.appliedPromo = null;
+                this.promoMessage = 'Could not verify code. Try again.';
+                this.promoMessageType = 'error';
+            } finally {
+                this.promoChecking = false;
+            }
+        },
+
+        removePromoCode() {
+            this.appliedPromo = null;
+            this.promoCode = '';
+            this.promoMessage = '';
         },
 
         async init() {
@@ -391,6 +473,7 @@
                 
                 const inspectionFeeAmount = hasOtherIssue ? 299 : 0;
                 const originalPrice = this.total;
+                const discountedPrice = this.finalTotal;
                 
                 if (hasOtherIssue) {
                     const paymentConfirmed = await this.processInspectionPayment(inspectionFeeAmount, isMixed);
@@ -432,7 +515,7 @@
                     longitude: this.lng || null,
                     scheduled_time: scheduledDateTime,
                     original_price: originalPrice,
-                    discounted_price: originalPrice,
+                    discounted_price: discountedPrice,
                     is_inspection_job: hasOtherIssue,
                     inspection_fee_paid: hasOtherIssue,
                     inspection_fee_amount: inspectionFeeAmount,
@@ -449,6 +532,13 @@
                     alert('Booking Error: ' + jobError.message); 
                     this.bookingLoading = false; 
                     return; 
+                }
+
+                if (this.appliedPromo) {
+                    window.sb.from('promos')
+                        .update({ usage_count: (this.appliedPromo.usage_count || 0) + 1 })
+                        .eq('id', this.appliedPromo.id)
+                        .then(() => {});
                 }
 
                 this.bookingLoading = false;
@@ -609,9 +699,13 @@
                         </div>
                     </template>
                 </div>
+                <div x-show="appliedPromo" class="flex justify-between items-center py-1 text-brand-green text-sm font-semibold" x-cloak>
+                    <span x-text="'Promo (' + (appliedPromo && appliedPromo.code) + ')'"></span>
+                    <span x-text="'−₹' + discountAmount"></span>
+                </div>
                 <div class="flex justify-between items-center pt-3 mt-2 border-t-2 border-brand-gold/20">
                     <p class="font-bold text-brand-olive text-base">Total Estimate</p>
-                    <p class="font-bold text-brand-gold text-xl">₹<span x-text="total"></span></p>
+                    <p class="font-bold text-brand-gold text-xl">₹<span x-text="finalTotal"></span></p>
                 </div>
                 <p class="text-[9px] text-brand-dark/40 text-center mt-2">
                     <i class="fas fa-shield-alt mr-1"></i> 
@@ -666,7 +760,8 @@
                 <p class="text-[9px] text-brand-dark/50 font-bold uppercase tracking-wide">Total Estimate</p>
                 <div class="flex items-baseline gap-1">
                     <span class="text-lg font-bold text-brand-olive">₹</span>
-                    <h2 class="text-3xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="total"></h2>
+                    <h2 class="text-3xl font-serif font-bold text-brand-olive transition-all duration-300" x-text="finalTotal"></h2>
+                    <span x-show="appliedPromo" class="text-xs text-brand-dark/30 line-through ml-1" x-text="'₹' + total" x-cloak></span>
                 </div>
                 <p x-show="hasOtherIssueSelected && selectedSubs.length > 1" 
                    class="text-[9px] text-brand-gold mt-0.5 flex items-center gap-1">
@@ -707,11 +802,39 @@
                 <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
                 <div class="flex justify-between items-center">
                     <h3 class="text-xl font-serif font-bold gradient-text">Confirm Booking</h3>
-                    <span class="text-sm font-bold bg-brand-gold/10 px-3 py-1 rounded-full text-brand-gold">₹<span x-text="total"></span></span>
+                    <span class="text-sm font-bold bg-brand-gold/10 px-3 py-1 rounded-full text-brand-gold flex items-center gap-1.5">
+                        <span x-show="appliedPromo" class="line-through text-brand-dark/30 font-normal" x-text="'₹' + total"></span>
+                        <span>₹<span x-text="finalTotal"></span></span>
+                    </span>
                 </div>
             </div>
             
             <div class="p-6 space-y-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                    <div class="flex items-center gap-2" x-show="!appliedPromo">
+                        <i class="fas fa-tag text-brand-gold text-sm"></i>
+                        <input type="text" x-model="promoCode" placeholder="Have a promo code?"
+                               @keyup.enter="applyPromoCode()"
+                               class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400 uppercase">
+                        <button @click="applyPromoCode()" :disabled="promoChecking"
+                                class="shrink-0 text-xs font-bold text-brand-gold uppercase px-3 py-1.5 rounded-lg border border-brand-gold/30 hover:bg-brand-gold/10 transition-all disabled:opacity-50">
+                            <span x-show="!promoChecking">Apply</span>
+                            <i x-show="promoChecking" class="fas fa-circle-notch fa-spin"></i>
+                        </button>
+                    </div>
+                    <div x-show="appliedPromo" class="flex items-center justify-between" x-cloak>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-circle-check text-brand-green text-sm"></i>
+                            <span class="text-sm font-bold text-brand-olive" x-text="appliedPromo && appliedPromo.code"></span>
+                            <span class="text-xs text-brand-dark/50" x-text="'saved ₹' + discountAmount"></span>
+                        </div>
+                        <button @click="removePromoCode()" class="text-xs text-brand-red font-bold hover:underline">Remove</button>
+                    </div>
+                    <p x-show="promoMessage" x-text="promoMessage"
+                       :class="promoMessageType === 'error' ? 'text-brand-red' : 'text-brand-green'"
+                       class="text-[10px] mt-1.5"></p>
+                </div>
+
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 focus-within:ring-2 focus-within:ring-brand-gold/40 transition-all">
                     <i class="fas fa-user text-brand-gold text-sm"></i>
                     <input type="text" x-model="customerName" placeholder="Enter Your Full Name" class="bg-transparent w-full text-sm font-medium text-brand-dark focus:outline-none placeholder:text-gray-400">
@@ -801,4 +924,3 @@
 
 </body>
 </html>
-
