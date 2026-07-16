@@ -1,632 +1,647 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth" style="top: 0px !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tracking Booking - FixZenix</title>
-
+    <title>FixZen · Secure Access</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
-  
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-olive': '#5D5646',
+                        'brand-gold': '#A07D54',
+                        'brand-cream': '#F8F5F0',
+                        'brand-dark': '#2D2B28',
+                        'brand-beige': '#DFD4C3'
+                    },
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'], 
+                        serif: ['"Playfair Display"', 'serif'] 
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f4f5; }
-        .bg-grid { background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); }
-        .leaflet-container { z-index: 10 !important; font-family: 'Plus Jakarta Sans', sans-serif; }
-        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        .star-lit { color: #A07D54; filter: drop-shadow(0 0 6px rgba(160,125,84,0.5)); }
-        .star-dim { color: #e5e7eb; }
-        .tag-chip { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); }
-        .tag-chip.on { background:#1a1a1a; color:white; transform:scale(1.05); }
-        .sheet-enter { animation: sheetUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
-        @keyframes sheetUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
-        @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
-        .pop-in { animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
-        .confetti-piece { position:fixed; border-radius:2px; animation:confettiFall linear forwards; pointer-events:none; z-index:9999; }
+        [x-cloak] { display: none !important; }
+        body { background-color: #F8F5F0; font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif; }
+
+        .fixzen-input {
+            width: 100%; padding: 1rem 1.25rem; border-radius: 1.2rem;
+            border: 2px solid #DFD4C3; background: white;
+            font-size: 0.875rem; font-weight: 600; outline: none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
+        }
+        .fixzen-input:focus { border-color: #A07D54; box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.1); }
+        .fixzen-input.error { border-color: #EF4444; background-color: #FEF2F2; }
+        .fixzen-input.success { border-color: #10B981; }
+        
+        .input-label {
+            display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.1em; color: #A07D54; margin-bottom: 0.5rem; margin-left: 0.5rem;
+        }
+        .btn-primary {
+            width: 100%; padding: 1.1rem; border-radius: 1.2rem; background-color: #5D5646;
+            color: white; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 0.15em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
+        }
+        .btn-primary:hover:not(:disabled) { background-color: #4a4537; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(93,86,70,0.3); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .loader {
+            border: 2px solid #f3f3f3; border-top: 2px solid #A07D54;
+            border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .lang-btn {
+            flex: 1; padding: 0.75rem 0.5rem; border-radius: 1rem;
+            border: 2px solid #DFD4C3; background: white;
+            font-weight: 700; font-size: 0.8rem; transition: all 0.25s ease;
+            cursor: pointer; text-align: center; color: #5D5646;
+            font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+        }
+        .lang-btn:hover { border-color: #A07D54; background: rgba(160,125,84,0.05); }
+        .lang-btn.active { border-color: #5D5646; background: #5D5646; color: white; }
+        .deva { font-family: 'Noto Sans Devanagari', sans-serif; }
+
+        /* attempt indicator */
+        .attempt-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            margin: 0 2px; transition: all 0.2s;
+        }
+        .attempt-dot.active { background-color: #5D5646; }
+        .attempt-dot.used { background-color: #EF4444; }
+        .attempt-dot.empty { background-color: #DFD4C3; }
     </style>
 </head>
 
-<body class="bg-grid min-h-screen flex flex-col items-center justify-center p-4 relative" x-data="trackingApp()">
+<body class="min-h-screen flex items-center justify-center font-sans" x-data="authApp()">
 
-    <a href="bookings.html" class="absolute top-6 left-6 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-black hover:scale-105 transition z-50">
-        <i class="fa-solid fa-house"></i>
-    </a>
+<div class="w-full max-w-md animate__animated animate__fadeIn px-4">
 
-    <div class="w-full max-w-md glass-card rounded-[2.5rem] shadow-2xl border border-white p-6 relative overflow-hidden z-20">
-        
-        <div x-show="jobStatus !== 'completed'" class="text-center mb-6" x-transition>
-            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-widest rounded-full mb-3 shadow-sm border border-green-200">
-                <i class="fa-solid fa-shield-check mr-1"></i> Secure Booking
-            </span>
-            <h1 class="text-2xl font-extrabold text-brand-dark">Request Received</h1>
-            <p class="text-xs text-gray-500 font-mono mt-1">ID: <span x-text="jobId ? jobId.slice(0,8) : 'Loading...'"></span></p>
-        </div>
+    <div class="text-center mb-8">
+        <img src="fixzen.png" alt="FixZen" class="w-20 h-20 rounded-full mx-auto mb-4 shadow-xl border-2 border-white object-cover">
+        <h1 class="text-3xl font-extrabold tracking-[0.2em] text-brand-olive uppercase">FixZen</h1>
+        <p class="text-[10px] font-bold text-brand-gold/60 uppercase tracking-[0.3em] mt-1 deva" x-text="tx('tagline')"></p>
+    </div>
 
-        <div x-show="jobStatus !== 'completed' && jobStatus !== 'cancelled'" class="relative flex justify-between items-center mb-8 px-2" x-transition>
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10"></div>
-            
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-brand-green rounded-full -z-10 transition-all duration-1000 ease-out"
-                 :style="`width: ${jobStatus === 'pending' || jobStatus === 'searching' ? '33%' : (jobStatus === 'accepted' || jobStatus === 'assigned' ? '66%' : '100%')}`"></div>
+    <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white">
 
-            <div class="flex flex-col items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center shadow-md border-2 border-white">
-                    <i class="fa-solid fa-check text-xs"></i>
-                </div>
-                <span class="text-[10px] font-bold text-gray-800">Requested</span>
+        <!-- ========== LANGUAGE SELECT ========== -->
+        <div x-show="step==='lang'" class="space-y-6 text-center">
+            <div class="w-12 h-12 bg-brand-cream rounded-full flex items-center justify-center mx-auto mb-2">
+                <i class="fa-solid fa-language text-brand-gold text-xl"></i>
+            </div>
+            <h2 class="font-serif italic text-2xl text-brand-olive deva" x-text="tx('choose_lang')"></h2>
+            <p class="text-[10px] text-brand-dark/40 font-bold uppercase tracking-widest">Select / चुनें / निवडा</p>
+
+            <div class="flex gap-3 mt-4">
+                <button @click="setLang('en')" :class="lang==='en' ? 'active' : ''" class="lang-btn">
+                    <span class="lang-native">🇬🇧 Eng</span>
+                    <span class="lang-sub">English</span>
+                </button>
+                <button @click="setLang('hi')" :class="lang==='hi' ? 'active' : ''" class="lang-btn">
+                    <span class="lang-native deva">हिंदी</span>
+                    <span class="lang-sub">Hindi</span>
+                </button>
+                <button @click="setLang('mr')" :class="lang==='mr' ? 'active' : ''" class="lang-btn">
+                    <span class="lang-native deva">मराठी</span>
+                    <span class="lang-sub">Marathi</span>
+                </button>
             </div>
 
-            <div class="flex flex-col items-center gap-2">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
-                     :class="jobStatus !== 'pending' && jobStatus !== 'searching' ? 'bg-brand-green text-white' : 'bg-brand-gold text-white animate-pulse'">
-                    <i class="fa-solid" :class="jobStatus !== 'pending' && jobStatus !== 'searching' ? 'fa-check' : 'fa-radar'"></i>
-                </div>
-                <span class="text-[10px] font-bold transition-colors" :class="jobStatus !== 'pending' && jobStatus !== 'searching' ? 'text-gray-800' : 'text-brand-gold'">
-                    <span x-text="jobStatus === 'pending' || jobStatus === 'searching' ? 'Searching' : 'Accepted'"></span>
-                </span>
-            </div>
-
-            <div class="flex flex-col items-center gap-2">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
-                     :class="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'bg-brand-green text-white animate-bounce' : (jobStatus === 'accepted' || jobStatus === 'assigned' ? 'bg-brand-gold text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
-                    <i class="fa-solid text-xs" :class="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'fa-street-view' : 'fa-user-astronaut'"></i>
-                </div>
-                <span class="text-[10px] font-bold text-gray-400" 
-                      :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green font-extrabold': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'}"
-                      x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'Arrived' : 'Assigned'">
-                </span>
-            </div>
-        </div>
-
-        <div x-show="!technicianFound && (jobStatus === 'pending' || jobStatus === 'searching')" class="text-center py-6">
-            <div class="relative w-32 h-32 mx-auto flex items-center justify-center mb-6">
-                <div class="absolute w-full h-full rounded-full bg-brand-gold opacity-50 animate-ripple"></div>
-                <div class="absolute w-full h-full rounded-full bg-brand-gold opacity-30 animate-ripple" style="animation-delay: 0.6s"></div>
-                <div class="absolute w-full h-full rounded-full bg-brand-gold opacity-10 animate-ripple" style="animation-delay: 1.2s"></div>
-                
-                <div class="relative w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border border-gray-100">
-                    <i class="fa-solid fa-location-crosshairs text-3xl text-brand-gold animate-pulse"></i>
-                </div>
-            </div>
-            <h3 class="text-lg font-bold text-gray-900" x-text="searchMessage"></h3>
-            <div class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-full mt-3 border border-gray-200">
-                <i class="fa-regular fa-clock text-brand-gold animate-spin-slow"></i>
-                <span class="text-sm font-mono font-bold text-gray-700" x-text="formattedTime"></span>
-            </div>
-            <button @click="cancelJob()" class="mt-8 text-xs font-bold text-red-500 hover:text-red-700 underline decoration-red-200 underline-offset-4 transition">
-                Cancel Request
+            <button @click="proceedFromLang()" class="btn-primary mt-2">
+                <i class="fa-solid fa-arrow-right"></i>
+                <span class="deva" x-text="tx('lang_continue')"></span>
             </button>
         </div>
 
-        <div x-show="technicianFound || (jobStatus !== 'pending' && jobStatus !== 'searching')" style="display: none;" class="animate-slide-up-fade">
-            
-            <div class="text-center mb-4 bg-white py-2 rounded-xl border border-gray-100 shadow-sm">
-                <h3 class="text-sm font-extrabold" 
-                    :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'}"
-                    x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus === 'started' ? '🛠️ Service Execution Started' : (jobStatus === 'in_progress' ? '🔑 Share Completion Code' : 'Your Expert is En Route'))">
-                </h3>
+        <!-- ========== CHOOSE ========== -->
+        <div x-show="step==='choose'" x-cloak class="space-y-4 text-center">
+            <div class="flex justify-center gap-2 mb-4">
+                <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all">EN</button>
+                <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">हि</button>
+                <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/50'" class="text-[10px] font-bold px-3 py-1 rounded-full border border-brand-beige transition-all deva">म</button>
             </div>
 
-            <div class="relative w-full h-48 rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-4 bg-gray-100" x-show="!otpCode && jobStatus !== 'completed'" x-transition.opacity>
-                <div id="trackingMap" class="w-full h-full"></div>
-                
-                <div class="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-full shadow-lg z-20 flex items-center gap-2 border border-gray-100">
-                    <span class="relative flex h-2.5 w-2.5">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                    </span>
-                    <span class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wide">ETA: <span x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? '0' : etaMins"></span> Mins</span>
-                </div>
+            <h2 class="font-serif italic text-2xl text-brand-olive mb-6 deva" x-text="tx('welcome')"></h2>
+            <button @click="isNewUser=true; step='auth'; resetErrors(); resetAttempts()" class="btn-primary deva" x-text="tx('create_account')"></button>
+            <button @click="isNewUser=false; step='auth'; resetErrors(); resetAttempts()" class="btn-primary mt-3 !bg-brand-gold deva" x-text="tx('login')"></button>
+        </div>
+
+        <!-- ========== AUTH (LOGIN / REGISTER) ========== -->
+        <div x-show="step==='auth'" x-cloak>
+            <div class="flex justify-end gap-2 mb-4">
+                <button @click="setLang('en')" :class="lang==='en' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all">EN</button>
+                <button @click="setLang('hi')" :class="lang==='hi' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">हि</button>
+                <button @click="setLang('mr')" :class="lang==='mr' ? 'bg-brand-olive text-white' : 'text-brand-olive/40'" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-beige transition-all deva">म</button>
             </div>
-            
-            <div class="bg-gradient-to-b from-green-50 to-white rounded-2xl p-4 border border-green-100 shadow-sm relative mb-4" x-show="!otpCode && jobStatus !== 'completed'" x-transition.opacity>
-                <div class="absolute top-0 right-0 bg-brand-green text-white text-[9px] font-bold px-3 py-1 rounded-bl-xl shadow-sm flex items-center gap-1">
-                    <i class="fa-solid fa-shield-check"></i> Verified
+
+            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-6 deva" x-text="isNewUser ? tx('create_account') : tx('welcome_back')"></h2>
+
+            <!-- attempt indicator (only for login) -->
+            <div x-show="!isNewUser" class="flex justify-center items-center gap-1 mb-4">
+                <template x-for="i in 5" :key="i">
+                    <span class="attempt-dot" 
+                          :class="i <= loginAttempts ? 'used' : (i === loginAttempts + 1 ? 'active' : 'empty')"
+                          x-text="''"></span>
+                </template>
+                <span class="text-[10px] font-bold text-brand-dark/40 ml-2 deva">
+                    <span x-text="5 - loginAttempts"></span> <span x-text="tx('attempts_left')"></span>
+                </span>
+            </div>
+
+            <!-- lock timer display -->
+            <div x-show="!isNewUser && lockUntil && lockUntil > Date.now()" class="text-center mb-4 p-2 bg-red-50 border border-red-200 rounded-xl">
+                <p class="text-xs font-bold text-red-600 deva">
+                    <i class="fa-solid fa-clock mr-1"></i> 
+                    <span x-text="tx('locked_msg')"></span> 
+                    <span x-text="formatLockTime()"></span>
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- NAME (only for register) -->
+                <div x-show="isNewUser" class="space-y-4" x-collapse>
+                    <div>
+                        <label class="input-label deva" x-text="tx('full_name')"></label>
+                        <input type="text" x-model="form.name" x-on:input="validateField('name')" class="fixzen-input deva" :class="{'error': errors.name, 'success': form.name.trim().length >= 3 && !errors.name}" :placeholder="tx('name_placeholder')">
+                        <p x-show="errors.name" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('msg_name_req')"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="input-label deva" x-text="tx('username')"></label>
+                        <input type="text" x-model="form.user" x-on:input="validateField('user')" class="fixzen-input" :class="{'error': errors.user, 'success': form.user.trim().length > 0 && !errors.user}" :placeholder="tx('user_placeholder')">
+                        <p x-show="errors.user" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_user_format')"></p>
+                    </div>
+
+                    <div>
+                        <label class="input-label deva" x-text="tx('secret_question')"></label>
+                        <input type="text" x-model="form.birthplace" class="fixzen-input deva" :placeholder="tx('secret_placeholder')">
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-4 mb-4">
+                <!-- PHONE -->
+                <div>
+                    <label class="input-label deva" x-text="tx('mobile')"></label>
                     <div class="relative">
-                        <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md">
-                        <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-sm select-none">+91</span>
+                        <input type="tel" x-model="form.phone" x-on:input="validateField('phone')" maxlength="10" class="fixzen-input pl-14" :class="{'error': errors.phone, 'success': form.phone.trim().length === 10 && !errors.phone}" :placeholder="tx('phone_placeholder')">
                     </div>
-                    <div class="flex-1">
-                        <h4 class="text-lg font-extrabold text-gray-900 leading-tight" x-text="techData?.name || 'Expert'"></h4>
-                        <p class="text-[10px] text-gray-500 font-bold mb-1" x-text="(techData?.experience || '5') + ' Years Exp'"></p>
-                        <div class="flex gap-2">
-                            <div class="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-700 border border-yellow-100">
-                                <i class="fa-solid fa-star text-yellow-500"></i> <span x-text="techData?.rating || '4.9'"></span>
-                            </div>
-                        </div>
-                    </div>
+                    <p x-show="errors.phone" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_phone')"></p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mt-2">
-                    <a :href="'tel:' + techData?.phone" class="py-2.5 bg-gray-900 text-white rounded-xl font-bold shadow-md hover:bg-black transition flex items-center justify-center gap-2 text-sm">
-                        <i class="fa-solid fa-phone"></i> Call
-                    </a>
-                    <a :href="'https://wa.me/91' + techData?.phone" target="_blank" class="py-2.5 bg-green-500 text-white rounded-xl font-bold shadow-md shadow-green-200 hover:bg-green-600 transition flex items-center justify-center gap-2 text-sm">
-                        <i class="fa-brands fa-whatsapp text-lg"></i> Message
-                    </a>
+                <!-- PASSWORD -->
+                <div>
+                    <label class="input-label deva" x-text="tx('password')"></label>
+                    <input type="password" x-model="form.pass" x-on:input="validateField('pass')" class="fixzen-input" :class="{'error': errors.pass, 'success': form.pass.length >= 6 && !errors.pass}" :placeholder="tx('pass_placeholder')">
+                    <p x-show="errors.pass" class="text-[11px] text-red-500 font-bold mt-1 pl-2 animate__animated animate__headShake" x-text="tx('err_pass')"></p>
                 </div>
-            </div>
-         
-            <div x-show="showQuoteCard && quoteStatus === 'submitted'"
-                 class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg animate-slide-up-fade">
-                
-                <div class="text-center mb-4">
-                    <div class="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <i class="fa-solid fa-file-invoice-dollar text-brand-gold text-xl"></i>
-                    </div>
-                    <h3 class="text-lg font-extrabold text-brand-dark">Quote Received from Technician</h3>
-                    <p class="text-xs text-gray-500">Review the estimate below before work begins</p>
+
+                <!-- FORGOT PASSWORD link (login only) -->
+                <div x-show="!isNewUser" class="text-right pr-1">
+                    <button type="button" @click="step='forgot'; message=''; resetErrors()" class="text-xs font-bold text-brand-gold hover:underline underline-offset-2 tracking-wide deva" x-text="tx('forgot_link')"></button>
                 </div>
-                
-                <div class="space-y-3">
-                    <div class="bg-gray-50 rounded-xl p-3">
-                        <div class="flex justify-between text-sm py-1">
-                            <span class="text-gray-600">Labour Cost:</span>
-                            <span class="font-mono font-bold">₹<span x-text="quoteLabour"></span></span>
-                        </div>
-                        <div class="flex justify-between text-sm py-1">
-                            <span class="text-gray-600">Material Cost:</span>
-                            <span class="font-mono font-bold">₹<span x-text="quoteMaterial"></span></span>
-                        </div>
-                        <div class="flex justify-between text-sm py-1" x-show="quoteExtra > 0">
-                            <span class="text-gray-600">Extra Charges:</span>
-                            <span class="font-mono font-bold">₹<span x-text="quoteExtra"></span></span>
-                        </div>
-                        <div class="border-t border-gray-200 my-2"></div>
-                        <div class="flex justify-between font-bold text-base">
-                            <span>Total Quote:</span>
-                            <span class="text-brand-gold">₹<span x-text="quoteAmount"></span></span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-green-50 rounded-xl p-3 border border-green-100">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-green-700">Inspection Fee Paid:</span>
-                            <span class="font-mono text-green-700">-₹<span x-text="inspectionFee"></span></span>
-                        </div>
-                        <div class="flex justify-between font-bold text-lg mt-1 pt-1 border-t border-green-200">
-                            <span class="text-brand-dark">Amount Due After Job:</span>
-                            <span class="text-green-600">₹<span x-text="Math.max(0, quoteAmount - inspectionFee)"></span></span>
-                        </div>
-                        <p class="text-[10px] text-green-600 mt-1 text-center">
-                            <i class="fas fa-check-circle"></i> Your ₹<span x-text="inspectionFee"></span> inspection fee has been adjusted
-                        </p>
-                    </div>
-                    
-                    <div class="bg-gray-50 rounded-xl p-3">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Work Description</p>
-                        <p class="text-sm text-brand-dark" x-text="quoteDescription || 'No description provided'"></p>
-                    </div>
-                    
-                    <p class="text-xs text-gray-400 text-center">
-                        <i class="fas fa-shield-alt mr-1"></i> 
-                        If you approve, the technician will start work immediately. You'll pay the remaining amount after completion.
+
+                <!-- SUBMIT -->
+                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading || (!isNewUser && isLocked())">
+                    <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('sign_in')"></span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
+
+                <!-- LOCKED MESSAGE -->
+                <div x-show="!isNewUser && isLocked()" class="p-3 bg-red-100 border border-red-300 rounded-xl mt-4">
+                    <p class="text-xs text-red-700 font-bold text-center deva">
+                        <i class="fa-solid fa-lock mr-1"></i> 
+                        <span x-text="tx('locked_msg')"></span> 
+                        <span x-text="formatLockTime()"></span>
                     </p>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3 mt-5">
-                    <button @click="rejectQuote()" 
-                            class="py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all active:scale-95">
-                        <i class="fas fa-times mr-1"></i> Reject Quote
-                    </button>
-                    <button @click="acceptQuote()" 
-                            class="py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-all active:scale-95 shadow-md">
-                        <i class="fas fa-check mr-1"></i> Approve & Start Work
-                    </button>
-                </div>
-            </div>
 
-            <div x-show="otpCode && jobStatus !== 'completed'" x-transition.opacity class="text-center py-4">
-                <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm animate-bounce">
-                    <i class="fa-solid fa-shield-check text-3xl text-green-500"></i>
-                </div>
-                <h2 class="text-2xl font-black text-brand-dark mb-2">Job Finishing Up</h2>
-                <p class="text-sm text-gray-500 mb-6 px-4">Your technician has requested to complete the job. Please share this secure code with them.</p>
-                
-                <div class="bg-white border-2 border-dashed border-brand-gold rounded-2xl p-6 mb-6 shadow-inner relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-brand-gold animate-pulse"></div>
-                    <p class="text-xs text-brand-gold font-bold uppercase mb-2">Completion Code</p>
-                    <p class="text-6xl font-black text-brand-dark tracking-[0.2em] font-mono" x-text="otpCode"></p>
+                <!-- ERROR MESSAGE -->
+                <div x-show="message" class="p-3 bg-red-50 border border-red-200 rounded-xl mt-4 animate__animated animate__shakeX">
+                    <p class="text-xs text-red-600 font-bold text-center leading-normal deva" x-text="message"></p>
                 </div>
 
-                <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-center gap-3 border border-gray-200">
-                    <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-8 h-8 rounded-full border-2 border-white shadow-sm">
-                    <div class="text-left">
-                        <p class="text-sm font-bold text-gray-900" x-text="'Waiting for ' + (techData?.name || 'Technician')"></p>
-                    </div>
-                </div>
-            </div>
-
-            <div x-show="jobStatus === 'completed'" x-transition.opacity class="text-center py-8">
-                <div class="w-24 h-24 bg-brand-green rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-200 animate__animated animate__jackInTheBox">
-                    <i class="fa-solid fa-check text-4xl text-white"></i>
-                </div>
-                <h2 class="text-3xl font-black text-brand-dark mb-2">Job Completed!</h2>
-                <p class="text-sm text-gray-500 mb-6 px-2">Thank you for choosing FixZenix. The technician has successfully verified your code and completed the service.</p>
-
-                <div x-show="loyaltyReward" x-cloak x-transition
-                     class="mb-6 mx-1 rounded-2xl p-5 text-left relative overflow-hidden"
-                     style="background: linear-gradient(135deg,#A07D54 0%,#5D5646 100%);">
-                    <p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">
-                        <i class="fa-solid fa-gift mr-1"></i> 5 Services Completed — Reward Unlocked!
-                    </p>
-                    <div class="flex items-center justify-between mt-2">
-                        <div>
-                            <p class="text-white font-black text-2xl tracking-wider" x-text="loyaltyReward?.code"></p>
-                            <p class="text-white/70 text-xs mt-1" x-text="'Get ' + loyaltyReward?.value + '% off your next booking'"></p>
-                        </div>
-                        <button @click="navigator.clipboard.writeText(loyaltyReward.code)"
-                                class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
-                            <i class="fa-solid fa-copy"></i> Copy
-                        </button>
-                    </div>
-                </div>
-
-                <button x-show="!feedbackDone" @click="showFeedback = true"
-                        class="w-full py-4 mb-3 rounded-2xl font-extrabold text-sm uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
-                        style="background: linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%); background-size:200% auto; animation: shimmer 2.5s linear infinite; color:white;">
-                    <i class="fa-solid fa-star"></i> Rate Your Experience
-                </button>
-
-                <div x-show="feedbackDone" class="w-full py-3 mb-3 rounded-2xl bg-green-50 border border-green-200 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-circle-check text-green-500"></i>
-                    <span class="text-sm font-bold text-green-700">Review Submitted — Thank you!</span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <button @click="openBillModal()" class="py-3.5 bg-white border-2 border-brand-dark text-brand-dark rounded-xl font-bold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2 text-sm">
-                        <i class="fa-solid fa-file-invoice"></i> View Bill
-                    </button>
-                    <button @click="window.location.href='index.html'" class="py-3.5 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition shadow-lg flex items-center justify-center gap-2 text-sm">
-                        <i class="fa-solid fa-house"></i> Home
+                <div class="mt-6 pt-6 border-t border-brand-beige/30 text-center">
+                    <button @click="isNewUser = !isNewUser; resetErrors(); resetAttempts(); message=''" class="text-xs font-bold text-brand-gold hover:underline tracking-widest decoration-brand-gold/30 underline-offset-4 deva">
+                        <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
                     </button>
                 </div>
             </div>
-
         </div>
-    </div>
 
-    <div x-show="showBill" 
-         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-         x-transition.opacity
-         style="display: none;">
-      
-        <div class="bg-white w-full max-w-md rounded-[20px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            
-            <div class="p-6 overflow-y-auto bg-white" id="invoice-content">
+        <!-- ========== FORGOT PASSWORD ========== -->
+        <div x-show="step==='forgot'" x-cloak class="space-y-4 animate__animated animate__fadeIn">
+            <h2 class="font-serif italic text-2xl text-brand-olive text-center mb-1 deva" x-text="tx('reset_title')"></h2>
+            <p class="text-center text-xs text-gray-500 leading-normal mb-4 deva" x-text="tx('reset_subtitle')"></p>
 
-                <!-- Header -->
-                <div class="flex items-start justify-between pb-4 mb-4 border-b-2 border-brand-dark">
-                    <div>
-                        <h1 class="font-serif italic text-2xl text-brand-dark font-extrabold leading-none">FixZenix</h1>
-                        <p class="text-[10px] text-gray-500 mt-1">Premium Home Services</p>
-                        <p class="text-[9px] text-gray-400 mt-2 leading-relaxed">
-                            FixZenix Services<br>
-                            Amravati, Maharashtra, India<br>
-                            help@fixzenix.in
-                        </p>
-                    </div>
-                    <div class="text-right flex-shrink-0">
-                        <span class="inline-block px-2 py-0.5 bg-brand-dark text-white text-[9px] font-bold uppercase tracking-widest rounded">Service Invoice</span>
-                        <p class="text-[9px] text-gray-400 mt-2">Invoice No.</p>
-                        <p class="text-xs font-extrabold text-brand-dark font-mono" x-text="'FXN-' + (jobId ? jobId.slice(0,8).toUpperCase() : '')"></p>
-                        <p class="text-[9px] text-gray-400 mt-1">Invoice Date</p>
-                        <p class="text-xs font-extrabold text-brand-dark font-mono" x-text="new Date().toLocaleDateString('en-IN')"></p>
+            <div x-show="!forgotVerified" class="space-y-4">
+                <div>
+                    <label class="input-label deva" x-text="tx('mobile')"></label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold font-bold text-sm select-none">+91</span>
+                        <input type="tel" x-model="forgot.phone" maxlength="10" class="fixzen-input pl-14" :placeholder="tx('phone_placeholder')">
                     </div>
                 </div>
 
-                <!-- Billed To / Service Provider with Technician ID -->
-                <div class="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-3">
-                    <div>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Billed To</p>
-                        <p class="font-bold text-brand-dark text-sm" x-text="fullJobData?.customer_name || 'Customer'"></p>
-                        <p x-text="fullJobData?.phone || ''"></p>
-                        <p class="text-gray-400" x-text="fullJobData?.address || fullJobData?.location || ''"></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Service Provided By</p>
-                        <p class="font-bold text-brand-dark text-sm" x-text="techData?.name || 'FixZen Expert'"></p>
-                        <!-- ✅ Technician ID with FZ format -->
-                        <div class="flex items-center justify-end gap-1.5 mt-0.5">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-gold/10 rounded-full border border-brand-gold/20">
-                                <i class="fa-regular fa-id-card text-[8px] text-brand-gold"></i>
-                                <span class="text-[10px] font-mono font-bold text-brand-dark" x-text="'ID: ' + (billTechId || 'N/A')"></span>
-                            </span>
-                        </div>
-                        <p class="text-gray-400" x-text="fullJobData?.category || 'Home Service'"></p>
-                    </div>
+                <div>
+                    <label class="input-label deva" x-text="tx('secret_question')"></label>
+                    <input type="text" x-model="forgot.birthplace" class="fixzen-input deva" :placeholder="tx('answer_placeholder')">
                 </div>
 
-                <!-- Job ref strip with enhanced tech ID display -->
-                <div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 mb-4 text-[10px] border border-gray-100">
-                    <span class="text-gray-500">Job Ref: <span class="font-mono font-bold text-gray-700" x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-brand-dark rounded-full text-white font-bold">
-                        <i class="fa-regular fa-id-card text-[8px]"></i>
-                        <span class="font-mono" x-text="billTechId || 'N/A'"></span>
-                    </span>
-                    <span class="inline-flex items-center gap-1 text-green-600 font-bold"><i class="fa-solid fa-circle-check"></i> Completed</span>
-                </div>
-
-                <!-- Itemized services table -->
-                <table class="w-full text-sm mb-1">
-                    <thead>
-                        <tr class="text-left text-[9px] text-gray-400 uppercase tracking-wide border-b-2 border-gray-200">
-                            <th class="pb-2 font-bold w-6">#</th>
-                            <th class="pb-2 font-bold">Description</th>
-                            <th class="pb-2 text-right font-bold">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(item, idx) in billLineItems" :key="idx">
-                            <tr class="border-b border-gray-100 align-top">
-                                <td class="py-2.5 pr-1 text-xs text-gray-400 font-mono" x-text="idx+1"></td>
-                                <td class="py-2.5 pr-2">
-                                    <p class="font-bold text-brand-dark text-sm" x-text="item.name"></p>
-
-                                    <p class="text-[10px] text-gray-400 mt-0.5" x-show="item.type !== 'quote'" x-text="item.desc"></p>
-
-                                    <div x-show="item.type === 'quote'">
-                                        <p class="text-[10px] text-gray-400 italic mt-0.5">Reported issue: <span x-text="item.desc"></span></p>
-                                        <p class="text-[10px] text-gray-500 mt-1" x-show="item.workDesc"><span class="font-bold text-gray-600">Technician's note:</span> <span x-text="item.workDesc"></span></p>
-                                        <div class="mt-1.5 ml-0.5 space-y-0.5 border-l-2 border-gray-100 pl-2">
-                                            <div class="flex justify-between text-[10px] text-gray-500">
-                                                <span>Labour Charges</span>
-                                                <span class="font-mono" x-text="'₹' + item.labour.toFixed(2)"></span>
-                                            </div>
-                                            <div class="flex justify-between text-[10px] text-gray-500">
-                                                <span>Material / Spare Parts</span>
-                                                <span class="font-mono" x-text="'₹' + item.material.toFixed(2)"></span>
-                                            </div>
-                                            <div class="flex justify-between text-[10px] text-gray-500" x-show="item.extra > 0">
-                                                <span>Additional Charges</span>
-                                                <span class="font-mono" x-text="'₹' + item.extra.toFixed(2)"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="py-2.5 text-right font-mono font-bold text-sm whitespace-nowrap">₹<span x-text="item.price.toFixed(2)"></span></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-
-                <!-- Totals -->
-                <div class="space-y-1.5 text-sm text-gray-600 border-t-2 border-dashed border-gray-300 pt-3 mb-4">
-                    <div class="flex justify-between">
-                        <span>Subtotal</span>
-                        <span class="font-mono" x-text="'₹' + billSubtotal.toFixed(2)"></span>
-                    </div>
-                    <div class="flex justify-between" x-show="billPlatformFee > 0">
-                        <span>Platform Fee</span>
-                        <span class="font-mono" x-text="'₹' + billPlatformFee.toFixed(2)"></span>
-                    </div>
-                    <div class="flex justify-between font-black text-base border-t pt-2 mt-1 text-brand-dark">
-                        <span>Grand Total</span>
-                        <span x-text="'₹' + billGrandTotal.toFixed(2)"></span>
-                    </div>
-                </div>
-
-                <!-- Payment summary -->
-                <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-xs">
-                    <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-receipt mr-1"></i> Payment Summary</p>
-
-                    <template x-if="isInspectionJob">
-                        <div class="space-y-1">
-                            <div class="flex justify-between text-gray-600">
-                                <span>Advance Paid (At Booking)</span>
-                                <span class="font-mono font-bold" x-text="'₹' + billAdvancePaid.toFixed(2)"></span>
-                            </div>
-                            <div class="flex justify-between text-gray-400 text-[10px] -mt-0.5">
-                                <span class="pl-2">incl. inspection fee credited</span>
-                                <span class="font-mono" x-text="'₹' + billInspectionFee.toFixed(2)"></span>
-                            </div>
-                            <div class="flex justify-between text-gray-600" x-show="billBalancePaid > 0">
-                                <span>Balance Paid (On Completion)</span>
-                                <span class="font-mono font-bold" x-text="'₹' + billBalancePaid.toFixed(2)"></span>
-                            </div>
-                            <div class="flex justify-between text-red-500" x-show="billRefundDue > 0">
-                                <span>Refund Due to Customer</span>
-                                <span class="font-mono font-bold" x-text="'₹' + billRefundDue.toFixed(2)"></span>
-                            </div>
-                            <div class="flex justify-between font-black text-sm border-t border-green-200 pt-1 mt-1 text-green-700">
-                                <span>Total Settled</span>
-                                <span x-text="'₹' + (billAdvancePaid + billBalancePaid - billRefundDue).toFixed(2)"></span>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="!isInspectionJob">
-                        <div class="flex justify-between font-black text-sm text-green-700">
-                            <span>Total Paid</span>
-                            <span x-text="'₹' + billGrandTotal.toFixed(2)"></span>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Amount in words -->
-                <p class="text-[10px] text-gray-400 mb-4">
-                    <span class="font-bold text-gray-500">Amount in Words:</span>
-                    <span x-text="billAmountInWords"></span> Rupees Only
-                </p>
-
-                <div x-show="loyaltyReward" x-cloak
-                     class="mb-4 rounded-xl p-3 border-2 border-dashed border-brand-gold bg-brand-gold/5 flex items-center justify-between">
-                    <div>
-                        <p class="text-[9px] font-bold uppercase tracking-wide text-brand-gold">
-                            <i class="fa-solid fa-gift"></i> Loyalty Reward — 5th Service Completed
-                        </p>
-                        <p class="font-black text-lg text-brand-dark tracking-wider" x-text="loyaltyReward?.code"></p>
-                    </div>
-                    <span class="text-xs font-bold text-brand-dark" x-text="loyaltyReward?.value + '% off next booking'"></span>
-                </div>
-
-                <!-- Notes + seal -->
-                <div class="flex items-end justify-between border-t border-gray-100 pt-4 mb-2">
-                    <div class="text-[9px] text-gray-400 leading-relaxed pr-3">
-                        <p class="font-bold text-gray-500 mb-1">Terms & Notes</p>
-                        <p>• Prices are inclusive of all applicable taxes.</p>
-                        <p>• System-generated invoice — no signature required.</p>
-                        <p>• For service queries, contact support within 48 hours.</p>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <div class="w-20 h-20 rounded-full border-2 border-brand-green flex flex-col items-center justify-center text-brand-green -rotate-12 opacity-80">
-                            <i class="fa-solid fa-stamp text-lg mb-0.5"></i>
-                            <span class="text-[8px] font-black uppercase tracking-wide text-center leading-tight">Verified<br>Paid</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center text-xs text-gray-400 mt-2 pb-2 border-t border-dashed border-gray-200 pt-3">
-                    <p class="font-bold text-gray-500">Thank you for trusting FixZenix!</p>
-                    <p>For support, email help@fixzenix.in</p>
-                </div>
+                <button @click="verifyRecoveryDetails()" class="btn-primary mt-2 shadow-md deva" :disabled="loading">
+                    <span x-show="!loading" x-text="tx('verify_btn')"></span>
+                    <div x-show="loading" class="loader"></div>
+                </button>
             </div>
 
-            <div class="p-4 bg-gray-50 border-t flex gap-3">
-                <button @click="showBill = false" class="flex-1 py-3 rounded-xl border border-gray-300 font-bold text-gray-600 hover:bg-gray-100">
-                    Close
+            <div x-show="forgotVerified" class="space-y-4" x-transition>
+                <div class="p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+                    <p class="text-xs text-green-700 font-bold deva"><i class="fa-solid fa-circle-check mr-1"></i> Identity Verified! Enter your new password below.</p>
+                </div>
+                <div>
+                    <label class="input-label deva" x-text="tx('new_password')"></label>
+                    <input type="password" x-model="forgot.newPass" class="fixzen-input" :placeholder="tx('pass_placeholder')">
+                </div>
+
+                <button @click="saveNewPassword()" class="btn-primary mt-2 shadow-md bg-brand-gold text-white deva" :disabled="loading">
+                    <span x-show="!loading" x-text="tx('save_pass_btn')"></span>
+                    <div x-show="loading" class="loader"></div>
                 </button>
-                <button @click="downloadPDF()" :disabled="isPrinting" class="flex-1 py-3 rounded-xl bg-brand-green text-white font-bold shadow-md hover:bg-green-600 flex items-center justify-center gap-2">
-                    <span x-show="!isPrinting"><i class="fa-solid fa-download"></i> Save PDF</span>
-                    <span x-show="isPrinting"><i class="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-brand-beige/30 text-center">
+                <button @click="step='auth'; forgotVerified=false; forgot={phone:'',birthplace:'',newPass:''}; message=''; resetAttempts()" class="text-xs font-bold text-brand-dark/50 hover:text-brand-dark tracking-wide deva">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Sign In
                 </button>
             </div>
         </div>
+
     </div>
 
-    <div x-show="showFeedback" class="fixed inset-0 z-[200] flex items-end justify-center" style="display:none;">
-        <div @click="showFeedback = false" class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-             x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"></div>
+    <p class="text-center text-[10px] text-brand-olive/30 font-bold mt-6 uppercase tracking-widest">
+        FixZen © 2026
+    </p>
+</div>
 
-        <div class="relative w-full max-w-md bg-white rounded-t-[2.5rem] shadow-2xl z-10 overflow-hidden sheet-enter max-h-[92vh] overflow-y-auto">
-            <div class="flex justify-center pt-4 pb-2">
-                <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
-            </div>
+<!-- ============================================================
+     🔥 SUPABASE INIT (external)
+     ============================================================ -->
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient(
+      'https://kzxdxnxgouthsywbsnvl.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag'
+    )
+    window.supabase = supabase;
+</script>
 
-            <div x-show="feedbackStep === 'done'" class="text-center py-10 px-6">
-                <div class="relative w-24 h-24 mx-auto mb-5">
-                    <div class="absolute inset-0 rounded-full blur-xl" style="background:rgba(16,185,129,0.2);transform:scale(1.5)"></div>
-                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-xl relative pop-in">
-                        <i class="fa-solid fa-trophy text-4xl text-white"></i>
-                    </div>
-                </div>
-                <h3 class="text-2xl font-black text-brand-dark mb-1">Thank You!</h3>
-                <p class="text-sm text-gray-500 mb-4">Your review helped your partner earn a bonus reward 🎉</p>
-                <div class="flex justify-center gap-1 mb-2">
-                    <template x-for="s in 5">
-                        <i class="fa-solid fa-star text-xl" :class="s <= feedbackRating ? 'text-yellow-400' : 'text-gray-200'"></i>
-                    </template>
-                </div>
-                <p class="text-xs text-gray-400" x-text="getFeedbackLabel(feedbackRating)"></p>
-            </div>
+<!-- ============================================================
+     📦 AUTH LOGIC (with 5-attempt + 3-hour lock)
+     ============================================================ -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('authApp', () => ({
+            // ---------- STATE ----------
+            lang: 'en',
+            step: 'lang',        // lang | choose | auth | forgot
+            isNewUser: true,
+            loading: false,
+            message: '',
+            loginAttempts: 0,     // 0..5 (5 = locked)
+            lockUntil: null,      // timestamp when lock expires (null if not locked)
+            forgotVerified: false,
 
-            <div x-show="feedbackStep === 1" class="px-6 pb-8 pt-2">
-                <div class="text-center mb-5">
-                    <div class="w-14 h-14 bg-gray-900 rounded-2xl rotate-3 flex items-center justify-center mx-auto mb-3 shadow-lg">
-                        <i class="fa-solid fa-star text-yellow-400 text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-brand-dark">How was your experience?</h3>
-                    <p class="text-xs text-gray-400 mt-1">Rate your FixZen technician</p>
-                </div>
+            // form data
+            form: { name: '', user: '', birthplace: '', phone: '', pass: '' },
+            forgot: { phone: '', birthplace: '', newPass: '' },
+            errors: { name: false, user: false, phone: false, pass: false },
 
-                <div class="flex justify-center gap-4 mb-3">
-                    <template x-for="i in 5" :key="i">
-                        <button @click="setFeedbackRating(i)" class="transition-all duration-200 active:scale-75" :class="i <= feedbackRating ? 'scale-110' : 'scale-100'">
-                            <i class="fa-solid fa-star text-4xl transition-all duration-200" :class="i <= feedbackRating ? 'star-lit' : 'star-dim'"></i>
-                        </button>
-                    </template>
-                </div>
+            // ---------- TRANSLATIONS ----------
+            translations: {
+                en: {
+                    tagline: 'Premium Access',
+                    choose_lang: 'Choose your language',
+                    lang_continue: 'Continue',
+                    welcome: 'Welcome to FixZen',
+                    create_account: 'Create Account',
+                    login: 'Sign In',
+                    welcome_back: 'Welcome Back',
+                    full_name: 'Full Name',
+                    name_placeholder: 'e.g. Rajesh Kumar',
+                    username: 'Username (unique)',
+                    user_placeholder: 'e.g. rajesh123',
+                    secret_question: 'Secret (birthplace)',
+                    secret_placeholder: 'Your birthplace',
+                    mobile: 'Mobile Number',
+                    phone_placeholder: '9876543210',
+                    password: 'Password (min 6 chars)',
+                    pass_placeholder: '••••••••',
+                    sign_in: 'Sign In',
+                    already_member: 'Already a member? Sign In',
+                    new_user: 'New user? Create Account',
+                    forgot_link: 'Forgot password?',
+                    reset_title: 'Reset Password',
+                    reset_subtitle: 'Enter your mobile & birthplace to verify.',
+                    verify_btn: 'Verify Identity',
+                    new_password: 'New Password',
+                    save_pass_btn: 'Save Password',
+                    attempts_left: 'attempts left',
+                    locked_msg: '🔒 Account locked. Try again in',
+                    // errors
+                    msg_name_req: 'Name is required (min 3 chars)',
+                    err_user_format: 'Username required',
+                    err_phone: 'Enter a valid 10-digit number',
+                    err_pass: 'Password must be at least 6 characters',
+                    err_login_fail: 'Invalid credentials. Please try again.',
+                    err_register_fail: 'Registration failed. Try again.',
+                    err_unknown: 'Something went wrong.',
+                },
+                hi: {
+                    tagline: 'प्रीमियम एक्सेस',
+                    choose_lang: 'अपनी भाषा चुनें',
+                    lang_continue: 'जारी रखें',
+                    welcome: 'FixZen में स्वागत है',
+                    create_account: 'खाता बनाएं',
+                    login: 'साइन इन करें',
+                    welcome_back: 'वापसी पर स्वागत है',
+                    full_name: 'पूरा नाम',
+                    name_placeholder: 'जैसे राजेश कुमार',
+                    username: 'उपयोगकर्ता नाम (अद्वितीय)',
+                    user_placeholder: 'जैसे rajesh123',
+                    secret_question: 'गुप्त प्रश्न (जन्मस्थान)',
+                    secret_placeholder: 'आपका जन्मस्थान',
+                    mobile: 'मोबाइल नंबर',
+                    phone_placeholder: '9876543210',
+                    password: 'पासवर्ड (कम से कम 6 अक्षर)',
+                    pass_placeholder: '••••••••',
+                    sign_in: 'साइन इन करें',
+                    already_member: 'पहले से सदस्य हैं? साइन इन करें',
+                    new_user: 'नए उपयोगकर्ता? खाता बनाएं',
+                    forgot_link: 'पासवर्ड भूल गए?',
+                    reset_title: 'पासवर्ड रीसेट करें',
+                    reset_subtitle: 'सत्यापन के लिए अपना मोबाइल और जन्मस्थान दर्ज करें।',
+                    verify_btn: 'पहचान सत्यापित करें',
+                    new_password: 'नया पासवर्ड',
+                    save_pass_btn: 'पासवर्ड सहेजें',
+                    attempts_left: 'प्रयास शेष',
+                    locked_msg: '🔒 खाता लॉक हो गया। पुनः प्रयास करें',
+                    msg_name_req: 'नाम आवश्यक है (कम से कम 3 अक्षर)',
+                    err_user_format: 'उपयोगकर्ता नाम आवश्यक है',
+                    err_phone: '10 अंकों का मान्य नंबर दर्ज करें',
+                    err_pass: 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए',
+                    err_login_fail: 'अमान्य क्रेडेंशियल। कृपया पुनः प्रयास करें।',
+                    err_register_fail: 'पंजीकरण विफल। पुनः प्रयास करें।',
+                    err_unknown: 'कुछ गलत हो गया।',
+                },
+                mr: {
+                    tagline: 'प्रीमियम प्रवेश',
+                    choose_lang: 'तुमची भाषा निवडा',
+                    lang_continue: 'पुढे जा',
+                    welcome: 'FixZen मध्ये स्वागत आहे',
+                    create_account: 'खाते तयार करा',
+                    login: 'साइन इन करा',
+                    welcome_back: 'पुन्हा स्वागत आहे',
+                    full_name: 'पूर्ण नाव',
+                    name_placeholder: 'उदा. राजेश कुमार',
+                    username: 'वापरकर्तानाव (अद्वितीय)',
+                    user_placeholder: 'उदा. rajesh123',
+                    secret_question: 'गुप्त प्रश्न (जन्मस्थान)',
+                    secret_placeholder: 'तुमचे जन्मस्थान',
+                    mobile: 'मोबाइल क्रमांक',
+                    phone_placeholder: '9876543210',
+                    password: 'पासवर्ड (किमान ६ अक्षरे)',
+                    pass_placeholder: '••••••••',
+                    sign_in: 'साइन इन करा',
+                    already_member: 'आधीच सदस्य आहात? साइन इन करा',
+                    new_user: 'नवीन वापरकर्ता? खाते तयार करा',
+                    forgot_link: 'पासवर्ड विसरलात?',
+                    reset_title: 'पासवर्ड रीसेट करा',
+                    reset_subtitle: 'सत्यापनासाठी तुमचा मोबाइल आणि जन्मस्थान प्रविष्ट करा.',
+                    verify_btn: 'ओळख सत्यापित करा',
+                    new_password: 'नवीन पासवर्ड',
+                    save_pass_btn: 'पासवर्ड जतन करा',
+                    attempts_left: 'प्रयास शिल्लक',
+                    locked_msg: '🔒 खाते लॉक झाले. पुन्हा प्रयत्न करा',
+                    msg_name_req: 'नाव आवश्यक आहे (किमान ३ अक्षरे)',
+                    err_user_format: 'वापरकर्तानाव आवश्यक आहे',
+                    err_phone: '१० अंकी वैध क्रमांक प्रविष्ट करा',
+                    err_pass: 'पासवर्ड किमान ६ अक्षरांचा असावा',
+                    err_login_fail: 'अवैध क्रेडेन्शियल्स. कृपया पुन्हा प्रयत्न करा.',
+                    err_register_fail: 'नोंदणी अयशस्वी. पुन्हा प्रयत्न करा.',
+                    err_unknown: 'काहीतरी चूक झाली.',
+                }
+            },
 
-                <div class="h-8 flex items-center justify-center mb-5">
-                    <div class="pop-in flex items-center gap-2" x-show="feedbackRating > 0">
-                        <span class="text-xl" x-text="getFeedbackEmoji(feedbackRating)"></span>
-                        <span class="font-extrabold text-brand-dark" x-text="getFeedbackLabel(feedbackRating)"></span>
-                    </div>
-                    <p x-show="feedbackRating === 0" class="text-xs text-gray-300">Tap a star to begin</p>
-                </div>
+            // ---------- HELPERS ----------
+            tx(key) {
+                return this.translations[this.lang]?.[key] || this.translations.en[key] || key;
+            },
+            setLang(l) {
+                this.lang = l;
+            },
+            proceedFromLang() {
+                this.step = 'choose';
+            },
+            resetErrors() {
+                this.errors = { name: false, user: false, phone: false, pass: false };
+                this.message = '';
+            },
+            resetAttempts() {
+                this.loginAttempts = 0;
+                this.lockUntil = null;
+            },
+            validateField(field) {
+                if (field === 'name') {
+                    this.errors.name = this.form.name.trim().length < 3 && this.form.name.length > 0;
+                } else if (field === 'user') {
+                    this.errors.user = this.form.user.trim().length === 0;
+                } else if (field === 'phone') {
+                    const p = this.form.phone.trim();
+                    this.errors.phone = !/^[0-9]{10}$/.test(p) && p.length > 0;
+                } else if (field === 'pass') {
+                    this.errors.pass = this.form.pass.length < 6 && this.form.pass.length > 0;
+                }
+            },
 
-                <div x-show="feedbackRating > 0">
-                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center mb-3">What stood out?</p>
-                    <div class="flex flex-wrap justify-center gap-2 mb-6">
-                        <template x-for="tag in getFeedbackTags()" :key="tag.label">
-                            <button @click="toggleFeedbackTag(tag.label)"
-                                    class="tag-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all"
-                                    :class="feedbackTags.includes(tag.label) ? 'on border-transparent' : 'bg-gray-50 text-gray-700 border-gray-200'">
-                                <span x-text="tag.icon"></span>
-                                <span x-text="tag.label"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
+            // ---------- LOCK LOGIC ----------
+            isLocked() {
+                if (!this.lockUntil) return false;
+                return this.lockUntil > Date.now();
+            },
+            formatLockTime() {
+                if (!this.lockUntil) return '';
+                const remaining = Math.max(0, this.lockUntil - Date.now());
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+                if (hours > 0) return `${hours}h ${mins}m ${secs}s`;
+                if (mins > 0) return `${mins}m ${secs}s`;
+                return `${secs}s`;
+            },
 
-                <button @click="feedbackStep = 2" :disabled="feedbackRating === 0"
-                        class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg"
-                        :class="feedbackRating > 0 ? 'bg-brand-dark text-white' : 'bg-gray-100 text-gray-300 cursor-not-allowed'">
-                    Continue <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
-                </button>
-            </div>
+            // ---------- MAIN FORM PROCESS ----------
+            async processForm() {
+                // prevent if locked
+                if (!this.isNewUser && this.isLocked()) {
+                    this.message = this.tx('locked_msg') + ' ' + this.formatLockTime();
+                    return;
+                }
 
-            <div x-show="feedbackStep === 2" class="px-6 pb-8 pt-2">
-                <div class="flex items-center gap-3 mb-5">
-                    <button @click="feedbackStep = 1" class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-all active:scale-90 flex-shrink-0">
-                        <i class="fa-solid fa-arrow-left text-sm"></i>
-                    </button>
-                    <div>
-                        <h3 class="text-lg font-black text-brand-dark leading-tight">Add a note</h3>
-                        <p class="text-xs text-gray-400">Optional — share what you loved</p>
-                    </div>
-                </div>
+                // Validate required fields
+                this.errors = { name: false, user: false, phone: false, pass: false };
+                let valid = true;
+                if (this.isNewUser) {
+                    if (this.form.name.trim().length < 3) { this.errors.name = true; valid = false; }
+                    if (this.form.user.trim().length === 0) { this.errors.user = true; valid = false; }
+                }
+                const phone = this.form.phone.trim();
+                if (!/^[0-9]{10}$/.test(phone)) { this.errors.phone = true; valid = false; }
+                if (this.form.pass.length < 6) { this.errors.pass = true; valid = false; }
 
-                <div class="flex items-center gap-3 bg-gray-50 rounded-2xl p-3 mb-4 border border-gray-100">
-                    <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm flex-shrink-0">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-extrabold text-brand-dark truncate" x-text="techData?.name || 'Your Expert'"></p>
-                        <p class="text-[10px] text-gray-400" x-text="fullJobData?.category || 'Service Partner'"></p>
-                    </div>
-                    <div class="flex gap-0.5 flex-shrink-0">
-                        <template x-for="s in 5">
-                            <i class="fa-solid fa-star text-xs" :class="s <= feedbackRating ? 'text-yellow-400' : 'text-gray-200'"></i>
-                        </template>
-                    </div>
-                </div>
+                if (!valid) {
+                    this.message = 'Please fix the errors above.';
+                    return;
+                }
 
-                <div class="flex flex-wrap gap-1.5 mb-3" x-show="feedbackTags.length > 0">
-                    <template x-for="tag in feedbackTags">
-                        <span class="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full" x-text="tag"></span>
-                    </template>
-                </div>
+                this.loading = true;
+                this.message = '';
 
-                <textarea x-model="feedbackComment" placeholder="Share what you loved or what could be better…" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-gray-300 outline-none resize-none font-medium placeholder:text-gray-300 mb-4"></textarea>
+                try {
+                    const sb = window.supabase;
+                    if (!sb) throw new Error('Supabase not loaded');
 
-                <button @click="submitFeedback()" :disabled="feedbackLoading || feedbackRating === 0"
-                        class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                        style="background:linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%);background-size:200% auto;animation:shimmer 2.5s linear infinite;color:white;">
-                    <span x-show="!feedbackLoading"><i class="fa-solid fa-paper-plane mr-1"></i> Submit Review</span>
-                    <i class="fa-solid fa-circle-notch fa-spin" x-show="feedbackLoading"></i>
-                </button>
+                    if (this.isNewUser) {
+                        // ---------- REGISTER ----------
+                        const { data, error } = await sb
+                            .from('users')
+                            .insert([{
+                                name: this.form.name.trim(),
+                                username: this.form.user.trim(),
+                                birthplace: this.form.birthplace.trim(),
+                                phone: phone,
+                                password: this.form.pass
+                            }])
+                            .select();
 
-                <p class="text-center text-[10px] text-gray-300 mt-3">
-                    <i class="fa-solid fa-lock mr-1"></i>Private & secure
-                </p>
-            </div>
+                        if (error) {
+                            if (error.code === '23505') this.message = 'Username or phone already exists.';
+                            else this.message = this.tx('err_register_fail') + ' ' + error.message;
+                        } else {
+                            this.message = '✅ Account created! Please sign in.';
+                            this.isNewUser = false;
+                            this.form = { name: '', user: '', birthplace: '', phone: '', pass: '' };
+                            this.resetErrors();
+                            this.resetAttempts();
+                        }
+                    } else {
+                        // ---------- LOGIN (with attempt limit + 3hr lock) ----------
+                        const { data, error } = await sb
+                            .from('users')
+                            .select('phone, password')
+                            .eq('phone', phone)
+                            .eq('password', this.form.pass)
+                            .maybeSingle();
 
-        </div>
-    </div>
+                        if (error || !data) {
+                            this.loginAttempts += 1;
+                            const left = 5 - this.loginAttempts;
+                            if (this.loginAttempts >= 5) {
+                                // Lock for 3 hours
+                                this.lockUntil = Date.now() + (3 * 60 * 60 * 1000);
+                                this.message = this.tx('locked_msg') + ' ' + this.formatLockTime();
+                            } else {
+                                this.message = this.tx('err_login_fail') + ` (${left} ${this.tx('attempts_left')})`;
+                            }
+                        } else {
+                            // success: reset attempts and lock
+                            this.message = '✅ Login successful! Redirecting...';
+                            this.resetAttempts();
+                            // in real app, redirect or set session
+                        }
+                    }
+                } catch (e) {
+                    this.message = this.tx('err_unknown') + ' ' + e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
 
-    <script src="success.js"></script>
+            // ---------- FORGOT PASSWORD ----------
+            async verifyRecoveryDetails() {
+                const phone = this.forgot.phone.trim();
+                const birthplace = this.forgot.birthplace.trim();
+                if (!phone || !birthplace) {
+                    this.message = 'Please enter both mobile and birthplace.';
+                    return;
+                }
+                this.loading = true;
+                this.message = '';
+                try {
+                    const sb = window.supabase;
+                    const { data, error } = await sb
+                        .from('users')
+                        .select('phone')
+                        .eq('phone', phone)
+                        .eq('birthplace', birthplace)
+                        .maybeSingle();
+
+                    if (error || !data) {
+                        this.message = '❌ No matching account found.';
+                    } else {
+                        this.forgotVerified = true;
+                        this.message = '✅ Verified! Set new password.';
+                    }
+                } catch (e) {
+                    this.message = 'Error: ' + e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async saveNewPassword() {
+                const newPass = this.forgot.newPass.trim();
+                if (newPass.length < 6) {
+                    this.message = 'Password must be at least 6 characters.';
+                    return;
+                }
+                this.loading = true;
+                this.message = '';
+                try {
+                    const sb = window.supabase;
+                    const { error } = await sb
+                        .from('users')
+                        .update({ password: newPass })
+                        .eq('phone', this.forgot.phone.trim());
+
+                    if (error) throw error;
+                    this.message = '✅ Password updated! Please sign in.';
+                    this.forgotVerified = false;
+                    this.forgot = { phone: '', birthplace: '', newPass: '' };
+                    this.step = 'auth';
+                    this.resetAttempts();
+                } catch (e) {
+                    this.message = 'Update failed: ' + e.message;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }));
+    });
+</script>
 </body>
 </html>
