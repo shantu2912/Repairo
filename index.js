@@ -13,7 +13,7 @@ theme: {
 extend: {
 colors: { 
 'brand-olive': '#5D5646', 
-'brand-gold': '#A07D54', 
+'brand-gold': '#A07D54',  
 'brand-cream': '#EEEAE2', 
 'brand-dark': '#4D4C4B', 
 'brand-beige': '#DFD4C3', 
