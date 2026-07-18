@@ -8,7 +8,7 @@ tailwind.config = {
             colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-green': '#10B981' },
             fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
             animation: {
-                'ripple': 'ripple 2s linear infinite',
+                'ripple': 'ripple 2s linear infinite', 
                 'slide-up-fade': 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
             },
             keyframes: {
