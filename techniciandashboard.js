@@ -9,6 +9,12 @@ function dashboardHandler() {
     available: false,
     notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
 
+    // ── DISTANCE TRACKING ──
+    currentLoc: null,
+    locationStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'unavailable'
+    geocodeCache: {},       // address string -> { lat, lng } | null (persists across refreshes this session)
+    distancesUpdating: false,
+
     // ─────────────────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────────────────
@@ -50,6 +56,7 @@ function dashboardHandler() {
 
       await this.fetchJobs();
       this.subscribeRealtime();
+      this.updateJobDistances(); // runs in background, doesn't block the UI
     },
 
     // ─────────────────────────────────────────────────────────
@@ -252,6 +259,105 @@ function dashboardHandler() {
       window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
     },
 
+    // ─────────────────────────────────────────────────────────
+    // DISTANCE FROM TECH'S CURRENT LOCATION — shown per job card
+    // ─────────────────────────────────────────────────────────
+    getCurrentLocation() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error("Geolocation not supported"));
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          err => reject(new Error(err.message)),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+        );
+      });
+    },
+
+    calculateDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    },
+
+    async geocodeAddress(address) {
+      if (!address) return null;
+      if (address in this.geocodeCache) return this.geocodeCache[address];
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+          { headers: { 'User-Agent': 'FixZenPro/2.0' } }
+        );
+        const data = await res.json();
+        const coords = (data && data.length > 0)
+          ? { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+          : null;
+        this.geocodeCache[address] = coords;
+        return coords;
+      } catch (err) {
+        console.warn("Geocode failed:", err);
+        return null;
+      }
+    },
+
+    // Refreshes the tech's GPS fix, then resolves + caches a distance for
+    // every non-completed job, then sorts nearest-first. Safe to call
+    // repeatedly — already-geocoded addresses are served from cache instantly.
+    async updateJobDistances() {
+      if (this.distancesUpdating) return;
+      this.distancesUpdating = true;
+      this.locationStatus = 'loading';
+
+      try {
+        this.currentLoc = await this.getCurrentLocation();
+        this.locationStatus = 'ready';
+      } catch (err) {
+        console.warn("Location unavailable:", err.message);
+        this.locationStatus = 'unavailable';
+        this.distancesUpdating = false;
+        return; // no GPS fix — cards just show no distance, nothing else breaks
+      }
+
+      for (const job of this.jobs) {
+        if (job.status === 'completed' || !job.location) continue;
+
+        const cached = this.geocodeCache[job.location];
+        const coords = cached !== undefined ? cached : await this.geocodeAddress(job.location);
+
+        if (coords) {
+          const km = this.calculateDistanceKm(this.currentLoc.lat, this.currentLoc.lng, coords.lat, coords.lng);
+          job.distanceKm = km;
+          job.distanceText = km < 1 ? `${Math.round(km * 1000)} m away` : `${km.toFixed(1)} km away`;
+        } else {
+          job.distanceKm = null;
+          job.distanceText = null;
+        }
+
+        // Respect Nominatim's 1 request/sec usage policy for freshly-geocoded addresses
+        if (cached === undefined) await new Promise(r => setTimeout(r, 1100));
+      }
+
+      // Nearest pending/active job first; completed jobs sink to the bottom;
+      // jobs whose address couldn't be geocoded sit just above completed ones.
+      this.jobs.sort((a, b) => {
+        if ((a.status === 'completed') !== (b.status === 'completed')) {
+          return a.status === 'completed' ? 1 : -1;
+        }
+        if (a.distanceKm == null && b.distanceKm == null) return 0;
+        if (a.distanceKm == null) return 1;
+        if (b.distanceKm == null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+
+      this.distancesUpdating = false;
+    },
+
     scrollToJobs() {
       document.getElementById('jobsSection')?.scrollIntoView({ behavior: 'smooth' });
     },
@@ -313,6 +419,7 @@ function dashboardHandler() {
       }
 
       this.loading = false;
+      this.updateJobDistances(); // background — doesn't block loading state
     },
 
     // ─────────────────────────────────────────────────────────
@@ -338,6 +445,7 @@ function dashboardHandler() {
               // Add new pending unassigned jobs
               if (job.status === "pending" && !job.tech_id) {
                 this.jobs.unshift(job);
+                this.updateJobDistances(); // resolve + insert this job into nearest-first order
               }
             }
 
