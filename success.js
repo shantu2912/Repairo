@@ -8,7 +8,7 @@ tailwind.config = {
             colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-green': '#10B981' },
             fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
             animation: {
-                'ripple': 'ripple 2s linear infinite', 
+                'ripple': 'ripple 2s linear infinite',
                 'slide-up-fade': 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
             },
             keyframes: {
@@ -46,6 +46,7 @@ Alpine.data('trackingApp', () => ({
     billVariantName: '',
     isInspectionJob: false,
     billSubtotal: 0,
+    billDiscountAmount: 0,
     billPlatformFee: 0,
     billGrandTotal: 0,
     billInspectionFee: 299,
@@ -279,7 +280,9 @@ Alpine.data('trackingApp', () => ({
 
             const OTHER_LABEL = 'Other Issue';
             const inspFee = Number(job.inspection_fee_amount || 299);
-            const totalPrice = parseFloat(job.original_price || job.discounted_price || 0);
+            const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
+            const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
+            const discountAmount = Math.max(0, grossPrice - totalPrice);
 
             const servicesSelected = job.services_selected || job.device || '';
             const serviceNames = servicesSelected
@@ -357,10 +360,11 @@ Alpine.data('trackingApp', () => ({
             this.billInspectionFee = inspFee;
             this.billQuoteAmount = quotedTotal;
             this.billSubtotal = lineItems.reduce((s, i) => s + (i.price || 0), 0);
+            this.billDiscountAmount = discountAmount;
 
             if (hasOtherService) {
                 this.billPlatformFee = 0;
-                this.billGrandTotal = this.billSubtotal;
+                this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount);
                 this.billAdvancePaid = fixedTotal + inspFee;
 
                 if (quotedTotal >= inspFee) {
@@ -372,7 +376,7 @@ Alpine.data('trackingApp', () => ({
                 }
             } else {
                 this.billPlatformFee = 49;
-                this.billGrandTotal = this.billSubtotal + this.billPlatformFee;
+                this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount) + this.billPlatformFee;
                 this.billAdvancePaid = this.billGrandTotal;
                 this.billBalancePaid = 0;
                 this.billRefundDue = 0;
