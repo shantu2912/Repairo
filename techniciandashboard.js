@@ -10,7 +10,7 @@ function dashboardHandler() {
     notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
 
     // ── DISTANCE TRACKING ──
-    currentLoc: null,
+    currentLoc: null, 
     locationStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'unavailable'
     geocodeCache: {},       // address string -> { lat, lng } | null (persists across refreshes this session)
     distancesUpdating: false,
