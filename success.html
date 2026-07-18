@@ -385,20 +385,20 @@ help@fixzenix.in
 <div class="mt-1.5 ml-0.5 space-y-0.5 border-l-2 border-gray-100 pl-2">
 <div class="flex justify-between text-[10px] text-gray-500">
 <span>Labour Charges</span>
-<span class="font-mono" x-text="'₹' + item.labour.toFixed(2)"></span>
+<span class="font-mono" x-text="'₹' + (item.labour||0).toFixed(2)"></span>
 </div>
 <div class="flex justify-between text-[10px] text-gray-500">
 <span>Material / Spare Parts</span>
-<span class="font-mono" x-text="'₹' + item.material.toFixed(2)"></span>
+<span class="font-mono" x-text="'₹' + (item.material||0).toFixed(2)"></span>
 </div>
 <div class="flex justify-between text-[10px] text-gray-500" x-show="item.extra > 0">
 <span>Additional Charges</span>
-<span class="font-mono" x-text="'₹' + item.extra.toFixed(2)"></span>
+<span class="font-mono" x-text="'₹' + (item.extra||0).toFixed(2)"></span>
 </div>
 </div>
 </div>
 </td>
-<td class="py-2.5 text-right font-mono font-bold text-sm whitespace-nowrap">₹<span x-text="item.price.toFixed(2)"></span></td>
+<td class="py-2.5 text-right font-mono font-bold text-sm whitespace-nowrap">₹<span x-text="(item.price||0).toFixed(2)"></span></td>
 </tr>
 </template>
 </tbody>
@@ -413,6 +413,10 @@ help@fixzenix.in
 <div class="flex justify-between" x-show="billPlatformFee > 0">
 <span>Platform Fee</span>
 <span class="font-mono" x-text="'₹' + billPlatformFee.toFixed(2)"></span>
+</div>
+<div class="flex justify-between text-brand-green" x-show="billDiscountAmount > 0" x-cloak>
+<span><i class="fa-solid fa-tag mr-1"></i> Promo Discount</span>
+<span class="font-mono font-bold" x-text="'−₹' + billDiscountAmount.toFixed(2)"></span>
 </div>
 <div class="flex justify-between font-black text-base border-t pt-2 mt-1 text-brand-dark">
 <span>Grand Total</span>
