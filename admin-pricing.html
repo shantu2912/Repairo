@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixZenix Admin - Service & Offer Pricing Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-gold': '#A07D54',
+                        'brand-olive': '#5D5646',
+                        'brand-cream': '#FBF9F5',
+                        'brand-dark': '#2C2823'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-brand-cream text-brand-dark antialiased font-sans min-h-screen"
+      x-data="adminPricingManager()" x-init="init()">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-brand-gold/20 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-olive text-white flex items-center justify-center font-bold text-lg">
+                    FZ
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-brand-olive">FixZenix Admin</h1>
+                    <p class="text-xs text-brand-dark/50">Service Offer & Price Management</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" x-model="searchQuery" placeholder="Search sub-service..." 
+                           class="w-full bg-brand-cream border border-brand-gold/30 rounded-xl pl-8 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-gold/40">
+                </div>
+                <button @click="saveAllChanges()" 
+                        :disabled="saving"
+                        class="bg-brand-gold hover:bg-brand-olive text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
+                    <i class="fa-solid fa-floppy-disk" :class="saving ? 'fa-spin' : ''"></i>
+                    <span x-text="saving ? 'Saving...' : 'Save Pricing'"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Status Alert -->
+        <div x-show="toast.show" 
+             x-transition
+             :class="toast.type === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'"
+             class="mb-6 p-4 rounded-xl border flex items-center justify-between text-xs font-bold shadow-sm">
+            <span x-text="toast.message"></span>
+            <button @click="toast.show = false"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+
+        <!-- Service Cards Table -->
+        <div class="space-y-6">
+            <template x-for="(service, categoryKey) in filteredServices" :key="categoryKey">
+                <div class="bg-white border border-brand-gold/20 rounded-2xl shadow-sm overflow-hidden">
+                    
+                    <!-- Category Banner -->
+                    <div class="bg-brand-cream px-6 py-4 border-b border-brand-gold/10 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-brand-gold"></i>
+                            <h2 class="font-bold text-brand-olive text-base" x-text="service.name"></h2>
+                        </div>
+                        <span class="text-[10px] font-bold bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded-full uppercase tracking-wider"
+                              x-text="(service.subs || []).length + ' Sub-services'"></span>
+                    </div>
+
+                    <!-- Sub-Services List -->
+                    <div class="divide-y divide-gray-100">
+                        <template x-for="(sub, index) in service.subs" :key="index">
+                            <div class="p-4 sm:p-6 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                
+                                <!-- Info -->
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-brand-dark text-sm" x-text="sub.n"></h3>
+                                        <span x-show="sub.popular" class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">🔥 Popular</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1" x-text="sub.d"></p>
+                                </div>
+
+                                <!-- Inputs -->
+                                <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+                                    
+                                    <!-- Original Price Input -->
+                                    <div class="w-28">
+                                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Original Price (₹)</label>
+                                        <input type="number" x-model.number="sub.op" @input="calculateDiscount(sub)"
+                                               class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-gold">
+                                    </div>
+
+                                    <!-- Offer Price Input -->
+                                    <div class="w-28">
+                                        <label class="block text-[9px] font-bold text-brand-gold uppercase tracking-wider mb-1">Offer Price (₹)</label>
+                                        <input type="number" x-model.number="sub.p" @input="calculateDiscount(sub)"
+                                               class="w-full bg-white border border-brand-gold/40 rounded-lg px-3 py-1.5 text-xs font-bold text-brand-olive focus:outline-none focus:ring-2 focus:ring-brand-gold">
+                                    </div>
+
+                                    <!-- Discount Preview Badge -->
+                                    <div class="w-20 text-center">
+                                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Discount</label>
+                                        <span class="inline-block px-2 py-1 rounded-md text-[10px] font-extrabold"
+                                              :class="sub.discount > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-400'"
+                                              x-text="sub.discount > 0 ? sub.discount + '% OFF' : '0%'">
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <script>
+        function adminPricingManager() {
+            return {
+                searchQuery: '',
+                saving: false,
+                toast: { show: false, message: '', type: 'success' },
+                
+                // Demo Database Structure (Can sync directly with Supabase)
+                services: {
+                    'cleaning': {
+                        name: 'Full House & Disinfection Cleaning',
+                        subs: [
+                            { n: 'Full House Deep Clean (1 BHK)', p: 1299, op: 1699, d: 'Complete deep cleaning for 1 BHK apartment.', popular: true, discount: 24 },
+                            { n: 'Full House Deep Clean (2 BHK)', p: 1799, op: 2299, d: 'Complete deep cleaning for 2 BHK apartment.', popular: true, discount: 22 },
+                            { n: 'Full House Deep Clean (3 BHK)', p: 2299, op: 2999, d: 'Complete deep cleaning for 3 BHK apartment.', popular: false, discount: 23 },
+                            { n: 'Bathroom Deep Disinfection (1 Bath)', p: 349, op: 499, d: 'Hard-water scale removal, tile scrubbing, and sanitization.', popular: true, discount: 30 }
+                        ]
+                    }
+                },
+
+                get filteredServices() {
+                    if (!this.searchQuery.trim()) return this.services;
+                    const query = this.searchQuery.toLowerCase();
+                    
+                    let result = {};
+                    for (let key in this.services) {
+                        const matchingSubs = this.services[key].subs.filter(s => 
+                            s.n.toLowerCase().includes(query) || s.d.toLowerCase().includes(query)
+                        );
+                        if (matchingSubs.length > 0) {
+                            result[key] = { ...this.services[key], subs: matchingSubs };
+                        }
+                    }
+                    return result;
+                },
+
+                calculateDiscount(sub) {
+                    if (sub.op && sub.op > sub.p) {
+                        sub.discount = Math.round(((sub.op - sub.p) / sub.op) * 100);
+                    } else {
+                        sub.discount = 0;
+                    }
+                },
+
+                async saveAllChanges() {
+                    this.saving = true;
+                    
+                    // Logic to send updated servicesDB payload back to Supabase or your config storage
+                    setTimeout(() => {
+                        this.saving = false;
+                        this.showToast('Pricing and discount updates saved successfully!', 'success');
+                    }, 800);
+                },
+
+                showToast(msg, type = 'success') {
+                    this.toast = { show: true, message: msg, type: type };
+                    setTimeout(() => { this.toast.show = false; }, 4000);
+                },
+
+                init() {
+                    // Precompute initial discounts
+                    for (let key in this.services) {
+                        this.services[key].subs.forEach(s => this.calculateDiscount(s));
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
