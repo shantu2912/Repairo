@@ -21,7 +21,7 @@ function authApp() {
                 sign_in: 'Sign In', already_member: 'Already a member? Sign In', new_user: 'New User? Create Account',
                 name_placeholder: 'Rahul Sharma', user_placeholder: 'username', pass_placeholder: '••••••••', phone_placeholder: '9876543210',
                 err_phone: 'Must be a 10-digit Indian number starting with 6-9', err_exists: 'Mobile number already registered',
-                err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets and numbers only (No spaces)',
+                err_user_exists: 'Username is already taken', err_user_format: 'Use alphabets,numbers and special character only (No spaces)',
                 err_not_found: 'Account not found with this mobile number', err_pass: 'Password must be at least 6 characters long',
                 err_login: 'Incorrect mobile number or password.', msg_name_req: 'Enter letters only (Min 3 characters, no numbers)',
                 welcome_back: 'Welcome Back', secret_question: 'Security Question: What is your birth place city?', secret_placeholder: 'e.g., Nagpur',
@@ -96,7 +96,7 @@ function authApp() {
             if (this.isNewUser && field === 'user') {
                 const cleanUser = this.form.user.trim();
                 if (cleanUser.length > 0) {
-                    const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                    const alphaNumericRegex = /^[a-zA-Z0-9._@-]+$/;
                     this.errors.user = !alphaNumericRegex.test(cleanUser);
                 } else {
                     this.errors.user = false;
@@ -182,7 +182,7 @@ function authApp() {
             
             if (this.isNewUser) {
                 this.errors.name = !this.form.name.trim() || this.form.name.trim().length < 3;
-                const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+                const alphaNumericRegex = /^[a-zA-Z0-9._@-]+$/;
                 this.errors.user = !alphaNumericRegex.test(this.form.user.trim());
                 if (!this.form.birthplace.trim()) {
                     this.message = "Please fill out your birthplace city to secure account recovery checkpoints.";
