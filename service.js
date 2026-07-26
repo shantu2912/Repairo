@@ -53,23 +53,468 @@ const servicesDB = {
     // ==========================================
     // HOME SERVICES (कॅटेगरी: Home_cat)
     // ==========================================
-    "electrician": { 
-        name: "Expert Electrician", 
-        image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
-        desc: "Certified electricians for wiring, appliance installation, and repairs. 24/7 emergency service available.",
-        icon: "fa-bolt",
-        subs: [
-            {n:"Visit & Inspection", p:250, d:"Diagnosis charge (Waived if service taken)", popular: false},
-            {n:"Switch/Socket Repair", p:275, d:"Per switchboard unit", popular: true},
-            {n:"Fan Installation", p:385, d:"Ceiling fan assembly & hanging", popular: false},
-            {n:"Fan Replacement", p:330, d:"Replace old with new", popular: false},
-            {n:"Tube Light Install", p:220, d:"Wall mounting & connection", popular: false},
-            {n:"MCB Replacement", p:440, d:"Fuse box repair/upgrade", popular: false},
-            {n:"New Point Wiring", p:880, d:"Internal wiring per point", popular: false},
-            {n:"Inverter Connection", p:330, d:"Battery & Inverter setup", popular: false},
-            {n:"Other Issue",p:299,d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true, popular: false}
-        ]
-    },
+    "electrician": {
+    name: "Expert Electrician",
+    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800",
+    desc: "Certified electricians for residential and commercial electrical installation, repairs and maintenance.",
+    icon: "fa-bolt",
+    subs: [
+
+        // Inspection
+        {
+            n:"Electrical Inspection",
+            p:199,
+            d:"Complete inspection and fault diagnosis. Adjusted in final bill if work is approved.",
+            duration:"20-30 min",
+            warranty:"N/A",
+            material:false,
+            is_inspection:true,
+            popular:true
+        },
+
+        {
+            n:"Emergency Electrician Visit",
+            p:299,
+            d:"Urgent electrical inspection within service hours.",
+            duration:"30 min",
+            warranty:"N/A",
+            material:false,
+            is_inspection:true
+        },
+
+        // Switches
+
+        {
+            n:"Switch Replacement (1 Module)",
+            p:149,
+            d:"Replace faulty switch. Customer supplied material.",
+            duration:"15 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Socket Replacement (5A)",
+            p:179,
+            d:"Replace standard socket.",
+            duration:"15-20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Socket Replacement (15A)",
+            p:249,
+            d:"Heavy duty socket replacement.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Switchboard Repair",
+            p:299,
+            d:"Repair loose connections and faulty modules.",
+            duration:"30-45 min",
+            warranty:"30 Days",
+            material:false,
+            popular:true
+        },
+
+        {
+            n:"Complete Switchboard Replacement",
+            p:499,
+            d:"Replace complete modular board.",
+            duration:"45-60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Fan Regulator Replacement",
+            p:199,
+            d:"Replace old regulator.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Dimmer Installation",
+            p:249,
+            d:"Install light dimmer.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Fans
+
+        {
+            n:"Ceiling Fan Installation",
+            p:399,
+            d:"Install new ceiling fan.",
+            duration:"40 min",
+            warranty:"30 Days",
+            material:false,
+            popular:true
+        },
+
+        {
+            n:"Ceiling Fan Replacement",
+            p:349,
+            d:"Replace existing fan.",
+            duration:"30 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Ceiling Fan Repair",
+            p:299,
+            d:"Repair noisy or slow fan.",
+            duration:"30-45 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Exhaust Fan Installation",
+            p:349,
+            d:"Install exhaust fan.",
+            duration:"30 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Exhaust Fan Repair",
+            p:249,
+            d:"Repair exhaust fan.",
+            duration:"30 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Lighting
+
+        {
+            n:"LED Bulb Installation",
+            p:79,
+            d:"Install customer supplied LED bulb.",
+            duration:"10 min",
+            warranty:"7 Days",
+            material:false
+        },
+
+        {
+            n:"Tube Light Installation",
+            p:199,
+            d:"Install LED tube light.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"LED Panel Light Installation",
+            p:249,
+            d:"Install ceiling panel light.",
+            duration:"25 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Wall Light Installation",
+            p:249,
+            d:"Install decorative wall light.",
+            duration:"25 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Chandelier Installation",
+            p:999,
+            d:"Install decorative chandelier.",
+            duration:"90-120 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Decorative Light Installation",
+            p:499,
+            d:"Install decorative lighting.",
+            duration:"45 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Outdoor Light Installation",
+            p:299,
+            d:"Install outdoor lighting.",
+            duration:"30 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Garden Light Installation",
+            p:349,
+            d:"Install garden lights.",
+            duration:"40 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Motion Sensor Light Installation",
+            p:499,
+            d:"Install motion sensor light.",
+            duration:"45 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Wiring
+
+        {
+            n:"New 5A Electrical Point",
+            p:499,
+            d:"Labour only.",
+            duration:"45-60 min",
+            warranty:"30 Days",
+            material:false,
+            popular:true
+        },
+
+        {
+            n:"New 15A Electrical Point",
+            p:699,
+            d:"Heavy load point.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Concealed Wiring Repair",
+            p:599,
+            d:"Minor concealed wiring repair.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Surface Wiring",
+            p:449,
+            d:"PVC casing wiring labour.",
+            duration:"45 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Short Circuit Repair",
+            p:699,
+            d:"Locate and repair short circuit.",
+            duration:"60-90 min",
+            warranty:"30 Days",
+            material:false,
+            popular:true
+        },
+
+        {
+            n:"House Rewiring",
+            p:2499,
+            d:"Labour charges only. Final quotation after inspection.",
+            duration:"Variable",
+            warranty:"90 Days",
+            material:false
+        },
+
+        // MCB
+
+        {
+            n:"MCB Replacement",
+            p:249,
+            d:"Replace faulty MCB.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"MCB Tripping Repair",
+            p:349,
+            d:"Diagnose tripping issues.",
+            duration:"40 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Distribution Board Repair",
+            p:599,
+            d:"Repair DB connections.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Distribution Board Installation",
+            p:999,
+            d:"Install customer supplied DB.",
+            duration:"90 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Backup
+
+        {
+            n:"Inverter Installation",
+            p:799,
+            d:"Install inverter.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Battery Connection",
+            p:249,
+            d:"Connect inverter battery.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"UPS Installation",
+            p:899,
+            d:"Install UPS.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Appliances
+
+        {
+            n:"Door Bell Installation",
+            p:199,
+            d:"Install door bell.",
+            duration:"20 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Geyser Electrical Connection",
+            p:349,
+            d:"Electrical connection only.",
+            duration:"30 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"AC Power Point Installation",
+            p:699,
+            d:"Dedicated AC point.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Water Pump Wiring",
+            p:449,
+            d:"Motor wiring connection.",
+            duration:"40 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Safety
+
+        {
+            n:"Earthing Check",
+            p:399,
+            d:"Check earthing resistance.",
+            duration:"30 min",
+            warranty:"N/A",
+            material:false
+        },
+
+        {
+            n:"Voltage Testing",
+            p:249,
+            d:"Check voltage fluctuations.",
+            duration:"20 min",
+            warranty:"N/A",
+            material:false
+        },
+
+        {
+            n:"Earth Leakage Check",
+            p:349,
+            d:"Leakage current inspection.",
+            duration:"30 min",
+            warranty:"N/A",
+            material:false
+        },
+
+        // Commercial
+
+        {
+            n:"Office Electrical Repair",
+            p:999,
+            d:"Minor office electrical maintenance.",
+            duration:"90 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Shop Electrical Repair",
+            p:799,
+            d:"Commercial electrical repairs.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        {
+            n:"Meter Board Repair",
+            p:699,
+            d:"Repair meter board connections.",
+            duration:"60 min",
+            warranty:"30 Days",
+            material:false
+        },
+
+        // Other
+
+        {
+            n:"Other Electrical Issue",
+            p:199,
+            d:"Can't find your problem? Inspection fee adjusted in final bill if work is approved.",
+            duration:"20-30 min",
+            warranty:"N/A",
+            material:false,
+            is_inspection:true,
+            popular:true
+        }
+
+    ]
+},
     "carpenter": { 
         name: "Expert Carpentry", 
         image: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=800",
@@ -99,21 +544,604 @@ const servicesDB = {
             {n:"Water Tank Cleaning (Up to 1000L)", p:499, d:"High-pressure silt evacuation and eco-friendly antibacterial treatment.", popular: false}
         ]
     },
-    "plumber": { 
-        name: "Professional Plumbing", 
-        image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800",
-        desc: "Leakage fixing, tap installation, and blockage removal. Same-day service available.",
-        icon: "fa-wrench",
-        subs: [
-            {n:"Visit & Inspection", p:250, d:"Leak detection & quote", popular: false},
-            {n:"Tap Replacement", p:275, d:"Per tap installation", popular: true},
-            {n:"Wash Basin Install", p:440, d:"Wall mounting & sealant", popular: false},
-            {n:"Blockage Removal", p:440, d:"Sink/Pipe unclogging", popular: true},
-            {n:"Toilet Flush Repair", p:385, d:"Tank mechanism fix", popular: false},
-            {n:"Motor Connection", p:550, d:"Water pump setup", popular: false},
-            {n:"Other Issue",p:299,d:"Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.",is_inspection: true, popular: false}
-        ]
-    },
+    "plumber": {
+    name: "Expert Plumber",
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800",
+    desc: "Professional plumbing services for homes and commercial properties.",
+    icon: "fa-faucet",
+
+    subs: [
+
+        // Inspection
+
+        {
+            id:"plumbing-inspection",
+            slug:"plumbing-inspection",
+            category:"plumber",
+            subCategory:"inspection",
+
+            n:"Plumbing Inspection",
+            p:199,
+            minPrice:199,
+            maxPrice:199,
+            priceType:"inspection",
+
+            d:"Inspection and diagnosis of plumbing issues. Inspection charge adjusted if service is booked.",
+
+            duration:"20-30 min",
+            warranty:"N/A",
+            materialIncluded:false,
+            popular:true,
+            inspection:true,
+            skillLevel:"basic",
+
+            tags:["Inspection","Leak","Diagnosis"]
+        },
+
+        {
+            id:"emergency-plumber-visit",
+            slug:"emergency-plumber-visit",
+            category:"plumber",
+            subCategory:"inspection",
+
+            n:"Emergency Plumber Visit",
+            p:299,
+            minPrice:299,
+            maxPrice:299,
+            priceType:"inspection",
+
+            d:"Urgent plumbing visit during working hours.",
+
+            duration:"30 min",
+            warranty:"N/A",
+            materialIncluded:false,
+            inspection:true,
+            skillLevel:"basic",
+
+            tags:["Emergency","Visit"]
+        },
+
+        // Taps
+
+        {
+            id:"tap-installation",
+            slug:"tap-installation",
+            category:"plumber",
+            subCategory:"tap",
+
+            n:"Tap Installation",
+            p:249,
+            minPrice:249,
+            maxPrice:249,
+            priceType:"fixed",
+
+            d:"Installation of customer supplied tap.",
+
+            duration:"20-30 min",
+            warranty:"30 Days",
+            materialIncluded:false,
+            popular:true,
+            inspection:false,
+            skillLevel:"basic",
+
+            tags:["Tap","Installation","Bathroom","Kitchen"]
+        },
+
+        {
+            id:"tap-replacement",
+            slug:"tap-replacement",
+
+            category:"plumber",
+            subCategory:"tap",
+
+            n:"Tap Replacement",
+
+            p:299,
+            minPrice:299,
+            maxPrice:299,
+
+            priceType:"fixed",
+
+            d:"Replace damaged or leaking tap.",
+
+            duration:"20-30 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            inspection:false,
+
+            skillLevel:"basic",
+
+            tags:["Tap","Replacement"]
+        },
+
+        {
+            id:"tap-leak-repair",
+            slug:"tap-leak-repair",
+
+            category:"plumber",
+            subCategory:"tap",
+
+            n:"Tap Leakage Repair",
+
+            p:249,
+            minPrice:249,
+            maxPrice:399,
+
+            priceType:"starting",
+
+            d:"Repair leaking tap.",
+
+            duration:"20-40 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            inspection:false,
+
+            skillLevel:"basic",
+
+            tags:["Tap","Leakage","Repair"]
+        },
+
+        {
+            id:"mixer-tap-installation",
+            slug:"mixer-tap-installation",
+
+            category:"plumber",
+            subCategory:"tap",
+
+            n:"Mixer Tap Installation",
+
+            p:399,
+            minPrice:399,
+            maxPrice:499,
+
+            priceType:"starting",
+
+            d:"Install mixer tap.",
+
+            duration:"30-45 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Mixer","Tap"]
+        },
+
+        // Basin
+
+        {
+            id:"wash-basin-installation",
+            slug:"wash-basin-installation",
+
+            category:"plumber",
+            subCategory:"basin",
+
+            n:"Wash Basin Installation",
+
+            p:699,
+
+            minPrice:699,
+
+            maxPrice:999,
+
+            priceType:"starting",
+
+            d:"Install customer supplied wash basin.",
+
+            duration:"60 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Wash Basin","Installation"]
+        },
+
+        {
+            id:"wash-basin-leakage",
+            slug:"wash-basin-leakage",
+
+            category:"plumber",
+
+            subCategory:"basin",
+
+            n:"Wash Basin Leakage Repair",
+
+            p:349,
+
+            minPrice:349,
+
+            maxPrice:599,
+
+            priceType:"starting",
+
+            d:"Repair basin leakage.",
+
+            duration:"30-45 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            inspection:false,
+
+            skillLevel:"basic",
+
+            tags:["Wash Basin","Leak"]
+        },
+
+        // Toilet
+
+        {
+            id:"western-toilet-installation",
+            slug:"western-toilet-installation",
+
+            category:"plumber",
+
+            subCategory:"toilet",
+
+            n:"Western Toilet Installation",
+
+            p:999,
+
+            minPrice:999,
+
+            maxPrice:1499,
+
+            priceType:"starting",
+
+            d:"Install customer supplied WC.",
+
+            duration:"90 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"advanced",
+
+            tags:["Toilet","WC"]
+        },
+
+        {
+            id:"toilet-blockage-removal",
+            slug:"toilet-blockage-removal",
+
+            category:"plumber",
+
+            subCategory:"toilet",
+
+            n:"Toilet Blockage Removal",
+
+            p:499,
+
+            minPrice:499,
+
+            maxPrice:799,
+
+            priceType:"starting",
+
+            d:"Clear toilet blockage.",
+
+            duration:"45-60 min",
+
+            warranty:"15 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Toilet","Blockage"]
+        },
+
+        {
+            id:"flush-tank-repair",
+            slug:"flush-tank-repair",
+
+            category:"plumber",
+
+            subCategory:"flush",
+
+            n:"Flush Tank Repair",
+
+            p:349,
+
+            minPrice:349,
+
+            maxPrice:599,
+
+            priceType:"starting",
+
+            d:"Repair flush tank mechanism.",
+
+            duration:"30-45 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"basic",
+
+            tags:["Flush","Repair"]
+        },
+
+        {
+            id:"flush-tank-replacement",
+            slug:"flush-tank-replacement",
+
+            category:"plumber",
+
+            subCategory:"flush",
+
+            n:"Flush Tank Replacement",
+
+            p:699,
+
+            minPrice:699,
+
+            maxPrice:999,
+
+            priceType:"starting",
+
+            d:"Replace flush tank.",
+
+            duration:"60 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Flush","Replacement"]
+        },
+
+        // Drain
+
+        {
+            id:"drain-blockage",
+            slug:"drain-blockage",
+
+            category:"plumber",
+
+            subCategory:"drain",
+
+            n:"Drain Blockage Removal",
+
+            p:399,
+
+            minPrice:399,
+
+            maxPrice:699,
+
+            priceType:"starting",
+
+            d:"Clear floor drain blockage.",
+
+            duration:"30-60 min",
+
+            warranty:"15 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Drain","Blockage"]
+        },
+
+        {
+            id:"kitchen-sink-blockage",
+            slug:"kitchen-sink-blockage",
+
+            category:"plumber",
+
+            subCategory:"sink",
+
+            n:"Kitchen Sink Blockage Removal",
+
+            p:449,
+
+            minPrice:449,
+
+            maxPrice:699,
+
+            priceType:"starting",
+
+            d:"Remove sink blockage.",
+
+            duration:"30-60 min",
+
+            warranty:"15 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Kitchen","Sink"]
+        },
+
+        // Pipes
+
+        {
+            id:"pipe-leakage-repair",
+            slug:"pipe-leakage-repair",
+
+            category:"plumber",
+
+            subCategory:"pipe",
+
+            n:"Pipe Leakage Repair",
+
+            p:399,
+
+            minPrice:399,
+
+            maxPrice:799,
+
+            priceType:"starting",
+
+            d:"Repair leaking water pipe.",
+
+            duration:"45-60 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"intermediate",
+
+            tags:["Pipe","Leak"]
+        },
+
+        {
+            id:"pipe-replacement",
+            slug:"pipe-replacement",
+
+            category:"plumber",
+
+            subCategory:"pipe",
+
+            n:"Pipe Replacement",
+
+            p:699,
+
+            minPrice:699,
+
+            maxPrice:1999,
+
+            priceType:"starting",
+
+            d:"Replace damaged pipeline. Material extra.",
+
+            duration:"1-3 hrs",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            inspection:false,
+
+            skillLevel:"advanced",
+
+            tags:["Pipe","Replacement"]
+        },
+
+        // Pumps
+
+        {
+            id:"water-motor-installation",
+            slug:"water-motor-installation",
+
+            category:"plumber",
+
+            subCategory:"motor",
+
+            n:"Water Pump Installation",
+
+            p:999,
+
+            minPrice:999,
+
+            maxPrice:1499,
+
+            priceType:"starting",
+
+            d:"Install domestic water pump.",
+
+            duration:"90 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            popular:true,
+
+            inspection:false,
+
+            skillLevel:"advanced",
+
+            tags:["Pump","Motor"]
+        },
+
+        {
+            id:"water-motor-repair",
+            slug:"water-motor-repair",
+
+            category:"plumber",
+
+            subCategory:"motor",
+
+            n:"Water Pump Repair",
+
+            p:699,
+
+            minPrice:699,
+
+            maxPrice:1499,
+
+            priceType:"starting",
+
+            d:"Repair domestic water pump.",
+
+            duration:"60-90 min",
+
+            warranty:"30 Days",
+
+            materialIncluded:false,
+
+            inspection:false,
+
+            skillLevel:"advanced",
+
+            tags:["Pump","Repair"]
+        }
+
+    ]
+},
     "painter": {
         name: "Premium Painting",
         image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800",
