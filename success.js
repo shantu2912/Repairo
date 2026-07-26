@@ -1,3 +1,4 @@
+
 const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -251,11 +252,13 @@ Alpine.data('trackingApp', () => ({
     },
 
     // Every 5th completed job earns the customer a one-time reward code.
+    // Tied to milestone_job_id so reopening the page never creates duplicates.
     async checkLoyaltyReward(userId) {
         if (this.loyaltyChecked || !userId) return;
         this.loyaltyChecked = true;
 
         try {
+            // See if this specific completion already generated a reward
             const { data: existing } = await sb
                 .from('promos')
                 .select('*')
@@ -306,6 +309,7 @@ Alpine.data('trackingApp', () => ({
         }
     },
 
+    // Converts a number to Indian-style words for the invoice
     numberToWords(num) {
         num = Math.round(Math.max(0, num || 0));
         if (num === 0) return 'Zero';
@@ -343,6 +347,7 @@ Alpine.data('trackingApp', () => ({
 
             this.fullJobData = job;
 
+            // ✅ Fetch technician with tech_id if available
             let techIdDisplay = 'N/A';
             if (job.tech_id) {
                 const { data: tech, error: techError } = await sb
@@ -469,6 +474,8 @@ Alpine.data('trackingApp', () => ({
             }
 
             this.billAmountInWords = this.numberToWords(this.billGrandTotal);
+
+            // ✅ Store the tech ID for display in the bill
             this.billTechId = techIdDisplay;
 
             this.$nextTick(() => {
@@ -806,3 +813,4 @@ Alpine.data('trackingApp', () => ({
     }
 }));
 });
+
