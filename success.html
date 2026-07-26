@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,8 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,7 +20,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 
 <style>
 body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f4f5; }
@@ -114,7 +116,7 @@ Cancel Request
 <div class="text-center mb-4 bg-white py-2 rounded-xl border border-gray-100 shadow-sm">
 <h3 class="text-sm font-extrabold" 
 :class="{'text-brand-gold': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-brand-green': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'}"
-x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus === 'started' ? '🛠️ Service Execution Started' : (jobStatus === 'in_progress' ? '🔑 Share Completion Code' : 'Your Expert is En Route'))">
+x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus === 'started' ? '🛠️ Service Execution Started' : (jobStatus === 'in_progress' ? (paymentStatus === 'PAID' ? '🔑 Share Completion Code' : '💳 Complete Digital Payment') : 'Your Expert is En Route'))">
 </h3>
 </div>
 
@@ -258,23 +260,23 @@ class="py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 tran
 <h2 class="text-3xl font-black text-brand-dark mb-2">Job Completed!</h2>
 <p class="text-sm text-gray-500 mb-6 px-2">Thank you for choosing FixZenix. The technician has successfully verified your code and completed the service.</p>
 
-                <div x-show="loyaltyReward" x-cloak x-transition
-                     class="mb-6 mx-1 rounded-2xl p-5 text-left relative overflow-hidden"
-                     style="background: linear-gradient(135deg,#A07D54 0%,#5D5646 100%);">
-                    <p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">
-                        <i class="fa-solid fa-gift mr-1"></i> 5 Services Completed — Reward Unlocked!
-                    </p>
-                    <div class="flex items-center justify-between mt-2">
-                        <div>
-                            <p class="text-white font-black text-2xl tracking-wider" x-text="loyaltyReward?.code"></p>
-                            <p class="text-white/70 text-xs mt-1" x-text="'Get ' + loyaltyReward?.value + '% off your next booking'"></p>
-                        </div>
-                        <button @click="navigator.clipboard.writeText(loyaltyReward.code)"
-                                class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
-                            <i class="fa-solid fa-copy"></i> Copy
-                        </button>
-                    </div>
-                </div>
+<div x-show="loyaltyReward" x-cloak x-transition
+     class="mb-6 mx-1 rounded-2xl p-5 text-left relative overflow-hidden"
+     style="background: linear-gradient(135deg,#A07D54 0%,#5D5646 100%);">
+    <p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">
+        <i class="fa-solid fa-gift mr-1"></i> 5 Services Completed — Reward Unlocked!
+    </p>
+    <div class="flex items-center justify-between mt-2">
+        <div>
+            <p class="text-white font-black text-2xl tracking-wider" x-text="loyaltyReward?.code"></p>
+            <p class="text-white/70 text-xs mt-1" x-text="'Get ' + loyaltyReward?.value + '% off your next booking'"></p>
+        </div>
+        <button @click="navigator.clipboard.writeText(loyaltyReward.code)"
+                class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+            <i class="fa-solid fa-copy"></i> Copy
+        </button>
+    </div>
+</div>
 
 <button x-show="!feedbackDone" @click="showFeedback = true"
 class="w-full py-4 mb-3 rounded-2xl font-extrabold text-sm uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
@@ -309,7 +311,6 @@ style="display: none;">
 
 <div class="p-6 overflow-y-auto bg-white" id="invoice-content">
 
-<!-- Header -->
 <div class="flex items-start justify-between pb-4 mb-4 border-b-2 border-brand-dark">
 <div>
 <h1 class="font-serif italic text-2xl text-brand-dark font-extrabold leading-none">FixZenix</h1>
@@ -329,7 +330,6 @@ help@fixzenix.in
 </div>
 </div>
 
-<!-- Billed To / Service Provider with Technician ID -->
 <div class="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-3">
 <div>
 <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Billed To</p>
@@ -340,7 +340,6 @@ help@fixzenix.in
 <div class="text-right">
 <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Service Provided By</p>
 <p class="font-bold text-brand-dark text-sm" x-text="techData?.name || 'FixZen Expert'"></p>
-<!-- ✅ Technician ID with FZ format -->
 <div class="flex items-center justify-end gap-1.5 mt-0.5">
 <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-gold/10 rounded-full border border-brand-gold/20">
 <i class="fa-regular fa-id-card text-[8px] text-brand-gold"></i>
@@ -351,7 +350,6 @@ help@fixzenix.in
 </div>
 </div>
 
-<!-- Job ref strip with enhanced tech ID display -->
 <div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 mb-4 text-[10px] border border-gray-100">
 <span class="text-gray-500">Job Ref: <span class="font-mono font-bold text-gray-700" x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></span>
 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-brand-dark rounded-full text-white font-bold">
@@ -361,7 +359,6 @@ help@fixzenix.in
 <span class="inline-flex items-center gap-1 text-green-600 font-bold"><i class="fa-solid fa-circle-check"></i> Completed</span>
 </div>
 
-<!-- Itemized services table -->
 <table class="w-full text-sm mb-1">
 <thead>
 <tr class="text-left text-[9px] text-gray-400 uppercase tracking-wide border-b-2 border-gray-200">
@@ -404,7 +401,6 @@ help@fixzenix.in
 </tbody>
 </table>
 
-<!-- Totals -->
 <div class="space-y-1.5 text-sm text-gray-600 border-t-2 border-dashed border-gray-300 pt-3 mb-4">
 <div class="flex justify-between">
 <span>Subtotal</span>
@@ -424,7 +420,6 @@ help@fixzenix.in
 </div>
 </div>
 
-<!-- Payment summary -->
 <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-xs">
 <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-receipt mr-1"></i> Payment Summary</p>
 
@@ -461,24 +456,22 @@ help@fixzenix.in
 </template>
 </div>
 
-<!-- Amount in words -->
 <p class="text-[10px] text-gray-400 mb-4">
 <span class="font-bold text-gray-500">Amount in Words:</span>
 <span x-text="billAmountInWords"></span> Rupees Only
 </p>
 
-                <div x-show="loyaltyReward" x-cloak
-                     class="mb-4 rounded-xl p-3 border-2 border-dashed border-brand-gold bg-brand-gold/5 flex items-center justify-between">
-                    <div>
-                        <p class="text-[9px] font-bold uppercase tracking-wide text-brand-gold">
-                            <i class="fa-solid fa-gift"></i> Loyalty Reward — 5th Service Completed
-                        </p>
-                        <p class="font-black text-lg text-brand-dark tracking-wider" x-text="loyaltyReward?.code"></p>
-                    </div>
-                    <span class="text-xs font-bold text-brand-dark" x-text="loyaltyReward?.value + '% off next booking'"></span>
-                </div>
+<div x-show="loyaltyReward" x-cloak
+     class="mb-4 rounded-xl p-3 border-2 border-dashed border-brand-gold bg-brand-gold/5 flex items-center justify-between">
+    <div>
+        <p class="text-[9px] font-bold uppercase tracking-wide text-brand-gold">
+            <i class="fa-solid fa-gift"></i> Loyalty Reward — 5th Service Completed
+        </p>
+        <p class="font-black text-lg text-brand-dark tracking-wider" x-text="loyaltyReward?.code"></p>
+    </div>
+    <span class="text-xs font-bold text-brand-dark" x-text="loyaltyReward?.value + '% off next booking'"></span>
+</div>
 
-<!-- Notes + seal -->
 <div class="flex items-end justify-between border-t border-gray-100 pt-4 mb-2">
 <div class="text-[9px] text-gray-400 leading-relaxed pr-3">
 <p class="font-bold text-gray-500 mb-1">Terms & Notes</p>
@@ -634,3 +627,4 @@ style="background:linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%);ba
 <script src="success.js"></script>
 </body>
 </html>
+
