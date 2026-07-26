@@ -495,23 +495,35 @@ function dashboardHandler() {
     // ─────────────────────────────────────────────────────────
     // REALTIME PAYMENT TRIGGER & OTP VERIFICATION
     // ─────────────────────────────────────────────────────────
-    async triggerCustomerPayment(jobId, amount) {
-      try {
-        const { error } = await window.sb
-          .from('jobs')
-          .update({
-            payment_status: 'PENDING_CUSTOMER_PAYMENT',
-            payable_amount: amount
-          })
-          .eq('id', jobId);
+   async triggerCustomerPayment(jobId, job) {
+  try {
+    // Determine total payable customer price (original/discounted/quoted)
+    const customerAmount = job.quoted_amount 
+      || job.customer_price 
+      || job.discounted_price 
+      || job.original_price 
+      || job.price 
+      || 299;
 
-        if (error) throw error;
-        alert("Payment request sent to customer's screen!");
-      } catch (err) {
-        console.error("Payment trigger error:", err);
-        alert("Failed to send payment request.");
-      }
-    },
+    // Update job state in Supabase DB
+    const { data, error } = await window.sb
+      .from('jobs')
+      .update({
+        payment_status: 'PENDING_CUSTOMER_PAYMENT',
+        payable_amount: Number(customerAmount)
+      })
+      .eq('id', jobId)
+      .select();
+
+    if (error) throw error;
+
+    alert("Payment request successfully sent to customer screen!");
+    this.fetchJobs(); // Instantly refresh UI state
+  } catch (err) {
+    console.error("Payment trigger error:", err);
+    alert("Failed to send payment request: " + err.message);
+  }
+},
 
     async verifyJobCompletionOtp(jobId) {
       if (!this.enteredOtp || this.enteredOtp.length !== 6) {
