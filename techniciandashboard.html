@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FixZen Pro · Technician</title>
 
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <!-- Tailwind + Alpine + Supabase + Firebase -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -282,7 +280,6 @@
     }
   </style>
 
-  <!-- Supabase client -->
   <script>
     window.sb = supabase.createClient(
       "https://kzxdxnxgouthsywbsnvl.supabase.co",
@@ -293,21 +290,14 @@
 
 <body x-data="dashboardHandler()" x-init="init()" x-cloak class="pb-28 relative">
 
-  <!-- decorative blobs -->
   <div class="bg-blob w-96 h-96 bg-brand-gold -top-40 -right-40"></div>
   <div class="bg-blob w-96 h-96 bg-brand-olive -bottom-40 -left-40"></div>
 
-  <!-- ═══════════════════════════════════════════
-       HEADER - UPDATED WITH TECH ID & PROFILE IMAGE
-  ══════════════════════════════════════════ -->
   <header class="sticky top-0 z-50 header-blur relative">
     <div class="max-w-md mx-auto px-5 py-4">
-
-      <!-- Top row: Avatar, Name, Status -->
       <div class="flex justify-between items-start">
         <div class="flex items-center gap-3">
           <div class="relative">
-            <!-- Show profile image if available, otherwise show initials -->
             <template x-if="tech?.image_url">
               <img 
                 :src="tech.image_url" 
@@ -326,7 +316,6 @@
           <div>
             <p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
             <p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text="techName"></p>
-            <!-- Tech ID Badge - Displayed prominently -->
             <div class="flex items-center gap-1.5 mt-0.5">
               <span class="tech-id-badge">
                 <i class="fa-regular fa-id-card text-[8px]"></i>
@@ -349,47 +338,31 @@
           </button>
         </div>
       </div>
-
     </div>
   </header>
 
-  <!-- ═══════════════════════════════════════════
-       STATS
-  ══════════════════════════════════════════ -->
   <section class="max-w-md mx-auto px-5 pt-5 pb-2 relative z-10">
     <div class="grid grid-cols-3 gap-3">
-
       <div class="stat-card text-center">
         <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Active</p>
         <p class="font-bold text-2xl text-brand-dark mt-0.5" x-text="stats.activeJobs"></p>
         <p class="text-[9px] text-brand-dark/30 mt-0.5">jobs</p>
       </div>
-
       <div class="stat-card text-center">
         <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Today</p>
-        <p class="font-bold text-2xl text-emerald-700 mt-0.5">
-          ₹<span x-text="stats.todayEarnings"></span>
-        </p>
+        <p class="font-bold text-2xl text-emerald-700 mt-0.5">₹<span x-text="stats.todayEarnings"></span></p>
         <p class="text-[9px] text-brand-dark/30 mt-0.5">earned</p>
       </div>
-
       <div class="stat-card text-center">
         <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Total</p>
-        <p class="font-bold text-2xl gradient-text mt-0.5">
-          ₹<span x-text="stats.earnings"></span>
-        </p>
+        <p class="font-bold text-2xl gradient-text mt-0.5">₹<span x-text="stats.earnings"></span></p>
         <p class="text-[9px] text-brand-dark/30 mt-0.5">all time</p>
       </div>
-
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════
-       MAIN
-  ══════════════════════════════════════════ -->
   <main class="max-w-md mx-auto px-5 pt-4 space-y-5 relative z-10">
 
-    <!-- Notification banners -->
     <div x-show="notifStatus === 'denied'" class="notif-banner notif-denied">
       <i class="fa-regular fa-bell-slash text-rose-500 text-sm flex-shrink-0"></i>
       <div>
@@ -403,8 +376,7 @@
       <div class="flex-1">
         <p class="text-[13px] font-semibold text-amber-800">Enable job alerts</p>
       </div>
-      <button @click="setupNotifications()"
-              class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
+      <button @click="setupNotifications()" class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
         Turn on
       </button>
     </div>
@@ -415,13 +387,11 @@
         <p class="text-[13px] font-semibold text-amber-800">Location off</p>
         <p class="text-xs text-amber-700">Enable it to see distance to each job.</p>
       </div>
-      <button @click="updateJobDistances()"
-              class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
+      <button @click="updateJobDistances()" class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
         Retry
       </button>
     </div>
 
-    <!-- OFFLINE STATE: shown only when technician has toggled themselves offline -->
     <div x-show="!available" class="flex flex-col items-center justify-center py-20 text-center">
       <div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
         <i class="fa-solid fa-power-off text-3xl text-brand-dark/20"></i>
@@ -430,20 +400,14 @@
       <p class="text-xs text-brand-dark/40 mt-1">Turn on availability above to start receiving jobs</p>
     </div>
 
-    <!-- ONLINE STATE: jobs list only renders while technician is available -->
     <template x-if="available">
       <div class="space-y-5">
-
-        <!-- Section header -->
         <div class="flex items-center justify-between pt-1">
           <span class="section-label flex items-center gap-2">
-            <i class="fa-regular fa-list-check text-brand-gold"></i>
-            Your Jobs
+            <i class="fa-regular fa-list-check text-brand-gold"></i> Your Jobs
           </span>
           <div class="flex items-center gap-3">
-            <button @click="updateJobDistances()"
-                    class="text-[11px] font-semibold text-brand-olive flex items-center gap-1 disabled:opacity-40"
-                    :disabled="distancesUpdating">
+            <button @click="updateJobDistances()" class="text-[11px] font-semibold text-brand-olive flex items-center gap-1 disabled:opacity-40" :disabled="distancesUpdating">
               <i class="fa-solid fa-location-crosshairs text-[10px]" :class="distancesUpdating ? 'animate-spin' : ''"></i>
               <span x-text="distancesUpdating ? 'Locating…' : 'Update distances'"></span>
             </button>
@@ -451,24 +415,15 @@
           </div>
         </div>
 
-        <!-- Loading -->
         <div x-show="loading" class="space-y-4">
           <div class="job-card p-5 space-y-3">
             <div class="skeleton h-3 w-20 rounded"></div>
             <div class="skeleton h-5 w-48 rounded"></div>
             <div class="skeleton h-3 w-full rounded"></div>
-            <div class="skeleton h-3 w-3/4 rounded"></div>
-          </div>
-          <div class="job-card p-5 space-y-3">
-            <div class="skeleton h-3 w-24 rounded"></div>
-            <div class="skeleton h-5 w-40 rounded"></div>
-            <div class="skeleton h-3 w-full rounded"></div>
           </div>
         </div>
 
-        <!-- Empty -->
-        <div x-show="!loading && jobs.length === 0"
-             class="flex flex-col items-center justify-center py-20 text-center">
+        <div x-show="!loading && jobs.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
           <div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
             <i class="fa-regular fa-inbox text-3xl text-brand-gold/30"></i>
           </div>
@@ -476,217 +431,159 @@
           <p class="text-xs text-brand-dark/40 mt-1">No jobs at the moment</p>
         </div>
 
-        <!-- JOB CARDS -->
         <section id="jobsSection" class="space-y-4 pb-4">
           <template x-for="job in jobs" :key="job.id">
-        <div class="job-card">
+            <div class="job-card">
+              <div class="card-accent" :class="job.status === 'completed' ? 'completed' : ''"></div>
+              <div class="p-5">
 
-          <!-- decorative gradient accent -->
-          <div class="card-accent" :class="job.status === 'completed' ? 'completed' : ''"></div>
-
-          <div class="p-5">
-
-            <!-- top row -->
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest flex items-center gap-2">
-                <i class="fa-regular fa-tag text-[9px]"></i>
-                <span x-text="job.category"></span>
-              </span>
-              <span class="pill" :class="job.status === 'completed' ? 'pill-completed' : 'pill-pending'">
-                <span class="w-1.5 h-1.5 rounded-full inline-block" :class="job.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
-                <span x-text="job.status === 'completed' ? 'Completed' : 'Pending'"></span>
-              </span>
-            </div>
-
-            <!-- device + issue -->
-            <h4 class="text-[18px] font-semibold text-brand-dark leading-snug" x-text="job.device"></h4>
-            <p class="text-[13px] text-brand-dark/60 mt-1 leading-relaxed" x-text="job.issue"></p>
-
-            <!-- scheduled -->
-            <div x-show="formatScheduled(job)" class="sched-badge mt-3">
-              <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
-              <div>
-                <p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
-                <p class="text-[13px] font-medium text-amber-900" x-text="formatScheduled(job)"></p>
-              </div>
-            </div>
-
-            <!-- earnings -->
-            <div x-show="calculateFee(job) > 0" class="earn-chip mt-3">
-              <div class="flex items-center gap-2">
-                <i class="fa-regular fa-circle-dollar text-brand-olive text-xs"></i>
-                <span class="text-[12px] font-semibold text-brand-dark/70">Your Earnings</span>
-              </div>
-              <span class="font-mono font-bold text-brand-olive text-[15px]">
-                ₹<span x-text="calculateFee(job)"></span>
-              </span>
-            </div>
-
-            <!-- divider -->
-            <div class="border-t border-brand-beige/50 mt-4 pt-4">
-
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-[14px] font-semibold text-brand-dark truncate flex items-center gap-2">
-                    <i class="fa-regular fa-user text-brand-gold text-xs"></i>
-                    <span x-text="job.customer_name"></span>
-                  </p>
-                  <p class="text-[11px] text-brand-dark/50 truncate flex items-center gap-1.5 mt-0.5">
-                    <i class="fa-regular fa-location-dot text-[10px]"></i>
-                    <span x-text="job.location"></span>
-                  </p>
-                  <p x-show="job.status !== 'completed' && job.distanceText"
-                     class="text-[11px] font-semibold text-brand-olive mt-1 flex items-center gap-1.5">
-                    <i class="fa-solid fa-route text-[10px]"></i>
-                    <span x-text="job.distanceText"></span>
-                  </p>
-                  <p x-show="job.slaRemaining && job.status !== 'completed'"
-                     class="text-[11px] font-mono text-rose-500 mt-1 flex items-center gap-1">
-                    <i class="fa-regular fa-clock"></i>
-                    <span>SLA: <span x-text="job.slaRemaining"></span></span>
-                  </p>
-                  <p class="text-[10px] text-brand-dark/30 mt-1">
-                    <i class="fa-regular fa-clock mr-1"></i>
-                    <span x-text="formatTime(job.started_at)"></span>
-                  </p>
-                  <!-- Completed timestamp -->
-                  <p x-show="job.status === 'completed' && job.completed_at" class="text-[10px] text-emerald-600 mt-1 flex items-center gap-1">
-                    <i class="fa-regular fa-check-circle"></i>
-                    <span>Completed <span x-text="formatTime(job.completed_at)"></span></span>
-                  </p>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-regular fa-tag text-[9px]"></i>
+                    <span x-text="job.category"></span>
+                  </span>
+                  <span class="pill" :class="job.status === 'completed' ? 'pill-completed' : 'pill-pending'">
+                    <span class="w-1.5 h-1.5 rounded-full inline-block" :class="job.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
+                    <span x-text="job.status === 'completed' ? 'Completed' : (job.payment_status === 'PENDING_CUSTOMER_PAYMENT' ? 'Payment Pending' : 'In Progress')"></span>
+                  </span>
                 </div>
 
-                <!-- quick actions -->
-                <div class="flex flex-col items-end gap-2 flex-shrink-0">
-                  <a :href="'tel:' + job.phone"
-                     class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-olive bg-brand-cream hover:bg-brand-beige/50 px-3 py-1.5 rounded-full transition-colors">
-                    <i class="fa-solid fa-phone text-[10px]"></i> Call
-                  </a>
-                  <button @click="openMaps(job.location)"
-                          class="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
-                    <i class="fa-solid fa-location-dot text-[10px]"></i> Map
-                  </button>
+                <h4 class="text-[18px] font-semibold text-brand-dark leading-snug" x-text="job.device"></h4>
+                <p class="text-[13px] text-brand-dark/60 mt-1 leading-relaxed" x-text="job.issue"></p>
+
+                <div x-show="formatScheduled(job)" class="sched-badge mt-3">
+                  <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
+                  <div>
+                    <p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
+                    <p class="text-[13px] font-medium text-amber-900" x-text="formatScheduled(job)"></p>
+                  </div>
                 </div>
+
+                <div x-show="calculateFee(job) > 0" class="earn-chip mt-3">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-regular fa-circle-dollar text-brand-olive text-xs"></i>
+                    <span class="text-[12px] font-semibold text-brand-dark/70">Your Earnings</span>
+                  </div>
+                  <span class="font-mono font-bold text-brand-olive text-[15px]">
+                    ₹<span x-text="calculateFee(job)"></span>
+                  </span>
+                </div>
+
+                <div class="border-t border-brand-beige/50 mt-4 pt-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-[14px] font-semibold text-brand-dark truncate flex items-center gap-2">
+                        <i class="fa-regular fa-user text-brand-gold text-xs"></i>
+                        <span x-text="job.customer_name"></span>
+                      </p>
+                      <p class="text-[11px] text-brand-dark/50 truncate flex items-center gap-1.5 mt-0.5">
+                        <i class="fa-regular fa-location-dot text-[10px]"></i>
+                        <span x-text="job.location"></span>
+                      </p>
+                      <p x-show="job.status !== 'completed' && job.distanceText" class="text-[11px] font-semibold text-brand-olive mt-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-route text-[10px]"></i>
+                        <span x-text="job.distanceText"></span>
+                      </p>
+                    </div>
+
+                    <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                      <a :href="'tel:' + job.phone" class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-olive bg-brand-cream hover:bg-brand-beige/50 px-3 py-1.5 rounded-full transition-colors">
+                        <i class="fa-solid fa-phone text-[10px]"></i> Call
+                      </a>
+                      <button @click="openMaps(job.location)" class="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
+                        <i class="fa-solid fa-location-dot text-[10px]"></i> Map
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 space-y-2.5">
+
+                  <template x-if="job.status === 'pending' && !job.tech_id">
+                    <div class="space-y-2">
+                      <button @click="acceptJob(job.id)" class="btn-primary btn-accept">
+                        <i class="fa-regular fa-check-circle text-lg"></i> Accept Job
+                      </button>
+                      <button @click="rejectJob(job.id)" class="btn-primary btn-reject">
+                        <i class="fa-regular fa-circle-xmark text-lg"></i> Decline Job
+                      </button>
+                    </div>
+                  </template>
+
+                  <template x-if="job.status !== 'completed' && job.tech_id === tech.id && job.payment_status !== 'PENDING_CUSTOMER_PAYMENT' && job.payment_status !== 'PAID'">
+                    <button @click="triggerCustomerPayment(job.id, calculateFee(job))" class="btn-primary btn-accept bg-amber-600 hover:bg-amber-700">
+                      <i class="fa-solid fa-qrcode text-lg"></i> Ask Customer for Payment
+                    </button>
+                  </template>
+
+                  <template x-if="job.payment_status === 'PENDING_CUSTOMER_PAYMENT' && job.status !== 'completed'">
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center space-y-2">
+                      <p class="text-xs font-bold text-amber-800 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin"></i> Razorpay Gateway Active on Customer Phone...
+                      </p>
+                      <p class="text-[11px] text-amber-600">Asking resident to complete payment to reveal OTP.</p>
+                    </div>
+                  </template>
+
+                  <template x-if="job.payment_status === 'PAID' && job.status !== 'completed'">
+                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
+                      <div class="flex items-center gap-2 text-emerald-800">
+                        <i class="fa-solid fa-shield-check text-base"></i>
+                        <span class="text-xs font-bold">Payment Success! Ask Customer for 6-Digit Code</span>
+                      </div>
+                      <div class="flex gap-2">
+                        <input type="number" 
+                               placeholder="OTP Code" 
+                               x-model="enteredOtp" 
+                               maxlength="6"
+                               class="flex-1 px-4 py-2.5 bg-white border border-emerald-300 rounded-xl text-center font-mono text-lg font-bold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <button @click="verifyJobCompletionOtp(job.id)" 
+                                class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-colors">
+                          Verify
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template x-if="job.status === 'completed'">
+                    <div class="btn-primary btn-completed">
+                      <i class="fa-regular fa-circle-check text-lg"></i> Job Completed ✓
+                    </div>
+                  </template>
+
+                </div>
+
               </div>
-
             </div>
-
-            <!-- ACTION BUTTONS - only show for pending jobs -->
-            <div class="mt-4 space-y-2.5" x-show="job.status === 'pending'">
-              <button @click="acceptJob(job.id)" class="btn-primary btn-accept">
-                <i class="fa-regular fa-check-circle text-lg"></i>
-                Accept Job
-              </button>
-              <button @click="rejectJob(job.id)" class="btn-primary btn-reject">
-                <i class="fa-regular fa-circle-xmark text-lg"></i>
-                Decline Job
-              </button>
-            </div>
-
-            <!-- COMPLETED BADGE - show for completed jobs -->
-            <div class="mt-4" x-show="job.status === 'completed'">
-              <div class="btn-primary btn-completed">
-                <i class="fa-regular fa-circle-check text-lg"></i>
-                Job Completed ✓
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </template>
-    </section>
-
+          </template>
+        </section>
       </div>
     </template>
 
   </main>
 
-  <!-- ═══════════════════════════════════════════
-       BOTTOM NAV
-  ══════════════════════════════════════════ -->
   <nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
     <div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
-
       <button class="nav-btn active">
         <i class="fa-solid fa-house"></i>
         <span>Home</span>
       </button>
-
       <button @click="scrollToJobs()" class="nav-btn">
         <i class="fa-solid fa-briefcase"></i>
         <span>Jobs</span>
       </button>
-
-      <!-- centre spacer -->
       <div class="w-14 h-14"></div>
-
       <button onclick="window.location.href='completed_jobs.html'" class="nav-btn">
         <i class="fa-solid fa-clock-rotate-left"></i>
         <span>History</span>
       </button>
-
       <button @click="logout()" class="nav-btn">
         <i class="fa-solid fa-user"></i>
         <span>Profile</span>
       </button>
-
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════════════════
-       INCOMING JOB MODAL
-  ══════════════════════════════════════════ -->
-  <div x-show="incomingJob"
-       x-transition:enter="transition ease-out duration-200"
-       x-transition:enter-start="opacity-0 scale-95"
-       x-transition:enter-end="opacity-100 scale-100"
-       class="fixed inset-0 modal-backdrop flex items-end sm:items-center justify-center z-50 p-4">
-
-    <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
-
-      <div class="bg-gradient-to-br from-brand-olive to-brand-gold px-6 py-5 text-center relative">
-        <div class="absolute top-3 right-3">
-          <span class="w-2 h-2 bg-emerald-400 rounded-full inline-block animate-pulse"></span>
-        </div>
-        <div class="inline-flex items-center gap-2 bg-white/20 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-          <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-          New Job Request
-        </div>
-        <h3 class="text-xl font-semibold text-white" x-text="incomingJob?.category"></h3>
-        <p class="text-sm text-white/70 mt-1" x-text="incomingJob?.issue"></p>
-      </div>
-
-      <div class="px-6 py-5 space-y-3">
-        <div class="flex items-center gap-3 bg-brand-cream rounded-xl px-4 py-3">
-          <i class="fa-regular fa-location-dot text-brand-olive text-sm flex-shrink-0"></i>
-          <p class="text-[13px] font-medium text-brand-dark" x-text="incomingJob?.location"></p>
-        </div>
-
-        <div x-show="formatScheduled(incomingJob)" class="sched-badge">
-          <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
-          <div>
-            <p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
-            <p class="text-[13px] font-medium text-amber-900" x-text="formatScheduled(incomingJob)"></p>
-          </div>
-        </div>
-
-        <div class="flex gap-3 pt-1">
-          <button @click="rejectIncoming()"
-                  class="flex-1 py-3.5 rounded-xl text-[13px] font-semibold text-brand-dark/60 bg-brand-cream hover:bg-brand-beige/50 transition-colors">
-            <i class="fa-regular fa-xmark mr-1"></i> Decline
-          </button>
-          <button @click="acceptIncoming()"
-                  class="flex-2 flex-1 py-3.5 rounded-xl text-[13px] font-semibold text-white bg-brand-olive hover:bg-brand-dark transition-colors shadow-lg">
-            <i class="fa-regular fa-check-circle mr-1"></i> Accept
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       FIREBASE
-  ══════════════════════════════════════════ -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
