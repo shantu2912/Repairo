@@ -510,9 +510,9 @@
                     </div>
                   </template>
 
-                  <template x-if="job.status !== 'completed' && job.tech_id === tech.id && job.payment_status !== 'PENDING_CUSTOMER_PAYMENT' && job.payment_status !== 'PAID'">
-                    <button @click="triggerCustomerPayment(job.id, calculateFee(job))" class="btn-primary btn-accept bg-amber-600 hover:bg-amber-700">
-                      <i class="fa-solid fa-qrcode text-lg"></i> Ask Customer for Payment
+                  <template x-if="job.status !== 'completed' && job.status !== 'pending' && job.payment_status !== 'PENDING_CUSTOMER_PAYMENT' && job.payment_status !== 'PAID'">
+                    <button @click="completeJob(job)" class="btn-primary btn-accept bg-amber-600 hover:bg-amber-700">
+                      <i class="fa-solid fa-circle-check text-lg"></i> Complete Job & Request Payment
                     </button>
                   </template>
 
