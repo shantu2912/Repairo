@@ -620,39 +620,54 @@
             </div>
             
             <div class="space-y-3">
-                <template x-for="(sub, idx) in service?.subs" :key="idx">
-                    <div @click="handleServiceClick(sub)" 
-                         class="service-card-hover relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm"
-                         :class="(sub.has_options ? selectedSubs.some(s => s.qtyType === sub.type) : selectedSubs.some(s => s.n === sub.n)) ? 'border-brand-gold bg-gradient-to-r from-orange-50 to-white ring-2 ring-brand-gold/20' : 'border-transparent hover:border-brand-beige hover:shadow-md'">
-                        
-                        <div x-show="sub.popular" class="absolute top-0 right-0">
-                            <div class="bg-brand-gold text-white text-[8px] font-bold px-3 py-0.5 rounded-bl-xl rounded-tr-xl">
-                                🔥 Most Popular
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start gap-4 z-10">
-                            <div class="mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300"
-                                 :class="(sub.has_options ? selectedSubs.some(s => s.qtyType === sub.type) : selectedSubs.some(s => s.n === sub.n)) ? 'border-brand-gold bg-brand-gold text-white scale-110 shadow-sm' : 'border-brand-olive/30 text-transparent'">
-                                <i class="fa-solid fa-check text-[10px]"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-brand-dark text-sm transition-colors" 
-                                   :class="(sub.has_options ? selectedSubs.some(s => s.qtyType === sub.type) : selectedSubs.some(s => s.n === sub.n)) ? 'text-brand-olive' : ''" 
-                                   x-text="selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.n || sub.n"></p>
-                                <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
-                            </div>
-                        </div>
-                        
-                        <div class="text-right">
-                            <span class="font-bold text-brand-olive text-sm">₹<span x-text="selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.p || sub.p"></span></span>
-                            <p x-show="sub.is_inspection" class="text-[8px] text-brand-gold mt-0.5">Adjusted in final bill</p>
-                            <template x-if="sub.has_options">
-                                <span class="block text-[8px] font-bold text-brand-gold bg-brand-gold/10 px-1.5 py-0.5 rounded mt-1">Options Available</span>
-                            </template>
-                        </div>
-                    </div>
-                </template>
+               <template x-for="(sub, idx) in service?.subs" :key="idx">
+    <div @click="handleServiceClick(sub)" 
+         class="service-card-hover relative overflow-hidden flex justify-between items-center p-4 bg-white rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm"
+         :class="(sub.has_options ? selectedSubs.some(s => s.qtyType === sub.type) : selectedSubs.some(s => s.n === sub.n)) ? 'border-brand-gold bg-gradient-to-r from-orange-50 to-white ring-2 ring-brand-gold/20' : 'border-transparent hover:border-brand-beige hover:shadow-md'">
+        
+        <!-- Popular Badge -->
+        <div x-show="sub.popular" class="absolute top-0 right-0">
+            <div class="bg-brand-gold text-white text-[8px] font-bold px-3 py-0.5 rounded-bl-xl rounded-tr-xl">
+                🔥 Most Popular
+            </div>
+        </div>
+        
+        <!-- Left Section (Checkbox + Title + Description) -->
+        <div class="flex items-start gap-4 z-10">
+            <div class="mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300"
+                 :class="(sub.has_options ? selectedSubs.some(s => s.qtyType === sub.type) : selectedSubs.some(s => s.n === sub.n)) ? 'border-brand-gold bg-brand-gold text-white scale-110 shadow-sm' : 'border-brand-olive/30 text-transparent'">
+                <i class="fa-solid fa-check text-[10px]"></i>
+            </div>
+            <div>
+                <p class="font-bold text-brand-dark text-sm transition-colors" 
+                   :class="(sub.has_options ? selectedSubs.some(s => s.qtyType === sub.type) : selectedSubs.some(s => s.n === sub.n)) ? 'text-brand-olive' : ''" 
+                   x-text="selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.n || sub.n"></p>
+                <p class="text-[10px] text-brand-dark/50 leading-tight mt-0.5" x-text="sub.d"></p>
+            </div>
+        </div>
+        
+        <!-- Right Section (Updated Price Display with Strikethrough & % Discount) -->
+        <div class="text-right min-w-[100px] flex flex-col items-end z-10">
+            <!-- Dynamic Discount Calculation Badge & Original Price (Shows if sub.op exists and is > current price) -->
+            <template x-if="sub.op && sub.op > (selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.p || sub.p)">
+                <div class="flex items-center justify-end gap-1 mb-0.5">
+                    <span class="text-[10px] text-gray-400 line-through font-medium">₹<span x-text="sub.op"></span></span>
+                    <span class="text-[8px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded"
+                          x-text="Math.round(((sub.op - (selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.p || sub.p)) / sub.op) * 100) + '% OFF'">
+                    </span>
+                </div>
+            </template>
+
+            <!-- Current Offer Price -->
+            <span class="font-bold text-brand-olive text-sm">₹<span x-text="selectedSubs.find(s => s.qtyType === sub.type && sub.has_options)?.p || sub.p"></span></span>
+            
+            <p x-show="sub.is_inspection" class="text-[8px] text-brand-gold mt-0.5">Adjusted in final bill</p>
+            <template x-if="sub.has_options">
+                <span class="block text-[8px] font-bold text-brand-gold bg-brand-gold/10 px-1.5 py-0.5 rounded mt-1">Options Available</span>
+            </template>
+        </div>
+    </div>
+</template>
             </div>
 
             <div x-show="hasOtherIssueSelected" 
