@@ -29,6 +29,10 @@ Alpine.data('trackingApp', () => ({
     
     otpCode: null,
     jobStatus: 'pending',
+    paymentStatus: 'UNPAID',
+    payableAmount: 0,
+    paymentModalOpen: false,
+
     quoteAmount: 0,
     quoteDescription: '',
     quoteStatus: '',
@@ -56,7 +60,7 @@ Alpine.data('trackingApp', () => ({
     billRefundDue: 0,
     billAmountInWords: '',
     isPrinting: false,
-    billTechId: 'N/A', // ✅ Added for technician ID display
+    billTechId: 'N/A', // ✅ Technician ID display
 
     showFeedback: false,
     feedbackStep: 1,
@@ -105,6 +109,15 @@ Alpine.data('trackingApp', () => ({
                                 if (uid) this.checkLoyaltyReward(uid);
                             }
                         }
+
+                        // ── REALTIME PAYMENTS & AUTO-RAZORPAY TRIGGER ──
+                        if (payload.new.payment_status) {
+                            this.paymentStatus = payload.new.payment_status;
+                            if (payload.new.payment_status === 'PENDING_CUSTOMER_PAYMENT' && !this.paymentModalOpen) {
+                                this.payableAmount = payload.new.payable_amount || 299;
+                                this.triggerRazorpayCheckout(payload.new);
+                            }
+                        }
                         
                         // Handle quote data updates
                         if (payload.new.quote_status !== undefined) {
@@ -125,10 +138,10 @@ Alpine.data('trackingApp', () => ({
                             }
                         }
                         
-                        // Capture OTP
-                        if (payload.new.otp) {
-                            this.otpCode = payload.new.otp;
-                        } else if (payload.new.otp === null) {
+                        // Capture OTP (Dynamic or Preset)
+                        if (payload.new.completion_otp || payload.new.otp) {
+                            this.otpCode = payload.new.completion_otp || payload.new.otp;
+                        } else if (payload.new.otp === null && payload.new.completion_otp === null) {
                             this.otpCode = null;
                         }
                         
@@ -139,6 +152,86 @@ Alpine.data('trackingApp', () => ({
                 }
             )
             .subscribe();
+    },
+
+    // ─────────────────────────────────────────────────────────
+    // AUTO-RAZORPAY INTEGRATION LOGIC
+    // ─────────────────────────────────────────────────────────
+    async triggerRazorpayCheckout(job) {
+        if (typeof Razorpay === 'undefined') {
+            console.error("Razorpay SDK not loaded in head.");
+            return;
+        }
+
+        this.paymentModalOpen = true;
+        const payableAmountInPaise = (job.payable_amount || this.payableAmount || 299) * 100;
+
+        try {
+            // 1. Invoke Supabase Edge Function to Create Razorpay Order
+            const { data: order, error } = await sb.functions.invoke('create-razorpay-order', {
+                body: { jobId: job.id, amount: payableAmountInPaise }
+            });
+
+            if (error || !order.id) {
+                console.error("Order creation error:", error);
+                this.paymentModalOpen = false;
+                alert("Could not initialize secure gateway order.");
+                return;
+            }
+
+            // 2. Build 6-Digit Completion OTP
+            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // 3. Configure Checkout Options
+            const options = {
+                key: "rzp_test_TI4hJKB1B4rwKx", // Your Razorpay Key ID
+                amount: order.amount,
+                currency: order.currency,
+                name: "FixZenix Home Services",
+                description: `Payment for ${job.device || job.category || 'Service'}`,
+                order_id: order.id,
+                handler: async (response) => {
+                    // 4. Verify Payment Signature and Save OTP to Database
+                    const { data: verifyResult, error: verifyError } = await sb.functions.invoke('verify-razorpay-payment', {
+                        body: {
+                            jobId: job.id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            completion_otp: generatedOtp
+                        }
+                    });
+
+                    this.paymentModalOpen = false;
+
+                    if (!verifyError && verifyResult?.status === "success") {
+                        this.otpCode = generatedOtp;
+                        this.paymentStatus = 'PAID';
+                    } else {
+                        alert("Payment Signature Verification Failed!");
+                    }
+                },
+                prefill: {
+                    name: job.customer_name || "Customer",
+                    contact: job.phone || "9876543210"
+                },
+                theme: {
+                    color: "#A07D54"
+                },
+                modal: {
+                    ondismiss: () => {
+                        this.paymentModalOpen = false;
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+
+        } catch (err) {
+            console.error("Razorpay Checkout Error:", err);
+            this.paymentModalOpen = false;
+        }
     },
 
     async refreshJobData() {
@@ -158,13 +251,11 @@ Alpine.data('trackingApp', () => ({
     },
 
     // Every 5th completed job earns the customer a one-time reward code.
-    // Tied to milestone_job_id so reopening the page never creates duplicates.
     async checkLoyaltyReward(userId) {
         if (this.loyaltyChecked || !userId) return;
         this.loyaltyChecked = true;
 
         try {
-            // See if this specific completion already generated a reward
             const { data: existing } = await sb
                 .from('promos')
                 .select('*')
@@ -205,7 +296,6 @@ Alpine.data('trackingApp', () => ({
                 .single();
 
             if (insertError) {
-                // Someone else's tab may have inserted it first, or schema isn't migrated yet
                 console.error('Loyalty reward creation failed:', insertError.message);
                 return;
             }
@@ -216,7 +306,6 @@ Alpine.data('trackingApp', () => ({
         }
     },
 
-    // Converts a number to Indian-style words for the invoice
     numberToWords(num) {
         num = Math.round(Math.max(0, num || 0));
         if (num === 0) return 'Zero';
@@ -254,7 +343,6 @@ Alpine.data('trackingApp', () => ({
 
             this.fullJobData = job;
 
-            // ✅ Fetch technician with tech_id if available
             let techIdDisplay = 'N/A';
             if (job.tech_id) {
                 const { data: tech, error: techError } = await sb
@@ -265,12 +353,10 @@ Alpine.data('trackingApp', () => ({
                 
                 if (!techError && tech) {
                     techIdDisplay = tech.tech_id || tech.id.slice(0,8).toUpperCase();
-                    // Store tech name if not already set
                     if (!this.techData) {
                         this.techData = tech;
                     }
                 } else {
-                    // Fallback: use database ID if tech_id not found
                     techIdDisplay = job.tech_id.slice(0,8).toUpperCase();
                 }
             }
@@ -383,8 +469,6 @@ Alpine.data('trackingApp', () => ({
             }
 
             this.billAmountInWords = this.numberToWords(this.billGrandTotal);
-
-            // ✅ Store the tech ID for display in the bill
             this.billTechId = techIdDisplay;
 
             this.$nextTick(() => {
@@ -449,6 +533,7 @@ Alpine.data('trackingApp', () => ({
         if (job) {
             this.fullJobData = job;
             if (job.status) this.jobStatus = job.status;
+            if (job.payment_status) this.paymentStatus = job.payment_status;
             
             if (job.quote_status) {
                 this.quoteStatus = job.quote_status;
@@ -462,7 +547,7 @@ Alpine.data('trackingApp', () => ({
             }
             
             if (job.tech_id) this.fetchTechnician(job.tech_id);
-            if (job.otp) this.otpCode = job.otp;
+            if (job.completion_otp || job.otp) this.otpCode = job.completion_otp || job.otp;
             
             this.updateBillAmounts(job);
             
