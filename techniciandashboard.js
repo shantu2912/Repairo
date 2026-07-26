@@ -493,37 +493,34 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // REALTIME PAYMENT TRIGGER & OTP VERIFICATION
+    // SINGLE-CLICK COMPLETE JOB (TRIGGERS CUSTOMER PAYMENT & OTP FLOW)
     // ─────────────────────────────────────────────────────────
-   async triggerCustomerPayment(jobId, job) {
-  try {
-    // Determine total payable customer price (original/discounted/quoted)
-    const customerAmount = job.quoted_amount 
-      || job.customer_price 
-      || job.discounted_price 
-      || job.original_price 
-      || job.price 
-      || 299;
+    async completeJob(job) {
+      try {
+        const customerAmount = job.quoted_amount 
+          || job.customer_price 
+          || job.discounted_price 
+          || job.original_price 
+          || job.price 
+          || 299;
 
-    // Update job state in Supabase DB
-    const { data, error } = await window.sb
-      .from('jobs')
-      .update({
-        payment_status: 'PENDING_CUSTOMER_PAYMENT',
-        payable_amount: Number(customerAmount)
-      })
-      .eq('id', jobId)
-      .select();
+        const { error } = await window.sb
+          .from('jobs')
+          .update({
+            payment_status: 'PENDING_CUSTOMER_PAYMENT',
+            payable_amount: Number(customerAmount)
+          })
+          .eq('id', job.id);
 
-    if (error) throw error;
+        if (error) throw error;
 
-    alert("Payment request successfully sent to customer screen!");
-    this.fetchJobs(); // Instantly refresh UI state
-  } catch (err) {
-    console.error("Payment trigger error:", err);
-    alert("Failed to send payment request: " + err.message);
-  }
-},
+        alert("Payment request sent to customer screen! Ask the resident to complete payment to get the completion code.");
+        await this.fetchJobs();
+      } catch (err) {
+        console.error("Complete job payment trigger error:", err);
+        alert("Failed to send payment request: " + err.message);
+      }
+    },
 
     async verifyJobCompletionOtp(jobId) {
       if (!this.enteredOtp || this.enteredOtp.length !== 6) {
@@ -534,7 +531,7 @@ function dashboardHandler() {
       try {
         const { data: job, error } = await window.sb
           .from('jobs')
-          .select('otp, completion_otp, payment_status')
+          .select('*')
           .eq('id', jobId)
           .single();
 
@@ -545,7 +542,7 @@ function dashboardHandler() {
 
         const validOtp = job.completion_otp || job.otp;
 
-        if (String(validOtp) !== String(this.enteredOtp)) {
+        if (String(validOtp) !== String(this.enteredOtp).trim()) {
           alert("Invalid OTP! Please check with the customer.");
           return;
         }
@@ -565,7 +562,7 @@ function dashboardHandler() {
         alert("OTP Verified Successfully! Job marked as completed.");
         this.enteredOtp = '';
         localStorage.removeItem("locked_job_id");
-        this.fetchJobs();
+        await this.fetchJobs();
       } catch (err) {
         console.error("OTP Verification Error:", err);
         alert("An error occurred during verification.");
@@ -573,7 +570,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // MARK ARRIVED & COMPLETE
+    // MARK ARRIVED
     // ─────────────────────────────────────────────────────────
     async markArrived(job) {
       try {
@@ -592,30 +589,6 @@ function dashboardHandler() {
         console.error("Arrival error:", err);
         alert("Failed to mark arrival: " + (err.message || "Unknown error"));
       }
-    },
-
-    async completeJob(job) {
-      const completedAt = new Date().toISOString();
-      const fee = this.calculateFee(job);
-
-      const { error } = await window.sb
-        .from("jobs")
-        .update({
-          status: "completed",
-          completed_at: completedAt,
-          technician_earning: fee
-        })
-        .eq("id", job.id)
-        .eq("tech_id", this.tech.id);
-
-      if (error) {
-        console.error(error);
-        alert("Failed to complete job: " + error.message);
-        return;
-      }
-
-      alert("Job marked as completed!");
-      this.fetchJobs();
     },
 
     // ─────────────────────────────────────────────────────────
