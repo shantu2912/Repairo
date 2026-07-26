@@ -9,17 +9,20 @@ function dashboardHandler() {
     available: false,
     notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
 
+    // ── PAYMENT & OTP VERIFICATION STATE ──
+    enteredOtp: '',
+    paymentLoading: false,
+
     // ── DISTANCE TRACKING ──
     currentLoc: null, 
     locationStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'unavailable'
-    geocodeCache: {},       // address string -> { lat, lng } | null (persists across refreshes this session)
+    geocodeCache: {},       // address string -> { lat, lng }
     distancesUpdating: false,
 
     // ─────────────────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────────────────
     async init() {
-      // ✅ LOAD SAVED LANGUAGE
       const savedLang = localStorage.getItem("preferred_language") || "en";
       if (typeof setLanguage === "function") {
         setLanguage(savedLang);
@@ -30,12 +33,10 @@ function dashboardHandler() {
         return;
       }
 
-      // ✅ Load tech_id if not present
       if (!this.tech.tech_id) {
         await this.loadTechId();
       }
 
-      // Hard lock: if a job is in progress redirect to detail
       const lockedJobId = localStorage.getItem("locked_job_id");
       if (lockedJobId) {
         window.location.href = "job_detail.html";
@@ -44,26 +45,20 @@ function dashboardHandler() {
 
       this.techName = this.tech.name;
       
-      // Set initial availability from DB
       await this.loadTechProfile();
-
-      // ── FIX: setupNotifications must complete before onMessage is registered ──
       await this.setupNotifications();
-
-      // Register foreground message handler AFTER setup is done
-      // This is now safe because setupNotifications awaits SW registration
       this.registerForegroundHandler();
 
       await this.fetchJobs();
       this.subscribeRealtime();
-      this.updateJobDistances(); // runs in background, doesn't block the UI
+      this.updateJobDistances();
     },
 
     // ─────────────────────────────────────────────────────────
-    // Load tech_id from database if not in local storage
+    // LOAD TECH ID
     // ─────────────────────────────────────────────────────────
     async loadTechId() {
-      if (this.tech?.tech_id) return; // Already have it
+      if (this.tech?.tech_id) return;
       
       try {
         const { data, error } = await window.sb
@@ -74,7 +69,6 @@ function dashboardHandler() {
 
         if (!error && data?.tech_id) {
           this.tech.tech_id = data.tech_id;
-          // Update localStorage
           localStorage.setItem("active_tech", JSON.stringify(this.tech));
           console.log(`✅ Loaded technician ID: ${data.tech_id}`);
         } else {
@@ -86,7 +80,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // Load tech profile (availability, image, etc.)
+    // LOAD TECH PROFILE
     // ─────────────────────────────────────────────────────────
     async loadTechProfile() {
       try {
@@ -99,10 +93,8 @@ function dashboardHandler() {
         if (!error && data) {
           this.available = data.is_available ?? false;
           
-          // Store the image URL in the tech object
           if (data.image_url) {
             this.tech.image_url = data.image_url;
-            // Update localStorage with the image URL
             localStorage.setItem("active_tech", JSON.stringify(this.tech));
           }
         }
@@ -112,7 +104,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // FIX: setupNotifications — returns a promise so init() can await it
+    // SETUP NOTIFICATIONS
     // ─────────────────────────────────────────────────────────
     async setupNotifications() {
       try {
@@ -122,7 +114,6 @@ function dashboardHandler() {
           return;
         }
 
-        // FIX: Check current permission state first — don't request yet
         this.notifStatus = Notification.permission;
 
         if (Notification.permission === 'denied') {
@@ -130,16 +121,13 @@ function dashboardHandler() {
           return;
         }
 
-        // Register service worker — await it fully so messaging can use it
         let registration;
         try {
           registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-            // FIX: updateViaCache = 'none' ensures a fresh SW is always checked
             updateViaCache: 'none'
           });
           console.log("✅ Service Worker registered:", registration.scope);
 
-          // FIX: Wait for the SW to be active before proceeding
           await navigator.serviceWorker.ready;
           console.log("✅ Service Worker is active and ready");
         } catch (swError) {
@@ -147,7 +135,6 @@ function dashboardHandler() {
           return;
         }
 
-        // Request permission (only if not already granted)
         if (Notification.permission !== 'granted') {
           const permission = await Notification.requestPermission();
           this.notifStatus = permission;
@@ -159,26 +146,19 @@ function dashboardHandler() {
 
         this.notifStatus = 'granted';
 
-        // FIX: Get FCM token — always pass the serviceWorkerRegistration
-        //      so Firebase uses OUR SW, not a default one
         const token = await window.firebaseMessaging.getToken({
           vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
           serviceWorkerRegistration: registration
         });
 
         if (!token) {
-          console.error("❌ No FCM token received — check VAPID key and service worker");
+          console.error("❌ No FCM token received");
           return;
         }
 
         console.log("✅ FCM Token obtained:", token.substring(0, 20) + "...");
-
-        // Save token to DB
         await this.saveFCMToken(token);
 
-        // FIX: Listen for token refresh and update DB automatically
-        //      Firebase rotates tokens periodically; if you miss this the
-        //      Edge Function will be sending to a dead token
         window.firebaseMessaging.onTokenRefresh(async () => {
           console.log("🔄 FCM Token refreshed — updating DB");
           try {
@@ -200,7 +180,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // FIX: Extracted token save into its own method — reused by onTokenRefresh
+    // SAVE FCM TOKEN
     // ─────────────────────────────────────────────────────────
     async saveFCMToken(token) {
       const { error } = await window.sb
@@ -216,8 +196,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // FIX: Foreground handler is separate from setup so there's
-    //      no chance it runs before the SW is registered
+    // REGISTER FOREGROUND HANDLER
     // ─────────────────────────────────────────────────────────
     registerForegroundHandler() {
       window.firebaseMessaging.onMessage((payload) => {
@@ -226,9 +205,6 @@ function dashboardHandler() {
         const title = payload.notification?.title || "New Job";
         const body  = payload.notification?.body  || "You have a new job";
 
-        // FIX: Check permission explicitly before calling new Notification()
-        //      Without this check, the call silently fails when permission
-        //      is not 'granted', causing the "no notification" bug
         if (Notification.permission === 'granted') {
           const notif = new Notification(title, {
             body: body,
@@ -238,7 +214,6 @@ function dashboardHandler() {
             vibrate: [200, 100, 200]
           });
 
-          // Open dashboard on click
           notif.onclick = () => {
             window.focus();
             notif.close();
@@ -247,8 +222,6 @@ function dashboardHandler() {
           console.warn("🔕 Permission not granted — showing in-app alert instead");
         }
 
-        // FIX: Always update the in-app job list on foreground message,
-        //      regardless of notification permission state
         this.fetchJobs();
       });
     },
@@ -256,11 +229,11 @@ function dashboardHandler() {
     // ─────────────────────────────────────────────────────────
     openMaps(location) {
       const encoded = encodeURIComponent(location);
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
+      window.open(`https://maps.google.com/?q=${encoded}`, '_blank');
     },
 
     // ─────────────────────────────────────────────────────────
-    // DISTANCE FROM TECH'S CURRENT LOCATION — shown per job card
+    // DISTANCE TRACKING
     // ─────────────────────────────────────────────────────────
     getCurrentLocation() {
       return new Promise((resolve, reject) => {
@@ -306,9 +279,6 @@ function dashboardHandler() {
       }
     },
 
-    // Refreshes the tech's GPS fix, then resolves + caches a distance for
-    // every non-completed job, then sorts nearest-first. Safe to call
-    // repeatedly — already-geocoded addresses are served from cache instantly.
     async updateJobDistances() {
       if (this.distancesUpdating) return;
       this.distancesUpdating = true;
@@ -321,7 +291,7 @@ function dashboardHandler() {
         console.warn("Location unavailable:", err.message);
         this.locationStatus = 'unavailable';
         this.distancesUpdating = false;
-        return; // no GPS fix — cards just show no distance, nothing else breaks
+        return;
       }
 
       for (const job of this.jobs) {
@@ -339,12 +309,9 @@ function dashboardHandler() {
           job.distanceText = null;
         }
 
-        // Respect Nominatim's 1 request/sec usage policy for freshly-geocoded addresses
         if (cached === undefined) await new Promise(r => setTimeout(r, 1100));
       }
 
-      // Nearest pending/active job first; completed jobs sink to the bottom;
-      // jobs whose address couldn't be geocoded sit just above completed ones.
       this.jobs.sort((a, b) => {
         if ((a.status === 'completed') !== (b.status === 'completed')) {
           return a.status === 'completed' ? 1 : -1;
@@ -363,8 +330,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // FIX: toggleAvailability now persists to DB so the Edge Function
-    //      respects it when filtering technicians to notify
+    // TOGGLE AVAILABILITY
     // ─────────────────────────────────────────────────────────
     async toggleAvailability(e) {
       const newValue = e.target.checked;
@@ -377,7 +343,6 @@ function dashboardHandler() {
 
       if (error) {
         console.error("❌ Failed to update availability:", error);
-        // Revert on failure
         this.available = !newValue;
         alert("Failed to update availability. Please try again.");
       } else {
@@ -385,6 +350,8 @@ function dashboardHandler() {
       }
     },
 
+    // ─────────────────────────────────────────────────────────
+    // FETCH JOBS
     // ─────────────────────────────────────────────────────────
     async fetchJobs() {
       this.loading = true;
@@ -397,7 +364,6 @@ function dashboardHandler() {
 
       if (!error) {
         this.jobs = data;
-
         this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
 
         const completedJobs = data.filter(
@@ -419,9 +385,11 @@ function dashboardHandler() {
       }
 
       this.loading = false;
-      this.updateJobDistances(); // background — doesn't block loading state
+      this.updateJobDistances();
     },
 
+    // ─────────────────────────────────────────────────────────
+    // SUBSCRIBE REALTIME
     // ─────────────────────────────────────────────────────────
     subscribeRealtime() {
       window.sb
@@ -432,7 +400,6 @@ function dashboardHandler() {
           (payload) => {
             const job = payload.new;
 
-            // Remove rejected jobs from this tech's view
             if (job.rejected_by?.includes(this.tech.id)) {
               this.jobs = this.jobs.filter(j => j.id !== job.id);
               return;
@@ -442,10 +409,9 @@ function dashboardHandler() {
             if (index !== -1) {
               this.jobs[index] = job;
             } else {
-              // Add new pending unassigned jobs
               if (job.status === "pending" && !job.tech_id) {
                 this.jobs.unshift(job);
-                this.updateJobDistances(); // resolve + insert this job into nearest-first order
+                this.updateJobDistances();
               }
             }
 
@@ -466,6 +432,8 @@ function dashboardHandler() {
         .subscribe();
     },
 
+    // ─────────────────────────────────────────────────────────
+    // ACCEPT / REJECT JOBS
     // ─────────────────────────────────────────────────────────
     async acceptJob(jobId) {
       const { data, error } = await window.sb
@@ -501,7 +469,6 @@ function dashboardHandler() {
       window.location.href = "job_detail.html";
     },
 
-    // ─────────────────────────────────────────────────────────
     async rejectJob(jobId) {
       const job = this.jobs.find(j => j.id === jobId);
       if (!job) return;
@@ -526,6 +493,95 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
+    // REALTIME PAYMENT TRIGGER & OTP VERIFICATION
+    // ─────────────────────────────────────────────────────────
+    async triggerCustomerPayment(jobId, amount) {
+      try {
+        const { error } = await window.sb
+          .from('jobs')
+          .update({
+            payment_status: 'PENDING_CUSTOMER_PAYMENT',
+            payable_amount: amount
+          })
+          .eq('id', jobId);
+
+        if (error) throw error;
+        alert("Payment request sent to customer's screen!");
+      } catch (err) {
+        console.error("Payment trigger error:", err);
+        alert("Failed to send payment request.");
+      }
+    },
+
+    async verifyJobCompletionOtp(jobId) {
+      if (!this.enteredOtp || this.enteredOtp.length !== 6) {
+        alert("Please enter a valid 6-digit OTP provided by the customer.");
+        return;
+      }
+
+      try {
+        const { data: job, error } = await window.sb
+          .from('jobs')
+          .select('otp, completion_otp, payment_status')
+          .eq('id', jobId)
+          .single();
+
+        if (error || !job) {
+          alert("Job record not found.");
+          return;
+        }
+
+        const validOtp = job.completion_otp || job.otp;
+
+        if (String(validOtp) !== String(this.enteredOtp)) {
+          alert("Invalid OTP! Please check with the customer.");
+          return;
+        }
+
+        const fee = this.calculateFee(job);
+        const { error: updateError } = await window.sb
+          .from('jobs')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+            technician_earning: fee
+          })
+          .eq('id', jobId);
+
+        if (updateError) throw updateError;
+
+        alert("OTP Verified Successfully! Job marked as completed.");
+        this.enteredOtp = '';
+        localStorage.removeItem("locked_job_id");
+        this.fetchJobs();
+      } catch (err) {
+        console.error("OTP Verification Error:", err);
+        alert("An error occurred during verification.");
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────
+    // MARK ARRIVED & COMPLETE
+    // ─────────────────────────────────────────────────────────
+    async markArrived(job) {
+      try {
+        const { error } = await window.sb
+          .from('jobs')
+          .update({ arrived_at: new Date().toISOString() })
+          .eq('id', job.id)
+          .eq('tech_id', this.tech.id);
+
+        if (error) throw error;
+
+        job.arrived_at = new Date().toISOString();
+        job.status = "arrived";
+        alert("Arrival marked successfully");
+      } catch (err) {
+        console.error("Arrival error:", err);
+        alert("Failed to mark arrival: " + (err.message || "Unknown error"));
+      }
+    },
+
     async completeJob(job) {
       const completedAt = new Date().toISOString();
       const fee = this.calculateFee(job);
@@ -551,31 +607,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    async markArrived(job) {
-      try {
-        const { error } = await window.sb
-          .from('jobs')
-          .update({ arrived_at: new Date().toISOString() })
-          .eq('id', job.id)
-          .eq('tech_id', this.tech.id);
-
-        if (error) {
-          console.error("SUPABASE ERROR:", error);
-          alert("DB Error: " + error.message);
-          return;
-        }
-
-        job.arrived_at = new Date().toISOString();
-        job.status = "arrived";
-
-        alert("Arrival marked successfully");
-
-      } catch (err) {
-        console.error("ARRIVAL FULL ERROR:", err);
-        alert("Failed to mark arrival: " + (err.message || "Unknown error"));
-      }
-    },
-
+    // INCOMING MODAL ACTIONS
     // ─────────────────────────────────────────────────────────
     async acceptIncoming() {
       const job = this.incomingJob;
@@ -601,7 +633,6 @@ function dashboardHandler() {
       this.fetchJobs();
     },
 
-    // ─────────────────────────────────────────────────────────
     async rejectIncoming() {
       const job = this.incomingJob;
       if (!job) return;
@@ -619,7 +650,7 @@ function dashboardHandler() {
     },
 
     // ─────────────────────────────────────────────────────────
-    // Formats the customer-chosen scheduled date + time for display
+    // UTILITIES
     // ─────────────────────────────────────────────────────────
     formatScheduled(job) {
       const raw = job?.scheduled_time;
@@ -632,12 +663,9 @@ function dashboardHandler() {
           hour: '2-digit', minute: '2-digit', hour12: true
         });
       }
-
-      // Fallback: return raw string as-is if not a parseable datetime
       return raw;
     },
 
-    // ─────────────────────────────────────────────────────────
     formatTime(dt) {
       if (!dt) return "-";
       const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
@@ -648,14 +676,12 @@ function dashboardHandler() {
       return Math.floor(hours / 24) + " days ago";
     },
 
-    // ─────────────────────────────────────────────────────────
     calculateFee(job) {
       const COMMISSION = 0.157;
       const servicePrice = job.discounted_price || job.original_price || job.price || 0;
       return Math.round(servicePrice * (1 - COMMISSION));
     },
 
-    // ─────────────────────────────────────────────────────────
     logout() {
       localStorage.removeItem("active_tech");
       window.location.href = "partnerlogin.html";
