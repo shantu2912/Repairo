@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -27,6 +26,7 @@ Alpine.data('trackingApp', () => ({
     techData: null,
     secondsElapsed: 0,
     timerInterval: null,
+    pollInterval: null,
     
     otpCode: null,
     jobStatus: 'pending',
@@ -90,6 +90,14 @@ Alpine.data('trackingApp', () => ({
 
         this.startTimer();
         await this.checkJobStatus();
+
+        // ── POLLING SAFETY NET ──
+        // Realtime updates depend on Supabase Replication being enabled for the
+        // 'jobs' table (and an RLS SELECT policy that allows the anon role to
+        // receive changes). If that's ever missed/misconfigured, this poll makes
+        // sure the payment card + OTP still show up within a few seconds instead
+        // of the customer being stuck with no visible change at all.
+        this.pollInterval = setInterval(() => this.pollJobStatus(), 4000);
 
         // Real-time listener for job updates
         const channel = sb.channel('waiting-room-' + this.jobId);
@@ -161,6 +169,7 @@ Alpine.data('trackingApp', () => ({
     async triggerRazorpayCheckout(job) {
         if (typeof Razorpay === 'undefined') {
             console.error("Razorpay SDK not loaded in head.");
+            alert("Payment gateway could not load. This is usually caused by an ad-blocker or a slow connection blocking checkout.razorpay.com — please disable any ad-blocker/VPN and reload the page, then tap 'Pay Now' again.");
             return;
         }
 
@@ -569,6 +578,45 @@ Alpine.data('trackingApp', () => ({
         }
     },
 
+    async pollJobStatus() {
+        if (this.jobStatus === 'completed' || this.jobStatus === 'cancelled') {
+            clearInterval(this.pollInterval);
+            return;
+        }
+
+        const { data: job, error } = await sb
+            .from('jobs')
+            .select('*')
+            .eq('id', this.jobId)
+            .single();
+
+        if (error || !job) return;
+
+        if (job.status) {
+            this.jobStatus = job.status;
+            if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
+                this.technicianFound = true;
+            }
+        }
+
+        if (job.payment_status) {
+            const wasPending = this.paymentStatus !== 'PENDING_CUSTOMER_PAYMENT';
+            this.paymentStatus = job.payment_status;
+            if (job.payment_status === 'PENDING_CUSTOMER_PAYMENT' && wasPending && !this.paymentModalOpen && !this.otpCode) {
+                this.payableAmount = job.payable_amount || this.payableAmount || 299;
+                this.triggerRazorpayCheckout(job);
+            }
+        }
+
+        if (job.completion_otp || job.otp) {
+            this.otpCode = job.completion_otp || job.otp;
+        }
+
+        if (job.tech_id && !this.techData) {
+            this.fetchTechnician(job.tech_id);
+        }
+    },
+
     async fetchTechnician(techId) {
         const { data: tech, error } = await sb
             .from('technicians')
@@ -813,4 +861,3 @@ Alpine.data('trackingApp', () => ({
     }
 }));
 });
-
