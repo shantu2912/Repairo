@@ -1,863 +1,889 @@
-const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>FixZenix · Payment & Tracking</title>
 
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: { 'brand-dark': '#1a1a1a', 'brand-gold': '#A07D54', 'brand-green': '#10B981' },
-            fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-            animation: {
-                'ripple': 'ripple 2s linear infinite',
-                'slide-up-fade': 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
-            },
-            keyframes: {
-                ripple: { '0%': { transform: 'scale(0.8)', opacity: '1' }, '100%': { transform: 'scale(2.5)', opacity: '0' } },
-                slideUpFade: { '0%': { opacity: '0', transform: 'translateY(40px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f4f4f5;
+        }
+        .bg-grid {
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+        .leaflet-container {
+            z-index: 10 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center;
+            }
+            100% {
+                background-position: 200% center;
             }
         }
-    }
-}
-
-document.addEventListener('alpine:init', () => {
-Alpine.data('trackingApp', () => ({
-    jobId: null,
-    technicianFound: false,
-    techData: null,
-    secondsElapsed: 0,
-    timerInterval: null,
-    pollInterval: null,
-    
-    otpCode: null,
-    jobStatus: 'pending',
-    paymentStatus: 'UNPAID',
-    payableAmount: 0,
-    paymentModalOpen: false,
-
-    quoteAmount: 0,
-    quoteDescription: '',
-    quoteStatus: '',
-    inspectionFee: 299,
-    showQuoteCard: false,
-    quoteLabour: 0,
-    quoteMaterial: 0,
-    quoteExtra: 0,
-    
-    // Bill modal variables
-    showBill: false,
-    fullJobData: null,
-    billLineItems: [],
-    billServiceName: '',
-    billVariantName: '',
-    isInspectionJob: false,
-    billSubtotal: 0,
-    billDiscountAmount: 0,
-    billPlatformFee: 0,
-    billGrandTotal: 0,
-    billInspectionFee: 299,
-    billQuoteAmount: 0,
-    billAdvancePaid: 0,
-    billBalancePaid: 0,
-    billRefundDue: 0,
-    billAmountInWords: '',
-    isPrinting: false,
-    billTechId: 'N/A', // ✅ Technician ID display
-
-    showFeedback: false,
-    feedbackStep: 1,
-    feedbackRating: 0,
-    feedbackComment: '',
-    feedbackTags: [],
-    feedbackLoading: false,
-    feedbackDone: false,
-
-    loyaltyReward: null,
-    loyaltyChecked: false,
-    
-    map: null,
-    techMarker: null,
-    etaMins: 12,
-
-    async init() {
-        const params = new URLSearchParams(window.location.search);
-        this.jobId = params.get('job_id');
-
-        if (!this.jobId) {
-            alert("Invalid tracking link.");
-            window.location.href = 'index.html';
-            return;
-        }
-
-        this.startTimer();
-        await this.checkJobStatus();
-
-        // ── POLLING SAFETY NET ──
-        // Realtime updates depend on Supabase Replication being enabled for the
-        // 'jobs' table (and an RLS SELECT policy that allows the anon role to
-        // receive changes). If that's ever missed/misconfigured, this poll makes
-        // sure the payment card + OTP still show up within a few seconds instead
-        // of the customer being stuck with no visible change at all.
-        this.pollInterval = setInterval(() => this.pollJobStatus(), 4000);
-
-        // Real-time listener for job updates
-        const channel = sb.channel('waiting-room-' + this.jobId);
-        channel
-            .on('postgres_changes', 
-                { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, 
-                (payload) => {
-                    console.log('Real-time updates payload:', payload);
-                    
-                    if (payload.new) {
-                        if (payload.new.status) {
-                            this.jobStatus = payload.new.status;
-                            if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
-                                this.technicianFound = true;
-                            }
-                            if (this.jobStatus === 'completed') {
-                                const uid = payload.new.user_id || this.fullJobData?.user_id;
-                                if (uid) this.checkLoyaltyReward(uid);
-                            }
-                        }
-
-                        // ── REALTIME PAYMENTS & AUTO-RAZORPAY TRIGGER ──
-                        if (payload.new.payment_status) {
-                            this.paymentStatus = payload.new.payment_status;
-                            if (payload.new.payment_status === 'PENDING_CUSTOMER_PAYMENT' && !this.paymentModalOpen) {
-                                this.payableAmount = payload.new.payable_amount || 299;
-                                this.triggerRazorpayCheckout(payload.new);
-                            }
-                        }
-                        
-                        // Handle quote data updates
-                        if (payload.new.quote_status !== undefined) {
-                            this.quoteStatus = payload.new.quote_status;
-                            this.quoteAmount = payload.new.quoted_amount || 0;
-                            this.quoteDescription = payload.new.quote_description || '';
-                            this.quoteLabour = payload.new.quoted_labour || 0;
-                            this.quoteMaterial = payload.new.quoted_material || 0;
-                            this.quoteExtra = payload.new.quoted_extra || 0;
-                            this.showQuoteCard = payload.new.quote_status === 'submitted';
-                            
-                            if (payload.new.quote_status === 'approved') {
-                                this.showQuoteCard = false;
-                                this.refreshJobData();
-                            }
-                            if (payload.new.quote_status === 'rejected') {
-                                this.showQuoteCard = false;
-                            }
-                        }
-                        
-                        // Capture OTP (Dynamic or Preset)
-                        if (payload.new.completion_otp || payload.new.otp) {
-                            this.otpCode = payload.new.completion_otp || payload.new.otp;
-                        } else if (payload.new.otp === null && payload.new.completion_otp === null) {
-                            this.otpCode = null;
-                        }
-                        
-                        if (payload.new.tech_id && !this.techData) {
-                            this.fetchTechnician(payload.new.tech_id);
-                        }
-                    }
-                }
-            )
-            .subscribe();
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // AUTO-RAZORPAY INTEGRATION LOGIC
-    // ─────────────────────────────────────────────────────────
-    async triggerRazorpayCheckout(job) {
-        if (typeof Razorpay === 'undefined') {
-            console.error("Razorpay SDK not loaded in head.");
-            alert("Payment gateway could not load. This is usually caused by an ad-blocker or a slow connection blocking checkout.razorpay.com — please disable any ad-blocker/VPN and reload the page, then tap 'Pay Now' again.");
-            return;
-        }
-
-        this.paymentModalOpen = true;
-        const payableAmountInPaise = (job.payable_amount || this.payableAmount || 299) * 100;
-
-        try {
-            // 1. Invoke Supabase Edge Function to Create Razorpay Order
-            const { data: order, error } = await sb.functions.invoke('create-razorpay-order', {
-                body: { jobId: job.id, amount: payableAmountInPaise }
-            });
-
-            if (error || !order.id) {
-                console.error("Order creation error:", error);
-                this.paymentModalOpen = false;
-                alert("Could not initialize secure gateway order.");
-                return;
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.6;
             }
-
-            // 2. Build 6-Digit Completion OTP
-            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-
-            // 3. Configure Checkout Options
-            const options = {
-                key: "rzp_test_TI4hJKB1B4rwKx", // Your Razorpay Key ID
-                amount: order.amount,
-                currency: order.currency,
-                name: "FixZenix Home Services",
-                description: `Payment for ${job.device || job.category || 'Service'}`,
-                order_id: order.id,
-                handler: async (response) => {
-                    // 4. Verify Payment Signature and Save OTP to Database
-                    const { data: verifyResult, error: verifyError } = await sb.functions.invoke('verify-razorpay-payment', {
-                        body: {
-                            jobId: job.id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            completion_otp: generatedOtp
-                        }
-                    });
-
-                    this.paymentModalOpen = false;
-
-                    if (!verifyError && verifyResult?.status === "success") {
-                        this.otpCode = generatedOtp;
-                        this.paymentStatus = 'PAID';
-                    } else {
-                        alert("Payment Signature Verification Failed!");
-                    }
-                },
-                prefill: {
-                    name: job.customer_name || "Customer",
-                    contact: job.phone || "9876543210"
-                },
-                theme: {
-                    color: "#A07D54"
-                },
-                modal: {
-                    ondismiss: () => {
-                        this.paymentModalOpen = false;
-                    }
-                }
-            };
-
-            const rzp = new Razorpay(options);
-            rzp.open();
-
-        } catch (err) {
-            console.error("Razorpay Checkout Error:", err);
-            this.paymentModalOpen = false;
-        }
-    },
-
-    async refreshJobData() {
-        const { data: job } = await sb
-            .from('jobs')
-            .select('*')
-            .eq('id', this.jobId)
-            .single();
-        if (job) {
-            this.fullJobData = job;
-            this.updateBillAmounts(job);
-        }
-    },
-
-    updateBillAmounts(job) {
-        this.fullJobData = job;
-    },
-
-    // Every 5th completed job earns the customer a one-time reward code.
-    // Tied to milestone_job_id so reopening the page never creates duplicates.
-    async checkLoyaltyReward(userId) {
-        if (this.loyaltyChecked || !userId) return;
-        this.loyaltyChecked = true;
-
-        try {
-            // See if this specific completion already generated a reward
-            const { data: existing } = await sb
-                .from('promos')
-                .select('*')
-                .eq('milestone_job_id', this.jobId)
-                .maybeSingle();
-
-            if (existing) {
-                this.loyaltyReward = existing;
-                return;
-            }
-
-            const { count, error: countError } = await sb
-                .from('jobs')
-                .select('id', { count: 'exact', head: true })
-                .eq('user_id', userId)
-                .eq('status', 'completed');
-
-            if (countError) throw countError;
-            if (!count || count % 5 !== 0) return;
-
-            const code = 'LOYAL' + Math.floor(1000 + Math.random() * 9000);
-            const expiry = new Date();
-            expiry.setDate(expiry.getDate() + 60);
-
-            const { data: created, error: insertError } = await sb
-                .from('promos')
-                .insert([{
-                    code: code,
-                    type: 'percent',
-                    value: 15,
-                    expiry: expiry.toISOString().split('T')[0],
-                    usage_count: 0,
-                    created_at: new Date().toISOString(),
-                    user_id: userId,
-                    milestone_job_id: this.jobId
-                }])
-                .select()
-                .single();
-
-            if (insertError) {
-                console.error('Loyalty reward creation failed:', insertError.message);
-                return;
-            }
-
-            this.loyaltyReward = created;
-        } catch (err) {
-            console.error('Loyalty reward check failed:', err);
-        }
-    },
-
-    // Converts a number to Indian-style words for the invoice
-    numberToWords(num) {
-        num = Math.round(Math.max(0, num || 0));
-        if (num === 0) return 'Zero';
-
-        const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
-                       'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-        const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
-        const twoDigits = n => n < 20 ? ones[n] : (tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : ''));
-        const threeDigits = n => n < 100 ? twoDigits(n) : (ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + twoDigits(n % 100) : ''));
-
-        let result = '';
-        const crore = Math.floor(num / 10000000); num %= 10000000;
-        const lakh = Math.floor(num / 100000); num %= 100000;
-        const thousand = Math.floor(num / 1000); num %= 1000;
-        const hundred = num;
-
-        if (crore) result += threeDigits(crore) + ' Crore ';
-        if (lakh) result += threeDigits(lakh) + ' Lakh ';
-        if (thousand) result += threeDigits(thousand) + ' Thousand ';
-        if (hundred) result += threeDigits(hundred);
-
-        return result.trim();
-    },
-
-    async openBillModal() {
-        try {
-            const { data: job, error: jobError } = await sb
-                .from('jobs')
-                .select('*')
-                .eq('id', this.jobId)
-                .single();
-
-            if (jobError) throw jobError;
-
-            this.fullJobData = job;
-
-            // ✅ Fetch technician with tech_id if available
-            let techIdDisplay = 'N/A';
-            if (job.tech_id) {
-                const { data: tech, error: techError } = await sb
-                    .from('technicians')
-                    .select('tech_id, name')
-                    .eq('id', job.tech_id)
-                    .single();
-                
-                if (!techError && tech) {
-                    techIdDisplay = tech.tech_id || tech.id.slice(0,8).toUpperCase();
-                    if (!this.techData) {
-                        this.techData = tech;
-                    }
-                } else {
-                    techIdDisplay = job.tech_id.slice(0,8).toUpperCase();
-                }
-            }
-
-            this.billServiceName = job.service_name || job.category || 'Expert Service';
-            this.billVariantName = job.variant_name || job.device || 'Service';
-
-            const OTHER_LABEL = 'Other Issue';
-            const inspFee = Number(job.inspection_fee_amount || 299);
-            const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
-            const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
-            const discountAmount = Math.max(0, grossPrice - totalPrice);
-
-            const servicesSelected = job.services_selected || job.device || '';
-            const serviceNames = servicesSelected
-                ? servicesSelected.split(',').map(s => s.trim()).filter(Boolean)
-                : ['Service'];
-
-            const fixedServiceNames = serviceNames.filter(n => n !== OTHER_LABEL);
-            const hasOtherService = !!job.is_inspection_job || serviceNames.some(n => n === OTHER_LABEL);
-
-            const fixedTotal = hasOtherService ? Math.max(0, totalPrice - inspFee) : totalPrice;
-
-            let priceMap = null;
-            if (job.service_price_breakdown) {
-                try {
-                    const parsed = typeof job.service_price_breakdown === 'string'
-                        ? JSON.parse(job.service_price_breakdown)
-                        : job.service_price_breakdown;
-                    if (parsed && typeof parsed === 'object') priceMap = parsed;
-                } catch (e) { priceMap = null; }
-            }
-
-            const lineItems = [];
-
-            if (fixedServiceNames.length > 0) {
-                if (priceMap) {
-                    fixedServiceNames.forEach(name => {
-                        const price = Number(priceMap[name] ?? 0);
-                        if (price > 0) {
-                            lineItems.push({
-                                type: 'simple',
-                                name: name,
-                                desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
-                                price: price
-                            });
-                        }
-                    });
-                } else {
-                    const per = fixedServiceNames.length > 0 ? (fixedTotal / fixedServiceNames.length) : 0;
-                    fixedServiceNames.forEach(name => {
-                        lineItems.push({
-                            type: 'simple',
-                            name: name,
-                            desc: job.category ? `${job.category} • Service Charge` : 'Service Charge',
-                            price: per
-                        });
-                    });
-                }
-            }
-
-            let quotedTotal = 0;
-            if (hasOtherService) {
-                const labour = Number(job.quoted_labour || 0);
-                const material = Number(job.quoted_material || 0);
-                const extra = Number(job.quoted_extra || 0);
-                quotedTotal = Number(job.quoted_amount || (labour + material + extra) || 0);
-
-                const issueDesc = job.other_issue
-                    ? job.other_issue
-                    : 'Issue diagnosed and resolved on-site by the technician.';
-
-                lineItems.push({
-                    type: 'quote',
-                    name: 'Other Service (On-Site Diagnosis & Repair)',
-                    desc: issueDesc,
-                    workDesc: job.quote_description || '',
-                    labour: labour,
-                    material: material,
-                    extra: extra,
-                    price: quotedTotal
-                });
-            }
-
-            this.billLineItems = lineItems;
-            this.isInspectionJob = hasOtherService;
-            this.billInspectionFee = inspFee;
-            this.billQuoteAmount = quotedTotal;
-            this.billSubtotal = lineItems.reduce((s, i) => s + (i.price || 0), 0);
-            this.billDiscountAmount = discountAmount;
-
-            if (hasOtherService) {
-                this.billPlatformFee = 0;
-                this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount);
-                this.billAdvancePaid = fixedTotal + inspFee;
-
-                if (quotedTotal >= inspFee) {
-                    this.billBalancePaid = quotedTotal - inspFee;
-                    this.billRefundDue = 0;
-                } else {
-                    this.billBalancePaid = 0;
-                    this.billRefundDue = inspFee - quotedTotal;
-                }
-            } else {
-                this.billPlatformFee = 49;
-                this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount) + this.billPlatformFee;
-                this.billAdvancePaid = this.billGrandTotal;
-                this.billBalancePaid = 0;
-                this.billRefundDue = 0;
-            }
-
-            this.billAmountInWords = this.numberToWords(this.billGrandTotal);
-
-            // ✅ Store the tech ID for display in the bill
-            this.billTechId = techIdDisplay;
-
-            this.$nextTick(() => {
-                this.showBill = true;
-            });
-
-        } catch (err) {
-            console.error('Error opening bill:', err);
-            alert('Could not load bill details. Please try again.');
-        }
-    },
-
-    downloadPDF() {
-        this.isPrinting = true;
-        const element = document.getElementById('invoice-content');
-        
-        const opt = {
-            margin: 0.5,
-            filename: `FixZen_Invoice_${this.jobId.slice(0,6).toUpperCase()}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save()
-            .then(() => { this.isPrinting = false; })
-            .catch((err) => { 
-                console.error(err);
-                this.isPrinting = false;
-                alert('Error generating PDF. Please try again.');
-            });
-    },
-
-    startTimer() {
-        this.timerInterval = setInterval(() => { this.secondsElapsed++; }, 1000);
-    },
-
-    get formattedTime() {
-        const m = Math.floor(this.secondsElapsed / 60).toString().padStart(2, '0');
-        const s = (this.secondsElapsed % 60).toString().padStart(2, '0');
-        return `${m}:${s}`;
-    },
-
-    get searchMessage() {
-        if (this.secondsElapsed < 15) return "Alerting nearby experts...";
-        if (this.secondsElapsed < 45) return "Connecting with top-rated pros...";
-        return "High demand. Still searching...";
-    },
-
-    async checkJobStatus() {
-        const { data: job, error } = await sb
-            .from('jobs')
-            .select('*')
-            .eq('id', this.jobId)
-            .single();
-            
-        if (error) {
-            console.error('Error fetching job:', error);
-            return;
-        }
-        
-        if (job) {
-            this.fullJobData = job;
-            if (job.status) this.jobStatus = job.status;
-            if (job.payment_status) this.paymentStatus = job.payment_status;
-            
-            if (job.quote_status) {
-                this.quoteStatus = job.quote_status;
-                this.quoteAmount = job.quoted_amount || 0;
-                this.quoteDescription = job.quote_description || '';
-                this.quoteLabour = job.quoted_labour || 0;
-                this.quoteMaterial = job.quoted_material || 0;
-                this.quoteExtra = job.quoted_extra || 0;
-                this.inspectionFee = job.inspection_fee_amount || 299;
-                this.showQuoteCard = job.quote_status === 'submitted';
-            }
-            
-            if (job.tech_id) this.fetchTechnician(job.tech_id);
-            if (job.completion_otp || job.otp) this.otpCode = job.completion_otp || job.otp;
-            
-            this.updateBillAmounts(job);
-            
-            if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
-                this.technicianFound = true;
-                if (this.timerInterval) clearInterval(this.timerInterval);
-            }
-
-            if (this.jobStatus === 'completed' && job.user_id) {
-                this.checkLoyaltyReward(job.user_id);
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
             }
         }
-    },
-
-    async pollJobStatus() {
-        if (this.jobStatus === 'completed' || this.jobStatus === 'cancelled') {
-            clearInterval(this.pollInterval);
-            return;
+        .pulse-ring {
+            animation: pulse-ring 1.8s ease-out infinite;
         }
-
-        const { data: job, error } = await sb
-            .from('jobs')
-            .select('*')
-            .eq('id', this.jobId)
-            .single();
-
-        if (error || !job) return;
-
-        if (job.status) {
-            this.jobStatus = job.status;
-            if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
-                this.technicianFound = true;
+        .star-lit {
+            color: #A07D54;
+            filter: drop-shadow(0 0 6px rgba(160, 125, 84, 0.5));
+        }
+        .star-dim {
+            color: #e5e7eb;
+        }
+        .tag-chip {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tag-chip.on {
+            background: #1a1a1a;
+            color: white;
+            transform: scale(1.05);
+        }
+        .sheet-enter {
+            animation: sheetUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes sheetUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
-
-        if (job.payment_status) {
-            const wasPending = this.paymentStatus !== 'PENDING_CUSTOMER_PAYMENT';
-            this.paymentStatus = job.payment_status;
-            if (job.payment_status === 'PENDING_CUSTOMER_PAYMENT' && wasPending && !this.paymentModalOpen && !this.otpCode) {
-                this.payableAmount = job.payable_amount || this.payableAmount || 299;
-                this.triggerRazorpayCheckout(job);
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
             }
         }
-
-        if (job.completion_otp || job.otp) {
-            this.otpCode = job.completion_otp || job.otp;
+        .pop-in {
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
-
-        if (job.tech_id && !this.techData) {
-            this.fetchTechnician(job.tech_id);
-        }
-    },
-
-    async fetchTechnician(techId) {
-        const { data: tech, error } = await sb
-            .from('technicians')
-            .select('*')
-            .eq('id', techId)
-            .single();
-            
-        if (error) {
-            console.error('Error fetching technician:', error);
-            return;
-        }
-        
-        if (tech) {
-            this.techData = tech;
-            this.technicianFound = true;
-            clearInterval(this.timerInterval);
-            
-            if(this.jobStatus !== 'completed' && !this.otpCode) {
-                this.$nextTick(() => {
-                    this.initMap();
-                });
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-20px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
             }
         }
-    },
-
-    initMap() {
-        if (this.map) return; 
-
-        const customerLat = 21.1458;
-        const customerLng = 79.0882;
-        let techLat = 21.1200; 
-        let techLng = 79.0600;
-
-        this.map = L.map('trackingMap', { zoomControl: false }).setView([customerLat, customerLng], 13);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-            maxZoom: 19
-        }).addTo(this.map);
-
-        const customerIcon = L.divIcon({
-            html: `<div class="w-8 h-8 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white"><i class="fa-solid fa-house text-xs"></i></div>`,
-            className: '', iconSize: [32, 32], iconAnchor: [16, 32]
-        });
-
-        const techIcon = L.divIcon({
-            html: `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative"><div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div><i class="fa-solid fa-truck-fast text-sm relative z-10"></i></div>`,
-            className: '', iconSize: [40, 40], iconAnchor: [20, 40]
-        });
-
-        L.marker([customerLat, customerLng], {icon: customerIcon}).addTo(this.map);
-        this.techMarker = L.marker([techLat, techLng], {icon: techIcon}).addTo(this.map);
-
-        const bounds = L.latLngBounds([[customerLat, customerLng], [techLat, techLng]]);
-        this.map.fitBounds(bounds, { padding: [30, 30] });
-
-        const interval = setInterval(() => {
-            if (this.jobStatus !== 'arrived' && this.jobStatus !== 'started' && this.jobStatus !== 'in_progress') {
-                techLat += (customerLat - techLat) * 0.08;
-                techLng += (customerLng - techLng) * 0.08;
-                if (this.techMarker) {
-                    this.techMarker.setLatLng([techLat, techLng]);
-                }
-                
-                if(Math.random() > 0.7 && this.etaMins > 1) {
-                    this.etaMins--;
-                }
-            } else {
-                clearInterval(interval);
+        .confetti-piece {
+            position: fixed;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .btn-pay {
+            background: linear-gradient(135deg, #5D5646 0%, #8B7A64 100%);
+            transition: all 0.25s ease;
+        }
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px -8px rgba(93, 86, 70, 0.4);
+        }
+        .btn-pay:active {
+            transform: scale(0.96);
+        }
+        .otp-glow {
+            text-shadow: 0 0 30px rgba(160, 125, 84, 0.3);
+        }
+        .tech-card {
+            background: linear-gradient(135deg, #faf8f5 0%, #f0ece6 100%);
+            border: 1px solid #e8e2d8;
+        }
+        .payment-amount {
+            font-size: 2.75rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+        @media (max-width: 420px) {
+            .payment-amount {
+                font-size: 2.25rem;
             }
-        }, 2000);
-    },
-
-    async cancelJob() {
-        if(!confirm("Cancel your search?")) return;
-        await sb.from('jobs').update({ status: 'cancelled' }).eq('id', this.jobId);
-        window.location.href = 'index.html';
-    },
-
-    async acceptQuote() {
-        if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
-        
-        const finalAmount = Math.max(0, this.quoteAmount - this.inspectionFee);
-        
-        try {
-            const { error } = await sb
-                .from('jobs')
-                .update({
-                    quote_status: 'approved',
-                    customer_approved: true,
-                    customer_price: finalAmount,
-                    status: 'in_progress'
-                })
-                .eq('id', this.jobId);
-            
-            if (error) throw error;
-            
-            this.showQuoteCard = false;
-            this.quoteStatus = 'approved';
-            
-            await this.refreshJobData();
-            
-            alert(`✅ Quote Approved!\n\n` +
-                  `Total Quote: ₹${this.quoteAmount}\n` +
-                  `Inspection Fee Paid: ₹${this.inspectionFee}\n` +
-                  `Amount Due After Job: ₹${finalAmount}\n\n` +
-                  `The technician will now start the repair work.`);
-            
-        } catch (err) {
-            console.error('Error approving quote:', err);
-            alert("Error approving quote: " + err.message);
         }
-    },
-
-    async rejectQuote() {
-        const reason = prompt("Please share why you're rejecting this quote (optional):");
-        
-        try {
-            const { error } = await sb
-                .from('jobs')
-                .update({
-                    quote_status: 'rejected',
-                    customer_approved: false,
-                    status: 'cancelled'
-                })
-                .eq('id', this.jobId);
-            
-            if (error) throw error;
-            
-            alert("Quote rejected. Your booking has been closed. The inspection fee paid (₹" + this.inspectionFee + ") is non-refundable as the technician visited your location.");
-            window.location.href = 'index.html';
-            
-        } catch (err) {
-            console.error('Error rejecting quote:', err);
-            alert("Error rejecting quote: " + err.message);
+        /* Scrollable modal body */
+        .modal-scroll {
+            max-height: 85vh;
+            overflow-y: auto;
         }
-    },
-
-    setFeedbackRating(i) {
-        this.feedbackRating = i;
-        if (navigator.vibrate) navigator.vibrate(30);
-    },
-    
-    getFeedbackEmoji(i) {
-        return ['😞','😕','😊','😄','🤩'][i-1] || '';
-    },
-    
-    getFeedbackLabel(i) {
-        return ['Poor','Fair','Good','Excellent','Incredible!'][i-1] || '';
-    },
-    
-    getFeedbackTags() {
-        if (this.feedbackRating >= 4) return [
-            {icon:'⚡',label:'Fast Arrival'},{icon:'👔',label:'Professional'},
-            {icon:'✨',label:'Clean Work'},{icon:'😊',label:'Polite'},
-            {icon:'🔧',label:'Genuine Parts'},{icon:'💯',label:'Worth Every Rupee'}
-        ];
-        if (this.feedbackRating === 3) return [
-            {icon:'⏱️',label:'On Time'},{icon:'👍',label:'Decent Work'},{icon:'📞',label:'Good Communication'}
-        ];
-        return [
-            {icon:'⏰',label:'Late Arrival'},{icon:'🔁',label:'Needs Redo'},
-            {icon:'📵',label:'Poor Communication'},{icon:'💸',label:'Overcharged'}
-        ];
-    },
-    
-    toggleFeedbackTag(tag) {
-        if (this.feedbackTags.includes(tag)) {
-            this.feedbackTags = this.feedbackTags.filter(t => t !== tag);
-        } else {
-            this.feedbackTags.push(tag);
-            if (navigator.vibrate) navigator.vibrate(20);
+        .modal-scroll::-webkit-scrollbar {
+            width: 4px;
         }
-    },
-    
-    launchConfetti() {
-        const colors = ['#A07D54','#1a1a1a','#c9a050','#f4f4f5','#fff'];
-        for (let i = 0; i < 55; i++) {
-            const p = document.createElement('div');
-            p.className = 'confetti-piece';
-            p.style.cssText = `left:${Math.random()*100}vw;top:-20px;width:${Math.random()*8+5}px;height:${Math.random()*8+5}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*0.8}s;`;
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 4000);
+        .modal-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
         }
-    },
-
-    async submitFeedback() {
-        if (!this.feedbackRating) return;
-        
-        const storedPhone = localStorage.getItem('local_user_phone');
-        if (!storedPhone) {
-            alert("Session identity missing. Please login again.");
-            window.location.href = 'loginuser.html';
-            return;
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background: #c9b9a6;
+            border-radius: 8px;
         }
-
-        this.feedbackLoading = true;
-        
-        try {
-            const { data: profile, error: profileError } = await sb
-                .from('profiles')
-                .select('id')
-                .eq('phone', storedPhone.trim())
-                .maybeSingle();
-
-            if (profileError || !profile) {
-                throw new Error(profileError?.message || "Profile identity reference missing.");
+        .fade-in-up {
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-
-            const combinedComment = this.feedbackTags.length > 0
-                ? `[${this.feedbackTags.join(', ')}] ${this.feedbackComment}`
-                : this.feedbackComment;
-
-            const { error: feedbackError } = await sb.from('feedback').insert([{
-                job_id: this.jobId,
-                rating: this.feedbackRating,
-                comment: combinedComment,
-                technician_id: this.techData?.id || null,
-                user_id: profile.id
-            }]);
-
-            if (feedbackError) throw feedbackError;
-
-            await sb.from('jobs').update({ feedback_provided: true }).eq('id', this.jobId);
-            
-            this.feedbackStep = 'done';
-            this.launchConfetti();
-            
-            if (navigator.vibrate) navigator.vibrate([100,60,100,60,200]);
-            
-            setTimeout(() => {
-                this.showFeedback = false;
-                this.feedbackDone = true;
-            }, 2800);
-
-        } catch (err) {
-            console.error(err);
-            alert("Review Submission Error: " + err.message);
-        } finally {
-            this.feedbackLoading = false;
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-    }
-}));
-});
+        .status-badge {
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .status-badge.pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .status-badge.paid {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.payment-request {
+            background: #FEF3C7;
+            color: #92400E;
+            animation: pulse-bg 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-bg {
+            0%,
+            100% {
+                background: #FEF3C7;
+            }
+            50% {
+                background: #FDE68A;
+            }
+        }
+    </style>
+
+    <script>
+        window.sb = supabase.createClient(
+            "https://kzxdxnxgouthsywbsnvl.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+        );
+    </script>
+</head>
+
+<body class="bg-grid min-h-screen flex flex-col items-center justify-center p-4 relative" x-data="trackingApp()">
+
+    <!-- ====== HOME BUTTON ====== -->
+    <a href="bookings.html" class="absolute top-5 left-5 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-black hover:scale-105 transition z-50 border border-gray-100">
+        <i class="fa-solid fa-house"></i>
+    </a>
+
+    <!-- ====== MAIN CARD ====== -->
+    <div class="w-full max-w-md glass-card rounded-[2.5rem] shadow-2xl border border-white p-5 relative overflow-hidden z-20">
+
+        <!-- ====== HEADER ====== -->
+        <div x-show="jobStatus !== 'completed'" class="text-center mb-5" x-transition>
+            <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-widest rounded-full mb-3 shadow-sm border border-green-200">
+                <i class="fa-solid fa-shield-check mr-1"></i> Secure Booking
+            </span>
+            <h1 class="text-2xl font-extrabold text-[#1a1a1a]">Request Received</h1>
+            <p class="text-xs text-gray-500 font-mono mt-1">ID: <span x-text="jobId ? jobId.slice(0,8).toUpperCase() : 'Loading...'"></span></p>
+        </div>
+
+        <!-- ====== PROGRESS STEPS ====== -->
+        <div x-show="jobStatus !== 'completed' && jobStatus !== 'cancelled'" class="relative flex justify-between items-center mb-6 px-1" x-transition>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#10B981] rounded-full -z-10 transition-all duration-1000 ease-out"
+            :style="`width: ${jobStatus === 'pending' || jobStatus === 'searching' ? '33%' : (jobStatus === 'accepted' || jobStatus === 'assigned' ? '66%' : '100%')}`">
+        </div>
+
+        <div class="flex flex-col items-center gap-1.5">
+            <div class="w-8 h-8 rounded-full bg-[#10B981] text-white flex items-center justify-center shadow-md border-2 border-white">
+                <i class="fa-solid fa-check text-xs"></i>
+            </div>
+            <span class="text-[9px] font-bold text-gray-800">Requested</span>
+        </div>
+
+        <div class="flex flex-col items-center gap-1.5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
+            :class="jobStatus !== 'pending' && jobStatus !== 'searching' ? 'bg-[#10B981] text-white' : 'bg-[#A07D54] text-white animate-pulse'">
+            <i class="fa-solid" :class="jobStatus !== 'pending' && jobStatus !== 'searching' ? 'fa-check' : 'fa-radar'"></i>
+        </div>
+        <span class="text-[9px] font-bold transition-colors" :class="jobStatus !== 'pending' && jobStatus !== 'searching' ? 'text-gray-800' : 'text-[#A07D54]'">
+            <span x-text="jobStatus === 'pending' || jobStatus === 'searching' ? 'Searching' : 'Accepted'"></span>
+        </span>
+    </div>
+
+    <div class="flex flex-col items-center gap-1.5">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white transition-colors duration-500"
+        :class="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'bg-[#10B981] text-white animate-bounce' : (jobStatus === 'accepted' || jobStatus === 'assigned' ? 'bg-[#A07D54] text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
+        <i class="fa-solid text-xs" :class="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'fa-street-view' : 'fa-user-astronaut'"></i>
+    </div>
+    <span class="text-[9px] font-bold text-gray-400"
+    :class="{'text-[#A07D54]': jobStatus === 'accepted' || jobStatus === 'assigned', 'text-[#10B981] font-extrabold': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'}"
+    x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? 'Arrived' : 'Assigned'">
+</span>
+</div>
+</div>
+
+<!-- ====== SEARCHING STATE ====== -->
+<div x-show="!technicianFound && (jobStatus === 'pending' || jobStatus === 'searching')" class="text-center py-5">
+    <div class="relative w-28 h-28 mx-auto flex items-center justify-center mb-5">
+        <div class="absolute w-full h-full rounded-full bg-[#A07D54] opacity-50 pulse-ring"></div>
+        <div class="absolute w-full h-full rounded-full bg-[#A07D54] opacity-30 pulse-ring" style="animation-delay:0.6s"></div>
+        <div class="relative w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border border-gray-100">
+            <i class="fa-solid fa-location-crosshairs text-2xl text-[#A07D54] animate-pulse"></i>
+        </div>
+    </div>
+    <h3 class="text-base font-bold text-gray-900" x-text="searchMessage"></h3>
+    <div class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-full mt-3 border border-gray-200">
+        <i class="fa-regular fa-clock text-[#A07D54]"></i>
+        <span class="text-sm font-mono font-bold text-gray-700" x-text="formattedTime"></span>
+    </div>
+    <button @click="cancelJob()" class="mt-6 text-xs font-bold text-red-500 hover:text-red-700 underline decoration-red-200 underline-offset-4 transition">
+        Cancel Request
+    </button>
+</div>
+
+<!-- ====== TECHNICIAN FOUND / ACTIVE STATE ====== -->
+<div x-show="technicianFound || (jobStatus !== 'pending' && jobStatus !== 'searching')" style="display: none;" class="fade-in-up">
+
+    <!-- Status header -->
+    <div class="text-center mb-4 bg-white py-2 rounded-xl border border-gray-100 shadow-sm">
+        <h3 class="text-sm font-extrabold"
+        :class="{
+        'text-[#A07D54]': jobStatus === 'accepted' || jobStatus === 'assigned',
+        'text-[#10B981]': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress',
+        'text-amber-600': paymentStatus === 'PENDING_CUSTOMER_PAYMENT',
+        'text-emerald-600': paymentStatus === 'PAID'
+        }"
+        x-text="
+        jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' :
+        jobStatus === 'started' ? '🛠️ Service Started' :
+        jobStatus === 'in_progress' && paymentStatus === 'PENDING_CUSTOMER_PAYMENT' ? '💳 Payment Requested — Please Pay' :
+        jobStatus === 'in_progress' && paymentStatus === 'PAID' ? '🔑 Share Completion Code' :
+        jobStatus === 'in_progress' ? '🛠️ Work In Progress' :
+        'Your Expert is En Route'
+        ">
+    </h3>
+</div>
+
+<!-- ====== MAP ====== -->
+<div class="relative w-full h-44 rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-4 bg-gray-100" x-show="!otpCode && jobStatus !== 'completed'" x-transition.opacity>
+    <div id="trackingMap" class="w-full h-full"></div>
+    <div class="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-full shadow-lg z-20 flex items-center gap-2 border border-gray-100">
+        <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+        </span>
+        <span class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wide">ETA: <span x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? '0' : etaMins"></span> Mins</span>
+    </div>
+</div>
+
+<!-- ====== TECHNICIAN CARD ====== -->
+<div class="tech-card rounded-2xl p-4 border border-gray-200 shadow-sm mb-4" x-show="!otpCode && jobStatus !== 'completed'" x-transition.opacity>
+    <div class="flex items-center gap-4">
+        <div class="relative flex-shrink-0">
+            <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
+            class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md">
+            <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+        </div>
+        <div class="flex-1 min-w-0">
+            <h4 class="text-lg font-extrabold text-gray-900 leading-tight truncate" x-text="techData?.name || 'FixZen Expert'"></h4>
+            <p class="text-[10px] text-gray-500 font-bold" x-text="(techData?.experience || '5') + ' Years Experience'"></p>
+            <div class="flex items-center gap-2 mt-0.5">
+                <div class="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded text-[10px] font-bold text-yellow-700 border border-yellow-100">
+                    <i class="fa-solid fa-star text-yellow-500"></i> <span x-text="techData?.rating || '4.9'"></span>
+                </div>
+                <span class="text-[10px] text-gray-400">·</span>
+                <span class="text-[10px] font-mono text-gray-500 bg-white/60 px-2 py-0.5 rounded-full border border-gray-200">
+                    <i class="fa-regular fa-id-card mr-1"></i> ID: <span x-text="techData?.tech_id || 'N/A'"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 gap-3 mt-3">
+        <a :href="'tel:' + techData?.phone" class="py-2.5 bg-gray-900 text-white rounded-xl font-bold shadow-md hover:bg-black transition flex items-center justify-center gap-2 text-sm">
+            <i class="fa-solid fa-phone"></i> Call
+        </a>
+        <a :href="'https://wa.me/91' + techData?.phone" target="_blank" class="py-2.5 bg-green-500 text-white rounded-xl font-bold shadow-md shadow-green-200 hover:bg-green-600 transition flex items-center justify-center gap-2 text-sm">
+            <i class="fa-brands fa-whatsapp text-lg"></i> Message
+        </a>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== 🔥 REDESIGNED PAYMENT REQUEST CARD (AUTO-SHOW) ====== -->
+<!-- ============================================================ -->
+<div x-show="paymentStatus === 'PENDING_CUSTOMER_PAYMENT' && !otpCode && jobStatus !== 'completed'"
+class="rounded-2xl p-5 mb-4 border-2 border-amber-400 shadow-xl"
+style="background: linear-gradient(145deg, #FFFBEB 0%, #FFF8E7 100%);"
+x-transition.duration.400ms>
+
+<!-- Shop / Technician visible prominently -->
+<div class="flex items-center gap-3 mb-4 pb-4 border-b border-amber-200/60">
+    <div class="w-14 h-14 rounded-xl bg-white shadow-md flex items-center justify-center border border-amber-200/50 flex-shrink-0">
+        <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
+        class="w-12 h-12 rounded-lg object-cover">
+    </div>
+    <div class="flex-1 min-w-0">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Service Partner</p>
+        <p class="text-base font-extrabold text-gray-900 truncate" x-text="techData?.name || 'FixZen Expert'"></p>
+        <div class="flex items-center gap-2 text-[10px] text-gray-500">
+            <span class="flex items-center gap-1"><i class="fa-solid fa-star text-yellow-500 text-[9px]"></i> <span x-text="techData?.rating || '4.9'"></span></span>
+            <span>·</span>
+            <span class="font-mono" x-text="'ID: ' + (techData?.tech_id || 'N/A')"></span>
+        </div>
+    </div>
+    <span class="status-badge payment-request flex-shrink-0">
+        <i class="fa-solid fa-clock mr-1"></i> Awaiting Payment
+    </span>
+</div>
+
+<!-- Amount to pay — auto-show -->
+<div class="text-center mb-4">
+    <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Final Amount to Pay</p>
+    <div class="payment-amount text-[#1a1a1a] mt-0.5">
+        ₹<span x-text="payableAmount.toFixed(0)"></span>
+    </div>
+    <p class="text-[10px] text-gray-400 mt-0.5">Secure payment via Razorpay</p>
+</div>
+
+<!-- Breakdown -->
+<div class="bg-white/80 rounded-xl p-3 mb-4 text-xs border border-amber-200/40">
+    <div class="flex justify-between py-1">
+        <span class="text-gray-500">Service Charge</span>
+        <span class="font-mono font-bold">₹<span x-text="payableAmount.toFixed(0)"></span></span>
+    </div>
+    <div class="flex justify-between py-1 text-emerald-600">
+        <span><i class="fa-regular fa-circle-check mr-1"></i> Inspection Fee Credited</span>
+        <span class="font-mono">−₹<span x-text="(fullJobData?.inspection_fee_amount || 299).toFixed(0)"></span></span>
+    </div>
+    <div class="border-t border-gray-200 mt-1 pt-1 flex justify-between font-bold text-sm">
+        <span>Total Due</span>
+        <span class="text-[#A07D54]">₹<span x-text="payableAmount.toFixed(0)"></span></span>
+    </div>
+</div>
+
+<!-- Pay Now Button -->
+<button @click="triggerRazorpayCheckout(fullJobData || { id: jobId, payable_amount: payableAmount })"
+class="w-full btn-pay text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 text-base active:scale-95">
+<i class="fa-solid fa-lock text-sm"></i>
+Pay Now with Razorpay
+<i class="fa-solid fa-arrow-right text-sm"></i>
+</button>
+
+<p class="text-[9px] text-gray-400 text-center mt-3">
+    <i class="fa-solid fa-shield-check text-[#A07D54] mr-1"></i>
+    Secured by Razorpay · 128-bit encryption
+</p>
+</div>
+
+<!-- ====== QUOTE CARD ====== -->
+<div x-show="showQuoteCard && quoteStatus === 'submitted'"
+class="bg-white border-2 border-[#A07D54] rounded-2xl p-5 mb-4 shadow-lg fade-in-up">
+<div class="text-center mb-4">
+    <div class="w-12 h-12 bg-[#A07D54]/10 rounded-full flex items-center justify-center mx-auto mb-2">
+        <i class="fa-solid fa-file-invoice-dollar text-[#A07D54] text-xl"></i>
+    </div>
+    <h3 class="text-lg font-extrabold text-[#1a1a1a]">Quote from Technician</h3>
+    <p class="text-xs text-gray-500">Review before work begins</p>
+</div>
+<div class="space-y-3">
+    <div class="bg-gray-50 rounded-xl p-3">
+        <div class="flex justify-between text-sm py-1">
+            <span class="text-gray-600">Labour</span>
+            <span class="font-mono font-bold">₹<span x-text="quoteLabour"></span></span>
+        </div>
+        <div class="flex justify-between text-sm py-1">
+            <span class="text-gray-600">Materials</span>
+            <span class="font-mono font-bold">₹<span x-text="quoteMaterial"></span></span>
+        </div>
+        <div class="flex justify-between text-sm py-1" x-show="quoteExtra > 0">
+            <span class="text-gray-600">Extra</span>
+            <span class="font-mono font-bold">₹<span x-text="quoteExtra"></span></span>
+        </div>
+        <div class="border-t border-gray-200 my-2"></div>
+        <div class="flex justify-between font-bold text-base">
+            <span>Total Quote</span>
+            <span class="text-[#A07D54]">₹<span x-text="quoteAmount"></span></span>
+        </div>
+    </div>
+    <div class="bg-green-50 rounded-xl p-3 border border-green-100">
+        <div class="flex justify-between text-sm">
+            <span class="text-green-700">Inspection Fee Paid</span>
+            <span class="font-mono text-green-700">−₹<span x-text="inspectionFee"></span></span>
+        </div>
+        <div class="flex justify-between font-bold text-lg mt-1 pt-1 border-t border-green-200">
+            <span class="text-[#1a1a1a]">Due After Job</span>
+            <span class="text-green-600">₹<span x-text="Math.max(0, quoteAmount - inspectionFee)"></span></span>
+        </div>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-3">
+        <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Work Description</p>
+        <p class="text-sm text-[#1a1a1a]" x-text="quoteDescription || 'No description'"></p>
+    </div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5">
+    <button @click="rejectQuote()" class="py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition active:scale-95">
+        <i class="fas fa-times mr-1"></i> Reject
+    </button>
+    <button @click="acceptQuote()" class="py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition active:scale-95 shadow-md">
+        <i class="fas fa-check mr-1"></i> Approve
+    </button>
+</div>
+</div>
+
+<!-- ====== OTP DISPLAY (After Payment) ====== -->
+<div x-show="otpCode && jobStatus !== 'completed'" x-transition.opacity class="text-center py-4">
+    <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm animate-bounce">
+        <i class="fa-solid fa-shield-check text-3xl text-green-500"></i>
+    </div>
+    <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Payment Complete! ✅</h2>
+    <p class="text-sm text-gray-500 mb-6 px-4">Share this 6-digit code with your technician to close the job.</p>
+    <div class="bg-white border-2 border-dashed border-[#A07D54] rounded-2xl p-6 mb-6 shadow-inner relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-[#A07D54] animate-pulse"></div>
+        <p class="text-[10px] text-[#A07D54] font-bold uppercase mb-2 tracking-wider">Completion Code</p>
+        <p class="text-6xl font-black text-[#1a1a1a] tracking-[0.2em] font-mono otp-glow" x-text="otpCode"></p>
+        <button @click="navigator.clipboard?.writeText(otpCode)" class="mt-2 text-xs text-[#A07D54] font-bold hover:underline">
+            <i class="fa-regular fa-copy"></i> Copy Code
+        </button>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-center gap-3 border border-gray-200">
+        <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-8 h-8 rounded-full border-2 border-white shadow-sm">
+        <div class="text-left">
+            <p class="text-sm font-bold text-gray-900" x-text="'Waiting for ' + (techData?.name || 'Technician')"></p>
+            <p class="text-[10px] text-gray-400">They'll verify the code to complete the job</p>
+        </div>
+    </div>
+</div>
+
+<!-- ====== JOB COMPLETED ====== -->
+<div x-show="jobStatus === 'completed'" x-transition.opacity class="text-center py-8">
+    <div class="w-24 h-24 bg-[#10B981] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-200 animate__animated animate__jackInTheBox">
+        <i class="fa-solid fa-check text-4xl text-white"></i>
+    </div>
+    <h2 class="text-3xl font-black text-[#1a1a1a] mb-2">Job Completed!</h2>
+    <p class="text-sm text-gray-500 mb-6 px-2">Thank you for choosing FixZenix. The technician has verified your code and completed the service.</p>
+
+    <div x-show="loyaltyReward" x-cloak x-transition
+    class="mb-6 mx-1 rounded-2xl p-5 text-left relative overflow-hidden"
+    style="background: linear-gradient(135deg,#A07D54 0%,#5D5646 100%);">
+    <p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">
+        <i class="fa-solid fa-gift mr-1"></i> 5 Services — Reward Unlocked!
+    </p>
+    <div class="flex items-center justify-between mt-2">
+        <div>
+            <p class="text-white font-black text-2xl tracking-wider" x-text="loyaltyReward?.code"></p>
+            <p class="text-white/70 text-xs mt-1" x-text="'Get ' + loyaltyReward?.value + '% off next booking'"></p>
+        </div>
+        <button @click="navigator.clipboard?.writeText(loyaltyReward.code)"
+        class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+        <i class="fa-solid fa-copy"></i> Copy
+    </button>
+</div>
+</div>
+
+<button x-show="!feedbackDone" @click="showFeedback = true"
+class="w-full py-4 mb-3 rounded-2xl font-extrabold text-sm uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 transition active:scale-95"
+style="background: linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%); background-size:200% auto; animation: shimmer 2.5s linear infinite; color:white;">
+<i class="fa-solid fa-star"></i> Rate Your Experience
+</button>
+
+<div x-show="feedbackDone" class="w-full py-3 mb-3 rounded-2xl bg-green-50 border border-green-200 flex items-center justify-center gap-2">
+    <i class="fa-solid fa-circle-check text-green-500"></i>
+    <span class="text-sm font-bold text-green-700">Review Submitted — Thank you!</span>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+    <button @click="openBillModal()" class="py-3.5 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] rounded-xl font-bold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2 text-sm">
+        <i class="fa-solid fa-file-invoice"></i> View Bill
+    </button>
+    <button @click="window.location.href='index.html'" class="py-3.5 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-black transition shadow-lg flex items-center justify-center gap-2 text-sm">
+        <i class="fa-solid fa-house"></i> Home
+    </button>
+</div>
+</div>
+
+</div>
+<!-- end technician-found block -->
+
+</div>
+<!-- end main card -->
+
+<!-- ====== BILL MODAL ====== -->
+<div x-show="showBill"
+class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+x-transition.opacity
+style="display: none;">
+<div class="bg-white w-full max-w-md rounded-[20px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div class="p-6 overflow-y-auto bg-white modal-scroll" id="invoice-content">
+        <!-- Header -->
+        <div class="flex items-start justify-between pb-4 mb-4 border-b-2 border-[#1a1a1a]">
+            <div>
+                <h1 class="font-serif italic text-2xl text-[#1a1a1a] font-extrabold leading-none">FixZenix</h1>
+                <p class="text-[10px] text-gray-500 mt-1">Premium Home Services</p>
+                <p class="text-[9px] text-gray-400 mt-2 leading-relaxed">
+                    FixZenix Services<br>Amravati, Maharashtra<br>help@fixzenix.in
+                </p>
+            </div>
+            <div class="text-right flex-shrink-0">
+                <span class="inline-block px-2 py-0.5 bg-[#1a1a1a] text-white text-[9px] font-bold uppercase tracking-widest rounded">Invoice</span>
+                <p class="text-[9px] text-gray-400 mt-2">Invoice No.</p>
+                <p class="text-xs font-extrabold text-[#1a1a1a] font-mono" x-text="'FXN-' + (jobId ? jobId.slice(0,8).toUpperCase() : '')"></p>
+                <p class="text-[9px] text-gray-400 mt-1">Date</p>
+                <p class="text-xs font-extrabold text-[#1a1a1a] font-mono" x-text="new Date().toLocaleDateString('en-IN')"></p>
+            </div>
+        </div>
+
+        <!-- Billed To / Service By -->
+        <div class="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-3">
+            <div>
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Billed To</p>
+                <p class="font-bold text-[#1a1a1a] text-sm" x-text="fullJobData?.customer_name || 'Customer'"></p>
+                <p x-text="fullJobData?.phone || ''"></p>
+                <p class="text-gray-400" x-text="fullJobData?.address || fullJobData?.location || ''"></p>
+            </div>
+            <div class="text-right">
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Service By</p>
+                <p class="font-bold text-[#1a1a1a] text-sm" x-text="techData?.name || 'FixZen Expert'"></p>
+                <div class="flex items-center justify-end gap-1.5 mt-0.5">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#A07D54]/10 rounded-full border border-[#A07D54]/20">
+                        <i class="fa-regular fa-id-card text-[8px] text-[#A07D54]"></i>
+                        <span class="text-[10px] font-mono font-bold text-[#1a1a1a]" x-text="'ID: ' + (billTechId || 'N/A')"></span>
+                    </span>
+                </div>
+                <p class="text-gray-400" x-text="fullJobData?.category || 'Home Service'"></p>
+            </div>
+        </div>
+
+        <!-- Job ref & tech ID -->
+        <div class="flex flex-wrap justify-between items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 mb-4 text-[10px] border border-gray-100">
+            <span class="text-gray-500">Job Ref: <span class="font-mono font-bold text-gray-700" x-text="jobId ? jobId.slice(0,8).toUpperCase() : ''"></span></span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#1a1a1a] rounded-full text-white font-bold">
+                <i class="fa-regular fa-id-card text-[8px]"></i>
+                <span class="font-mono" x-text="billTechId || 'N/A'"></span>
+            </span>
+            <span class="inline-flex items-center gap-1 text-green-600 font-bold"><i class="fa-solid fa-circle-check"></i> Completed</span>
+        </div>
+
+        <!-- Line Items -->
+        <table class="w-full text-sm mb-1">
+            <thead>
+                <tr class="text-left text-[9px] text-gray-400 uppercase tracking-wide border-b-2 border-gray-200">
+                    <th class="pb-2 font-bold w-6">#</th>
+                    <th class="pb-2 font-bold">Description</th>
+                    <th class="pb-2 text-right font-bold">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(item, idx) in billLineItems" :key="idx">
+                    <tr class="border-b border-gray-100 align-top">
+                        <td class="py-2.5 pr-1 text-xs text-gray-400 font-mono" x-text="idx+1"></td>
+                        <td class="py-2.5 pr-2">
+                            <p class="font-bold text-[#1a1a1a] text-sm" x-text="item.name"></p>
+                            <p class="text-[10px] text-gray-400 mt-0.5" x-show="item.type !== 'quote'" x-text="item.desc"></p>
+                            <div x-show="item.type === 'quote'">
+                                <p class="text-[10px] text-gray-400 italic mt-0.5">Issue: <span x-text="item.desc"></span></p>
+                                <p class="text-[10px] text-gray-500 mt-1" x-show="item.workDesc"><span class="font-bold text-gray-600">Note:</span> <span x-text="item.workDesc"></span></p>
+                                <div class="mt-1.5 ml-0.5 space-y-0.5 border-l-2 border-gray-100 pl-2">
+                                    <div class="flex justify-between text-[10px] text-gray-500">
+                                        <span>Labour</span>
+                                        <span class="font-mono" x-text="'₹' + (item.labour||0).toFixed(2)"></span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-gray-500">
+                                        <span>Materials</span>
+                                        <span class="font-mono" x-text="'₹' + (item.material||0).toFixed(2)"></span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-gray-500" x-show="item.extra > 0">
+                                        <span>Extra</span>
+                                        <span class="font-mono" x-text="'₹' + (item.extra||0).toFixed(2)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-2.5 text-right font-mono font-bold text-sm whitespace-nowrap">₹<span x-text="(item.price||0).toFixed(2)"></span></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="space-y-1.5 text-sm text-gray-600 border-t-2 border-dashed border-gray-300 pt-3 mb-4">
+            <div class="flex justify-between">
+                <span>Subtotal</span>
+                <span class="font-mono" x-text="'₹' + billSubtotal.toFixed(2)"></span>
+            </div>
+            <div class="flex justify-between" x-show="billPlatformFee > 0">
+                <span>Platform Fee</span>
+                <span class="font-mono" x-text="'₹' + billPlatformFee.toFixed(2)"></span>
+            </div>
+            <div class="flex justify-between text-[#10B981]" x-show="billDiscountAmount > 0" x-cloak>
+                <span><i class="fa-solid fa-tag mr-1"></i> Discount</span>
+                <span class="font-mono font-bold" x-text="'−₹' + billDiscountAmount.toFixed(2)"></span>
+            </div>
+            <div class="flex justify-between font-black text-base border-t pt-2 mt-1 text-[#1a1a1a]">
+                <span>Grand Total</span>
+                <span x-text="'₹' + billGrandTotal.toFixed(2)"></span>
+            </div>
+        </div>
+
+        <!-- Payment Summary -->
+        <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-xs">
+            <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-receipt mr-1"></i> Payment Summary</p>
+            <template x-if="isInspectionJob">
+                <div class="space-y-1">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Advance Paid</span>
+                        <span class="font-mono font-bold" x-text="'₹' + billAdvancePaid.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between text-gray-400 text-[10px] -mt-0.5">
+                        <span class="pl-2">incl. inspection fee</span>
+                        <span class="font-mono" x-text="'₹' + billInspectionFee.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between text-gray-600" x-show="billBalancePaid > 0">
+                        <span>Balance Paid</span>
+                        <span class="font-mono font-bold" x-text="'₹' + billBalancePaid.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between text-red-500" x-show="billRefundDue > 0">
+                        <span>Refund Due</span>
+                        <span class="font-mono font-bold" x-text="'₹' + billRefundDue.toFixed(2)"></span>
+                    </div>
+                    <div class="flex justify-between font-black text-sm border-t border-green-200 pt-1 mt-1 text-green-700">
+                        <span>Total Settled</span>
+                        <span x-text="'₹' + (billAdvancePaid + billBalancePaid - billRefundDue).toFixed(2)"></span>
+                    </div>
+                </div>
+            </template>
+            <template x-if="!isInspectionJob">
+                <div class="flex justify-between font-black text-sm text-green-700">
+                    <span>Total Paid</span>
+                    <span x-text="'₹' + billGrandTotal.toFixed(2)"></span>
+                </div>
+            </template>
+        </div>
+
+        <p class="text-[10px] text-gray-400 mb-4">
+            <span class="font-bold text-gray-500">Amount in Words:</span>
+            <span x-text="billAmountInWords"></span> Rupees Only
+        </p>
+
+        <div x-show="loyaltyReward" x-cloak
+        class="mb-4 rounded-xl p-3 border-2 border-dashed border-[#A07D54] bg-[#A07D54]/5 flex items-center justify-between">
+        <div>
+            <p class="text-[9px] font-bold uppercase tracking-wide text-[#A07D54]">
+                <i class="fa-solid fa-gift"></i> Loyalty Reward — 5th Service
+            </p>
+            <p class="font-black text-lg text-[#1a1a1a] tracking-wider" x-text="loyaltyReward?.code"></p>
+        </div>
+        <span class="text-xs font-bold text-[#1a1a1a]" x-text="loyaltyReward?.value + '% off next'"></span>
+    </div>
+
+    <div class="flex items-end justify-between border-t border-gray-100 pt-4 mb-2">
+        <div class="text-[9px] text-gray-400 leading-relaxed pr-3">
+            <p class="font-bold text-gray-500 mb-1">Terms & Notes</p>
+            <p>• Prices incl. all taxes.</p>
+            <p>• System-generated invoice.</p>
+            <p>• Support: help@fixzenix.in</p>
+        </div>
+        <div class="flex-shrink-0">
+            <div class="w-20 h-20 rounded-full border-2 border-[#10B981] flex flex-col items-center justify-center text-[#10B981] -rotate-12 opacity-80">
+                <i class="fa-solid fa-stamp text-lg mb-0.5"></i>
+                <span class="text-[8px] font-black uppercase tracking-wide text-center leading-tight">Verified<br>Paid</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-xs text-gray-400 mt-2 pb-2 border-t border-dashed border-gray-200 pt-3">
+        <p class="font-bold text-gray-500">Thank you for trusting FixZenix!</p>
+        <p>For support, email help@fixzenix.in</p>
+    </div>
+</div>
+
+<!-- Bill actions -->
+<div class="p-4 bg-gray-50 border-t flex gap-3">
+    <button @click="showBill = false" class="flex-1 py-3 rounded-xl border border-gray-300 font-bold text-gray-600 hover:bg-gray-100">
+        Close
+    </button>
+    <button @click="downloadPDF()" :disabled="isPrinting" class="flex-1 py-3 rounded-xl bg-[#10B981] text-white font-bold shadow-md hover:bg-green-600 flex items-center justify-center gap-2">
+        <span x-show="!isPrinting"><i class="fa-solid fa-download"></i> Save PDF</span>
+        <span x-show="isPrinting"><i class="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+    </button>
+</div>
+</div>
+</div>
+
+<!-- ====== FEEDBACK MODAL ====== -->
+<div x-show="showFeedback" class="fixed inset-0 z-[200] flex items-end justify-center" style="display:none;">
+    <div @click="showFeedback = false" class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+    x-transition:enter="transition duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+</div>
+<div class="relative w-full max-w-md bg-white rounded-t-[2.5rem] shadow-2xl z-10 overflow-hidden sheet-enter max-h-[92vh] overflow-y-auto">
+    <div class="flex justify-center pt-4 pb-2">
+        <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+    </div>
+
+    <div x-show="feedbackStep === 'done'" class="text-center py-10 px-6">
+        <div class="relative w-24 h-24 mx-auto mb-5">
+            <div class="absolute inset-0 rounded-full blur-xl" style="background:rgba(16,185,129,0.2);transform:scale(1.5)"></div>
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-xl relative pop-in">
+                <i class="fa-solid fa-trophy text-4xl text-white"></i>
+            </div>
+        </div>
+        <h3 class="text-2xl font-black text-[#1a1a1a] mb-1">Thank You!</h3>
+        <p class="text-sm text-gray-500 mb-4">Your review helps your partner earn a bonus reward 🎉</p>
+        <div class="flex justify-center gap-1 mb-2">
+            <template x-for="s in 5">
+                <i class="fa-solid fa-star text-xl" :class="s <= feedbackRating ? 'text-yellow-400' : 'text-gray-200'"></i>
+            </template>
+        </div>
+        <p class="text-xs text-gray-400" x-text="getFeedbackLabel(feedbackRating)"></p>
+    </div>
+
+    <div x-show="feedbackStep === 1" class="px-6 pb-8 pt-2">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 bg-gray-900 rounded-2xl rotate-3 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                <i class="fa-solid fa-star text-yellow-400 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-black text-[#1a1a1a]">How was your experience?</h3>
+            <p class="text-xs text-gray-400 mt-1">Rate your FixZen technician</p>
+        </div>
+
+        <div class="flex justify-center gap-4 mb-3">
+            <template x-for="i in 5" :key="i">
+                <button @click="setFeedbackRating(i)" class="transition-all duration-200 active:scale-75" :class="i <= feedbackRating ? 'scale-110' : 'scale-100'">
+                    <i class="fa-solid fa-star text-4xl transition-all duration-200" :class="i <= feedbackRating ? 'star-lit' : 'star-dim'"></i>
+                </button>
+            </template>
+        </div>
+
+        <div class="h-8 flex items-center justify-center mb-5">
+            <div class="pop-in flex items-center gap-2" x-show="feedbackRating > 0">
+                <span class="text-xl" x-text="getFeedbackEmoji(feedbackRating)"></span>
+                <span class="font-extrabold text-[#1a1a1a]" x-text="getFeedbackLabel(feedbackRating)"></span>
+            </div>
+            <p x-show="feedbackRating === 0" class="text-xs text-gray-300">Tap a star to begin</p>
+        </div>
+
+        <div x-show="feedbackRating > 0">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center mb-3">What stood out?</p>
+            <div class="flex flex-wrap justify-center gap-2 mb-6">
+                <template x-for="tag in getFeedbackTags()" :key="tag.label">
+                    <button @click="toggleFeedbackTag(tag.label)"
+                    class="tag-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all"
+                    :class="feedbackTags.includes(tag.label) ? 'on border-transparent' : 'bg-gray-50 text-gray-700 border-gray-200'">
+                    <span x-text="tag.icon"></span>
+                    <span x-text="tag.label"></span>
+                </button>
+            </template>
+        </div>
+    </div>
+
+    <button @click="feedbackStep = 2" :disabled="feedbackRating === 0"
+    class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg"
+    :class="feedbackRating > 0 ? 'bg-[#1a1a1a] text-white' : 'bg-gray-100 text-gray-300 cursor-not-allowed'">
+    Continue <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
+</button>
+</div>
+
+<div x-show="feedbackStep === 2" class="px-6 pb-8 pt-2">
+    <div class="flex items-center gap-3 mb-5">
+        <button @click="feedbackStep = 1" class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition active:scale-90 flex-shrink-0">
+            <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <div>
+            <h3 class="text-lg font-black text-[#1a1a1a] leading-tight">Add a note</h3>
+            <p class="text-xs text-gray-400">Optional — share what you loved</p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3 bg-gray-50 rounded-2xl p-3 mb-4 border border-gray-100">
+        <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm flex-shrink-0">
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-extrabold text-[#1a1a1a] truncate" x-text="techData?.name || 'Your Expert'"></p>
+            <p class="text-[10px] text-gray-400" x-text="fullJobData?.category || 'Service Partner'"></p>
+        </div>
+        <div class="flex gap-0.5 flex-shrink-0">
+            <template x-for="s in 5">
+                <i class="fa-solid fa-star text-xs" :class="s <= feedbackRating ? 'text-yellow-400' : 'text-gray-200'"></i>
+            </template>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-1.5 mb-3" x-show="feedbackTags.length > 0">
+        <template x-for="tag in feedbackTags">
+            <span class="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full" x-text="tag"></span>
+        </template>
+    </div>
+
+    <textarea x-model="feedbackComment" placeholder="Share what you loved or what could be better…" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-gray-300 outline-none resize-none font-medium placeholder:text-gray-300 mb-4"></textarea>
+
+    <button @click="submitFeedback()" :disabled="feedbackLoading || feedbackRating === 0"
+    class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+    style="background:linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%);background-size:200% auto;animation:shimmer 2.5s linear infinite;color:white;">
+    <span x-show="!feedbackLoading"><i class="fa-solid fa-paper-plane mr-1"></i> Submit Review</span>
+    <i class="fa-solid fa-circle-notch fa-spin" x-show="feedbackLoading"></i>
+</button>
+
+<p class="text-center text-[10px] text-gray-300 mt-3">
+    <i class="fa-solid fa-lock mr-1"></i>Private & secure
+</p>
+</div>
+
+</div>
+</div>
+
+<!-- ====== SCRIPTS ====== -->
+<script src="success.js">
+</script>
+
+</body>
+</html>
