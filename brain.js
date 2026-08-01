@@ -1,6 +1,6 @@
 import { intents } from "./intents.js";
 import { getResponse } from "./responses.js";
-import { getResponse } from "./memory.js";
+import { addMessage } from "./memory.js";
 
 
 function detectIntent(message) {
