@@ -7,6 +7,7 @@ function random(arr) {
 
 export function generateReply(intent) {
 
+    
     switch(intent){
 
         case "greeting":
