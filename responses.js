@@ -4,7 +4,7 @@ function random(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function getResponse(intent) {
+export function generateReply(intent) {
 
     switch(intent){
 
