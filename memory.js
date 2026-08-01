@@ -7,7 +7,7 @@ export const memory = {
     history: []
 };
 
-export function addMessage(role, text) {
+export function saveMessage(role, text) {
     memory.history.push({
         role,
         text,
