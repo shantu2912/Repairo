@@ -1,6 +1,7 @@
 import { knowledge } from "./knowledge.js";
 
 function random(arr) {
+    
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
