@@ -1,5 +1,5 @@
 import { intents } from "./intents.js";
-import { generateReply } from "./responses.js";
+import { getResponse } from "./responses.js";
 import { saveMessage } from "./memory.js";
 
 
