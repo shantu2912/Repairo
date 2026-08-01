@@ -1,13 +1,11 @@
 import { knowledge } from "./knowledge.js";
 
 function random(arr) {
-    
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function generateReply(intent) {
+export function getResponse(intent) {
 
-    
     switch(intent){
 
         case "greeting":
