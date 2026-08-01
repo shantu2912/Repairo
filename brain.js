@@ -2,6 +2,7 @@ import { intents } from "./intents.js";
 import { generateReply } from "./responses.js";
 import { saveMessage } from "./memory.js";
 
+
 function detectIntent(message) {
 
     let text = message.toLowerCase();
