@@ -1,39 +1,31 @@
 import { intents } from "./intents.js";
-import { getResponse } from "./responses.js";
-import { addMessage } from "./memory.js";
+import { generateReply } from "./responses.js";
+import { saveMessage } from "./memory.js";
 
-function detectIntent(message){
+function detectIntent(message) {
 
-    const text = message.toLowerCase();
+    let text = message.toLowerCase();
 
-    for(const intent of intents){
-
-        for(const keyword of intent.keywords){
-
-            if(text.includes(keyword)){
-
+    for (let intent of intents) {
+        for (let word of intent.keywords) {
+            if (text.includes(word)) {
                 return intent.name;
-
             }
-
         }
-
     }
 
     return "unknown";
-
 }
 
-export function talk(message){
+export function askAI(message) {
 
-    addMessage("user", message);
+    saveMessage("user", message);
 
-    const intent = detectIntent(message);
+    let intent = detectIntent(message);
 
-    const reply = getResponse(intent);
+    let reply = generateReply(intent);
 
-    addMessage("assistant", reply);
+    saveMessage("ai", reply);
 
     return reply;
-
 }
