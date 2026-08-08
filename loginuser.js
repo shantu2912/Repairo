@@ -13,6 +13,27 @@ function authApp() {
         forgotVerified: false,
         recoveredUserId: null,
 
+        // ── DEVICE LOCKOUT CONFIG ──
+        // After MAX_ATTEMPTS consecutive failed logins for a given phone number
+        // on THIS device (localStorage), login is locked on this device for an
+        // escalating duration: 1st lockout 30 min, 2nd 3 hr, 3rd+ 30 hr.
+        MAX_ATTEMPTS: 3,
+        LOCK_DURATIONS_MS: [30 * 60 * 1000, 3 * 60 * 60 * 1000, 30 * 60 * 60 * 1000],
+        lock: { active: false, remainingMs: 0 },
+
+        init() {
+            // Ticks every second to keep the lock countdown live and auto-unlock when it expires.
+            setInterval(() => {
+                if (this.lock.active) {
+                    this.lock.remainingMs -= 1000;
+                    if (this.lock.remainingMs <= 0) {
+                        this.lock.active = false;
+                        this.lock.remainingMs = 0;
+                    }
+                }
+            }, 1000);
+        },
+
         t: {
             en: {
                 tagline: 'Premium Home Care', choose_lang: 'Choose Your Language', lang_continue: 'CONTINUE',
@@ -26,7 +47,8 @@ function authApp() {
                 err_login: 'Incorrect mobile number or password.', msg_name_req: 'Enter letters only (Min 3 characters, no numbers)',
                 welcome_back: 'Welcome Back', secret_question: 'Security Question: What is your birth place city?', secret_placeholder: 'e.g., Nagpur',
                 forgot_link: 'Forgot Password?', reset_title: 'Reset Password', reset_subtitle: 'Provide registration phone and birth city answer to recover access.',
-                answer_placeholder: 'Enter your birth place city name', verify_btn: 'Verify Details', new_password: 'Enter New Password', save_pass_btn: 'Update Password'
+                answer_placeholder: 'Enter your birth place city name', verify_btn: 'Verify Details', new_password: 'Enter New Password', save_pass_btn: 'Update Password',
+                locked_title: 'Account Temporarily Locked', locked_desc: 'Too many failed attempts on this device. Please try again in:'
             },
             hi: {
                 tagline: 'प्रीमियम होम केयर', choose_lang: 'अपनी भाषा चुनें', lang_continue: 'आगे बढ़ें',
@@ -40,7 +62,8 @@ function authApp() {
                 err_login: 'गलत मोबाइल नंबर या पासवर्ड। कृपया पुनः प्रयास करें।', msg_name_req: 'केवल अक्षर दर्ज करें (न्यूनतम 3 अक्षर, संख्याएं नहीं)',
                 welcome_back: 'वापसी पर स्वागत है', secret_question: 'सुरक्षा प्रश्न: आपका जन्म स्थान कौन सा शहर है?', secret_placeholder: 'उदा., नागपुर',
                 forgot_link: 'पासवर्ड भूल गए?', reset_title: 'पासवर्ड रीसेट करें', reset_subtitle: 'पहुंच पुनः प्राप्त करने के लिए पंजीकरण फोन और जन्म शहर का उत्तर प्रदान करें।',
-                answer_placeholder: 'अपने जन्म स्थान के शहर का नाम दर्ज करें', verify_btn: 'विवरण सत्यापित करें', new_password: 'नया पासवर्ड दर्ज करें', save_pass_btn: 'पासवर्ड अपडेट करें'
+                answer_placeholder: 'अपने जन्म स्थान के शहर का नाम दर्ज करें', verify_btn: 'विवरण सत्यापित करें', new_password: 'नया पासवर्ड दर्ज करें', save_pass_btn: 'पासवर्ड अपडेट करें',
+                locked_title: 'खाता अस्थायी रूप से लॉक है', locked_desc: 'इस डिवाइस पर बहुत अधिक असफल प्रयास हुए। कृपया इसके बाद पुनः प्रयास करें:'
             },
             mr: {
                 tagline: 'प्रीमियम होम केअर', choose_lang: 'तुमची भाषा निवडा', lang_continue: 'पुढे जा',
@@ -54,7 +77,8 @@ function authApp() {
                 err_login: 'चुकीचा मोबाईल नंबर किंवा पासवर्ड।', msg_name_req: 'फक्त अक्षरे प्रविष्ट करा (किमान 3 अक्षरे, संख्या नाही)',
                 welcome_back: 'पुन्हा स्वागत आहे', secret_question: 'सुरक्षा प्रश्न: तुमचे जन्मस्थान कोणते शहर आहे?', secret_placeholder: 'उदा., नागपूर',
                 forgot_link: 'पासवर्ड विसरलात?', reset_title: 'पासवर्ड रीसेट करा', reset_subtitle: 'अॅक्सेस रिकव्हर करण्यासाठी नोंदणीकृत फोन आणि जन्माचे शहर प्रविष्ट करा.',
-                answer_placeholder: 'तुमच्या जन्मस्थानाच्या शहराचे नाव प्रविष्ट करा', verify_btn: 'माहिती सत्यापित करा', new_password: 'नवीन पासवर्ड प्रविष्ट करा', save_pass_btn: 'पासवर्ड अपडेट करा'
+                answer_placeholder: 'तुमच्या जन्मस्थानाच्या शहराचे नाव प्रविष्ट करा', verify_btn: 'माहिती सत्यापित करा', new_password: 'नवीन पासवर्ड प्रविष्ट करा', save_pass_btn: 'पासवर्ड अपडेट करा',
+                locked_title: 'खाते तात्पुरते लॉक केले आहे', locked_desc: 'या डिव्हाइसवर खूप अपयशी प्रयत्न झाले. कृपया यानंतर पुन्हा प्रयत्न करा:'
             }
         },
 
@@ -62,11 +86,89 @@ function authApp() {
         setLang(l) { this.lang = l; localStorage.setItem('fixzen_lang', l); },
         proceedFromLang() { this.step = 'choose'; },
         normalizePhone() { return '+91' + this.form.phone.replace(/\s+/g, '').trim(); },
-        
+
+        // ── DEVICE LOCKOUT HELPERS ──
+        // Lock data is stored per phone number, per device, in localStorage.
+        // Shape: { attempts: number, lockUntil: epochMs, stage: number }
+        lockStorageKey(phone) { return 'fixzen_lock_' + phone; },
+
+        getLockData(phone) {
+            try {
+                const raw = localStorage.getItem(this.lockStorageKey(phone));
+                if (!raw) return { attempts: 0, lockUntil: 0, stage: 0 };
+                const parsed = JSON.parse(raw);
+                return {
+                    attempts: parsed.attempts || 0,
+                    lockUntil: parsed.lockUntil || 0,
+                    stage: parsed.stage || 0
+                };
+            } catch (e) {
+                return { attempts: 0, lockUntil: 0, stage: 0 };
+            }
+        },
+
+        saveLockData(phone, data) {
+            try {
+                localStorage.setItem(this.lockStorageKey(phone), JSON.stringify(data));
+            } catch (e) { /* localStorage unavailable - fail silently, non-critical */ }
+        },
+
+        // Refreshes this.lock (used by the UI) from stored data for the given phone.
+        updateLockStatus(phone) {
+            const data = this.getLockData(phone);
+            const now = Date.now();
+            if (data.lockUntil && data.lockUntil > now) {
+                this.lock.active = true;
+                this.lock.remainingMs = data.lockUntil - now;
+            } else {
+                this.lock.active = false;
+                this.lock.remainingMs = 0;
+            }
+        },
+
+        // Called after a failed login. Returns true if this failure just triggered a new lock.
+        registerFailedAttempt(phone) {
+            const data = this.getLockData(phone);
+            data.attempts = (data.attempts || 0) + 1;
+            let justLocked = false;
+
+            if (data.attempts >= this.MAX_ATTEMPTS) {
+                const stageIndex = Math.min(data.stage || 0, this.LOCK_DURATIONS_MS.length - 1);
+                const duration = this.LOCK_DURATIONS_MS[stageIndex];
+                data.lockUntil = Date.now() + duration;
+                data.stage = (data.stage || 0) + 1;
+                data.attempts = 0;
+                justLocked = true;
+            }
+
+            this.saveLockData(phone, data);
+            this.updateLockStatus(phone);
+            return justLocked;
+        },
+
+        // Called after a successful login - clears attempts and lock history for this device.
+        clearLockoutData(phone) {
+            this.saveLockData(phone, { attempts: 0, lockUntil: 0, stage: 0 });
+            this.lock.active = false;
+            this.lock.remainingMs = 0;
+        },
+
+        // Formats milliseconds as a countdown string, e.g. "1:05:30" or "4:12".
+        formatTime(ms) {
+            if (ms <= 0) return '0:00';
+            const totalSec = Math.ceil(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        },
+
         resetErrors() {
             this.message = '';
             this.form = { name:'', phone:'', user:'', pass:'', birthplace:'' };
             this.errors = { name: false, phone: false, user: false, pass: false };
+            this.lock = { active: false, remainingMs: 0 };
         },
 
         validateField(field) {
@@ -86,6 +188,14 @@ function authApp() {
                     this.errors.phone = firstDigit < 6 || isNaN(firstDigit) || (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits));
                 } else {
                     this.errors.phone = false;
+                }
+
+                if (!this.isNewUser) {
+                    if (digits.length === 10 && !this.errors.phone) {
+                        this.updateLockStatus('+91' + digits);
+                    } else {
+                        this.lock = { active: false, remainingMs: 0 };
+                    }
                 }
             }
 
@@ -249,6 +359,15 @@ function authApp() {
                     window.location.href = 'index.html';
 
                 } else {
+                    // Re-check the lock right before hitting the network - covers the case
+                    // where the lock was set in another tab, or the countdown just expired.
+                    this.updateLockStatus(phone);
+                    if (this.lock.active) {
+                        this.message = this.tx('locked_desc');
+                        this.loading = false;
+                        return;
+                    }
+
                     const { data: userProfile, error: loginError } = await window.supabase
                         .from('profiles')
                         .select('*')
@@ -258,11 +377,13 @@ function authApp() {
 
                     if (loginError || !userProfile) {
                         this.errors.pass = true;
-                        this.message = this.tx('err_login');
+                        const justLocked = this.registerFailedAttempt(phone);
+                        this.message = justLocked ? this.tx('locked_desc') : this.tx('err_login');
                         this.loading = false;
                         return;
                     }
 
+                    this.clearLockoutData(phone);
                     localStorage.setItem('local_user_logged', 'true');
                     localStorage.setItem('local_user_phone', phone);
                     window.location.href = 'index.html';

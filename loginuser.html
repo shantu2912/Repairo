@@ -179,12 +179,19 @@
                     <button type="button" @click="step='forgot'; message=''" class="text-xs font-bold text-brand-gold hover:underline underline-offset-2 tracking-wide deva" x-text="tx('forgot_link')"></button>
                 </div>
 
-                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading">
+                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading || (!isNewUser && lock.active)">
                     <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('sign_in')"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
 
-                <div x-show="message" class="p-3 bg-red-50 border border-red-200 rounded-xl mt-4 animate__animated animate__shakeX">
+                <div x-show="!isNewUser && lock.active" x-cloak class="p-4 bg-red-50 border border-red-200 rounded-xl mt-4 text-center animate__animated animate__fadeIn">
+                    <i class="fa-solid fa-lock text-red-500 text-lg mb-1"></i>
+                    <p class="text-xs text-red-600 font-bold deva" x-text="tx('locked_title')"></p>
+                    <p class="text-[11px] text-red-500 mt-1 leading-normal deva" x-text="tx('locked_desc')"></p>
+                    <p class="text-lg font-extrabold text-red-600 mt-2 tracking-widest" x-text="formatTime(lock.remainingMs)"></p>
+                </div>
+
+                <div x-show="message && !(!isNewUser && lock.active)" class="p-3 bg-red-50 border border-red-200 rounded-xl mt-4 animate__animated animate__shakeX">
                     <p class="text-xs text-red-600 font-bold text-center leading-normal deva" x-text="message"></p>
                 </div>
 
