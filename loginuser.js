@@ -14,21 +14,25 @@ function authApp() {
         recoveredUserId: null,
 
         // ── DEVICE LOCKOUT CONFIG ──
-        // After MAX_ATTEMPTS consecutive failed logins for a given phone number
-        // on THIS device (localStorage), login is locked on this device for an
-        // escalating duration: 1st lockout 30 min, 2nd 3 hr, 3rd+ 30 hr.
+        // After MAX_ATTEMPTS consecutive failed logins on THIS device (tracked in
+        // localStorage, independent of which phone number is typed), login is
+        // locked device-wide for an escalating duration:
+        // 1st lockout 30 min, 2nd 3 hr, 3rd+ 30 hr.
         MAX_ATTEMPTS: 3,
         LOCK_DURATIONS_MS: [30 * 60 * 1000, 3 * 60 * 60 * 1000, 30 * 60 * 60 * 1000],
         lock: { active: false, remainingMs: 0 },
 
         init() {
+            // Read any existing lock from localStorage immediately - this covers
+            // full page reloads / reopening the tab while a lock is in effect.
+            this.updateLockStatus();
+
             // Ticks every second to keep the lock countdown live and auto-unlock when it expires.
             setInterval(() => {
                 if (this.lock.active) {
                     this.lock.remainingMs -= 1000;
                     if (this.lock.remainingMs <= 0) {
-                        this.lock.active = false;
-                        this.lock.remainingMs = 0;
+                        this.updateLockStatus(); // re-derive from storage rather than assume unlocked
                     }
                 }
             }, 1000);
@@ -88,13 +92,17 @@ function authApp() {
         normalizePhone() { return '+91' + this.form.phone.replace(/\s+/g, '').trim(); },
 
         // ── DEVICE LOCKOUT HELPERS ──
-        // Lock data is stored per phone number, per device, in localStorage.
+        // Lock is DEVICE-WIDE (one entry in localStorage), not tied to a specific
+        // phone number or to which step/page of the app is currently showing.
+        // This guarantees that navigating back and forth (choose <-> auth, or
+        // toggling Login/Create Account) can NEVER make the lock "disappear" -
+        // the real state always lives in localStorage and is re-read fresh.
         // Shape: { attempts: number, lockUntil: epochMs, stage: number }
-        lockStorageKey(phone) { return 'fixzen_lock_' + phone; },
+        LOCK_STORAGE_KEY: 'fixzen_device_lock',
 
-        getLockData(phone) {
+        getLockData() {
             try {
-                const raw = localStorage.getItem(this.lockStorageKey(phone));
+                const raw = localStorage.getItem(this.LOCK_STORAGE_KEY);
                 if (!raw) return { attempts: 0, lockUntil: 0, stage: 0 };
                 const parsed = JSON.parse(raw);
                 return {
@@ -107,15 +115,16 @@ function authApp() {
             }
         },
 
-        saveLockData(phone, data) {
+        saveLockData(data) {
             try {
-                localStorage.setItem(this.lockStorageKey(phone), JSON.stringify(data));
+                localStorage.setItem(this.LOCK_STORAGE_KEY, JSON.stringify(data));
             } catch (e) { /* localStorage unavailable - fail silently, non-critical */ }
         },
 
-        // Refreshes this.lock (used by the UI) from stored data for the given phone.
-        updateLockStatus(phone) {
-            const data = this.getLockData(phone);
+        // Refreshes this.lock (used by the UI) from stored data. Safe to call
+        // as often as needed - on init, on every navigation, before every submit.
+        updateLockStatus() {
+            const data = this.getLockData();
             const now = Date.now();
             if (data.lockUntil && data.lockUntil > now) {
                 this.lock.active = true;
@@ -127,8 +136,8 @@ function authApp() {
         },
 
         // Called after a failed login. Returns true if this failure just triggered a new lock.
-        registerFailedAttempt(phone) {
-            const data = this.getLockData(phone);
+        registerFailedAttempt() {
+            const data = this.getLockData();
             data.attempts = (data.attempts || 0) + 1;
             let justLocked = false;
 
@@ -141,14 +150,14 @@ function authApp() {
                 justLocked = true;
             }
 
-            this.saveLockData(phone, data);
-            this.updateLockStatus(phone);
+            this.saveLockData(data);
+            this.updateLockStatus();
             return justLocked;
         },
 
         // Called after a successful login - clears attempts and lock history for this device.
-        clearLockoutData(phone) {
-            this.saveLockData(phone, { attempts: 0, lockUntil: 0, stage: 0 });
+        clearLockoutData() {
+            this.saveLockData({ attempts: 0, lockUntil: 0, stage: 0 });
             this.lock.active = false;
             this.lock.remainingMs = 0;
         },
@@ -168,7 +177,7 @@ function authApp() {
             this.message = '';
             this.form = { name:'', phone:'', user:'', pass:'', birthplace:'' };
             this.errors = { name: false, phone: false, user: false, pass: false };
-            this.lock = { active: false, remainingMs: 0 };
+            this.updateLockStatus(); // re-derive from storage, never force-clear
         },
 
         validateField(field) {
@@ -188,14 +197,6 @@ function authApp() {
                     this.errors.phone = firstDigit < 6 || isNaN(firstDigit) || (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits));
                 } else {
                     this.errors.phone = false;
-                }
-
-                if (!this.isNewUser) {
-                    if (digits.length === 10 && !this.errors.phone) {
-                        this.updateLockStatus('+91' + digits);
-                    } else {
-                        this.lock = { active: false, remainingMs: 0 };
-                    }
                 }
             }
 
@@ -284,6 +285,17 @@ function authApp() {
         },
 
         async processForm() {
+            // Absolute first check: if this device is locked out of login, refuse
+            // immediately - before touching validation, Supabase, or anything else.
+            // This holds no matter how the button/inputs were re-enabled client-side.
+            if (!this.isNewUser) {
+                this.updateLockStatus();
+                if (this.lock.active) {
+                    this.message = this.tx('locked_desc');
+                    return;
+                }
+            }
+
             const cleanPhone = this.form.phone.trim();
             const indianPhoneRegex = /^[6-9]\d{9}$/;
 
@@ -360,8 +372,8 @@ function authApp() {
 
                 } else {
                     // Re-check the lock right before hitting the network - covers the case
-                    // where the lock was set in another tab, or the countdown just expired.
-                    this.updateLockStatus(phone);
+                    // where the lock was set/extended in another tab, or just expired.
+                    this.updateLockStatus();
                     if (this.lock.active) {
                         this.message = this.tx('locked_desc');
                         this.loading = false;
@@ -377,13 +389,13 @@ function authApp() {
 
                     if (loginError || !userProfile) {
                         this.errors.pass = true;
-                        const justLocked = this.registerFailedAttempt(phone);
+                        const justLocked = this.registerFailedAttempt();
                         this.message = justLocked ? this.tx('locked_desc') : this.tx('err_login');
                         this.loading = false;
                         return;
                     }
 
-                    this.clearLockoutData(phone);
+                    this.clearLockoutData();
                     localStorage.setItem('local_user_logged', 'true');
                     localStorage.setItem('local_user_phone', phone);
                     window.location.href = 'index.html';
