@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Account Settings · FixZenix</title>
-<meta name="theme-color" content="#5D5646">
+<title>Profile & Preferences · FixZenix</title>
+<meta name="theme-color" content="#1a1a1a">
 
-<!-- Typography & Styles -->
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Fonts & Frameworks -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,137 +15,255 @@
 
 <style>
   [x-cloak] { display: none !important; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #EEEAE2; color: #2D2B28; }
-  .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); }
-  .gradient-text { background: linear-gradient(135deg, #A07D54 0%, #5D5646 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .gradient-btn { background: linear-gradient(135deg, #5D5646 0%, #A07D54 100%); }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #0f0f11;
+    color: #f4f4f5;
+  }
+  
+  .bg-grid {
+    background-image: radial-gradient(rgba(160, 125, 84, 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .glass-card {
+    background: rgba(26, 26, 26, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-input:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #A07D54;
+    box-shadow: 0 0 20px rgba(160, 125, 84, 0.25);
+  }
+
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #F3E7D3 0%, #A07D54 50%, #c9a87a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gold-btn {
+    background: linear-gradient(135deg, #A07D54 0%, #7A5C36 100%);
+    box-shadow: 0 8px 24px -4px rgba(160, 125, 84, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .gold-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -2px rgba(160, 125, 84, 0.6);
+  }
+
+  .gold-btn:active {
+    transform: translateY(0);
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.08); opacity: 0.7; }
+  }
+
+  .glow-orb {
+    animation: pulseGlow 6s infinite ease-in-out;
+  }
 </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative" x-data="profileApp()" x-init="init()">
+<body class="bg-grid min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-x-hidden" x-data="profileApp()" x-init="init()">
 
-  <!-- Top Navigation Header -->
+  <!-- Ambient Glow Orbs -->
+  <div class="fixed top-10 -left-20 w-72 h-72 bg-[#A07D54]/20 rounded-full blur-[100px] pointer-events-none glow-orb"></div>
+  <div class="fixed bottom-10 -right-20 w-80 h-80 bg-[#5D5646]/30 rounded-full blur-[120px] pointer-events-none glow-orb" style="animation-delay: 3s;"></div>
+
+  <!-- Header Bar -->
   <header class="fixed top-0 left-0 right-0 z-50 p-4 max-w-md mx-auto flex items-center justify-between">
-    <a href="index.html" class="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full shadow-md flex items-center justify-center text-gray-700 hover:text-black hover:scale-105 transition-all">
-      <i class="fa-solid fa-arrow-left"></i>
+    <a href="index.html" class="w-10 h-10 glass-card rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-xl">
+      <i class="fa-solid fa-arrow-left text-sm"></i>
     </a>
-    <span class="font-serif italic font-extrabold text-xl gradient-text">FixZenix</span>
-    <div class="w-10"></div>
+    <div class="flex items-center gap-2">
+      <span class="font-serif italic font-black text-xl gold-gradient-text tracking-wide">FixZenix</span>
+      <span class="text-[8px] font-extrabold text-[#A07D54] bg-[#A07D54]/10 border border-[#A07D54]/20 px-2 py-0.5 rounded-full uppercase tracking-widest">VIP</span>
+    </div>
+    <button @click="logout()" class="w-10 h-10 glass-card rounded-full flex items-center justify-center text-red-400 hover:text-red-300 hover:scale-110 active:scale-95 transition-all shadow-xl">
+      <i class="fa-solid fa-power-off text-sm"></i>
+    </button>
   </header>
 
-  <!-- Profile Card Container -->
-  <main class="w-full max-w-md glass-card rounded-[2.5rem] shadow-2xl border border-white p-6 relative overflow-hidden my-16">
+  <!-- Main Container -->
+  <main class="w-full max-w-md glass-card rounded-[2.5rem] shadow-2xl p-6 relative overflow-hidden my-16 z-10">
 
     <!-- Loading Skeleton -->
-    <div x-show="loading" class="py-16 text-center">
-      <i class="fa-solid fa-circle-notch fa-spin text-3xl text-[#A07D54] mb-3"></i>
-      <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Loading Your Profile...</p>
+    <div x-show="loading" class="py-20 text-center">
+      <div class="relative w-16 h-16 mx-auto mb-4">
+        <div class="absolute inset-0 rounded-full border-2 border-[#A07D54]/20"></div>
+        <div class="absolute inset-0 rounded-full border-2 border-t-[#A07D54] animate-spin"></div>
+      </div>
+      <p class="text-xs font-bold text-gray-400 uppercase tracking-widest animate-pulse">Syncing VIP Identity...</p>
     </div>
 
-    <!-- Main Profile Content -->
+    <!-- Main Content -->
     <div x-show="!loading" x-cloak>
-      
-      <!-- Avatar & Account Status Header -->
-      <div class="text-center mb-6">
+
+      <!-- Profile Identity Header -->
+      <div class="text-center mb-6 relative">
         <div class="relative w-24 h-24 mx-auto mb-3">
-          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#5D5646] to-[#A07D54] text-white font-extrabold text-3xl flex items-center justify-center border-4 border-white shadow-xl overflow-hidden">
-            <span x-text="getInitials(form.full_name)">TK</span>
+          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#1a1a1a] via-[#333] to-[#1a1a1a] p-1 border-2 border-[#A07D54]/50 shadow-2xl overflow-hidden">
+            <div class="w-full h-full rounded-full bg-[#141416] flex items-center justify-center text-white font-extrabold text-3xl">
+              <span class="gold-gradient-text" x-text="getInitials(form.full_name)">FX</span>
+            </div>
           </div>
-          <div class="absolute bottom-0 right-0 w-7 h-7 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center shadow-md">
+          <div class="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-tr from-emerald-600 to-emerald-400 border-2 border-[#0f0f11] rounded-full flex items-center justify-center shadow-lg">
             <i class="fa-solid fa-shield-check text-white text-xs"></i>
           </div>
         </div>
 
-        <h1 class="text-2xl font-extrabold text-gray-900" x-text="form.full_name || 'Valued User'"></h1>
-        <p class="text-xs font-mono font-bold text-[#A07D54] mt-0.5" x-text="'@' + (form.username || 'username')"></p>
-        
-        <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#EEEAE2] rounded-full mt-2 text-[10px] font-bold text-gray-600">
-          <i class="fa-regular fa-calendar-check text-[#A07D54]"></i>
-          <span>Member Since <span x-text="formatDate(createdAt)"></span></span>
+        <h1 class="text-2xl font-extrabold text-white tracking-tight" x-text="form.full_name || 'FixZenix Member'"></h1>
+        <p class="text-xs font-mono font-bold text-[#A07D54] mt-1" x-text="'@' + (form.username || 'user')"></p>
+
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-white/5 border border-white/10 rounded-full mt-3 text-[10px] font-semibold text-gray-400">
+          <i class="fa-solid fa-id-badge text-[#A07D54]"></i>
+          <span>Member Since <span class="text-gray-200 font-mono" x-text="formatDate(createdAt)"></span></span>
         </div>
       </div>
 
-      <!-- User Information Form -->
+      <!-- Tab Switcher -->
+      <div class="grid grid-cols-2 p-1 bg-black/40 rounded-2xl border border-white/5 mb-6 text-xs font-bold">
+        <button type="button" @click="activeTab = 'personal'" 
+                :class="activeTab === 'personal' ? 'bg-[#A07D54] text-white shadow-lg' : 'text-gray-400 hover:text-white'"
+                class="py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-user-gear"></i> Account
+        </button>
+        <button type="button" @click="activeTab = 'location'" 
+                :class="activeTab === 'location' ? 'bg-[#A07D54] text-white shadow-lg' : 'text-gray-400 hover:text-white'"
+                class="py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-map-location-dot"></i> Address & GPS
+        </button>
+      </div>
+
+      <!-- Form Body -->
       <form @submit.prevent="saveProfile()" class="space-y-4">
 
-        <!-- Full Name -->
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Full Name</label>
-          <div class="relative">
-            <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" x-model="form.full_name" required placeholder="Full Name"
-                   class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
+        <!-- TAB 1: PERSONAL DETAILS -->
+        <div x-show="activeTab === 'personal'" class="space-y-4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2">
+          
+          <!-- Full Name -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-400 mb-1.5 ml-1">Full Name</label>
+            <div class="relative">
+              <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-[#A07D54] text-sm"></i>
+              <input type="text" x-model="form.full_name" required placeholder="John Doe"
+                     class="w-full pl-11 pr-4 py-3.5 glass-input rounded-2xl text-sm font-semibold text-white placeholder-gray-600 focus:outline-none">
+            </div>
           </div>
+
+          <!-- Username (Protected) -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1.5 ml-1">Username (Immutable)</label>
+            <div class="relative">
+              <i class="fa-solid fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-sm"></i>
+              <input type="text" x-model="form.username" disabled
+                     class="w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-sm font-mono font-bold text-gray-500 cursor-not-allowed">
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-400 mb-1.5 ml-1">Phone Number</label>
+            <div class="relative">
+              <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-[#A07D54] text-sm"></i>
+              <input type="tel" x-model="form.phone" required placeholder="10-digit mobile"
+                     class="w-full pl-11 pr-4 py-3.5 glass-input rounded-2xl text-sm font-semibold text-white placeholder-gray-600 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Preferred Language -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-400 mb-1.5 ml-1">Preferred Language</label>
+            <div class="grid grid-cols-3 gap-2">
+              <template x-for="lang in ['English', 'Hindi', 'Marathi']" :key="lang">
+                <button type="button" @click="form.preferred_lang = lang"
+                        :class="form.preferred_lang === lang ? 'bg-[#A07D54]/20 border-[#A07D54] text-white' : 'glass-input text-gray-400'"
+                        class="py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1">
+                  <i x-show="form.preferred_lang === lang" class="fa-solid fa-check text-[10px] text-[#A07D54]"></i>
+                  <span x-text="lang"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+
+          <!-- Password Hash / Security -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-400 mb-1.5 ml-1">Security Key / Password</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-[#A07D54] text-sm"></i>
+              <input :type="showPassword ? 'text' : 'password'" x-model="form.password_hash" placeholder="Enter new password"
+                     class="w-full pl-11 pr-11 py-3.5 glass-input rounded-2xl text-sm font-semibold text-white placeholder-gray-600 focus:outline-none">
+              <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Username (Immutable Read-Only) -->
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Username (Protected)</label>
-          <div class="relative">
-            <i class="fa-solid fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" x-model="form.username" disabled
-                   class="w-full pl-11 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 cursor-not-allowed">
+        <!-- TAB 2: ADDRESS & GPS -->
+        <div x-show="activeTab === 'location'" class="space-y-4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-cloak>
+          
+          <!-- Address Field -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-400 mb-1.5 ml-1">Service Address</label>
+            <div class="relative">
+              <i class="fa-solid fa-house-user absolute left-4 top-4 text-[#A07D54] text-sm"></i>
+              <textarea x-model="form.address" rows="3" placeholder="Enter full doorstep address (Flat/House No, Landmark, Area)"
+                        class="w-full pl-11 pr-4 py-3.5 glass-input rounded-2xl text-sm font-semibold text-white placeholder-gray-600 focus:outline-none resize-none"></textarea>
+            </div>
           </div>
-        </div>
 
-        <!-- Mobile Number -->
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Mobile Number</label>
-          <div class="relative">
-            <i class="fa-solid fa-mobile-screen absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="tel" x-model="form.mobile" required placeholder="10-digit Phone"
-                   class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
-          </div>
-        </div>
+          <!-- GPS Coordinates Grid -->
+          <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-location-crosshairs text-[#A07D54]"></i> GPS Coordinates
+              </span>
+              <button type="button" @click="detectGPS()" :disabled="locating"
+                      class="px-3 py-1 bg-[#A07D54]/20 border border-[#A07D54]/40 text-[#A07D54] hover:bg-[#A07D54] hover:text-white rounded-lg text-[10px] font-extrabold uppercase transition-all flex items-center gap-1">
+                <i class="fa-solid" :class="locating ? 'fa-spinner fa-spin' : 'fa-compass'"></i>
+                <span x-text="locating ? 'Locating...' : 'Auto Detect'"></span>
+              </button>
+            </div>
 
-        <!-- Birthplace / Hometown -->
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">City / Birthplace</label>
-          <div class="relative">
-            <i class="fa-solid fa-city absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" x-model="form.birthplace" placeholder="City Name"
-                   class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[9px] font-extrabold uppercase text-gray-500 mb-1">Latitude</label>
+                <input type="text" x-model="form.latitude" readonly placeholder="0.000000"
+                       class="w-full px-3 py-2 bg-black/40 border border-white/5 rounded-xl text-xs font-mono text-gray-400">
+              </div>
+              <div>
+                <label class="block text-[9px] font-extrabold uppercase text-gray-500 mb-1">Longitude</label>
+                <input type="text" x-model="form.longitude" readonly placeholder="0.000000"
+                       class="w-full px-3 py-2 bg-black/40 border border-white/5 rounded-xl text-xs font-mono text-gray-400">
+              </div>
+            </div>
           </div>
-        </div>
 
-        <!-- Security Recovery Phrase / Secret -->
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Security Hint / Secret</label>
-          <div class="relative">
-            <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" x-model="form.secret" placeholder="Secret Recovery Phrase"
-                   class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
-          </div>
-        </div>
-
-        <!-- Password Field with Visibility Toggle -->
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Account Password</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input :type="showPassword ? 'text' : 'password'" x-model="form.password" placeholder="Password"
-                   class="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
-            <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-            </button>
-          </div>
         </div>
 
         <!-- Submit Button -->
         <button type="submit" :disabled="saving"
-                class="w-full py-4 mt-6 rounded-2xl gradient-btn text-white font-extrabold text-xs uppercase tracking-widest shadow-xl hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2">
-          <span x-show="!saving"><i class="fa-solid fa-floppy-disk mr-1"></i> Save Profile Details</span>
-          <span x-show="saving"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Saving Changes...</span>
+                class="w-full py-4 mt-6 rounded-2xl gold-btn text-white font-extrabold text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+          <span x-show="!saving"><i class="fa-solid fa-sparkles"></i> Save VIP Profile</span>
+          <span x-show="saving"><i class="fa-solid fa-circle-notch fa-spin"></i> Saving Updates...</span>
         </button>
 
       </form>
-
-      <!-- Danger Zone / Log Out Button -->
-      <div class="mt-8 pt-4 border-t border-gray-200">
-        <button @click="logout()" class="w-full py-3 rounded-xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-2 border border-red-200">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out of Account
-        </button>
-      </div>
 
     </div>
 
@@ -154,4 +272,3 @@
   <script src="profile.js"></script>
 </body>
 </html>
-    
