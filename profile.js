@@ -10,7 +10,7 @@ document.addEventListener('alpine:init', () => {
     showPassword: false,
     copied: false,
     applyingCode: false,
-    activeTab: 'account', // Tabs: 'account', 'address', 'referral'
+    activeTab: 'account', // 'account', 'address', 'referral'
     userId: null,
     createdAt: null,
     walletBalance: 0,
@@ -18,7 +18,6 @@ document.addEventListener('alpine:init', () => {
     referredBy: '',
     inputReferralCode: '',
     
-    // Mapped 1:1 to your 'profiles' database schema
     form: {
       full_name: '',
       username: '',
@@ -68,7 +67,6 @@ document.addEventListener('alpine:init', () => {
             preferred_lang: profile.preferred_lang || 'English'
           };
 
-          // Step 1: Check or auto-generate unique referral code in Supabase
           if (profile.referral_code) {
             this.referralCode = profile.referral_code;
           } else {
@@ -130,7 +128,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     shareWhatsApp() {
-      const text = `Hey! Need home repairs or servicing? Use FixZenix with my referral code *${this.referralCode}* to get ₹100 OFF your 1st booking! Download here: https://shantu2912.github.io/Repairo/`;
+      const text = `Hey! Need home repairs? Use FixZenix with my referral code *${this.referralCode}* to get ₹100 OFF your 1st booking! Download here: https://shantu2912.github.io/Repairo/`;
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     },
 
