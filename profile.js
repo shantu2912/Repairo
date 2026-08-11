@@ -10,7 +10,7 @@ document.addEventListener('alpine:init', () => {
     showPassword: false,
     copied: false,
     applyingCode: false,
-    activeSection: 'security',
+    activeTab: 'account', // Tabs: 'account', 'address', 'referral'
     userId: null,
     createdAt: null,
     walletBalance: 0,
@@ -18,7 +18,7 @@ document.addEventListener('alpine:init', () => {
     referredBy: '',
     inputReferralCode: '',
     
-    // Mapped 1:1 to 'profiles' database schema
+    // Mapped 1:1 to your 'profiles' database schema
     form: {
       full_name: '',
       username: '',
@@ -68,7 +68,7 @@ document.addEventListener('alpine:init', () => {
             preferred_lang: profile.preferred_lang || 'English'
           };
 
-          // 🌟 STEP 1: Check if referral code exists in Supabase. If missing, generate & store it!
+          // Step 1: Check or auto-generate unique referral code in Supabase
           if (profile.referral_code) {
             this.referralCode = profile.referral_code;
           } else {
@@ -86,7 +86,6 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    // 🌟 Helper: Generate clean code (e.g. TANMAY892) & save directly to Supabase
     async generateAndStoreReferralCode(profile) {
       let base = (profile.username || profile.full_name || 'FIX')
         .replace(/[^a-zA-Z]/g, '')
@@ -111,10 +110,6 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    toggleSection(section) {
-      this.activeSection = this.activeSection === section ? null : section;
-    },
-
     getInitials(name) {
       if (!name) return 'FX';
       const parts = name.trim().split(' ');
@@ -135,7 +130,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     shareWhatsApp() {
-      const text = `Hey! Use FixZenix for fast doorstep repairs. Use my referral code *${this.referralCode}* to get ₹100 OFF on your first service! Download here: https://shantu2912.github.io/Repairo/`;
+      const text = `Hey! Need home repairs or servicing? Use FixZenix with my referral code *${this.referralCode}* to get ₹100 OFF your 1st booking! Download here: https://shantu2912.github.io/Repairo/`;
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     },
 
@@ -152,7 +147,6 @@ document.addEventListener('alpine:init', () => {
       this.applyingCode = true;
 
       try {
-        // Verify code exists in Supabase
         const { data: owner, error } = await sb
           .from('profiles')
           .select('id, referral_code')
@@ -164,7 +158,6 @@ document.addEventListener('alpine:init', () => {
           return;
         }
 
-        // Save referred_by code to this user's profile
         const { error: updateError } = await sb
           .from('profiles')
           .update({ referred_by: codeToApply })
@@ -174,7 +167,7 @@ document.addEventListener('alpine:init', () => {
 
         this.referredBy = codeToApply;
         this.inputReferralCode = '';
-        alert("🎉 Referral code applied successfully! Rewards will trigger on your 1st completed job.");
+        alert("🎉 Referral code applied! Rewards will trigger on your 1st completed job.");
       } catch (err) {
         alert("Failed to apply code: " + err.message);
       } finally {
@@ -197,7 +190,7 @@ document.addEventListener('alpine:init', () => {
         },
         (error) => {
           console.error("GPS error:", error);
-          alert("Could not detect GPS coordinates. Please enable location services.");
+          alert("Could not detect GPS coordinates. Please enable location permissions.");
           this.locating = false;
         },
         { enableHighAccuracy: true, timeout: 10000 }
