@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Account & Settings · FixZenix</title>
+<title>VIP Profile · FixZenix</title>
 <meta name="theme-color" content="#5D5646">
 
 <!-- Typography & Frameworks -->
@@ -12,122 +12,204 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
 <style>
   [x-cloak] { display: none !important; }
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: #EEEAE2;
+    background: #F7F5F0;
     color: #2D2B28;
+    overflow-x: hidden;
   }
-  .card-shadow {
-    box-shadow: 0 10px 30px -5px rgba(93, 86, 70, 0.08);
+
+  /* Custom Neumorphic & Soft Elevation Shadows */
+  .neo-card {
+    background: #FFFFFF;
+    box-shadow: 0 20px 40px -15px rgba(93, 86, 70, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+
+  .neo-input {
+    background: #F4F1EA;
+    border: 1.5 border;
+    border-color: rgba(93, 86, 70, 0.12);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .neo-input:focus {
+    background: #FFFFFF;
+    border-color: #A07D54;
+    box-shadow: 0 0 0 4px rgba(160, 125, 84, 0.15);
+  }
+
+  /* Gold Gradient & Glowing Elements */
+  .brand-gradient {
+    background: linear-gradient(135deg, #5D5646 0%, #A07D54 100%);
+  }
+
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #5D5646 0%, #A07D54 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.35; transform: scale(1); }
+    50% { opacity: 0.65; transform: scale(1.08); }
+  }
+
+  .bg-orb {
+    animation: pulseGlow 5s ease-in-out infinite;
+  }
+
+  .btn-press:active {
+    transform: scale(0.96);
   }
 </style>
 </head>
 
 <body class="min-h-screen flex flex-col items-center justify-start p-3 sm:p-6 relative" x-data="profileApp()" x-init="init()">
 
-  <!-- Top Navigation Bar -->
-  <header class="w-full max-w-md flex items-center justify-between my-3">
-    <a href="index.html" class="w-10 h-10 bg-white rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center text-gray-700 hover:text-black hover:scale-105 active:scale-95 transition-all">
+  <!-- Ambient Decorative Background Orbs -->
+  <div class="fixed top-12 -left-20 w-80 h-80 bg-[#A07D54]/10 rounded-full blur-3xl pointer-events-none bg-orb"></div>
+  <div class="fixed bottom-12 -right-20 w-80 h-80 bg-[#5D5646]/15 rounded-full blur-3xl pointer-events-none bg-orb" style="animation-delay: 2.5s;"></div>
+
+  <!-- Header Navigation -->
+  <header class="w-full max-w-md flex items-center justify-between my-3 z-20">
+    <a href="index.html" class="w-11 h-11 neo-card rounded-2xl flex items-center justify-center text-gray-700 hover:text-black btn-press transition-all">
       <i class="fa-solid fa-arrow-left text-sm"></i>
     </a>
-    <span class="font-serif italic font-extrabold text-xl text-[#5D5646]">FixZenix Account</span>
-    <button @click="logout()" class="w-10 h-10 bg-white rounded-2xl shadow-sm border border-rose-200 flex items-center justify-center text-rose-500 hover:bg-rose-50 active:scale-95 transition-all" title="Log Out">
-      <i class="fa-solid fa-right-from-bracket text-sm"></i>
+    <div class="flex items-center gap-2">
+      <span class="font-serif italic font-black text-xl gold-gradient-text">FixZenix VIP</span>
+      <span class="text-[8px] font-black bg-[#A07D54] text-white px-2 py-0.5 rounded-full shadow-sm uppercase tracking-widest">PRO</span>
+    </div>
+    <button @click="logout()" class="w-11 h-11 neo-card rounded-2xl flex items-center justify-center text-rose-500 hover:bg-rose-50 btn-press transition-all" title="Log Out">
+      <i class="fa-solid fa-power-off text-sm"></i>
     </button>
   </header>
 
   <!-- Main Container -->
-  <main class="w-full max-w-md space-y-4 mb-16">
+  <main class="w-full max-w-md space-y-4 mb-20 z-10">
 
     <!-- Loading Skeleton -->
-    <div x-show="loading" class="bg-white rounded-3xl p-12 text-center card-shadow border border-gray-200">
-      <i class="fa-solid fa-circle-notch fa-spin text-3xl text-[#A07D54] mb-3"></i>
-      <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Loading Account Info...</p>
+    <div x-show="loading" class="neo-card rounded-[2.5rem] p-12 text-center animate__animated animate__fadeIn">
+      <div class="relative w-14 h-14 mx-auto mb-4">
+        <div class="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-t-[#A07D54] animate-spin"></div>
+      </div>
+      <p class="text-xs font-extrabold text-gray-500 uppercase tracking-widest animate-pulse">Loading Your Dashboard...</p>
     </div>
 
-    <div x-show="!loading" x-cloak class="space-y-4">
+    <!-- Main Content -->
+    <div x-show="!loading" x-cloak class="space-y-4 animate__animated animate__fadeInUp">
 
-      <!-- 👑 HEADER CARD -->
-      <div class="bg-white rounded-3xl p-6 card-shadow border border-gray-200 relative overflow-hidden">
+      <!-- 👑 HERO USER DASHBOARD CARD -->
+      <div class="neo-card rounded-[2.5rem] p-6 relative overflow-hidden">
         <div class="flex items-center gap-4">
-          <!-- Avatar -->
+          
+          <!-- Avatar Badge -->
           <div class="relative flex-shrink-0">
-            <div class="w-16 h-16 rounded-2xl bg-[#5D5646] text-white font-extrabold text-xl flex items-center justify-center shadow-md">
+            <div class="w-18 h-18 w-20 h-20 rounded-3xl brand-gradient text-white font-extrabold text-2xl flex items-center justify-center shadow-lg border-2 border-white">
               <span x-text="getInitials(form.full_name)">FX</span>
             </div>
-            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
-              <i class="fa-solid fa-check text-white text-[8px]"></i>
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center shadow-md">
+              <i class="fa-solid fa-shield-check text-white text-[10px]"></i>
             </div>
           </div>
 
-          <!-- User Details -->
+          <!-- Account Identity Info -->
           <div class="flex-1 min-w-0">
-            <h1 class="text-lg font-extrabold text-gray-900 truncate" x-text="form.full_name || 'Customer Account'"></h1>
+            <h1 class="text-xl font-extrabold text-gray-900 truncate tracking-tight" x-text="form.full_name || 'Valued Customer'"></h1>
             <p class="text-xs font-bold text-[#A07D54] truncate" x-text="'@' + (form.username || 'user')"></p>
-            <p class="text-[10px] font-semibold text-gray-400 mt-0.5">
-              Member since <span class="font-bold text-gray-600" x-text="formatDate(createdAt)"></span>
-            </p>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F4F1EA] rounded-full mt-2 text-[10px] font-extrabold text-gray-600">
+              <i class="fa-regular fa-clock text-[#A07D54]"></i>
+              <span>Member Since <span class="font-mono text-gray-900" x-text="formatDate(createdAt)"></span></span>
+            </div>
           </div>
         </div>
 
-        <!-- Wallet Balance Chip -->
-        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50/50 p-3 rounded-2xl border border-amber-200/60">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center text-xs font-bold">
-              <i class="fa-solid fa-wallet"></i>
+        <!-- Wallet Credit Progress Banner -->
+        <div class="mt-5 p-4 rounded-2xl bg-gradient-to-r from-[#5D5646] to-[#A07D54] text-white shadow-xl relative overflow-hidden">
+          <div class="flex items-center justify-between relative z-10">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center text-amber-300 text-lg shadow-inner">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+              <div>
+                <p class="text-[9px] font-bold text-amber-200 uppercase tracking-widest">FixZenix Wallet Balance</p>
+                <p class="text-xl font-extrabold text-white">₹<span x-text="walletBalance"></span></p>
+              </div>
             </div>
-            <div>
-              <p class="text-[9px] font-bold text-amber-800 uppercase tracking-wider">FixZenix Wallet</p>
-              <p class="text-base font-extrabold text-amber-900">₹<span x-text="walletBalance"></span></p>
-            </div>
+            <button @click="activeTab = 'referral'" class="btn-press px-3.5 py-2 bg-white text-[#5D5646] rounded-xl text-xs font-extrabold shadow-md hover:bg-amber-50 transition-all">
+              + Earn ₹100
+            </button>
           </div>
-          <button @click="activeSection = 'referral'" class="px-3 py-1.5 bg-amber-600 text-white rounded-xl text-[10px] font-bold shadow-sm hover:bg-amber-700 transition-all">
-            + Earn Cash
-          </button>
+          <!-- Background Pattern Glow -->
+          <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
         </div>
       </div>
 
-      <!-- 🔒 SECTION 1: ACCOUNT & SECURITY -->
-      <div class="bg-white rounded-3xl card-shadow border border-gray-200 overflow-hidden">
-        <button @click="toggleSection('security')" class="w-full p-5 flex items-center justify-between text-left hover:bg-gray-50/80 transition-colors">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-2xl bg-gray-100 text-[#5D5646] flex items-center justify-center text-sm font-bold">
-              <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-gray-900">Account & Security</h3>
-              <p class="text-[11px] font-medium text-gray-400">Name, mobile, password & language</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300" :class="activeSection === 'security' ? 'rotate-180 text-[#A07D54]' : ''"></i>
+      <!-- ⚡ INTERACTIVE TAB SWITCHER -->
+      <div class="grid grid-cols-3 p-1.5 neo-card rounded-2xl text-xs font-extrabold gap-1">
+        <button type="button" @click="activeTab = 'account'" 
+                :class="activeTab === 'account' ? 'brand-gradient text-white shadow-md' : 'text-gray-500 hover:text-gray-900'"
+                class="py-3 rounded-xl transition-all duration-300 flex flex-col sm:flex-row items-center justify-center gap-1.5 btn-press">
+          <i class="fa-solid fa-user-gear text-sm"></i>
+          <span>Account</span>
         </button>
 
-        <div x-show="activeSection === 'security'" x-collapse class="px-5 pb-5 pt-2 border-t border-gray-100 space-y-4">
+        <button type="button" @click="activeTab = 'address'" 
+                :class="activeTab === 'address' ? 'brand-gradient text-white shadow-md' : 'text-gray-500 hover:text-gray-900'"
+                class="py-3 rounded-xl transition-all duration-300 flex flex-col sm:flex-row items-center justify-center gap-1.5 btn-press">
+          <i class="fa-solid fa-map-location-dot text-sm"></i>
+          <span>Address</span>
+        </button>
+
+        <button type="button" @click="activeTab = 'referral'" 
+                :class="activeTab === 'referral' ? 'brand-gradient text-white shadow-md' : 'text-gray-500 hover:text-gray-900'"
+                class="py-3 rounded-xl transition-all duration-300 flex flex-col sm:flex-row items-center justify-center gap-1.5 btn-press">
+          <i class="fa-solid fa-gift text-sm"></i>
+          <span>Earn Cash</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: ACCOUNT & SECURITY -->
+      <div x-show="activeTab === 'account'" class="neo-card rounded-[2rem] p-6 space-y-4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-3">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-2 h-6 brand-gradient rounded-full"></div>
+          <h2 class="text-sm font-extrabold text-gray-900 uppercase tracking-wider">Security & Preferences</h2>
+        </div>
+
+        <form @submit.prevent="saveProfile()" class="space-y-4">
           <!-- Full Name -->
           <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Full Name</label>
-            <input type="text" x-model="form.full_name" placeholder="Full name"
-                   class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Full Name</label>
+            <div class="relative">
+              <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-[#A07D54] text-sm"></i>
+              <input type="text" x-model="form.full_name" required placeholder="Full Name"
+                     class="w-full pl-11 pr-4 py-3.5 neo-input rounded-2xl text-sm font-bold text-gray-900 focus:outline-none">
+            </div>
           </div>
 
           <!-- Phone Number -->
           <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Phone Number</label>
-            <input type="tel" x-model="form.phone" placeholder="Phone number"
-                   class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Mobile Number</label>
+            <div class="relative">
+              <i class="fa-solid fa-mobile-screen absolute left-4 top-1/2 -translate-y-1/2 text-[#A07D54] text-sm"></i>
+              <input type="tel" x-model="form.phone" required placeholder="10-digit Phone"
+                     class="w-full pl-11 pr-4 py-3.5 neo-input rounded-2xl text-sm font-bold text-gray-900 focus:outline-none">
+            </div>
           </div>
 
-          <!-- Preferred Language -->
+          <!-- Language Selector -->
           <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">App Language</label>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">App Language</label>
             <div class="grid grid-cols-3 gap-2">
               <template x-for="lang in ['English', 'Hindi', 'Marathi']" :key="lang">
                 <button type="button" @click="form.preferred_lang = lang"
-                        :class="form.preferred_lang === lang ? 'bg-[#5D5646] text-white border-[#5D5646]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'"
-                        class="py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1">
+                        :class="form.preferred_lang === lang ? 'brand-gradient text-white shadow-md' : 'bg-[#F4F1EA] text-gray-600 hover:bg-gray-200'"
+                        class="py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 btn-press">
                   <i x-show="form.preferred_lang === lang" class="fa-solid fa-check text-[10px]"></i>
                   <span x-text="lang"></span>
                 </button>
@@ -137,55 +219,52 @@
 
           <!-- Password Field -->
           <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Password</label>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Account Password</label>
             <div class="relative">
-              <input :type="showPassword ? 'text' : 'password'" x-model="form.password_hash" placeholder="Enter password"
-                     class="w-full pl-4 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
-              <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-[#A07D54] text-sm"></i>
+              <input :type="showPassword ? 'text' : 'password'" x-model="form.password_hash" placeholder="Password"
+                     class="w-full pl-11 pr-11 py-3.5 neo-input rounded-2xl text-sm font-bold text-gray-900 focus:outline-none">
+              <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
                 <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
               </button>
             </div>
           </div>
 
-          <button type="button" @click="saveProfile()" :disabled="saving"
-                  class="w-full py-3 rounded-xl bg-[#5D5646] hover:bg-[#4A4436] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2">
-            <span x-show="!saving"><i class="fa-solid fa-floppy-disk"></i> Save Security Changes</span>
+          <!-- Submit Button -->
+          <button type="submit" :disabled="saving"
+                  class="btn-bounce w-full py-4 mt-4 rounded-2xl brand-gradient text-white font-extrabold text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
+            <span x-show="!saving"><i class="fa-solid fa-floppy-disk"></i> Save Security Details</span>
             <span x-show="saving"><i class="fa-solid fa-circle-notch fa-spin"></i> Saving...</span>
           </button>
-        </div>
+        </form>
       </div>
 
-      <!-- 📍 SECTION 2: ADDRESS BOOK & GPS -->
-      <div class="bg-white rounded-3xl card-shadow border border-gray-200 overflow-hidden">
-        <button @click="toggleSection('address')" class="w-full p-5 flex items-center justify-between text-left hover:bg-gray-50/80 transition-colors">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-2xl bg-gray-100 text-[#5D5646] flex items-center justify-center text-sm font-bold">
-              <i class="fa-solid fa-map-location-dot"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-gray-900">Address Book</h3>
-              <p class="text-[11px] font-medium text-gray-400">Saved home/work addresses & GPS pin</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300" :class="activeSection === 'address' ? 'rotate-180 text-[#A07D54]' : ''"></i>
-        </button>
+      <!-- TAB 2: ADDRESS & GPS LOCATION -->
+      <div x-show="activeTab === 'address'" class="neo-card rounded-[2rem] p-6 space-y-4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-3" x-cloak>
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-2 h-6 brand-gradient rounded-full"></div>
+          <h2 class="text-sm font-extrabold text-gray-900 uppercase tracking-wider">Doorstep Location</h2>
+        </div>
 
-        <div x-show="activeSection === 'address'" x-collapse class="px-5 pb-5 pt-2 border-t border-gray-100 space-y-4">
-          <!-- Primary Doorstep Address -->
+        <form @submit.prevent="saveProfile()" class="space-y-4">
+          <!-- Address Field -->
           <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Primary Home Address</label>
-            <textarea x-model="form.address" rows="3" placeholder="Flat / House No, Street, Landmark"
-                      class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#A07D54] resize-none"></textarea>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gray-500 mb-1">Primary Home Address</label>
+            <div class="relative">
+              <i class="fa-solid fa-house-user absolute left-4 top-4 text-[#A07D54] text-sm"></i>
+              <textarea x-model="form.address" rows="3" placeholder="Flat / House No, Building, Landmark, Area"
+                        class="w-full pl-11 pr-4 py-3.5 neo-input rounded-2xl text-sm font-bold text-gray-900 focus:outline-none resize-none"></textarea>
+            </div>
           </div>
 
-          <!-- GPS Coordinates Grid -->
-          <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200 space-y-3">
+          <!-- GPS Coordinates Card -->
+          <div class="p-4 rounded-2xl bg-[#F4F1EA] space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+              <span class="text-xs font-extrabold text-gray-800 flex items-center gap-1.5">
                 <i class="fa-solid fa-location-crosshairs text-[#A07D54]"></i> Live Pin
               </span>
               <button type="button" @click="detectGPS()" :disabled="locating"
-                      class="px-3 py-1 bg-[#A07D54] text-white hover:bg-[#5D5646] rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 shadow-sm">
+                      class="btn-press px-3.5 py-1.5 bg-[#A07D54] text-white hover:bg-[#5D5646] rounded-xl text-[10px] font-extrabold uppercase transition-all shadow-sm flex items-center gap-1.5">
                 <i class="fa-solid" :class="locating ? 'fa-spinner fa-spin' : 'fa-location-arrow'"></i>
                 <span x-text="locating ? 'Locating...' : 'Auto Detect GPS'"></span>
               </button>
@@ -193,95 +272,91 @@
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Latitude</label>
+                <label class="block text-[9px] font-extrabold uppercase text-gray-400 mb-0.5">Latitude</label>
                 <input type="text" x-model="form.latitude" readonly placeholder="0.000000"
-                       class="w-full px-3 py-1.5 bg-gray-200/70 border border-gray-200 rounded-lg text-xs font-mono font-semibold text-gray-600">
+                       class="w-full px-3 py-2 bg-white/80 rounded-xl text-xs font-mono font-bold text-gray-600 border border-gray-200">
               </div>
               <div>
-                <label class="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Longitude</label>
+                <label class="block text-[9px] font-extrabold uppercase text-gray-400 mb-0.5">Longitude</label>
                 <input type="text" x-model="form.longitude" readonly placeholder="0.000000"
-                       class="w-full px-3 py-1.5 bg-gray-200/70 border border-gray-200 rounded-lg text-xs font-mono font-semibold text-gray-600">
+                       class="w-full px-3 py-2 bg-white/80 rounded-xl text-xs font-mono font-bold text-gray-600 border border-gray-200">
               </div>
             </div>
           </div>
 
-          <button type="button" @click="saveProfile()" :disabled="saving"
-                  class="w-full py-3 rounded-xl bg-[#5D5646] hover:bg-[#4A4436] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2">
+          <!-- Submit Button -->
+          <button type="submit" :disabled="saving"
+                  class="btn-bounce w-full py-4 mt-4 rounded-2xl brand-gradient text-white font-extrabold text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
             <span x-show="!saving"><i class="fa-solid fa-floppy-disk"></i> Update Saved Address</span>
             <span x-show="saving"><i class="fa-solid fa-circle-notch fa-spin"></i> Saving...</span>
           </button>
-        </div>
+        </form>
       </div>
 
-      <!-- 🎁 SECTION 3: REFERRAL & OFFERS HUB -->
-      <div class="bg-white rounded-3xl card-shadow border border-gray-200 overflow-hidden">
-        <button @click="toggleSection('referral')" class="w-full p-5 flex items-center justify-between text-left hover:bg-gray-50/80 transition-colors">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center text-sm font-bold">
-              <i class="fa-solid fa-gift"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-gray-900">Referrals & Coupons</h3>
-              <p class="text-[11px] font-medium text-gray-400">Share code, earn cash & active promo codes</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300" :class="activeSection === 'referral' ? 'rotate-180 text-[#A07D54]' : ''"></i>
-        </button>
+      <!-- TAB 3: REFERRAL & OFFERS HUB -->
+      <div x-show="activeTab === 'referral'" class="neo-card rounded-[2rem] p-6 space-y-4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-3" x-cloak>
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-2 h-6 brand-gradient rounded-full"></div>
+          <h2 class="text-sm font-extrabold text-gray-900 uppercase tracking-wider">Referral & Rewards Hub</h2>
+        </div>
 
-        <div x-show="activeSection === 'referral'" x-collapse class="px-5 pb-5 pt-2 border-t border-gray-100 space-y-4">
-          <!-- Dynamic Referral Code Box -->
-          <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/80 space-y-3">
-            <div class="flex items-center justify-between">
-              <p class="text-xs font-extrabold text-amber-900">🎁 Invite Friends, Earn ₹100!</p>
-              <span class="text-[9px] font-bold uppercase bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">Your Code</span>
-            </div>
-            <p class="text-[11px] text-amber-800 leading-relaxed">Share your code. When a friend completes their 1st service, ₹100 is credited directly to your FixZenix Wallet!</p>
+        <!-- Dynamic Share Box -->
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50/60 border border-amber-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-extrabold text-amber-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-gift text-amber-600"></i> Invite Friends, Earn ₹100!
+            </p>
+            <span class="text-[9px] font-extrabold uppercase bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">Your Code</span>
+          </div>
+          <p class="text-[11px] text-amber-800 font-medium leading-relaxed">Share your unique referral code. When your friend completes their 1st service, ₹100 cash credit is added to your FixZenix wallet!</p>
+          
+          <div class="flex items-center gap-2 pt-1">
+            <input type="text" :value="referralCode" readonly
+                   class="flex-1 px-3 py-2.5 bg-white border border-amber-300/80 rounded-xl font-mono text-xs font-extrabold text-amber-900 text-center tracking-wider shadow-inner">
             
-            <div class="flex items-center gap-2 pt-1">
-              <input type="text" :value="referralCode" readonly
-                     class="flex-1 px-3 py-2 bg-white border border-amber-300 rounded-xl font-mono text-xs font-extrabold text-amber-900 text-center tracking-wider">
-              
-              <button @click="copyReferralCode()" class="px-3 py-2 bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all">
-                <span x-text="copied ? 'Copied! ✓' : 'Copy'"></span>
-              </button>
+            <button @click="copyReferralCode()" class="btn-press px-3.5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all">
+              <span x-text="copied ? 'Copied! ✓' : 'Copy'"></span>
+            </button>
 
-              <button @click="shareWhatsApp()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1">
-                <i class="fa-brands fa-whatsapp text-sm"></i> Share
-              </button>
-            </div>
+            <button @click="shareWhatsApp()" class="btn-press px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+              <i class="fa-brands fa-whatsapp text-sm"></i> Share
+            </button>
           </div>
+        </div>
 
-          <!-- Redeem Friend's Code Section -->
-          <div x-show="!referredBy" class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200 space-y-2">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Have a Friend's Referral Code?</p>
-            <div class="flex gap-2">
-              <input type="text" x-model="inputReferralCode" placeholder="Enter Code (e.g. RAHUL892)"
-                     class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono font-bold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#A07D54]">
-              <button @click="applyReferralCode()" :disabled="applyingCode"
-                      class="px-4 py-2 bg-[#5D5646] hover:bg-[#4A4436] text-white text-xs font-bold rounded-xl transition-all">
-                <span x-show="!applyingCode">Apply</span>
-                <span x-show="applyingCode"><i class="fa-solid fa-spinner fa-spin"></i></span>
-              </button>
-            </div>
+        <!-- Redeem Referral Code Section -->
+        <div x-show="!referredBy" class="p-4 bg-[#F4F1EA] rounded-2xl space-y-2">
+          <p class="text-[10px] font-extrabold uppercase tracking-wider text-gray-600">Have a Friend's Referral Code?</p>
+          <div class="flex gap-2">
+            <input type="text" x-model="inputReferralCode" placeholder="Enter Code (e.g. TANMAY892)"
+                   class="flex-1 px-3.5 py-2.5 bg-white rounded-xl border border-gray-200 text-xs font-mono font-bold uppercase text-gray-900 focus:outline-none">
+            <button @click="applyReferralCode()" :disabled="applyingCode"
+                    class="btn-press px-4 py-2.5 brand-gradient text-white text-xs font-extrabold rounded-xl shadow-sm">
+              <span x-show="!applyingCode">Apply</span>
+              <span x-show="applyingCode"><i class="fa-solid fa-spinner fa-spin"></i></span>
+            </button>
           </div>
+        </div>
 
-          <div x-show="referredBy" class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2 text-emerald-800 text-xs font-bold">
-            <i class="fa-solid fa-circle-check text-emerald-600"></i>
-            <span>Referred by code: <span class="font-mono" x-text="referredBy"></span></span>
-          </div>
+        <div x-show="referredBy" class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2 text-emerald-800 text-xs font-bold">
+          <i class="fa-solid fa-circle-check text-emerald-600"></i>
+          <span>Referred by: <span class="font-mono" x-text="referredBy"></span></span>
+        </div>
 
-          <!-- Active Promo Coupons -->
-          <div>
-            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Active Platform Coupons</p>
-            <div class="space-y-2">
-              <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-extrabold text-emerald-900">FIRSTFIX50</p>
-                  <p class="text-[10px] text-emerald-700">Flat ₹50 OFF on your first booking</p>
-                </div>
-                <span class="text-[10px] font-bold text-emerald-800 bg-emerald-200/60 px-2 py-0.5 rounded-md">ACTIVE</span>
+        <!-- Active Promo Coupons -->
+        <div class="space-y-2 pt-2">
+          <p class="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Active Coupons</p>
+          <div class="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-ticket"></i>
+              </div>
+              <div>
+                <p class="text-xs font-extrabold text-emerald-900">FIRSTFIX50</p>
+                <p class="text-[10px] text-emerald-700 font-medium">Flat ₹50 OFF on your first booking</p>
               </div>
             </div>
+            <span class="text-[10px] font-extrabold text-emerald-800 bg-emerald-200/60 px-2 py-0.5 rounded-md">ACTIVE</span>
           </div>
         </div>
       </div>
