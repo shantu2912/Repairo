@@ -8,11 +8,17 @@ document.addEventListener('alpine:init', () => {
     saving: false,
     locating: false,
     showPassword: false,
-    activeTab: 'personal',
+    copied: false,
+    applyingCode: false,
+    activeSection: 'security',
     userId: null,
     createdAt: null,
+    walletBalance: 0,
+    referralCode: '',
+    referredBy: '',
+    inputReferralCode: '',
     
-    // Mapped 1:1 to your 'profiles' database columns
+    // Mapped 1:1 to 'profiles' database schema
     form: {
       full_name: '',
       username: '',
@@ -29,7 +35,7 @@ document.addEventListener('alpine:init', () => {
       const storedLogged = localStorage.getItem('local_user_logged');
 
       if (storedLogged !== 'true' || !storedPhone) {
-        alert("Session identity missing. Redirecting to login...");
+        alert("Session expired. Please log in.");
         window.location.href = 'loginuser.html';
         return;
       }
@@ -37,7 +43,6 @@ document.addEventListener('alpine:init', () => {
       const cleanPhone = storedPhone.trim();
 
       try {
-        // Fetch strictly from 'profiles' table
         let { data: profile, error } = await sb
           .from('profiles')
           .select('*')
@@ -49,6 +54,9 @@ document.addEventListener('alpine:init', () => {
         if (profile) {
           this.userId = profile.id;
           this.createdAt = profile.created_at;
+          this.walletBalance = profile.wallet_balance || 0;
+          this.referredBy = profile.referred_by || '';
+
           this.form = {
             full_name: profile.full_name || '',
             username: profile.username || '',
@@ -59,16 +67,52 @@ document.addEventListener('alpine:init', () => {
             longitude: profile.longitude || '',
             preferred_lang: profile.preferred_lang || 'English'
           };
+
+          // 🌟 STEP 1: Check if referral code exists in Supabase. If missing, generate & store it!
+          if (profile.referral_code) {
+            this.referralCode = profile.referral_code;
+          } else {
+            this.referralCode = await this.generateAndStoreReferralCode(profile);
+          }
+
         } else {
-          // Initialize empty profile fallback if first time
           this.form.phone = cleanPhone;
-          this.form.full_name = 'FixZenix Member';
+          this.form.full_name = 'Customer Account';
         }
       } catch (err) {
         console.error("Profile load error:", err.message);
       } finally {
         this.loading = false;
       }
+    },
+
+    // 🌟 Helper: Generate clean code (e.g. TANMAY892) & save directly to Supabase
+    async generateAndStoreReferralCode(profile) {
+      let base = (profile.username || profile.full_name || 'FIX')
+        .replace(/[^a-zA-Z]/g, '')
+        .toUpperCase()
+        .slice(0, 6);
+
+      if (!base || base.length < 3) base = 'FIX';
+      
+      const randomDigits = Math.floor(100 + Math.random() * 900);
+      const generatedCode = `${base}${randomDigits}`;
+
+      try {
+        await sb
+          .from('profiles')
+          .update({ referral_code: generatedCode })
+          .eq('id', profile.id);
+
+        return generatedCode;
+      } catch (err) {
+        console.error("Failed to store referral code:", err.message);
+        return generatedCode;
+      }
+    },
+
+    toggleSection(section) {
+      this.activeSection = this.activeSection === section ? null : section;
     },
 
     getInitials(name) {
@@ -82,6 +126,60 @@ document.addEventListener('alpine:init', () => {
       if (!dateStr) return '2026';
       const date = new Date(dateStr);
       return date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+    },
+
+    copyReferralCode() {
+      navigator.clipboard.writeText(this.referralCode);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2500);
+    },
+
+    shareWhatsApp() {
+      const text = `Hey! Use FixZenix for fast doorstep repairs. Use my referral code *${this.referralCode}* to get ₹100 OFF on your first service! Download here: https://shantu2912.github.io/Repairo/`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    },
+
+    async applyReferralCode() {
+      if (!this.inputReferralCode.trim()) return;
+      
+      const codeToApply = this.inputReferralCode.trim().toUpperCase();
+
+      if (codeToApply === this.referralCode) {
+        alert("You cannot redeem your own referral code!");
+        return;
+      }
+
+      this.applyingCode = true;
+
+      try {
+        // Verify code exists in Supabase
+        const { data: owner, error } = await sb
+          .from('profiles')
+          .select('id, referral_code')
+          .eq('referral_code', codeToApply)
+          .maybeSingle();
+
+        if (error || !owner) {
+          alert("Invalid referral code. Please check and try again.");
+          return;
+        }
+
+        // Save referred_by code to this user's profile
+        const { error: updateError } = await sb
+          .from('profiles')
+          .update({ referred_by: codeToApply })
+          .eq('id', this.userId);
+
+        if (updateError) throw updateError;
+
+        this.referredBy = codeToApply;
+        this.inputReferralCode = '';
+        alert("🎉 Referral code applied successfully! Rewards will trigger on your 1st completed job.");
+      } catch (err) {
+        alert("Failed to apply code: " + err.message);
+      } finally {
+        this.applyingCode = false;
+      }
     },
 
     detectGPS() {
@@ -99,7 +197,7 @@ document.addEventListener('alpine:init', () => {
         },
         (error) => {
           console.error("GPS error:", error);
-          alert("Could not detect GPS location. Please ensure location permissions are enabled.");
+          alert("Could not detect GPS coordinates. Please enable location services.");
           this.locating = false;
         },
         { enableHighAccuracy: true, timeout: 10000 }
@@ -112,7 +210,6 @@ document.addEventListener('alpine:init', () => {
       try {
         const cleanPhone = this.form.phone.trim();
 
-        // Exact schema payload for 'profiles'
         const payload = {
           full_name: this.form.full_name,
           phone: cleanPhone,
@@ -130,19 +227,10 @@ document.addEventListener('alpine:init', () => {
             .eq('id', this.userId);
 
           if (error) throw error;
-        } else {
-          payload.username = this.form.username || 'user_' + Math.floor(1000 + Math.random() * 9000);
-          const { error } = await sb
-            .from('profiles')
-            .insert([payload]);
-
-          if (error) throw error;
         }
 
-        // Sync local storage session phone
         localStorage.setItem('local_user_phone', cleanPhone);
-
-        alert("✨ VIP Profile updated successfully!");
+        alert("✅ Profile details updated successfully!");
         window.location.href = 'index.html';
       } catch (err) {
         console.error("Profile save error:", err.message);
@@ -153,7 +241,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     logout() {
-      if (!confirm("Are you sure you want to log out of FixZenix?")) return;
+      if (!confirm("Are you sure you want to log out?")) return;
       localStorage.removeItem('local_user_logged');
       localStorage.removeItem('local_user_phone');
       localStorage.removeItem('active_job_id');
