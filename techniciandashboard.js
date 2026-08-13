@@ -4,16 +4,9 @@ function dashboardHandler() {
     techName: '',
     loading: true,
     jobs: [],
-    stats: { activeJobs: 0, earnings: 0, todayEarnings: 0, completedJobs: 0, acceptanceRate: 0, averageFee: 0 },
+    stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
     incomingJob: null,
     available: false,
-    online: navigator.onLine,
-    jobSearch: '',
-    jobFilter: 'all',
-    showProfile: false,
-    showEarnings: false,
-    toasts: [],
-    toastSeq: 0,
     notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
 
     // ── PAYMENT & OTP VERIFICATION STATE ──
@@ -25,49 +18,6 @@ function dashboardHandler() {
     locationStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'unavailable'
     geocodeCache: {},       // address string -> { lat, lng }
     distancesUpdating: false,
-
-    get filteredJobs() {
-      const q = this.jobSearch.trim().toLowerCase();
-      return this.jobs.filter(job => {
-        const matchesSearch = !q || [
-          job.customer_name, job.category, job.device, job.issue, job.location, job.phone
-        ].some(v => String(v || '').toLowerCase().includes(q));
-
-        let matchesFilter = true;
-        if (this.jobFilter === 'new') matchesFilter = job.status === 'pending' && !job.tech_id;
-        if (this.jobFilter === 'active') matchesFilter = job.status !== 'completed' && job.status !== 'pending';
-        if (this.jobFilter === 'completed') matchesFilter = job.status === 'completed';
-        if (this.jobFilter === 'urgent') matchesFilter = !!job.urgent;
-
-        return matchesSearch && matchesFilter;
-      });
-    },
-
-    get performanceLabel() {
-      const rate = Number(this.stats.acceptanceRate || 0);
-      if (rate >= 90) return 'Excellent';
-      if (rate >= 70) return 'Strong';
-      if (rate >= 50) return 'Improving';
-      return 'Build momentum';
-    },
-
-    statusProgress(job) {
-      if (!job) return 0;
-      if (job.status === 'completed') return 4;
-      if (job.arrived_at || job.status === 'arrived') return 2;
-      if (job.status === 'in_progress') return 1;
-      return 0;
-    },
-
-    toast(message, type='success') {
-      const id = ++this.toastSeq;
-      this.toasts.push({ id, message, type });
-      setTimeout(() => this.removeToast(id), 3500);
-    },
-
-    removeToast(id) {
-      this.toasts = this.toasts.filter(t => t.id !== id);
-    },
 
     // ─────────────────────────────────────────────────────────
     // INIT
@@ -96,20 +46,12 @@ function dashboardHandler() {
       this.techName = this.tech.name;
       
       await this.loadTechProfile();
-      this.notifStatus = ('Notification' in window) ? Notification.permission : 'denied';
+      await this.setupNotifications();
       this.registerForegroundHandler();
 
       await this.fetchJobs();
       this.subscribeRealtime();
       this.updateJobDistances();
-
-      setInterval(() => {
-        if (this.online && document.visibilityState === 'visible') this.fetchJobs();
-      }, 45000);
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && this.online) this.fetchJobs();
-      });
     },
 
     // ─────────────────────────────────────────────────────────
@@ -196,7 +138,10 @@ function dashboardHandler() {
         if (Notification.permission !== 'granted') {
           const permission = await Notification.requestPermission();
           this.notifStatus = permission;
-          if (permission !== 'granted') return;
+          if (permission !== 'granted') {
+            console.warn("🔕 Notification permission:", permission);
+            return;
+          }
         }
 
         this.notifStatus = 'granted';
@@ -283,10 +228,8 @@ function dashboardHandler() {
 
     // ─────────────────────────────────────────────────────────
     openMaps(location) {
-      if (!location) return;
       const encoded = encodeURIComponent(location);
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.open(`https://maps.google.com/?q=${encoded}`, '_blank');
     },
 
     // ─────────────────────────────────────────────────────────
@@ -404,8 +347,6 @@ function dashboardHandler() {
         alert("Failed to update availability. Please try again.");
       } else {
         console.log(`✅ Availability set to: ${newValue}`);
-        this.toast(newValue ? 'You are now online and eligible for jobs.' : 'You are offline. New jobs are paused.');
-        if (newValue) await this.fetchJobs();
       }
     },
 
@@ -422,21 +363,12 @@ function dashboardHandler() {
         .order("created_at", { ascending: false });
 
       if (!error) {
-        this.jobs = data || [];
-        this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
+        this.jobs = data;
+        this.stats.activeJobs = data.filter(j => j.status !== 'completed').length;
 
-        const completedJobs = this.jobs.filter(
+        const completedJobs = data.filter(
           j => j.status === 'completed' && j.tech_id === this.tech.id
         );
-        this.stats.completedJobs = completedJobs.length;
-
-        const acceptedOrOwned = this.jobs.filter(j => j.tech_id === this.tech.id).length;
-        const rejectedCount = this.jobs.filter(j => (j.rejected_by || []).includes(this.tech.id)).length;
-        const opportunities = acceptedOrOwned + rejectedCount;
-        this.stats.acceptanceRate = opportunities ? Math.round((acceptedOrOwned / opportunities) * 100) : 0;
-        this.stats.averageFee = completedJobs.length
-          ? Math.round(completedJobs.reduce((sum, j) => sum + this.calculateFee(j), 0) / completedJobs.length)
-          : 0;
 
         this.stats.earnings = completedJobs.reduce((total, job) => {
           return total + this.calculateFee(job);
@@ -474,19 +406,12 @@ function dashboardHandler() {
             }
 
             const index = this.jobs.findIndex(j => j.id === job.id);
-            if (job.tech_id && job.tech_id !== this.tech.id) {
-              this.jobs = this.jobs.filter(j => j.id !== job.id);
-              if (this.incomingJob?.id === job.id) this.incomingJob = null;
-              return;
-            }
             if (index !== -1) {
               this.jobs[index] = job;
             } else {
-              if (job.status === "pending" && !job.tech_id && this.available) {
+              if (job.status === "pending" && !job.tech_id) {
                 this.jobs.unshift(job);
                 this.updateJobDistances();
-                this.incomingJob = job;
-                this.toast('New job available nearby!');
               }
             }
 
@@ -541,7 +466,6 @@ function dashboardHandler() {
       }
 
       localStorage.setItem("locked_job_id", jobId);
-      this.toast("Job accepted. Opening job workspace…");
       window.location.href = "job_detail.html";
     },
 
@@ -590,7 +514,7 @@ function dashboardHandler() {
 
         if (error) throw error;
 
-        this.toast("Payment request sent to the customer. Waiting for payment…", 'success');
+        alert("Payment request sent to customer screen! Ask the resident to complete payment to get the completion code.");
         await this.fetchJobs();
       } catch (err) {
         console.error("Complete job payment trigger error:", err);
@@ -635,7 +559,7 @@ function dashboardHandler() {
 
         if (updateError) throw updateError;
 
-        this.toast("Job completed successfully. Earnings updated.");
+        alert("OTP Verified Successfully! Job marked as completed.");
         this.enteredOtp = '';
         localStorage.removeItem("locked_job_id");
         await this.fetchJobs();
@@ -659,8 +583,8 @@ function dashboardHandler() {
         if (error) throw error;
 
         job.arrived_at = new Date().toISOString();
-        this.toast("Arrival marked. Customer can see you are on site.");
-        await this.fetchJobs();
+        job.status = "arrived";
+        alert("Arrival marked successfully");
       } catch (err) {
         console.error("Arrival error:", err);
         alert("Failed to mark arrival: " + (err.message || "Unknown error"));
@@ -691,9 +615,7 @@ function dashboardHandler() {
       }
 
       this.incomingJob = null;
-      this.toast('Job accepted. Opening job workspace…');
-      localStorage.setItem("locked_job_id", job.id);
-      window.location.href = "job_detail.html";
+      this.fetchJobs();
     },
 
     async rejectIncoming() {
@@ -702,20 +624,14 @@ function dashboardHandler() {
 
       const currentRejected = job.rejected_by || [];
 
-      const { error } = await window.sb
+      await window.sb
         .from("jobs")
         .update({
           rejected_by: [...currentRejected, this.tech.id]
         })
         .eq("id", job.id);
 
-      if (error) {
-        this.toast('Could not decline this job.', 'info');
-        return;
-      }
       this.incomingJob = null;
-      this.jobs = this.jobs.filter(j => j.id !== job.id);
-      this.toast('Job declined.');
     },
 
     // ─────────────────────────────────────────────────────────
@@ -752,9 +668,7 @@ function dashboardHandler() {
     },
 
     logout() {
-      this.showProfile = false;
       localStorage.removeItem("active_tech");
-      localStorage.removeItem("locked_job_id");
       window.location.href = "partnerlogin.html";
     }
   }
