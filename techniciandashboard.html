@@ -15,7 +15,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
   <style>
-    /* ── reset & base ── */
     [x-cloak] { display: none !important; }
     * { box-sizing: border-box; }
 
@@ -26,7 +25,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── glass / cards ── */
     .glass-card {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(12px);
@@ -58,7 +56,6 @@
       transform: translateY(-3px);
     }
 
-    /* ── status pills ── */
     .pill {
       display: inline-flex;
       align-items: center;
@@ -72,7 +69,6 @@
     .pill-pending { background: #FEF3C7; color: #92400E; }
     .pill-completed { background: #D1FAE5; color: #065F46; }
 
-    /* ── action buttons ── */
     .btn-primary {
       display: flex;
       align-items: center;
@@ -115,7 +111,6 @@
       opacity: 0.7;
     }
 
-    /* ── toggle switch ── */
     .avail-toggle {
       position: relative;
       width: 44px;
@@ -143,7 +138,6 @@
     }
     .avail-toggle.on::after { transform: translateX(20px); }
 
-    /* ── header & nav ── */
     .header-blur {
       background: rgba(255, 252, 248, 0.92);
       backdrop-filter: blur(16px);
@@ -176,7 +170,6 @@
     .nav-btn.active, .nav-btn:hover { color: #5D5646; }
     .nav-btn i { font-size: 20px; }
 
-    /* ── schedule badge ── */
     .sched-badge {
       background: #FFFBEB;
       border: 1px solid #FDE68A;
@@ -187,7 +180,6 @@
       gap: 12px;
     }
 
-    /* ── notification banners ── */
     .notif-banner {
       border-radius: 16px;
       padding: 12px 16px;
@@ -198,13 +190,6 @@
     .notif-denied  { background: #FFF1F2; border: 1px solid #FECDD3; }
     .notif-prompt  { background: #FFFBEB; border: 1px solid #FDE68A; }
 
-    /* ── modal ── */
-    .modal-backdrop {
-      background: rgba(45, 43, 40, 0.55);
-      backdrop-filter: blur(6px);
-    }
-
-    /* ── skeleton ── */
     @keyframes shimmer {
       0% { background-position: -400px 0; }
       100% { background-position: 400px 0; }
@@ -216,7 +201,6 @@
       border-radius: 8px;
     }
 
-    /* ── section label ── */
     .section-label {
       font-size: 11px;
       font-weight: 600;
@@ -225,7 +209,6 @@
       color: #A07D54;
     }
 
-    /* ── gradient text ── */
     .gradient-text {
       background: linear-gradient(135deg, #5D5646 0%, #A07D54 100%);
       -webkit-background-clip: text;
@@ -233,7 +216,6 @@
       background-clip: text;
     }
 
-    /* ── card accent ── */
     .card-accent {
       width: 100%;
       height: 4px;
@@ -243,7 +225,6 @@
       background: linear-gradient(90deg, #059669, #34D399, #A7F3D0);
     }
 
-    /* ── earnings chip ── */
     .earn-chip {
       background: linear-gradient(135deg, #F3F0EA 0%, #EDE8E0 100%);
       border: 1px solid #DFD4C3;
@@ -254,7 +235,6 @@
       justify-content: space-between;
     }
 
-    /* ── decorative blobs ── */
     .bg-blob {
       position: fixed;
       border-radius: 50%;
@@ -264,7 +244,6 @@
       z-index: 0;
     }
 
-    /* ── tech id badge ── */
     .tech-id-badge {
       background: linear-gradient(135deg, #5D5646 0%, #7A6F5A 100%);
       color: white;
