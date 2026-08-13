@@ -278,110 +278,6 @@
       align-items: center;
       gap: 4px;
     }
-
-    /* ================= ADVANCED TECHNICIAN UX ================= */
-    :root { --safe-bottom: max(88px, env(safe-area-inset-bottom)); }
-    html { scroll-padding-top: 90px; }
-    body { min-height: 100vh; overscroll-behavior-y: contain; }
-    button, a, input { -webkit-tap-highlight-color: transparent; }
-    button:focus-visible, a:focus-visible, input:focus-visible {
-      outline: 3px solid rgba(160,125,84,.35);
-      outline-offset: 2px;
-    }
-
-    .quick-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-    .quick-action {
-      min-height:68px; border:1px solid #E8E2D8; background:#fff; border-radius:18px;
-      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
-      font-size:10px; font-weight:700; color:#4D4C4B; transition:.2s;
-      box-shadow:0 2px 8px rgba(93,86,70,.04);
-    }
-    .quick-action i { font-size:17px; color:#A07D54; }
-    .quick-action:active { transform:scale(.96); background:#F8F5F0; }
-
-    .dashboard-section {
-      background:rgba(255,255,255,.78); border:1px solid rgba(232,226,216,.9);
-      border-radius:24px; padding:16px; box-shadow:0 5px 18px rgba(93,86,70,.045);
-    }
-    .metric-mini { border:1px solid #ECE6DD; background:#FCFBF8; border-radius:16px; padding:12px; }
-    .metric-mini .value { font-size:18px; font-weight:800; color:#2D2B28; }
-    .metric-mini .label { font-size:9px; color:rgba(45,43,40,.45); text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
-
-    .job-priority { border-left:4px solid #A07D54; }
-    .job-priority.urgent { border-left-color:#DC2626; }
-    .job-priority.scheduled { border-left-color:#2563EB; }
-
-    .status-track { display:flex; align-items:center; width:100%; }
-    .status-step { flex:1; position:relative; text-align:center; }
-    .status-step:not(:last-child)::after {
-      content:""; position:absolute; top:9px; left:50%; width:100%; height:2px;
-      background:#E8E2D8; z-index:0;
-    }
-    .status-dot {
-      position:relative; z-index:1; width:20px; height:20px; margin:0 auto 5px;
-      border-radius:50%; background:#E8E2D8; color:white; display:flex; align-items:center;
-      justify-content:center; font-size:9px;
-    }
-    .status-step.done .status-dot { background:#059669; }
-    .status-step.current .status-dot { background:#5D5646; box-shadow:0 0 0 5px rgba(93,86,70,.1); }
-    .status-step.done:not(:last-child)::after { background:#86EFAC; }
-    .status-step span { font-size:8px; font-weight:700; color:rgba(45,43,40,.4); }
-    .status-step.done span,.status-step.current span { color:#4D4C4B; }
-
-    .incoming-overlay {
-      position:fixed; inset:0; z-index:100; display:flex; align-items:flex-end;
-      background:rgba(20,18,15,.55); backdrop-filter:blur(8px);
-    }
-    .incoming-sheet {
-      width:100%; max-width:520px; margin:0 auto; background:#fff; border-radius:30px 30px 0 0;
-      padding:20px 20px calc(22px + env(safe-area-inset-bottom)); box-shadow:0 -20px 60px rgba(0,0,0,.2);
-      animation:sheetIn .25s ease-out;
-    }
-    @keyframes sheetIn { from { transform:translateY(100%); } to { transform:translateY(0); } }
-
-    .toast-stack { position:fixed; top:78px; left:12px; right:12px; z-index:120; pointer-events:none; }
-    .toast {
-      max-width:520px; margin:8px auto; pointer-events:auto; border:1px solid #E8E2D8;
-      background:rgba(255,255,255,.96); backdrop-filter:blur(14px); border-radius:18px;
-      padding:12px 14px; box-shadow:0 10px 30px rgba(0,0,0,.12); display:flex; gap:10px; align-items:center;
-      animation:toastIn .2s ease-out;
-    }
-    @keyframes toastIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-
-    .offline-bar {
-      position:fixed; top:0; left:0; right:0; z-index:200; padding:7px 12px;
-      background:#991B1B; color:white; font-size:10px; font-weight:800; text-align:center;
-    }
-
-    .search-box {
-      display:flex; align-items:center; gap:9px; background:#F8F5F0; border:1px solid #E8E2D8;
-      border-radius:15px; padding:10px 12px;
-    }
-    .search-box input { width:100%; background:transparent; border:0; outline:0; font-size:12px; color:#2D2B28; }
-
-    .filter-chip {
-      border:1px solid #E8E2D8; background:#fff; border-radius:999px; padding:7px 11px;
-      font-size:10px; font-weight:700; white-space:nowrap; color:#6B665E;
-    }
-    .filter-chip.active { background:#5D5646; color:#fff; border-color:#5D5646; }
-
-    .big-action {
-      min-height:52px; border-radius:16px; font-weight:800; font-size:13px;
-      display:flex; align-items:center; justify-content:center; gap:9px;
-    }
-
-    @media (min-width: 768px) {
-      body { padding-bottom:24px !important; }
-      .max-w-md { max-width:760px !important; }
-      .bottom-nav { display:none; }
-      .quick-grid { grid-template-columns:repeat(8,minmax(0,1fr)); }
-      .job-card { border-radius:22px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
-    }
-
   </style>
 
   <script>
@@ -436,10 +332,9 @@
             <button :class="available ? 'on' : ''" class="avail-toggle" style="width:36px;height:20px;"
                     @click="toggleAvailability({target:{checked:!available}})"></button>
           </div>
-          <button @click="showProfile = true"
-                  aria-label="Open technician profile"
-                  class="w-9 h-9 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/60 hover:text-brand-olive hover:bg-brand-cream transition-colors">
-            <i class="fa-regular fa-user text-xs"></i>
+          <button @click="logout()"
+                  class="w-8 h-8 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+            <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
           </button>
         </div>
       </div>
@@ -462,53 +357,6 @@
         <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Total</p>
         <p class="font-bold text-2xl gradient-text mt-0.5">₹<span x-text="stats.earnings"></span></p>
         <p class="text-[9px] text-brand-dark/30 mt-0.5">all time</p>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- Advanced technician control strip -->
-  <section class="max-w-md mx-auto px-5 pt-3 relative z-10">
-    <div class="dashboard-section">
-      <div class="flex items-center justify-between mb-3">
-        <div>
-          <p class="section-label">Work control</p>
-          <p class="text-[15px] font-bold mt-0.5">Ready for the next job?</p>
-        </div>
-        <div class="text-right">
-          <p class="text-[9px] uppercase tracking-wider text-brand-dark/35 font-bold">Performance</p>
-          <p class="text-[13px] font-extrabold text-emerald-700" x-text="performanceLabel"></p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-3 gap-2 mb-3">
-        <div class="metric-mini">
-          <div class="label">Completed</div>
-          <div class="value" x-text="stats.completedJobs"></div>
-        </div>
-        <div class="metric-mini">
-          <div class="label">Acceptance</div>
-          <div class="value" x-text="stats.acceptanceRate + '%'"></div>
-        </div>
-        <div class="metric-mini">
-          <div class="label">Avg/job</div>
-          <div class="value">₹<span x-text="stats.averageFee"></span></div>
-        </div>
-      </div>
-
-      <div class="quick-grid">
-        <button class="quick-action" @click="scrollToJobs()">
-          <i class="fa-solid fa-briefcase"></i><span>Jobs</span>
-        </button>
-        <button class="quick-action" @click="updateJobDistances()">
-          <i class="fa-solid fa-location-crosshairs"></i><span>Nearby</span>
-        </button>
-        <button class="quick-action" @click="showEarnings = true">
-          <i class="fa-solid fa-wallet"></i><span>Earnings</span>
-        </button>
-        <button class="quick-action" @click="setupNotifications()">
-          <i class="fa-regular fa-bell"></i><span>Alerts</span>
-        </button>
       </div>
     </div>
   </section>
@@ -554,34 +402,16 @@
 
     <template x-if="available">
       <div class="space-y-5">
-        <div class="space-y-3 pt-1">
-          <div class="flex items-center justify-between">
-            <span class="section-label flex items-center gap-2">
-              <i class="fa-regular fa-list-check text-brand-gold"></i> Job Queue
-            </span>
-            <button @click="fetchJobs()" class="text-[11px] font-semibold text-brand-olive flex items-center gap-1">
-              <i class="fa-solid fa-rotate-right text-[10px]" :class="loading ? 'animate-spin' : ''"></i>
-              Refresh
+        <div class="flex items-center justify-between pt-1">
+          <span class="section-label flex items-center gap-2">
+            <i class="fa-regular fa-list-check text-brand-gold"></i> Your Jobs
+          </span>
+          <div class="flex items-center gap-3">
+            <button @click="updateJobDistances()" class="text-[11px] font-semibold text-brand-olive flex items-center gap-1 disabled:opacity-40" :disabled="distancesUpdating">
+              <i class="fa-solid fa-location-crosshairs text-[10px]" :class="distancesUpdating ? 'animate-spin' : ''"></i>
+              <span x-text="distancesUpdating ? 'Locating…' : 'Update distances'"></span>
             </button>
-          </div>
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass text-brand-dark/30 text-xs"></i>
-            <input x-model="jobSearch" type="search" placeholder="Search customer, service, area..." aria-label="Search jobs">
-            <button x-show="jobSearch" @click="jobSearch=''" class="text-brand-dark/30"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-          <div class="flex gap-2 overflow-x-auto pb-1">
-            <button class="filter-chip" :class="jobFilter==='all' ? 'active':''" @click="jobFilter='all'">All</button>
-            <button class="filter-chip" :class="jobFilter==='new' ? 'active':''" @click="jobFilter='new'">New</button>
-            <button class="filter-chip" :class="jobFilter==='active' ? 'active':''" @click="jobFilter='active'">Active</button>
-            <button class="filter-chip" :class="jobFilter==='completed' ? 'active':''" @click="jobFilter='completed'">Completed</button>
-            <button class="filter-chip" :class="jobFilter==='urgent' ? 'active':''" @click="jobFilter='urgent'">Urgent</button>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-[10px] text-brand-dark/40" x-text="filteredJobs.length + ' matching jobs'"></span>
-            <button @click="updateJobDistances()" class="text-[10px] font-bold text-brand-olive disabled:opacity-40" :disabled="distancesUpdating">
-              <i class="fa-solid fa-location-dot"></i>
-              <span x-text="distancesUpdating ? 'Locating…' : 'Sort by distance'"></span>
-            </button>
+            <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
           </div>
         </div>
 
@@ -602,13 +432,10 @@
         </div>
 
         <section id="jobsSection" class="space-y-4 pb-4">
-          <template x-for="job in filteredJobs" :key="job.id">
+          <template x-for="job in jobs" :key="job.id">
             <div class="job-card">
               <div class="card-accent" :class="job.status === 'completed' ? 'completed' : ''"></div>
-              <div class="p-5" :class="{'job-priority': job.urgent, 'urgent': job.urgent, 'scheduled': !!job.scheduled_time}">
-                <div x-show="job.urgent" class="flex items-center gap-2 mb-2 text-rose-700 text-[10px] font-extrabold uppercase tracking-wider">
-                  <i class="fa-solid fa-bolt"></i> Priority / Urgent
-                </div>
+              <div class="p-5">
 
                 <div class="flex items-center justify-between mb-3">
                   <span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest flex items-center gap-2">
@@ -670,23 +497,6 @@
                   </div>
                 </div>
 
-                <div x-show="job.status !== 'completed'" class="mt-4 mb-2">
-                  <div class="status-track">
-                    <div class="status-step" :class="statusProgress(job) >= 1 ? 'done' : ''">
-                      <div class="status-dot"><i class="fa-solid fa-check"></i></div><span>Accepted</span>
-                    </div>
-                    <div class="status-step" :class="statusProgress(job) >= 2 ? 'done' : ''">
-                      <div class="status-dot"><i class="fa-solid fa-person-walking"></i></div><span>Arrived</span>
-                    </div>
-                    <div class="status-step" :class="statusProgress(job) >= 3 ? 'done' : ''">
-                      <div class="status-dot"><i class="fa-solid fa-screwdriver-wrench"></i></div><span>Working</span>
-                    </div>
-                    <div class="status-step" :class="statusProgress(job) >= 4 ? 'done' : ''">
-                      <div class="status-dot"><i class="fa-solid fa-circle-check"></i></div><span>Done</span>
-                    </div>
-                  </div>
-                </div>
-
                 <div class="mt-4 space-y-2.5">
 
                   <template x-if="job.status === 'pending' && !job.tech_id">
@@ -697,18 +507,6 @@
                       <button @click="rejectJob(job.id)" class="btn-primary btn-reject">
                         <i class="fa-regular fa-circle-xmark text-lg"></i> Decline Job
                       </button>
-                    </div>
-                  </template>
-
-                  <template x-if="job.status === 'in_progress' && !job.arrived_at">
-                    <button @click="markArrived(job)" class="big-action w-full bg-blue-50 text-blue-700 border border-blue-200">
-                      <i class="fa-solid fa-location-dot"></i> Mark Arrived
-                    </button>
-                  </template>
-
-                  <template x-if="job.status === 'arrived'">
-                    <div class="big-action w-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <i class="fa-solid fa-person-circle-check"></i> On Site — Work In Progress
                     </div>
                   </template>
 
@@ -763,87 +561,6 @@
     </template>
 
   </main>
-
-
-  <!-- Real-time incoming job sheet -->
-  <div x-show="incomingJob" x-cloak class="incoming-overlay" @keydown.escape.window="incomingJob=null">
-    <div class="incoming-sheet">
-      <div class="flex items-center justify-between mb-3">
-        <div>
-          <p class="text-[10px] font-extrabold uppercase tracking-widest text-brand-gold">New job request</p>
-          <h3 class="text-[21px] font-extrabold mt-1">Nearby service call</h3>
-        </div>
-        <div class="w-11 h-11 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-          <i class="fa-solid fa-bell text-lg animate-pulse"></i>
-        </div>
-      </div>
-      <div x-show="incomingJob" class="bg-brand-cream/40 rounded-2xl p-4 space-y-2">
-        <div class="flex justify-between gap-3">
-          <span class="font-bold text-[15px]" x-text="incomingJob?.device || incomingJob?.category"></span>
-          <span class="font-mono font-extrabold text-brand-olive">₹<span x-text="incomingJob ? calculateFee(incomingJob) : 0"></span></span>
-        </div>
-        <p class="text-xs text-brand-dark/55" x-text="incomingJob?.issue"></p>
-        <p class="text-xs font-semibold text-brand-dark/60"><i class="fa-solid fa-location-dot text-brand-gold"></i> <span x-text="incomingJob?.location"></span></p>
-        <p x-show="incomingJob?.distanceText" class="text-xs font-bold text-brand-olive"><i class="fa-solid fa-route"></i> <span x-text="incomingJob?.distanceText"></span></p>
-      </div>
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <button @click="rejectIncoming()" class="big-action bg-white text-rose-700 border-2 border-rose-200">Decline</button>
-        <button @click="acceptIncoming()" class="big-action bg-brand-olive text-white shadow-lg">Accept Job</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Earnings modal -->
-  <div x-show="showEarnings" x-cloak class="fixed inset-0 z-[110] modal-backdrop flex items-end justify-center" @click.self="showEarnings=false">
-    <div class="w-full max-w-md bg-white rounded-t-[30px] p-5 pb-8">
-      <div class="flex justify-between items-center mb-5">
-        <div><p class="section-label">Earnings</p><h3 class="text-xl font-extrabold">Your money</h3></div>
-        <button @click="showEarnings=false" class="w-9 h-9 rounded-full bg-brand-cream"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="metric-mini"><div class="label">Today</div><div class="value">₹<span x-text="stats.todayEarnings"></span></div></div>
-        <div class="metric-mini"><div class="label">All time</div><div class="value">₹<span x-text="stats.earnings"></span></div></div>
-      </div>
-      <div class="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-        <p class="text-xs font-bold text-emerald-800">Commission model</p>
-        <p class="text-[11px] text-emerald-700 mt-1">Technician earnings are calculated from the service price after the configured platform commission.</p>
-      </div>
-      <a href="completed_jobs.html" class="big-action mt-4 bg-brand-olive text-white">View Completed Jobs</a>
-    </div>
-  </div>
-
-  <!-- Profile modal -->
-  <div x-show="showProfile" x-cloak class="fixed inset-0 z-[110] modal-backdrop flex items-end justify-center" @click.self="showProfile=false">
-    <div class="w-full max-w-md bg-white rounded-t-[30px] p-5 pb-8">
-      <div class="flex justify-between items-center mb-5">
-        <div><p class="section-label">Partner profile</p><h3 class="text-xl font-extrabold" x-text="techName"></h3></div>
-        <button @click="showProfile=false" class="w-9 h-9 rounded-full bg-brand-cream"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="space-y-3">
-        <div class="flex justify-between p-3 rounded-xl bg-brand-cream/40"><span class="text-xs text-brand-dark/50">Technician ID</span><b class="text-xs" x-text="tech?.tech_id || '-'"></b></div>
-        <div class="flex justify-between p-3 rounded-xl bg-brand-cream/40"><span class="text-xs text-brand-dark/50">Category</span><b class="text-xs" x-text="tech?.category || '-'"></b></div>
-        <div class="flex justify-between p-3 rounded-xl bg-brand-cream/40"><span class="text-xs text-brand-dark/50">Area</span><b class="text-xs" x-text="tech?.area || '-'"></b></div>
-        <div class="flex justify-between p-3 rounded-xl bg-brand-cream/40"><span class="text-xs text-brand-dark/50">Status</span><b class="text-xs" x-text="available ? 'Online' : 'Offline'"></b></div>
-      </div>
-      <button @click="logout()" class="big-action mt-5 bg-rose-50 text-rose-700 border border-rose-200">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out
-      </button>
-    </div>
-  </div>
-
-  <div class="toast-stack" aria-live="polite">
-    <template x-for="toast in toasts" :key="toast.id">
-      <div class="toast">
-        <i class="fa-solid" :class="toast.type==='success' ? 'fa-circle-check text-emerald-600' : 'fa-circle-info text-blue-600'"></i>
-        <p class="text-xs font-semibold flex-1" x-text="toast.message"></p>
-        <button @click="removeToast(toast.id)" class="text-brand-dark/30"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-    </template>
-  </div>
-
-  <div x-show="!online" x-cloak class="offline-bar">
-    <i class="fa-solid fa-wifi"></i> You are offline — changes may not sync until connection returns.
-  </div>
 
   <nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
     <div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
