@@ -7,21 +7,16 @@ function dashboardHandler() {
     stats: { activeJobs: 0, earnings: 0, todayEarnings: 0 },
     incomingJob: null,
     available: false,
-    notifStatus: 'default', // 'default' | 'prompt' | 'granted' | 'denied'
+    notifStatus: 'default',
 
-    // ── PAYMENT & OTP VERIFICATION STATE ──
     enteredOtp: '',
     paymentLoading: false,
 
-    // ── DISTANCE TRACKING ──
     currentLoc: null, 
-    locationStatus: 'idle', // 'idle' | 'loading' | 'ready' | 'unavailable'
-    geocodeCache: {},       // address string -> { lat, lng }
+    locationStatus: 'idle',
+    geocodeCache: {}, 
     distancesUpdating: false,
 
-    // ─────────────────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────────────────
     async init() {
       const savedLang = localStorage.getItem("preferred_language") || "en";
       if (typeof setLanguage === "function") {
@@ -54,9 +49,6 @@ function dashboardHandler() {
       this.updateJobDistances();
     },
 
-    // ─────────────────────────────────────────────────────────
-    // LOAD TECH ID
-    // ─────────────────────────────────────────────────────────
     async loadTechId() {
       if (this.tech?.tech_id) return;
       
@@ -70,18 +62,12 @@ function dashboardHandler() {
         if (!error && data?.tech_id) {
           this.tech.tech_id = data.tech_id;
           localStorage.setItem("active_tech", JSON.stringify(this.tech));
-          console.log(`✅ Loaded technician ID: ${data.tech_id}`);
-        } else {
-          console.warn("⚠️ No tech_id found for this technician");
         }
       } catch (err) {
         console.error("Failed to load tech_id:", err);
       }
     },
 
-    // ─────────────────────────────────────────────────────────
-    // LOAD TECH PROFILE
-    // ─────────────────────────────────────────────────────────
     async loadTechProfile() {
       try {
         const { data, error } = await window.sb
@@ -103,45 +89,31 @@ function dashboardHandler() {
       }
     },
 
-    // ─────────────────────────────────────────────────────────
-    // SETUP NOTIFICATIONS
-    // ─────────────────────────────────────────────────────────
     async setupNotifications() {
       try {
         if (!('serviceWorker' in navigator)) {
-          console.error("❌ Service Worker not supported in this browser");
           this.notifStatus = 'denied';
           return;
         }
 
         this.notifStatus = Notification.permission;
 
-        if (Notification.permission === 'denied') {
-          console.warn("🔕 Notification permission has been denied by user");
-          return;
-        }
+        if (Notification.permission === 'denied') return;
 
         let registration;
         try {
           registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
             updateViaCache: 'none'
           });
-          console.log("✅ Service Worker registered:", registration.scope);
-
           await navigator.serviceWorker.ready;
-          console.log("✅ Service Worker is active and ready");
         } catch (swError) {
-          console.error("❌ Service Worker registration failed:", swError);
           return;
         }
 
         if (Notification.permission !== 'granted') {
           const permission = await Notification.requestPermission();
           this.notifStatus = permission;
-          if (permission !== 'granted') {
-            console.warn("🔕 Notification permission:", permission);
-            return;
-          }
+          if (permission !== 'granted') return;
         }
 
         this.notifStatus = 'granted';
@@ -151,90 +123,32 @@ function dashboardHandler() {
           serviceWorkerRegistration: registration
         });
 
-        if (!token) {
-          console.error("❌ No FCM token received");
-          return;
+        if (token) {
+          await this.saveFCMToken(token);
         }
-
-        console.log("✅ FCM Token obtained:", token.substring(0, 20) + "...");
-        await this.saveFCMToken(token);
-
-        window.firebaseMessaging.onTokenRefresh(async () => {
-          console.log("🔄 FCM Token refreshed — updating DB");
-          try {
-            const newToken = await window.firebaseMessaging.getToken({
-              vapidKey: "BBZpS8kGM1KZEP1f0L9TeEM-WHUAKND52kqpPPb-9I1EuWNlXItKHaRGqNkrmOKPzjhvtP3oysjZ8Dq1SuN4yBk",
-              serviceWorkerRegistration: registration
-            });
-            if (newToken) {
-              await this.saveFCMToken(newToken);
-            }
-          } catch (err) {
-            console.error("❌ Failed to refresh FCM token:", err);
-          }
-        });
-
       } catch (err) {
-        console.error("❌ Notification setup failed:", err);
+        console.error("Notification setup failed:", err);
       }
     },
 
-    // ─────────────────────────────────────────────────────────
-    // SAVE FCM TOKEN
-    // ─────────────────────────────────────────────────────────
     async saveFCMToken(token) {
-      const { error } = await window.sb
+      await window.sb
         .from("technicians")
         .update({ fcm_token: token })
         .eq("id", this.tech.id);
-
-      if (error) {
-        console.error("❌ Failed to save FCM token to DB:", error);
-      } else {
-        console.log("✅ FCM Token saved to Supabase for tech:", this.tech.id);
-      }
     },
 
-    // ─────────────────────────────────────────────────────────
-    // REGISTER FOREGROUND HANDLER
-    // ─────────────────────────────────────────────────────────
     registerForegroundHandler() {
       window.firebaseMessaging.onMessage((payload) => {
-        console.log("📩 Foreground message received:", payload);
-
-        const title = payload.notification?.title || "New Job";
-        const body  = payload.notification?.body  || "You have a new job";
-
-        if (Notification.permission === 'granted') {
-          const notif = new Notification(title, {
-            body: body,
-            icon: "/icon-192.png",
-            badge: "/icon-192.png",
-            requireInteraction: true,
-            vibrate: [200, 100, 200]
-          });
-
-          notif.onclick = () => {
-            window.focus();
-            notif.close();
-          };
-        } else {
-          console.warn("🔕 Permission not granted — showing in-app alert instead");
-        }
-
         this.fetchJobs();
       });
     },
 
-    // ─────────────────────────────────────────────────────────
     openMaps(location) {
       const encoded = encodeURIComponent(location);
       window.open(`https://maps.google.com/?q=${encoded}`, '_blank');
     },
 
-    // ─────────────────────────────────────────────────────────
-    // DISTANCE TRACKING
-    // ─────────────────────────────────────────────────────────
     getCurrentLocation() {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
@@ -274,7 +188,6 @@ function dashboardHandler() {
         this.geocodeCache[address] = coords;
         return coords;
       } catch (err) {
-        console.warn("Geocode failed:", err);
         return null;
       }
     },
@@ -288,7 +201,6 @@ function dashboardHandler() {
         this.currentLoc = await this.getCurrentLocation();
         this.locationStatus = 'ready';
       } catch (err) {
-        console.warn("Location unavailable:", err.message);
         this.locationStatus = 'unavailable';
         this.distancesUpdating = false;
         return;
@@ -329,9 +241,6 @@ function dashboardHandler() {
       document.getElementById('jobsSection')?.scrollIntoView({ behavior: 'smooth' });
     },
 
-    // ─────────────────────────────────────────────────────────
-    // TOGGLE AVAILABILITY
-    // ─────────────────────────────────────────────────────────
     async toggleAvailability(e) {
       const newValue = e.target.checked;
       this.available = newValue;
@@ -342,17 +251,11 @@ function dashboardHandler() {
         .eq('id', this.tech.id);
 
       if (error) {
-        console.error("❌ Failed to update availability:", error);
         this.available = !newValue;
         alert("Failed to update availability. Please try again.");
-      } else {
-        console.log(`✅ Availability set to: ${newValue}`);
       }
     },
 
-    // ─────────────────────────────────────────────────────────
-    // FETCH JOBS
-    // ─────────────────────────────────────────────────────────
     async fetchJobs() {
       this.loading = true;
       const { data, error } = await window.sb
@@ -370,9 +273,7 @@ function dashboardHandler() {
           j => j.status === 'completed' && j.tech_id === this.tech.id
         );
 
-        this.stats.earnings = completedJobs.reduce((total, job) => {
-          return total + this.calculateFee(job);
-        }, 0);
+        this.stats.earnings = completedJobs.reduce((total, job) => total + this.calculateFee(job), 0);
 
         const today = new Date().toISOString().split('T')[0];
         this.stats.todayEarnings = data
@@ -388,9 +289,6 @@ function dashboardHandler() {
       this.updateJobDistances();
     },
 
-    // ─────────────────────────────────────────────────────────
-    // SUBSCRIBE REALTIME
-    // ─────────────────────────────────────────────────────────
     subscribeRealtime() {
       window.sb
         .channel(`public-jobs`)
@@ -420,9 +318,7 @@ function dashboardHandler() {
             const completedJobs = this.jobs.filter(
               j => j.status === 'completed' && j.tech_id === this.tech.id
             );
-            this.stats.earnings = completedJobs.reduce((total, job) => {
-              return total + this.calculateFee(job);
-            }, 0);
+            this.stats.earnings = completedJobs.reduce((total, job) => total + this.calculateFee(job), 0);
             const today = new Date().toISOString().split('T')[0];
             this.stats.todayEarnings = completedJobs
               .filter(j => j.completed_at?.startsWith(today))
@@ -432,9 +328,6 @@ function dashboardHandler() {
         .subscribe();
     },
 
-    // ─────────────────────────────────────────────────────────
-    // ACCEPT / REJECT JOBS
-    // ─────────────────────────────────────────────────────────
     async acceptJob(jobId) {
       const { data, error } = await window.sb
         .from("jobs")
@@ -448,13 +341,7 @@ function dashboardHandler() {
         .eq("status", "pending")
         .select();
 
-      if (error) {
-        console.error("Accept error:", error);
-        alert("Database error while accepting job");
-        return;
-      }
-
-      if (!data || data.length === 0) {
+      if (error || !data || data.length === 0) {
         alert("Too late. Another technician already took this job.");
         return;
       }
@@ -483,7 +370,6 @@ function dashboardHandler() {
         .eq("id", jobId);
 
       if (error) {
-        console.error("Reject failed:", error);
         alert("Reject failed");
         return;
       }
@@ -492,15 +378,13 @@ function dashboardHandler() {
       this.stats.activeJobs = this.jobs.filter(j => j.status !== 'completed').length;
     },
 
-    // ─────────────────────────────────────────────────────────
-    // SINGLE-CLICK COMPLETE JOB (TRIGGERS CUSTOMER PAYMENT & OTP FLOW)
-    // ─────────────────────────────────────────────────────────
     async completeJob(job) {
       try {
-        const customerAmount = job.quoted_amount 
+        const customerAmount = job.original_price 
+          || job.payable_amount 
+          || job.quoted_amount 
           || job.customer_price 
           || job.discounted_price 
-          || job.original_price 
           || job.price 
           || 299;
 
@@ -508,13 +392,14 @@ function dashboardHandler() {
           .from('jobs')
           .update({
             payment_status: 'PENDING_CUSTOMER_PAYMENT',
-            payable_amount: Number(customerAmount)
+            payable_amount: Number(customerAmount),
+            status: 'in_progress'
           })
           .eq('id', job.id);
 
         if (error) throw error;
 
-        alert("Payment request sent to customer screen! Ask the resident to complete payment to get the completion code.");
+        alert("💳 Payment request sent to customer screen! The customer must complete payment to get their 6-digit completion OTP.");
         await this.fetchJobs();
       } catch (err) {
         console.error("Complete job payment trigger error:", err);
@@ -523,8 +408,8 @@ function dashboardHandler() {
     },
 
     async verifyJobCompletionOtp(jobId) {
-      if (!this.enteredOtp || this.enteredOtp.length !== 6) {
-        alert("Please enter a valid 6-digit OTP provided by the customer.");
+      if (!this.enteredOtp || String(this.enteredOtp).trim().length !== 6) {
+        alert("Please enter the 6-digit OTP provided by the customer.");
         return;
       }
 
@@ -552,6 +437,7 @@ function dashboardHandler() {
           .from('jobs')
           .update({
             status: 'completed',
+            payment_status: 'PAID',
             completed_at: new Date().toISOString(),
             technician_earning: fee
           })
@@ -559,84 +445,16 @@ function dashboardHandler() {
 
         if (updateError) throw updateError;
 
-        alert("OTP Verified Successfully! Job marked as completed.");
+        alert("🎉 OTP Verified! Job marked as completed.");
         this.enteredOtp = '';
         localStorage.removeItem("locked_job_id");
         await this.fetchJobs();
       } catch (err) {
         console.error("OTP Verification Error:", err);
-        alert("An error occurred during verification.");
+        alert("An error occurred during verification: " + err.message);
       }
     },
 
-    // ─────────────────────────────────────────────────────────
-    // MARK ARRIVED
-    // ─────────────────────────────────────────────────────────
-    async markArrived(job) {
-      try {
-        const { error } = await window.sb
-          .from('jobs')
-          .update({ arrived_at: new Date().toISOString() })
-          .eq('id', job.id)
-          .eq('tech_id', this.tech.id);
-
-        if (error) throw error;
-
-        job.arrived_at = new Date().toISOString();
-        job.status = "arrived";
-        alert("Arrival marked successfully");
-      } catch (err) {
-        console.error("Arrival error:", err);
-        alert("Failed to mark arrival: " + (err.message || "Unknown error"));
-      }
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // INCOMING MODAL ACTIONS
-    // ─────────────────────────────────────────────────────────
-    async acceptIncoming() {
-      const job = this.incomingJob;
-      if (!job) return;
-
-      const { data, error } = await window.sb
-        .from("jobs")
-        .update({
-          tech_id: this.tech.id,
-          status: "in_progress",
-          started_at: new Date().toISOString()
-        })
-        .eq("id", job.id)
-        .eq("status", "pending")
-        .is("tech_id", null)
-        .select();
-
-      if (!data || data.length === 0) {
-        alert("Too late. Another technician accepted this job.");
-      }
-
-      this.incomingJob = null;
-      this.fetchJobs();
-    },
-
-    async rejectIncoming() {
-      const job = this.incomingJob;
-      if (!job) return;
-
-      const currentRejected = job.rejected_by || [];
-
-      await window.sb
-        .from("jobs")
-        .update({
-          rejected_by: [...currentRejected, this.tech.id]
-        })
-        .eq("id", job.id);
-
-      this.incomingJob = null;
-    },
-
-    // ─────────────────────────────────────────────────────────
-    // UTILITIES
-    // ─────────────────────────────────────────────────────────
     formatScheduled(job) {
       const raw = job?.scheduled_time;
       if (!raw) return null;
@@ -651,19 +469,9 @@ function dashboardHandler() {
       return raw;
     },
 
-    formatTime(dt) {
-      if (!dt) return "-";
-      const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
-      if (diff < 1)  return "just now";
-      if (diff < 60) return diff + " mins ago";
-      const hours = Math.floor(diff / 60);
-      if (hours < 24) return hours + " hrs ago";
-      return Math.floor(hours / 24) + " days ago";
-    },
-
     calculateFee(job) {
       const COMMISSION = 0.157;
-      const servicePrice = job.discounted_price || job.original_price || job.price || 0;
+      const servicePrice = job.original_price || job.discounted_price || job.price || 0;
       return Math.round(servicePrice * (1 - COMMISSION));
     },
 
