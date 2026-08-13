@@ -59,11 +59,6 @@ let lastGeocodeTime = 0;
 let generatedOtpReference = null;
 let realtimeChannel = null;
 let jobStartTime = null;
-let isOnline = navigator.onLine;
-let lastSyncAt = null;
-const tech = JSON.parse(localStorage.getItem("active_tech") || "null");
-const checklistKey = `fixzenix_checklist_${jobId}`;
-const notesKey = `fixzenix_notes_${jobId}`;
 
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
@@ -266,86 +261,6 @@ function startElapsedTimer(startIso) {
   elapsedInterval = setInterval(tick, 30000);
 }
 
-
-function setSyncState(text, live = true) {
-  const el = document.getElementById("syncState");
-  if (el) el.textContent = text;
-  const pill = document.getElementById("liveSyncPill");
-  if (pill) {
-    pill.className = live ? "live-pill" : "live-pill bg-amber-50 text-amber-700";
-    pill.innerHTML = live ? '<span class="live-dot"></span> Live' : '<i class="fas fa-cloud-arrow-down"></i> Offline';
-  }
-}
-
-function updateLifecycle(status) {
-  const order = { accepted: 1, arrived: 2, in_progress: 3, completed: 4 };
-  const progress = order[status] || 1;
-  ["tlAccepted","tlArrived","tlWorking","tlDone"].forEach((id, i) => {
-    const el = document.getElementById(id); if (!el) return;
-    el.classList.remove("done","current");
-    if (i + 1 < progress) el.classList.add("done");
-    else if (i + 1 === progress) el.classList.add(status === "completed" ? "done" : "current");
-  });
-  const label = document.getElementById("lifecycleLabel");
-  if (label) label.textContent = ({accepted:"Job accepted",arrived:"Technician on site",in_progress:"Completion verification",completed:"Job closed"}[status] || "Live workflow");
-}
-
-function loadChecklist() {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(checklistKey) || "{}"); } catch {}
-  document.querySelectorAll(".job-check").forEach(input => {
-    input.checked = !!saved[input.value];
-    input.closest(".check-row")?.classList.toggle("done", input.checked);
-  });
-  updateChecklistProgress();
-}
-function updateChecklistProgress() {
-  const all = [...document.querySelectorAll(".job-check")];
-  const done = all.filter(x => x.checked).length;
-  const label = document.getElementById("checklistProgress"); if (label) label.textContent = `${done}/${all.length}`;
-  document.querySelectorAll(".check-row").forEach(row => row.classList.toggle("done", row.querySelector("input")?.checked));
-}
-function checklistComplete() { return [...document.querySelectorAll(".job-check")].every(x => x.checked); }
-function saveNotes() {
-  const el = document.getElementById("techNotes"); if (!el) return;
-  localStorage.setItem(notesKey, el.value);
-  const state = document.getElementById("noteSaveState"); if (state) state.textContent = "Saved";
-  const count = document.getElementById("noteCount"); if (count) count.textContent = `${el.value.length}/1200`;
-}
-function loadNotes() {
-  const el = document.getElementById("techNotes"); if (!el) return;
-  el.value = localStorage.getItem(notesKey) || "";
-  const count = document.getElementById("noteCount"); if (count) count.textContent = `${el.value.length}/1200`;
-}
-function getCustomerPhone() { return String(jobData?.phone || "").replace(/\D/g, ""); }
-function setupContactActions() {
-  const phone = getCustomerPhone();
-  const call = document.getElementById("callBtn"), sms = document.getElementById("smsBtn"), wa = document.getElementById("whatsappBtn");
-  if (phone) {
-    if (call) call.href = `tel:${phone}`;
-    if (sms) sms.href = `sms:${phone}`;
-    if (wa) wa.href = `https://wa.me/${phone.startsWith("91") ? phone : "91" + phone}`;
-  }
-  const copy = document.getElementById("copyPhoneBtn");
-  copy?.addEventListener("click", async () => { try { await navigator.clipboard.writeText(jobData?.phone || ""); showToast("Customer number copied.","success",1800); } catch { showToast("Could not copy number.","warning"); } });
-}
-function updatePaymentSummary() {
-  const amount = Number(jobData?.payable_amount || jobData?.quoted_amount || jobData?.customer_price || jobData?.discounted_price || jobData?.original_price || jobData?.price || 0);
-  const el = document.getElementById("payableAmount"); if (el) el.textContent = `₹${amount.toLocaleString("en-IN")}`;
-  const status = String(jobData?.payment_status || "").toUpperCase();
-  const state = document.getElementById("paymentState"), note = document.getElementById("paymentNote");
-  if (!state) return;
-  if (status === "PAID") { state.textContent = "Paid"; state.className = "text-[11px] font-extrabold text-emerald-700"; if(note) note.textContent="Payment confirmed. Completion verification can proceed."; }
-  else if (status) { state.textContent = status.replaceAll("_"," "); if(note) note.textContent="Payment is not yet confirmed. Follow the customer payment flow before closing the job."; }
-  else { state.textContent = "Not recorded"; if(note) note.textContent="Payment status is not available in this job record."; }
-}
-function setupNetwork() {
-  const bar=document.getElementById("offlineJobBar");
-  const apply=()=>{isOnline=navigator.onLine;bar?.classList.toggle("hidden",isOnline);setSyncState(isOnline ? (lastSyncAt ? `Synced ${lastSyncAt}` : "Connected") : "Offline",isOnline);};
-  window.addEventListener("online",()=>{apply(); loadJob();});
-  window.addEventListener("offline",apply); apply();
-}
-
 async function loadJob() {
   const { data, error } = await sb
     .from("jobs")
@@ -364,13 +279,6 @@ async function loadJob() {
     return;
   }
   jobData = data;
-  lastSyncAt = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-  setSyncState(`Synced ${lastSyncAt}`, true);
-  updateLifecycle(data.status);
-  updatePaymentSummary();
-  setupContactActions();
-  loadChecklist();
-  loadNotes();
 
   if (data.is_inspection_job) {
     document.getElementById("inspectionQuoteCard").classList.remove("hidden");
@@ -480,15 +388,12 @@ document.getElementById("arrivedBtn").onclick = async () => {
   btn.disabled = true;
 
   try {
-    const activeTechId = tech?.id || jobData.tech_id;
-    const { error } = await sb.from("jobs").update({
+    await sb.from("jobs").update({
       status: "arrived",
       arrived_at: new Date().toISOString()
-    }).eq("id", jobId).eq("tech_id", activeTechId);
-    if (error) throw error;
+    }).eq("id", jobId);
 
     jobData.status = "arrived";
-    updateLifecycle("arrived");
     jobData.arrived_at = new Date().toISOString();
     setStatusBadge("arrived");
     startElapsedTimer(jobData.arrived_at);
@@ -573,19 +478,6 @@ otpInputs.forEach((input, index) => {
     });
 });
 
-
-document.querySelectorAll(".job-check").forEach(input => {
-  input.addEventListener("change", () => {
-    const saved = {};
-    document.querySelectorAll(".job-check").forEach(x => saved[x.value] = x.checked);
-    localStorage.setItem(checklistKey, JSON.stringify(saved));
-    updateChecklistProgress();
-  });
-});
-const notesEl=document.getElementById("techNotes");
-notesEl?.addEventListener("input",()=>{const c=document.getElementById("noteCount");if(c)c.textContent=`${notesEl.value.length}/1200`;document.getElementById("noteSaveState").textContent="Unsaved";});
-notesEl?.addEventListener("blur",saveNotes);
-
 document.getElementById("completeBtn").onclick = async () => {
   if (!jobData) return;
 
@@ -603,13 +495,11 @@ document.getElementById("completeBtn").onclick = async () => {
     const { error: otpPostError } = await sb.from("jobs").update({
       status: "in_progress",
       otp: generatedOtpReference
-    }).eq("id", jobId).eq("tech_id", tech?.id || jobData.tech_id);
+    }).eq("id", jobId);
 
     if (otpPostError) throw otpPostError;
 
     jobData.status = "in_progress";
-    updateLifecycle("in_progress");
-    updatePaymentSummary();
     setStatusBadge("in_progress");
 
     btn.innerHTML = originalHtml;
@@ -631,7 +521,7 @@ document.getElementById("cancelOtpBtn").onclick = async () => {
     closeOtpBottomSheet();
 
     try {
-      await sb.from("jobs").update({ status: "arrived", otp: null }).eq("id", jobId).eq("tech_id", tech?.id || jobData.tech_id);
+      await sb.from("jobs").update({ status: "arrived", otp: null }).eq("id", jobId);
       jobData.status = "arrived";
       setStatusBadge("arrived");
     } catch (err) {
@@ -676,13 +566,9 @@ document.getElementById("verifyOtpBtn").onclick = async () => {
           status: "completed",
           completed_at: new Date().toISOString(),
           technician_fee: fee
-        }).eq("id", jobId).eq("tech_id", tech?.id || jobData.tech_id);
+        }).eq("id", jobId);
 
         localStorage.removeItem("locked_job_id");
-        localStorage.removeItem(checklistKey);
-        localStorage.removeItem(notesKey);
-        jobData.status = "completed";
-        updateLifecycle("completed");
         window.onpopstate = null; // Unbind system locks on successful validation lifecycle
         if (etaInterval) clearInterval(etaInterval);
         if (elapsedInterval) clearInterval(elapsedInterval);
@@ -921,17 +807,6 @@ if (jobId) {
 }
 
 loadJob();
-
-
-document.getElementById("backToDashboardBtn")?.addEventListener("click",()=>{
-  showToast("Active job is locked until completion verification.","warning",3000);
-});
-document.getElementById("shareJobBtn")?.addEventListener("click",async()=>{
-  const text=`FixZenix Job ${jobData?.id || jobId}\nCustomer: ${jobData?.customer_name || ""}\nService: ${jobData?.category || ""}\nLocation: ${jobData?.location || ""}`;
-  try { if(navigator.share){await navigator.share({title:"FixZenix Job",text});} else {await navigator.clipboard.writeText(text);showToast("Job summary copied.","success",2000);} } catch(e) {}
-});
-document.getElementById("supportFloatBtn2")?.addEventListener("click",()=>document.getElementById("supportOverlay")?.classList.remove("hidden"));
-setupNetwork();
 
 window.addEventListener("beforeunload", () => {
   if (etaInterval) clearInterval(etaInterval);
