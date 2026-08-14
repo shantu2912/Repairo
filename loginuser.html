@@ -179,7 +179,30 @@
                     <button type="button" @click="step='forgot'; message=''" class="text-xs font-bold text-brand-gold hover:underline underline-offset-2 tracking-wide deva" x-text="tx('forgot_link')"></button>
                 </div>
 
-                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading || (!isNewUser && lock.active)">
+                <!-- Terms & Conditions are mandatory for new accounts -->
+                <div x-show="isNewUser" x-cloak class="mt-5 rounded-2xl border border-brand-beige/60 bg-brand-cream/60 p-4">
+                    <div class="flex items-start gap-3">
+                        <input
+                            id="termsCheckbox"
+                            type="checkbox"
+                            :checked="termsAccepted"
+                            @change="toggleTerms($event.target.checked)"
+                            class="mt-1 h-4 w-4 accent-[#5D5646] cursor-pointer shrink-0"
+                        >
+                        <label for="termsCheckbox" class="text-[11px] leading-relaxed text-brand-dark/70 cursor-pointer deva">
+                            <span x-text="tx('terms_checkbox')"></span>
+                        </label>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="openTerms()"
+                        class="mt-2 ml-7 text-[10px] font-extrabold uppercase tracking-wider text-brand-gold hover:underline"
+                        x-text="tx('terms_open')">
+                    </button>
+                </div>
+
+                <button @click="processForm()" class="btn-primary mt-6 shadow-lg deva" :disabled="loading || (!isNewUser && lock.active) || (isNewUser && !termsAccepted)">
                     <span x-show="!loading" x-text="isNewUser ? tx('create_account') : tx('sign_in')"></span>
                     <div x-show="loading" class="loader"></div>
                 </button>
@@ -199,6 +222,80 @@
                     <button @click="isNewUser = !isNewUser; resetErrors();" class="text-xs font-bold text-brand-gold hover:underline tracking-widest decoration-brand-gold/30 underline-offset-4 deva">
                         <span x-text="isNewUser ? tx('already_member') : tx('new_user')"></span>
                     </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ============================================================
+             TERMS & CONDITIONS MODAL
+             Account creation cannot proceed unless the user accepts.
+             ============================================================ -->
+        <div
+            x-show="showTerms"
+            x-cloak
+            x-transition.opacity
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            @keydown.escape.window="closeTerms()"
+        >
+            <div
+                @click.outside="closeTerms()"
+                class="w-full max-w-lg max-h-[85vh] overflow-hidden rounded-[2rem] bg-white shadow-2xl border border-white animate__animated animate__fadeInUp"
+            >
+                <div class="flex items-center justify-between px-6 py-5 border-b border-brand-beige/40">
+                    <div>
+                        <p class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brand-gold">FixZenix</p>
+                        <h3 class="font-serif italic text-2xl text-brand-olive deva" x-text="tx('terms_title')"></h3>
+                    </div>
+                    <button type="button" @click="closeTerms()" class="w-9 h-9 rounded-full bg-brand-cream text-brand-olive hover:bg-brand-beige transition" aria-label="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-[55vh] px-6 py-5 text-xs leading-6 text-brand-dark/75 space-y-4">
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">1. Account Registration</h4>
+                        <p>Users must provide accurate information while creating an account. You are responsible for keeping your login credentials confidential and for activity performed through your account.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">2. Use of FixZenix</h4>
+                        <p>FixZenix is a home-service platform. Users must use the platform lawfully and must not misuse, disrupt, impersonate, or attempt unauthorized access to the service.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">3. Bookings & Services</h4>
+                        <p>Service availability, pricing, technician assignment, estimated arrival times, and service completion may vary. Any applicable service charges will be shown or communicated during the booking process.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">4. Payments & Cancellations</h4>
+                        <p>Users agree to pay applicable charges for services they request. Cancellation, refund, and payment rules may apply according to the service and booking conditions displayed by FixZenix.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">5. Privacy</h4>
+                        <p>Information provided during registration and service use may be processed to operate the platform, provide services, communicate with users, prevent misuse, and improve FixZenix.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">6. Prohibited Conduct</h4>
+                        <p>Users must not submit false information, abuse technicians or staff, attempt fraud, interfere with platform security, or use FixZenix for unlawful activities.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-extrabold text-brand-olive">7. Changes</h4>
+                        <p>FixZenix may update its terms, policies, services, or features when necessary. Updated terms may apply after they are published or otherwise communicated to users.</p>
+                    </div>
+
+                    <div class="rounded-xl bg-brand-cream p-4 text-[10px] text-brand-dark/60">
+                        <strong>Important:</strong> This is a product-level Terms & Conditions draft, not legal advice. Before public launch, have the final Terms & Conditions and Privacy Policy reviewed for compliance with applicable Indian law.
+                    </div>
+                </div>
+
+                <div class="flex gap-3 px-6 py-5 border-t border-brand-beige/40">
+                    <button type="button" @click="closeTerms()" class="flex-1 py-3 rounded-xl border-2 border-brand-beige text-brand-olive font-extrabold text-xs uppercase tracking-wider" x-text="tx('terms_close')"></button>
+                    <button type="button" @click="acceptTerms()" class="flex-1 py-3 rounded-xl bg-brand-olive text-white font-extrabold text-xs uppercase tracking-wider hover:bg-[#4a4537] transition" x-text="tx('terms_accept')"></button>
                 </div>
             </div>
         </div>
