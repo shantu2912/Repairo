@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>FixZenix · Tracking & Verification</title>
+    <title>FixZenix · Service Tracking</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -247,12 +247,12 @@
                 </div>
             </div>
 
-            <!-- OTP Code Display (Direct Listener from Supabase) -->
+            <!-- Completion OTP Code (Direct Supabase Realtime Listener) -->
             <div x-show="otpCode && jobStatus !== 'completed'" x-transition.opacity class="text-center py-4">
                 <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm animate-bounce">
                     <i class="fa-solid fa-shield-check text-3xl text-green-500"></i>
                 </div>
-                <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Completion Code Ready</h2>
+                <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Job Completion Code</h2>
                 <p class="text-sm text-gray-500 mb-6 px-4">Share this 6-digit code with your technician to verify and close the service.</p>
                 <div class="bg-white border-2 border-dashed border-[#A07D54] rounded-2xl p-6 mb-6 shadow-inner relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-[#A07D54] animate-pulse"></div>
