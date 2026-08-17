@@ -7,7 +7,6 @@ function trackingApp() {
   return {
     jobId: null,
     jobStatus: 'pending',
-    paymentStatus: 'pending',
     payableAmount: 299,
     otpCode: null,
     technicianFound: false,
@@ -83,7 +82,6 @@ function trackingApp() {
 
         this.fullJobData = job;
         this.jobStatus = job.status || 'pending';
-        this.paymentStatus = job.payment_status || 'pending';
         
         this.payableAmount = job.original_price 
           || job.payable_amount 
@@ -91,19 +89,14 @@ function trackingApp() {
           || job.price 
           || 299;
 
+        // Directly assign OTP if generated/present in database
         if (job.completion_otp || job.otp) {
-          if (this.paymentStatus === 'PAID' || this.jobStatus === 'completed') {
-            this.otpCode = job.completion_otp || job.otp;
-          }
+          this.otpCode = job.completion_otp || job.otp;
         }
 
         if (job.tech_id) {
           this.technicianFound = true;
           await this.fetchTechnicianDetails(job.tech_id);
-        }
-
-        if (this.paymentStatus === 'PENDING_CUSTOMER_PAYMENT' && !this.otpCode && this.jobStatus !== 'completed') {
-          this.triggerRazorpayCheckout();
         }
 
         this.setupInvoiceItems(job);
@@ -140,7 +133,6 @@ function trackingApp() {
           const updatedJob = payload.new;
           this.fullJobData = updatedJob;
           this.jobStatus = updatedJob.status;
-          this.paymentStatus = updatedJob.payment_status;
 
           this.payableAmount = updatedJob.original_price 
             || updatedJob.payable_amount 
@@ -153,115 +145,14 @@ function trackingApp() {
             await this.fetchTechnicianDetails(updatedJob.tech_id);
           }
 
-          if (updatedJob.payment_status === 'PENDING_CUSTOMER_PAYMENT' && !this.otpCode && this.jobStatus !== 'completed') {
-            this.triggerRazorpayCheckout();
-          }
-
-          if (updatedJob.payment_status === 'PAID' || updatedJob.status === 'completed') {
+          // Realtime listener directly updates OTP code
+          if (updatedJob.completion_otp || updatedJob.otp) {
             this.otpCode = updatedJob.completion_otp || updatedJob.otp;
           }
 
           this.setupInvoiceItems(updatedJob);
         })
         .subscribe();
-    },
-
-    // Step 1: Call Supabase Edge Function 'smooth-service' to Create Order
-    async triggerRazorpayCheckout() {
-      try {
-        const cleanAmount = parseFloat(this.payableAmount) || 299;
-
-        const { data, error } = await sb.functions.invoke('smooth-service', {
-          body: { 
-            amount: cleanAmount, 
-            jobId: this.jobId,
-            customerName: this.fullJobData?.customer_name || "Valued Customer",
-            customerPhone: this.fullJobData?.phone || ""
-          }
-        });
-
-        if (error) {
-          console.error("Edge Function 'smooth-service' error:", error);
-          throw new Error(error.message || "Failed to initialize payment order");
-        }
-
-        const orderId = data?.order_id || data?.id || data?.order?.id;
-        const keyId = data?.key_id || data?.razorpay_key_id;
-
-        if (!orderId) {
-          throw new Error("Order creation failed: missing order ID from server.");
-        }
-
-        const options = {
-          key: keyId,
-          amount: data?.amount || Math.round(cleanAmount * 100),
-          currency: data?.currency || "INR",
-          name: "FixZenix Services",
-          description: `Payment for ${this.fullJobData?.category || 'Home Repair'}`,
-          order_id: orderId,
-          prefill: {
-            name: this.fullJobData?.customer_name || "Valued Customer",
-            contact: this.fullJobData?.phone || "",
-          },
-          theme: {
-            color: "#5D5646"
-          },
-          handler: async (response) => {
-            await this.verifyAndCompletePayment(response);
-          },
-          modal: {
-            ondismiss: () => {
-              console.log("Customer closed payment modal.");
-            }
-          }
-        };
-
-        const rzp = new window.Razorpay(options);
-        
-        rzp.on('payment.failed', (response) => {
-          console.error("Razorpay Payment Failure:", response.error);
-          alert(`Payment Failed: ${response.error.description || 'Transaction declined.'}`);
-        });
-
-        rzp.open();
-
-      } catch (err) {
-        console.error("Trigger Razorpay Error:", err);
-        alert("Could not open payment gateway: " + err.message);
-      }
-    },
-
-    // Step 2: Call Supabase Edge Function 'verify-payment' to Verify Signature & Unlock OTP
-    async verifyAndCompletePayment(razorpayResponse) {
-      try {
-        const { data, error } = await sb.functions.invoke('verify-payment', {
-          body: {
-            jobId: this.jobId,
-            razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-            razorpay_order_id: razorpayResponse.razorpay_order_id,
-            razorpay_signature: razorpayResponse.razorpay_signature
-          }
-        });
-
-        if (error) {
-          console.error("Edge Function 'verify-payment' error:", error);
-          throw new Error(error.message || "Payment verification failed");
-        }
-
-        this.paymentStatus = 'PAID';
-        
-        if (data?.completion_otp || data?.otp) {
-          this.otpCode = data.completion_otp || data.otp;
-        } else {
-          await this.fetchJobDetails();
-        }
-
-        alert("🎉 Payment Verified! Your 6-digit completion code is unlocked.");
-
-      } catch (err) {
-        console.error("Verification error:", err);
-        alert("Payment was submitted, but verification failed: " + err.message);
-      }
     },
 
     setupInvoiceItems(job) {
