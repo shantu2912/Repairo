@@ -89,7 +89,7 @@ function trackingApp() {
           || job.price 
           || 299;
 
-        // Directly assign OTP if generated/present in database
+        // Directly assign OTP from database record
         if (job.completion_otp || job.otp) {
           this.otpCode = job.completion_otp || job.otp;
         }
@@ -145,7 +145,7 @@ function trackingApp() {
             await this.fetchTechnicianDetails(updatedJob.tech_id);
           }
 
-          // Realtime listener directly updates OTP code
+          // Realtime listener directly captures OTP when generated in database
           if (updatedJob.completion_otp || updatedJob.otp) {
             this.otpCode = updatedJob.completion_otp || updatedJob.otp;
           }
