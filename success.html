@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>FixZenix · Payment & Tracking</title>
+    <title>FixZenix · Tracking & Verification</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -35,26 +34,17 @@
         
         @keyframes sheetUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .pop-in { animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .pop-in { animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
         
-        .btn-pay { background: linear-gradient(135deg, #5D5646 0%, #8B7A64 100%); transition: all 0.25s ease; }
-        .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -8px rgba(93, 86, 70, 0.4); }
-        .btn-pay:active { transform: scale(0.96); }
         .otp-glow { text-shadow: 0 0 30px rgba(160, 125, 84, 0.3); }
         .tech-card { background: linear-gradient(135deg, #faf8f5 0%, #f0ece6 100%); border: 1px solid #e8e2d8; }
-        .payment-amount { font-size: 2.75rem; font-weight: 900; letter-spacing: -0.02em; }
         
-        @media (max-width: 420px) { .payment-amount { font-size: 2.25rem; } }
         .modal-scroll { max-height: 85vh; overflow-y: auto; }
         .modal-scroll::-webkit-scrollbar { width: 4px; }
         .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
         .modal-scroll::-webkit-scrollbar-thumb { background: #c9b9a6; border-radius: 8px; }
         .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .status-badge { padding: 4px 14px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-        .status-badge.payment-request { background: #FEF3C7; color: #92400E; animation: pulse-bg 1.5s ease-in-out infinite; }
-        @keyframes pulse-bg { 0%, 100% { background: #FEF3C7; } 50% { background: #FDE68A; } }
     </style>
 
     <script>
@@ -147,16 +137,12 @@
                 <h3 class="text-sm font-extrabold"
                     :class="{
                     'text-[#A07D54]': jobStatus === 'accepted' || jobStatus === 'assigned',
-                    'text-[#10B981]': jobStatus === 'arrived' || jobStatus === 'started',
-                    'text-amber-600': paymentStatus === 'PENDING_CUSTOMER_PAYMENT',
-                    'text-emerald-600': paymentStatus === 'PAID'
+                    'text-[#10B981]': jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress'
                     }"
                     x-text="
                     jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' :
                     jobStatus === 'started' ? '🛠️ Service Started' :
-                    jobStatus === 'in_progress' && paymentStatus === 'PENDING_CUSTOMER_PAYMENT' ? '💳 Payment Requested — Please Pay' :
-                    jobStatus === 'in_progress' && paymentStatus === 'PAID' ? '🔑 Share Completion Code' :
-                    jobStatus === 'in_progress' ? '🛠️ Work In Progress' :
+                    jobStatus === 'in_progress' ? '🔑 Share Completion Code with Technician' :
                     'Your Expert is En Route'
                     ">
                 </h3>
@@ -203,63 +189,6 @@
                         <i class="fa-brands fa-whatsapp text-lg"></i> Message
                     </a>
                 </div>
-            </div>
-
-            <!-- Razorpay Payment Request Card -->
-            <div x-show="paymentStatus === 'PENDING_CUSTOMER_PAYMENT' && !otpCode && jobStatus !== 'completed'"
-                 class="rounded-2xl p-5 mb-4 border-2 border-amber-400 shadow-xl"
-                 style="background: linear-gradient(145deg, #FFFBEB 0%, #FFF8E7 100%);"
-                 x-transition.duration.400ms>
-                <div class="flex items-center gap-3 mb-4 pb-4 border-b border-amber-200/60">
-                    <div class="w-14 h-14 rounded-xl bg-white shadow-md flex items-center justify-center border border-amber-200/50 flex-shrink-0">
-                        <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-12 h-12 rounded-lg object-cover">
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Service Partner</p>
-                        <p class="text-base font-extrabold text-gray-900 truncate" x-text="techData?.name || 'FixZen Expert'"></p>
-                        <div class="flex items-center gap-2 text-[10px] text-gray-500">
-                            <span class="flex items-center gap-1"><i class="fa-solid fa-star text-yellow-500 text-[9px]"></i> <span x-text="techData?.rating || '4.9'"></span></span>
-                            <span>·</span>
-                            <span class="font-mono" x-text="'ID: ' + (techData?.tech_id || 'N/A')"></span>
-                        </div>
-                    </div>
-                    <span class="status-badge payment-request flex-shrink-0">
-                        <i class="fa-solid fa-clock mr-1"></i> Awaiting Payment
-                    </span>
-                </div>
-
-                <div class="text-center mb-4">
-                    <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Final Amount to Pay</p>
-                    <div class="payment-amount text-[#1a1a1a] mt-0.5">
-                        ₹<span x-text="payableAmount.toFixed(0)"></span>
-                    </div>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Secure payment via Razorpay</p>
-                </div>
-
-                <div class="bg-white/80 rounded-xl p-3 mb-4 text-xs border border-amber-200/40">
-                    <div class="flex justify-between py-1">
-                        <span class="text-gray-500">Service Charge</span>
-                        <span class="font-mono font-bold">₹<span x-text="payableAmount.toFixed(0)"></span></span>
-                    </div>
-                    <div class="flex justify-between py-1 text-emerald-600">
-                        <span><i class="fa-regular fa-circle-check mr-1"></i> Inspection Fee Credited</span>
-                        <span class="font-mono">−₹<span x-text="(fullJobData?.inspection_fee_amount || 99).toFixed(0)"></span></span>
-                    </div>
-                    <div class="border-t border-gray-200 mt-1 pt-1 flex justify-between font-bold text-sm">
-                        <span>Total Due</span>
-                        <span class="text-[#A07D54]">₹<span x-text="payableAmount.toFixed(0)"></span></span>
-                    </div>
-                </div>
-
-                <button @click="triggerRazorpayCheckout()" class="w-full btn-pay text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 text-base active:scale-95">
-                    <i class="fa-solid fa-lock text-sm"></i>
-                    Pay Now with Razorpay
-                    <i class="fa-solid fa-arrow-right text-sm"></i>
-                </button>
-
-                <p class="text-[9px] text-gray-400 text-center mt-3">
-                    <i class="fa-solid fa-shield-check text-[#A07D54] mr-1"></i> Secured by Razorpay · 128-bit encryption
-                </p>
             </div>
 
             <!-- Quote Review Card -->
@@ -318,13 +247,13 @@
                 </div>
             </div>
 
-            <!-- OTP Code Display -->
-            <div x-show="otpCode && (paymentStatus === 'PAID' || jobStatus === 'completed')" x-transition.opacity class="text-center py-4">
+            <!-- OTP Code Display (Direct Listener from Supabase) -->
+            <div x-show="otpCode && jobStatus !== 'completed'" x-transition.opacity class="text-center py-4">
                 <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm animate-bounce">
                     <i class="fa-solid fa-shield-check text-3xl text-green-500"></i>
                 </div>
-                <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Payment Complete! ✅</h2>
-                <p class="text-sm text-gray-500 mb-6 px-4">Share this 6-digit code with your technician to close the job.</p>
+                <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Completion Code Ready</h2>
+                <p class="text-sm text-gray-500 mb-6 px-4">Share this 6-digit code with your technician to verify and close the service.</p>
                 <div class="bg-white border-2 border-dashed border-[#A07D54] rounded-2xl p-6 mb-6 shadow-inner relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-[#A07D54] animate-pulse"></div>
                     <p class="text-[10px] text-[#A07D54] font-bold uppercase mb-2 tracking-wider">Completion Code</p>
@@ -336,8 +265,8 @@
                 <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-center gap-3 border border-gray-200">
                     <img :src="techData?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" class="w-8 h-8 rounded-full border-2 border-white shadow-sm">
                     <div class="text-left">
-                        <p class="text-sm font-bold text-gray-900" x-text="'Waiting for ' + (techData?.name || 'Technician')"></p>
-                        <p class="text-[10px] text-gray-400">They'll verify the code to complete the job</p>
+                        <p class="text-sm font-bold text-gray-900" x-text="'Assigned to ' + (techData?.name || 'Technician')"></p>
+                        <p class="text-[10px] text-gray-400">Technician will enter this code to mark the job finished</p>
                     </div>
                 </div>
             </div>
@@ -481,7 +410,7 @@
 
                 <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-xs">
                     <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-receipt mr-1"></i> Payment Summary</p>
-                    <div class="flex justify-between font-black text-sm text-green-700"><span>Total Paid</span><span x-text="'₹' + billGrandTotal.toFixed(2)"></span></div>
+                    <div class="flex justify-between font-black text-sm text-green-700"><span>Total Settled</span><span x-text="'₹' + billGrandTotal.toFixed(2)"></span></div>
                 </div>
 
                 <div class="flex items-end justify-between border-t border-gray-100 pt-4 mb-2">
@@ -494,7 +423,7 @@
                     <div class="flex-shrink-0">
                         <div class="w-20 h-20 rounded-full border-2 border-[#10B981] flex flex-col items-center justify-center text-[#10B981] -rotate-12 opacity-80">
                             <i class="fa-solid fa-stamp text-lg mb-0.5"></i>
-                            <span class="text-[8px] font-black uppercase tracking-wide text-center leading-tight">Verified<br>Paid</span>
+                            <span class="text-[8px] font-black uppercase tracking-wide text-center leading-tight">Verified<br>Service</span>
                         </div>
                     </div>
                 </div>
