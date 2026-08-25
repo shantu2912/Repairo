@@ -11,6 +11,7 @@ export const memory = {
     originalMessage: null
 };
 
+
 export function saveMessage(role, text) {
     memory.history.push({
         role,
