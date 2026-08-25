@@ -40,6 +40,9 @@ export function getResponse(intent) {
         case "cancellation": return random(knowledge.cancellation);
         case "complaint": return random(knowledge.complaint);
         case "emergency": return random(knowledge.emergency);
+            // add a new case
+        case "clarification":
+        return random(knowledge.clarification);
 
         default: return random(knowledge.fallback);
     }
