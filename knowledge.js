@@ -713,5 +713,12 @@ export const knowledge = {
         "Maybe we can start over?",
         "I'm all ears – just tell me again.",
         "Thank you for your patience – I'll try my best."
-    ]
+    ],
+    // inside knowledge.js export
+clarification: [
+    "I'm not sure what you need. Is it about AC, plumbing, or electrical?",
+    "Hmm, I didn't catch that. Could you tell me the category: AC, plumbing, or electrical?",
+    "I need more info. Are you facing an issue with AC, water pipes, or electricity?",
+    "To help you better, please choose one: AC, plumbing, or electrical."
+]
 };
