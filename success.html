@@ -161,7 +161,61 @@ x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus =
 </a>
 </div>
 </div>
+<!-- FINAL PRICE TO PAY -->
+<div
+    x-show="technicianFound && jobStatus !== 'completed' && jobStatus !== 'cancelled' && payableAmount > 0"
+    class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg"
+>
+    <div class="flex items-center gap-3 mb-3">
+        <div class="w-11 h-11 rounded-xl bg-[#F7F1E8] flex items-center justify-center">
+            <i class="fa-solid fa-indian-rupee-sign text-brand-gold text-lg"></i>
+        </div>
 
+        <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                Final Price to Pay
+            </p>
+
+            <p
+                class="text-3xl font-black text-gray-900"
+                x-text="'₹' + Number(payableAmount).toLocaleString('en-IN')"
+            ></p>
+        </div>
+    </div>
+
+    <div
+        x-show="quoteStatus === 'approved'"
+        class="bg-gray-50 rounded-xl p-3 text-xs text-gray-600"
+    >
+        <div class="flex justify-between">
+            <span>Approved Quote</span>
+            <span class="font-bold">
+                ₹<span x-text="Number(quoteAmount).toLocaleString('en-IN')"></span>
+            </span>
+        </div>
+
+        <div class="flex justify-between mt-1">
+            <span>Inspection Fee Already Paid</span>
+            <span class="font-bold text-green-600">
+                − ₹<span x-text="Number(inspectionFee).toLocaleString('en-IN')"></span>
+            </span>
+        </div>
+
+        <div class="border-t border-gray-200 mt-2 pt-2 flex justify-between font-black text-gray-900">
+            <span>Balance to Pay</span>
+            <span>
+                ₹<span x-text="Number(payableAmount).toLocaleString('en-IN')"></span>
+            </span>
+        </div>
+    </div>
+
+    <p
+        x-show="paymentStatus !== 'PENDING_CUSTOMER_PAYMENT' && paymentStatus !== 'PAID'"
+        class="text-[11px] text-gray-500 mt-3"
+    >
+        Payment will be requested after the technician completes the service.
+    </p>
+</div>
 <div x-show="paymentStatus === 'PENDING_CUSTOMER_PAYMENT' && !otpCode && jobStatus !== 'completed'" 
      class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-5 mb-4 text-center shadow-xl animate-bounce">
   <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 text-amber-600">
@@ -174,27 +228,6 @@ x-text="jobStatus === 'arrived' ? '🎉 Your Expert Has Arrived!' : (jobStatus =
           class="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-base">
     <i class="fa-solid fa-lock"></i> Pay Now with Razorpay
   </button>
-</div>
-
-<!-- FINAL PRICE LOCKED AFTER TECHNICIAN ACCEPTS -->
-<div x-show="technicianFound && jobStatus !== 'pending' && jobStatus !== 'searching' && jobStatus !== 'completed' && !showQuoteCard && finalPriceToPay > 0 && paymentStatus !== 'PAID'" x-transition class="bg-white border-2 border-brand-dark rounded-2xl p-5 mb-4 shadow-xl animate-slide-up-fade">
-  <div class="flex items-center gap-3 mb-4">
-    <div class="w-11 h-11 bg-brand-dark text-white rounded-xl flex items-center justify-center shadow-md"><i class="fa-solid fa-indian-rupee-sign"></i></div>
-    <div class="flex-1"><h3 class="text-base font-black text-brand-dark">Final Price to Pay</h3><p class="text-[11px] text-gray-500">Your payable amount is fixed after technician acceptance.</p></div>
-    <span class="px-2 py-1 rounded-full bg-green-50 text-green-700 text-[9px] font-black uppercase tracking-wide">Locked</span>
-  </div>
-  <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-    <div class="flex justify-between items-center"><span class="text-sm text-gray-600 font-semibold">Amount payable after service</span><span class="text-2xl font-black text-brand-dark">₹<span x-text="Number(finalPriceToPay).toFixed(2)"></span></span></div>
-    <div x-show="quoteStatus === 'approved' && quoteAmount > 0" class="mt-3 pt-3 border-t border-gray-200 text-xs space-y-1">
-      <div class="flex justify-between text-gray-500"><span>Approved quote</span><span>₹<span x-text="Number(quoteAmount).toFixed(2)"></span></span></div>
-      <div class="flex justify-between text-green-600"><span>Inspection fee already paid</span><span>−₹<span x-text="Number(inspectionFee).toFixed(2)"></span></span></div>
-    </div>
-  </div>
-  <div class="mt-3 flex items-start gap-2 text-[10px] text-gray-500"><i class="fa-solid fa-circle-info text-brand-gold mt-0.5"></i><span>You will pay this amount only after the technician finishes the work. The service bill is generated after successful payment.</span></div>
-  <div x-show="paymentStatus === 'PENDING_CUSTOMER_PAYMENT'" class="mt-4">
-    <button @click="triggerRazorpayCheckout(fullJobData || { id: jobId, payable_amount: finalPriceToPay })" class="w-full py-3.5 bg-brand-dark hover:bg-black text-white font-black rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"><i class="fa-solid fa-lock"></i> Pay ₹<span x-text="Number(finalPriceToPay).toFixed(2)"></span> Securely</button>
-  </div>
-  <div x-show="paymentStatus !== 'PENDING_CUSTOMER_PAYMENT'" class="mt-3 text-center bg-amber-50 border border-amber-200 rounded-xl p-3"><p class="text-[10px] font-bold text-amber-800"><i class="fa-solid fa-clock mr-1"></i> Payment will be requested when the technician completes the job.</p></div>
 </div>
 
 <div x-show="showQuoteCard && quoteStatus === 'submitted'"
@@ -660,4 +693,4 @@ style="background:linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%);ba
 
 <script src="success.js"></script>
 </body>
-</html
+</html>
