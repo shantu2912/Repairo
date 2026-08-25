@@ -24,7 +24,7 @@ export function askAI(message) {
 
     let intent = detectIntent(message);
 
-    let reply = generateReply(intent);
+    let reply = getResponse(intent);
 
     saveMessage("ai", reply);
 
