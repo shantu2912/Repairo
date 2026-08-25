@@ -5,6 +5,8 @@ export const intents = [
     { name: "help", keywords: ["help", "support", "guide", "assist", "what can you do", "how to", "options"] },
     { name: "thanks", keywords: ["thanks", "thank you", "thx", "ty", "appreciate it"] },
 
+
+    
     // AC Sub-intents
     { name: "ac_cooling", keywords: ["ac not cooling", "cooling issue", "warm air", "not cold", "cooling problem", "blower"] },
     { name: "ac_noise", keywords: ["noise", "sound", "grinding", "squealing", "rattling", "clicking", "buzzing"] },
