@@ -24,6 +24,8 @@ export const intents = [
     { name: "electrician_fan", keywords: ["fan", "ceiling fan", "exhaust fan", "wobble", "pull chain"] },
     { name: "electrician_wiring", keywords: ["rewire", "wiring", "old wiring", "copper", "aluminum", "cable"] },
 
+
+    
     // Business / Operations
     { name: "booking", keywords: ["book", "schedule", "appointment", "technician", "visit", "repair", "fix it", "come to my house"] },
     { name: "price_estimate", keywords: ["price", "cost", "charge", "rate", "estimate", "quote", "how much", "pay"] },
