@@ -1,5 +1,7 @@
 export const knowledge = {
 
+    
+
     // ============ GREETINGS (30) ============
     greeting: [
         "Hello 👋 Welcome to FixZenix!",
