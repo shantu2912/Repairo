@@ -1,601 +1,274 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang=en class=scroll-smooth>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FixZen Pro · Technician</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
-
-  <style>
-    /* ── reset & base ── */
-    [x-cloak] { display: none !important; }
-    * { box-sizing: border-box; }
-
-    body {
-      background: #F8F5F0;
-      color: #2D2B28;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── glass / cards ── */
-    .glass-card {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: 0 12px 28px -8px rgba(93, 86, 70, 0.08);
-    }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.90);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 20px;
-      padding: 1rem 1rem 0.9rem;
-      box-shadow: 0 4px 12px rgba(93, 86, 70, 0.04);
-      transition: transform 0.2s ease;
-    }
-    .stat-card:hover { transform: translateY(-2px); }
-
-    .job-card {
-      background: #ffffff;
-      border: 1px solid #E8E2D8;
-      border-radius: 24px;
-      box-shadow: 0 2px 10px rgba(93, 86, 70, 0.04);
-      transition: box-shadow 0.25s ease, transform 0.2s ease;
-      overflow: hidden;
-    }
-    .job-card:hover {
-      box-shadow: 0 12px 32px -8px rgba(93, 86, 70, 0.14);
-      transform: translateY(-3px);
-    }
-
-    /* ── status pills ── */
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 14px 4px 12px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-    .pill-pending { background: #FEF3C7; color: #92400E; }
-    .pill-completed { background: #D1FAE5; color: #065F46; }
-
-    /* ── action buttons ── */
-    .btn-primary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 15px 16px;
-      border-radius: 16px;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: none;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn-primary:active { transform: scale(0.96); }
-
-    .btn-accept {
-      background: #5D5646;
-      color: #fff;
-      box-shadow: 0 4px 14px rgba(93, 86, 70, 0.25);
-    }
-    .btn-accept:hover { background: #4A4436; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(93, 86, 70, 0.3); }
-
-    .btn-reject {
-      background: #fff;
-      color: #B91C1C;
-      border: 2px solid #FECACA;
-      box-shadow: 0 2px 8px rgba(185, 28, 28, 0.06);
-    }
-    .btn-reject:hover { background: #FFF1F2; border-color: #FCA5A5; transform: translateY(-1px); }
-
-    .btn-completed {
-      background: #ECFDF5;
-      color: #065F46;
-      border: 2px solid #A7F3D0;
-      cursor: default;
-      opacity: 0.7;
-    }
-
-    /* ── toggle switch ── */
-    .avail-toggle {
-      position: relative;
-      width: 44px;
-      height: 24px;
-      background: #DFD4C3;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      border: none;
-      outline: none;
-      flex-shrink: 0;
-    }
-    .avail-toggle.on { background: #5D5646; }
-    .avail-toggle::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      background: white;
-      border-radius: 50%;
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-    }
-    .avail-toggle.on::after { transform: translateX(20px); }
-
-    /* ── header & nav ── */
-    .header-blur {
-      background: rgba(255, 252, 248, 0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(223, 212, 195, 0.4);
-    }
-
-    .bottom-nav {
-      background: rgba(255, 252, 248, 0.94);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(223, 212, 195, 0.3);
-      border-radius: 32px 32px 0 0;
-      box-shadow: 0 -8px 30px rgba(93, 86, 70, 0.06);
-    }
-    .nav-btn {
-      color: rgba(45, 43, 40, 0.3);
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding: 8px 14px;
-      border-radius: 16px;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
-    .nav-btn.active, .nav-btn:hover { color: #5D5646; }
-    .nav-btn i { font-size: 20px; }
-
-    /* ── schedule badge ── */
-    .sched-badge {
-      background: #FFFBEB;
-      border: 1px solid #FDE68A;
-      border-radius: 12px;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* ── notification banners ── */
-    .notif-banner {
-      border-radius: 16px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .notif-denied  { background: #FFF1F2; border: 1px solid #FECDD3; }
-    .notif-prompt  { background: #FFFBEB; border: 1px solid #FDE68A; }
-
-    /* ── modal ── */
-    .modal-backdrop {
-      background: rgba(45, 43, 40, 0.55);
-      backdrop-filter: blur(6px);
-    }
-
-    /* ── skeleton ── */
-    @keyframes shimmer {
-      0% { background-position: -400px 0; }
-      100% { background-position: 400px 0; }
-    }
-    .skeleton {
-      background: linear-gradient(90deg, #f0ede8 25%, #e5dfd6 50%, #f0ede8 75%);
-      background-size: 800px 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 8px;
-    }
-
-    /* ── section label ── */
-    .section-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #A07D54;
-    }
-
-    /* ── gradient text ── */
-    .gradient-text {
-      background: linear-gradient(135deg, #5D5646 0%, #A07D54 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* ── card accent ── */
-    .card-accent {
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #5D5646, #A07D54, #DFD4C3);
-    }
-    .card-accent.completed {
-      background: linear-gradient(90deg, #059669, #34D399, #A7F3D0);
-    }
-
-    /* ── earnings chip ── */
-    .earn-chip {
-      background: linear-gradient(135deg, #F3F0EA 0%, #EDE8E0 100%);
-      border: 1px solid #DFD4C3;
-      border-radius: 12px;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* ── decorative blobs ── */
-    .bg-blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.08;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── tech id badge ── */
-    .tech-id-badge {
-      background: linear-gradient(135deg, #5D5646 0%, #7A6F5A 100%);
-      color: white;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      font-family: 'Courier New', monospace;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-  </style>
-
-  <script>
-    window.sb = supabase.createClient(
-      "https://kzxdxnxgouthsywbsnvl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
-    );
-  </script>
+<meta charset=UTF-8 />
+<meta name=viewport content="width=device-width, initial-scale=1.0" />
+<title>FixZen Pro · Technician</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel=stylesheet />
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css />
+<script src=https://cdn.tailwindcss.com></script>
+<script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2></script>
+<script src=https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js></script>
+<script src=https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js></script>
+<style>[x-cloak]{display:none!important}*{box-sizing:border-box}body{background:#f8f5f0;color:#2d2b28;font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}.glass-card{background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);box-shadow:0 12px 28px -8px rgba(93,86,70,0.08)}.stat-card{background:rgba(255,255,255,0.90);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:1rem 1rem .9rem;box-shadow:0 4px 12px rgba(93,86,70,0.04);transition:transform .2s ease}.stat-card:hover{transform:translateY(-2px)}.job-card{background:#fff;border:1px solid #e8e2d8;border-radius:24px;box-shadow:0 2px 10px rgba(93,86,70,0.04);transition:box-shadow .25s ease,transform .2s ease;overflow:hidden}.job-card:hover{box-shadow:0 12px 32px -8px rgba(93,86,70,0.14);transform:translateY(-3px)}.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 14px 4px 12px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.02em}.pill-pending{background:#fef3c7;color:#92400e}.pill-completed{background:#d1fae5;color:#065f46}.btn-primary{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px 16px;border-radius:16px;font-size:15px;font-weight:600;letter-spacing:.01em;transition:all .2s ease;cursor:pointer;border:0;position:relative;overflow:hidden}.btn-primary:active{transform:scale(0.96)}.btn-accept{background:#5d5646;color:#fff;box-shadow:0 4px 14px rgba(93,86,70,0.25)}.btn-accept:hover{background:#4a4436;transform:translateY(-1px);box-shadow:0 6px 20px rgba(93,86,70,0.3)}.btn-reject{background:#fff;color:#b91c1c;border:2px solid #fecaca;box-shadow:0 2px 8px rgba(185,28,28,0.06)}.btn-reject:hover{background:#fff1f2;border-color:#fca5a5;transform:translateY(-1px)}.btn-completed{background:#ecfdf5;color:#065f46;border:2px solid #a7f3d0;cursor:default;opacity:.7}.avail-toggle{position:relative;width:44px;height:24px;background:#dfd4c3;border-radius:999px;cursor:pointer;transition:background .3s ease;border:0;outline:0;flex-shrink:0}.avail-toggle.on{background:#5d5646}.avail-toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.15)}.avail-toggle.on::after{transform:translateX(20px)}.header-blur{background:rgba(255,252,248,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(223,212,195,0.4)}.bottom-nav{background:rgba(255,252,248,0.94);backdrop-filter:blur(16px);border-top:1px solid rgba(223,212,195,0.3);border-radius:32px 32px 0 0;box-shadow:0 -8px 30px rgba(93,86,70,0.06)}.nav-btn{color:rgba(45,43,40,0.3);transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:16px;font-size:10px;font-weight:600;letter-spacing:.03em;background:transparent;border:0;cursor:pointer}.nav-btn.active,.nav-btn:hover{color:#5d5646}.nav-btn i{font-size:20px}.sched-badge{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:12px}.notif-banner{border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px}.notif-denied{background:#fff1f2;border:1px solid #fecdd3}.notif-prompt{background:#fffbeb;border:1px solid #fde68a}.modal-backdrop{background:rgba(45,43,40,0.55);backdrop-filter:blur(6px)}@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}.skeleton{background:linear-gradient(90deg,#f0ede8 25%,#e5dfd6 50%,#f0ede8 75%);background-size:800px 100%;animation:shimmer 1.5s infinite;border-radius:8px}.section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#a07d54}.gradient-text{background:linear-gradient(135deg,#5D5646 0,#A07D54 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.card-accent{width:100%;height:4px;background:linear-gradient(90deg,#5D5646,#A07D54,#DFD4C3)}.card-accent.completed{background:linear-gradient(90deg,#059669,#34D399,#A7F3D0)}.earn-chip{background:linear-gradient(135deg,#F3F0EA 0,#EDE8E0 100%);border:1px solid #dfd4c3;border-radius:12px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between}.bg-blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.08;pointer-events:none;z-index:0}.tech-id-badge{background:linear-gradient(135deg,#5D5646 0,#7A6F5A 100%);color:white;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.05em;font-family:'Courier New',monospace;display:inline-flex;align-items:center;gap:4px}</style>
+<script>window.sb=supabase.createClient("https://kzxdxnxgouthsywbsnvl.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag");</script>
 </head>
-
-<body x-data="dashboardHandler()" x-init="init()" x-cloak class="pb-28 relative">
-
-  <div class="bg-blob w-96 h-96 bg-brand-gold -top-40 -right-40"></div>
-  <div class="bg-blob w-96 h-96 bg-brand-olive -bottom-40 -left-40"></div>
-
-  <header class="sticky top-0 z-50 header-blur relative">
-    <div class="max-w-md mx-auto px-5 py-4">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center gap-3">
-          <div class="relative">
-            <template x-if="tech?.image_url">
-              <img 
-                :src="tech.image_url" 
-                alt="Profile" 
-                class="w-11 h-11 rounded-full object-cover border-2 border-brand-gold/20 shadow-lg"
-              />
-            </template>
-            <template x-if="!tech?.image_url">
-              <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                <span x-text="techName.charAt(0).toUpperCase()"></span>
-              </div>
-            </template>
-            <span x-show="available"
-                  class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
-          </div>
-          <div>
-            <p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
-            <p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text="techName"></p>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <span class="tech-id-badge">
-                <i class="fa-regular fa-id-card text-[8px]"></i>
-                <span x-text="tech?.tech_id || 'Loading...'"></span>
-              </span>
-              <span x-show="tech?.status" class="text-[9px] font-medium text-brand-dark/40 uppercase tracking-wider" x-text="tech?.status"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-medium" :class="available ? 'text-emerald-600' : 'text-brand-dark/30'" x-text="available ? 'Online' : 'Offline'"></span>
-            <button :class="available ? 'on' : ''" class="avail-toggle" style="width:36px;height:20px;"
-                    @click="toggleAvailability({target:{checked:!available}})"></button>
-          </div>
-          <button @click="logout()"
-                  class="w-8 h-8 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
-            <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <section class="max-w-md mx-auto px-5 pt-5 pb-2 relative z-10">
-    <div class="grid grid-cols-3 gap-3">
-      <div class="stat-card text-center">
-        <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Active</p>
-        <p class="font-bold text-2xl text-brand-dark mt-0.5" x-text="stats.activeJobs"></p>
-        <p class="text-[9px] text-brand-dark/30 mt-0.5">jobs</p>
-      </div>
-      <div class="stat-card text-center">
-        <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Today</p>
-        <p class="font-bold text-2xl text-emerald-700 mt-0.5">₹<span x-text="stats.todayEarnings"></span></p>
-        <p class="text-[9px] text-brand-dark/30 mt-0.5">earned</p>
-      </div>
-      <div class="stat-card text-center">
-        <p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Total</p>
-        <p class="font-bold text-2xl gradient-text mt-0.5">₹<span x-text="stats.earnings"></span></p>
-        <p class="text-[9px] text-brand-dark/30 mt-0.5">all time</p>
-      </div>
-    </div>
-  </section>
-
-  <main class="max-w-md mx-auto px-5 pt-4 space-y-5 relative z-10">
-
-    <div x-show="notifStatus === 'denied'" class="notif-banner notif-denied">
-      <i class="fa-regular fa-bell-slash text-rose-500 text-sm flex-shrink-0"></i>
-      <div>
-        <p class="text-[13px] font-semibold text-rose-800">Notifications blocked</p>
-        <p class="text-xs text-rose-600">Enable in browser settings to get alerts.</p>
-      </div>
-    </div>
-
-    <div x-show="notifStatus === 'prompt'" class="notif-banner notif-prompt">
-      <i class="fa-regular fa-bell text-amber-500 text-sm flex-shrink-0"></i>
-      <div class="flex-1">
-        <p class="text-[13px] font-semibold text-amber-800">Enable job alerts</p>
-      </div>
-      <button @click="setupNotifications()" class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
-        Turn on
-      </button>
-    </div>
-
-    <div x-show="locationStatus === 'unavailable'" class="notif-banner notif-prompt">
-      <i class="fa-regular fa-location-dot text-amber-500 text-sm flex-shrink-0"></i>
-      <div class="flex-1">
-        <p class="text-[13px] font-semibold text-amber-800">Location off</p>
-        <p class="text-xs text-amber-700">Enable it to see distance to each job.</p>
-      </div>
-      <button @click="updateJobDistances()" class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
-        Retry
-      </button>
-    </div>
-
-    <div x-show="!available" class="flex flex-col items-center justify-center py-20 text-center">
-      <div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
-        <i class="fa-solid fa-power-off text-3xl text-brand-dark/20"></i>
-      </div>
-      <p class="font-semibold text-brand-dark text-[17px]">You're offline</p>
-      <p class="text-xs text-brand-dark/40 mt-1">Turn on availability above to start receiving jobs</p>
-    </div>
-
-    <template x-if="available">
-      <div class="space-y-5">
-        <div class="flex items-center justify-between pt-1">
-          <span class="section-label flex items-center gap-2">
-            <i class="fa-regular fa-list-check text-brand-gold"></i> Your Jobs
-          </span>
-          <div class="flex items-center gap-3">
-            <button @click="updateJobDistances()" class="text-[11px] font-semibold text-brand-olive flex items-center gap-1 disabled:opacity-40" :disabled="distancesUpdating">
-              <i class="fa-solid fa-location-crosshairs text-[10px]" :class="distancesUpdating ? 'animate-spin' : ''"></i>
-              <span x-text="distancesUpdating ? 'Locating…' : 'Update distances'"></span>
-            </button>
-            <span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
-          </div>
-        </div>
-
-        <div x-show="loading" class="space-y-4">
-          <div class="job-card p-5 space-y-3">
-            <div class="skeleton h-3 w-20 rounded"></div>
-            <div class="skeleton h-5 w-48 rounded"></div>
-            <div class="skeleton h-3 w-full rounded"></div>
-          </div>
-        </div>
-
-        <div x-show="!loading && jobs.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-          <div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
-            <i class="fa-regular fa-inbox text-3xl text-brand-gold/30"></i>
-          </div>
-          <p class="font-semibold text-brand-dark text-[17px]">All caught up! ✨</p>
-          <p class="text-xs text-brand-dark/40 mt-1">No jobs at the moment</p>
-        </div>
-
-        <section id="jobsSection" class="space-y-4 pb-4">
-          <template x-for="job in jobs" :key="job.id">
-            <div class="job-card">
-              <div class="card-accent" :class="job.status === 'completed' ? 'completed' : ''"></div>
-              <div class="p-5">
-
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-regular fa-tag text-[9px]"></i>
-                    <span x-text="job.category"></span>
-                  </span>
-                  <span class="pill" :class="job.status === 'completed' ? 'pill-completed' : 'pill-pending'">
-                    <span class="w-1.5 h-1.5 rounded-full inline-block" :class="job.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
-                    <span x-text="job.status === 'completed' ? 'Completed' : (job.payment_status === 'PENDING_CUSTOMER_PAYMENT' ? 'Payment Pending' : 'In Progress')"></span>
-                  </span>
-                </div>
-
-                <h4 class="text-[18px] font-semibold text-brand-dark leading-snug" x-text="job.device"></h4>
-                <p class="text-[13px] text-brand-dark/60 mt-1 leading-relaxed" x-text="job.issue"></p>
-
-                <div x-show="formatScheduled(job)" class="sched-badge mt-3">
-                  <i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
-                  <div>
-                    <p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
-                    <p class="text-[13px] font-medium text-amber-900" x-text="formatScheduled(job)"></p>
-                  </div>
-                </div>
-
-                <div x-show="calculateFee(job) > 0" class="earn-chip mt-3">
-                  <div class="flex items-center gap-2">
-                    <i class="fa-regular fa-circle-dollar text-brand-olive text-xs"></i>
-                    <span class="text-[12px] font-semibold text-brand-dark/70">Your Earnings</span>
-                  </div>
-                  <span class="font-mono font-bold text-brand-olive text-[15px]">
-                    ₹<span x-text="calculateFee(job)"></span>
-                  </span>
-                </div>
-
-                <div class="border-t border-brand-beige/50 mt-4 pt-4">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="text-[14px] font-semibold text-brand-dark truncate flex items-center gap-2">
-                        <i class="fa-regular fa-user text-brand-gold text-xs"></i>
-                        <span x-text="job.customer_name"></span>
-                      </p>
-                      <p class="text-[11px] text-brand-dark/50 truncate flex items-center gap-1.5 mt-0.5">
-                        <i class="fa-regular fa-location-dot text-[10px]"></i>
-                        <span x-text="job.location"></span>
-                      </p>
-                      <p x-show="job.status !== 'completed' && job.distanceText" class="text-[11px] font-semibold text-brand-olive mt-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-route text-[10px]"></i>
-                        <span x-text="job.distanceText"></span>
-                      </p>
-                    </div>
-
-                    <div class="flex flex-col items-end gap-2 flex-shrink-0">
-                      <a :href="'tel:' + job.phone" class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-olive bg-brand-cream hover:bg-brand-beige/50 px-3 py-1.5 rounded-full transition-colors">
-                        <i class="fa-solid fa-phone text-[10px]"></i> Call
-                      </a>
-                      <button @click="openMaps(job.location)" class="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
-                        <i class="fa-solid fa-location-dot text-[10px]"></i> Map
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-4 space-y-2.5">
-
-                  <template x-if="job.status === 'pending' && !job.tech_id">
-                    <div class="space-y-2">
-                      <button @click="acceptJob(job.id)" class="btn-primary btn-accept">
-                        <i class="fa-regular fa-check-circle text-lg"></i> Accept Job
-                      </button>
-                      <button @click="rejectJob(job.id)" class="btn-primary btn-reject">
-                        <i class="fa-regular fa-circle-xmark text-lg"></i> Decline Job
-                      </button>
-                    </div>
-                  </template>
-
-                  <template x-if="job.status !== 'completed' && job.status !== 'pending' && job.payment_status !== 'PENDING_CUSTOMER_PAYMENT' && job.payment_status !== 'PAID'">
-                    <button @click="completeJob(job)" class="btn-primary btn-accept bg-amber-600 hover:bg-amber-700">
-                      <i class="fa-solid fa-circle-check text-lg"></i> Complete Job & Request Payment
-                    </button>
-                  </template>
-
-                  <template x-if="job.payment_status === 'PENDING_CUSTOMER_PAYMENT' && job.status !== 'completed'">
-                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center space-y-2">
-                      <p class="text-xs font-bold text-amber-800 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-spinner animate-spin"></i> Razorpay Gateway Active on Customer Phone...
-                      </p>
-                      <p class="text-[11px] text-amber-600">Asking resident to complete payment to reveal OTP.</p>
-                    </div>
-                  </template>
-
-                  <template x-if="job.payment_status === 'PAID' && job.status !== 'completed'">
-                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
-                      <div class="flex items-center gap-2 text-emerald-800">
-                        <i class="fa-solid fa-shield-check text-base"></i>
-                        <span class="text-xs font-bold">Payment Success! Ask Customer for 6-Digit Code</span>
-                      </div>
-                      <div class="flex gap-2">
-                        <input type="number" 
-                               placeholder="OTP Code" 
-                               x-model="enteredOtp" 
-                               maxlength="6"
-                               class="flex-1 px-4 py-2.5 bg-white border border-emerald-300 rounded-xl text-center font-mono text-lg font-bold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <button @click="verifyJobCompletionOtp(job.id)" 
-                                class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-colors">
-                          Verify
-                        </button>
-                      </div>
-                    </div>
-                  </template>
-
-                  <template x-if="job.status === 'completed'">
-                    <div class="btn-primary btn-completed">
-                      <i class="fa-regular fa-circle-check text-lg"></i> Job Completed ✓
-                    </div>
-                  </template>
-
-                </div>
-
-              </div>
-            </div>
-          </template>
-        </section>
-      </div>
-    </template>
-
-  </main>
-
-  <nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
-    <div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
-      <button class="nav-btn active">
-        <i class="fa-solid fa-house"></i>
-        <span>Home</span>
-      </button>
-      <button @click="scrollToJobs()" class="nav-btn">
-        <i class="fa-solid fa-briefcase"></i>
-        <span>Jobs</span>
-      </button>
-      <div class="w-14 h-14"></div>
-      <button onclick="window.location.href='completed_jobs.html'" class="nav-btn">
-        <i class="fa-solid fa-clock-rotate-left"></i>
-        <span>History</span>
-      </button>
-      <button @click="logout()" class="nav-btn">
-        <i class="fa-solid fa-user"></i>
-        <span>Profile</span>
-      </button>
-    </div>
-  </nav>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",
-      authDomain: "fixzen-73d68.firebaseapp.com",
-      projectId: "fixzen-73d68",
-      messagingSenderId: "816193738840",
-      appId: "1:816193738840:web:7ba3545e56d3538bf7522d"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    window.firebaseMessaging = firebase.messaging();
-  </script>
-
-  <script src="techniciandashboard.js"></script>
+<body x-data=dashboardHandler() x-init=init() x-cloak class="pb-28 relative">
+<div class="bg-blob w-96 h-96 bg-brand-gold -top-40 -right-40"></div>
+<div class="bg-blob w-96 h-96 bg-brand-olive -bottom-40 -left-40"></div>
+<header class="sticky top-0 z-50 header-blur relative">
+<div class="max-w-md mx-auto px-5 py-4">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class=relative>
+<template x-if=tech?.image_url>
+<img :src=tech.image_url alt=Profile class="w-11 h-11 rounded-full object-cover border-2 border-brand-gold/20 shadow-lg" />
+</template>
+<template x-if=!tech?.image_url>
+<div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-olive to-brand-gold flex items-center justify-center text-white font-bold text-sm shadow-lg">
+<span x-text=techName.charAt(0).toUpperCase()></span>
+</div>
+</template>
+<span x-show=available class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-[0.15em] text-brand-gold font-extrabold">Pro Partner</p>
+<p class="text-[16px] font-semibold text-brand-dark leading-tight" x-text=techName></p>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class=tech-id-badge>
+<i class="fa-regular fa-id-card text-[8px]"></i>
+<span x-text="tech?.tech_id || 'Loading...'"></span>
+</span>
+<span x-show=tech?.status class="text-[9px] font-medium text-brand-dark/40 uppercase tracking-wider" x-text=tech?.status></span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-medium" :class="available ? 'text-emerald-600' : 'text-brand-dark/30'" x-text="available ? 'Online' : 'Offline'"></span>
+<button :class="available ? 'on' : ''" class=avail-toggle style=width:36px;height:20px @click=toggleAvailability({target:{checked:!available}})></button>
+</div>
+<button @click=logout() class="w-8 h-8 rounded-full bg-brand-cream/70 flex items-center justify-center text-brand-olive/50 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+<i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+</button>
+</div>
+</div>
+</div>
+</header>
+<section class="max-w-md mx-auto px-5 pt-5 pb-2 relative z-10">
+<div class="grid grid-cols-3 gap-3">
+<div class="stat-card text-center">
+<p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Active</p>
+<p class="font-bold text-2xl text-brand-dark mt-0.5" x-text=stats.activeJobs></p>
+<p class="text-[9px] text-brand-dark/30 mt-0.5">jobs</p>
+</div>
+<div class="stat-card text-center">
+<p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Today</p>
+<p class="font-bold text-2xl text-emerald-700 mt-0.5">₹<span x-text=stats.todayEarnings></span></p>
+<p class="text-[9px] text-brand-dark/30 mt-0.5">earned</p>
+</div>
+<div class="stat-card text-center">
+<p class="text-[10px] font-bold text-brand-gold uppercase tracking-widest">Total</p>
+<p class="font-bold text-2xl gradient-text mt-0.5">₹<span x-text=stats.earnings></span></p>
+<p class="text-[9px] text-brand-dark/30 mt-0.5">all time</p>
+</div>
+</div>
+</section>
+<main class="max-w-md mx-auto px-5 pt-4 space-y-5 relative z-10">
+<div x-show="notifStatus === 'denied'" class="notif-banner notif-denied">
+<i class="fa-regular fa-bell-slash text-rose-500 text-sm flex-shrink-0"></i>
+<div>
+<p class="text-[13px] font-semibold text-rose-800">Notifications blocked</p>
+<p class="text-xs text-rose-600">Enable in browser settings to get alerts.</p>
+</div>
+</div>
+<div x-show="notifStatus === 'prompt'" class="notif-banner notif-prompt">
+<i class="fa-regular fa-bell text-amber-500 text-sm flex-shrink-0"></i>
+<div class=flex-1>
+<p class="text-[13px] font-semibold text-amber-800">Enable job alerts</p>
+</div>
+<button @click=setupNotifications() class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
+Turn on
+</button>
+</div>
+<div x-show="locationStatus === 'unavailable'" class="notif-banner notif-prompt">
+<i class="fa-regular fa-location-dot text-amber-500 text-sm flex-shrink-0"></i>
+<div class=flex-1>
+<p class="text-[13px] font-semibold text-amber-800">Location off</p>
+<p class="text-xs text-amber-700">Enable it to see distance to each job.</p>
+</div>
+<button @click=updateJobDistances() class="text-[12px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-4 py-1.5 rounded-full transition-colors">
+Retry
+</button>
+</div>
+<div x-show=!available class="flex flex-col items-center justify-center py-20 text-center">
+<div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
+<i class="fa-solid fa-power-off text-3xl text-brand-dark/20"></i>
+</div>
+<p class="font-semibold text-brand-dark text-[17px]">You're offline</p>
+<p class="text-xs text-brand-dark/40 mt-1">Turn on availability above to start receiving jobs</p>
+</div>
+<template x-if=available>
+<div class=space-y-5>
+<div class="flex items-center justify-between pt-1">
+<span class="section-label flex items-center gap-2">
+<i class="fa-regular fa-list-check text-brand-gold"></i> Your Jobs
+</span>
+<div class="flex items-center gap-3">
+<button @click=updateJobDistances() class="text-[11px] font-semibold text-brand-olive flex items-center gap-1 disabled:opacity-40" :disabled=distancesUpdating>
+<i class="fa-solid fa-location-crosshairs text-[10px]" :class="distancesUpdating ? 'animate-spin' : ''"></i>
+<span x-text="distancesUpdating ? 'Locating…' : 'Update distances'"></span>
+</button>
+<span class="text-[11px] text-brand-dark/40 font-mono" x-text="jobs.length + ' total'"></span>
+</div>
+</div>
+<div x-show=loading class=space-y-4>
+<div class="job-card p-5 space-y-3">
+<div class="skeleton h-3 w-20 rounded"></div>
+<div class="skeleton h-5 w-48 rounded"></div>
+<div class="skeleton h-3 w-full rounded"></div>
+</div>
+</div>
+<div x-show="!loading && jobs.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+<div class="w-20 h-20 rounded-full bg-brand-cream/60 flex items-center justify-center mb-4">
+<i class="fa-regular fa-inbox text-3xl text-brand-gold/30"></i>
+</div>
+<p class="font-semibold text-brand-dark text-[17px]">All caught up! ✨</p>
+<p class="text-xs text-brand-dark/40 mt-1">No jobs at the moment</p>
+</div>
+<section id=jobsSection class="space-y-4 pb-4">
+<template x-for="job in jobs" :key=job.id>
+<div class=job-card>
+<div class=card-accent :class="job.status === 'completed' ? 'completed' : ''"></div>
+<div class=p-5>
+<div class="flex items-center justify-between mb-3">
+<span class="text-[10px] font-semibold text-brand-gold uppercase tracking-widest flex items-center gap-2">
+<i class="fa-regular fa-tag text-[9px]"></i>
+<span x-text=job.category></span>
+</span>
+<span class=pill :class="job.status === 'completed' ? 'pill-completed' : 'pill-pending'">
+<span class="w-1.5 h-1.5 rounded-full inline-block" :class="job.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
+<span x-text="job.status === 'completed' ? 'Completed' : (job.payment_status === 'PENDING_CUSTOMER_PAYMENT' ? 'Payment Pending' : 'In Progress')"></span>
+</span>
+</div>
+<h4 class="text-[18px] font-semibold text-brand-dark leading-snug" x-text=job.device></h4>
+<p class="text-[13px] text-brand-dark/60 mt-1 leading-relaxed" x-text=job.issue></p>
+<div x-show=formatScheduled(job) class="sched-badge mt-3">
+<i class="fa-regular fa-calendar text-amber-500 text-sm flex-shrink-0"></i>
+<div>
+<p class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Requested Slot</p>
+<p class="text-[13px] font-medium text-amber-900" x-text=formatScheduled(job)></p>
+</div>
+</div>
+<div x-show="calculateFee(job) > 0" class="earn-chip mt-3">
+<div class="flex items-center gap-2">
+<i class="fa-regular fa-circle-dollar text-brand-olive text-xs"></i>
+<span class="text-[12px] font-semibold text-brand-dark/70">Your Earnings</span>
+</div>
+<span class="font-mono font-bold text-brand-olive text-[15px]">
+₹<span x-text=calculateFee(job)></span>
+</span>
+</div>
+<div class="border-t border-brand-beige/50 mt-4 pt-4">
+<div class="flex items-start justify-between gap-3">
+<div class=min-w-0>
+<p class="text-[14px] font-semibold text-brand-dark truncate flex items-center gap-2">
+<i class="fa-regular fa-user text-brand-gold text-xs"></i>
+<span x-text=job.customer_name></span>
+</p>
+<p class="text-[11px] text-brand-dark/50 truncate flex items-center gap-1.5 mt-0.5">
+<i class="fa-regular fa-location-dot text-[10px]"></i>
+<span x-text=job.location></span>
+</p>
+<p x-show="job.status !== 'completed' && job.distanceText" class="text-[11px] font-semibold text-brand-olive mt-1 flex items-center gap-1.5">
+<i class="fa-solid fa-route text-[10px]"></i>
+<span x-text=job.distanceText></span>
+</p>
+</div>
+<div class="flex flex-col items-end gap-2 flex-shrink-0">
+<a :href="'tel:' + job.phone" class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-olive bg-brand-cream hover:bg-brand-beige/50 px-3 py-1.5 rounded-full transition-colors">
+<i class="fa-solid fa-phone text-[10px]"></i> Call
+</a>
+<button @click=openMaps(job.location) class="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
+<i class="fa-solid fa-location-dot text-[10px]"></i> Map
+</button>
+</div>
+</div>
+</div>
+<div class="mt-4 space-y-2.5">
+<template x-if="job.status === 'pending' && !job.tech_id">
+<div class=space-y-2>
+<button @click=acceptJob(job.id) class="btn-primary btn-accept">
+<i class="fa-regular fa-check-circle text-lg"></i> Accept Job
+</button>
+<button @click=rejectJob(job.id) class="btn-primary btn-reject">
+<i class="fa-regular fa-circle-xmark text-lg"></i> Decline Job
+</button>
+</div>
+</template>
+<template x-if="job.status !== 'completed' && job.status !== 'pending' && job.payment_status !== 'PENDING_CUSTOMER_PAYMENT' && job.payment_status !== 'PAID'">
+<button @click=completeJob(job) class="btn-primary btn-accept bg-amber-600 hover:bg-amber-700">
+<i class="fa-solid fa-circle-check text-lg"></i> Complete Job & Request Payment
+</button>
+</template>
+<template x-if="job.payment_status === 'PENDING_CUSTOMER_PAYMENT' && job.status !== 'completed'">
+<div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center space-y-2">
+<p class="text-xs font-bold text-amber-800 flex items-center justify-center gap-2">
+<i class="fa-solid fa-spinner animate-spin"></i> Razorpay Gateway Active on Customer Phone...
+</p>
+<p class="text-[11px] text-amber-600">Asking resident to complete payment to reveal OTP.</p>
+</div>
+</template>
+<template x-if="job.payment_status === 'PAID' && job.status !== 'completed'">
+<div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
+<div class="flex items-center gap-2 text-emerald-800">
+<i class="fa-solid fa-shield-check text-base"></i>
+<span class="text-xs font-bold">Payment Success! Ask Customer for 6-Digit Code</span>
+</div>
+<div class="flex gap-2">
+<input type=number placeholder="OTP Code" x-model=enteredOtp maxlength=6 class="flex-1 px-4 py-2.5 bg-white border border-emerald-300 rounded-xl text-center font-mono text-lg font-bold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+<button @click=verifyJobCompletionOtp(job.id) class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-colors">
+Verify
+</button>
+</div>
+</div>
+</template>
+<template x-if="job.status === 'completed'">
+<div class="btn-primary btn-completed">
+<i class="fa-regular fa-circle-check text-lg"></i> Job Completed ✓
+</div>
+</template>
+</div>
+</div>
+</div>
+</template>
+</section>
+</div>
+</template>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bottom-nav z-50">
+<div class="max-w-md mx-auto flex justify-around items-center px-3 py-2">
+<button class="nav-btn active">
+<i class="fa-solid fa-house"></i>
+<span>Home</span>
+</button>
+<button @click=scrollToJobs() class=nav-btn>
+<i class="fa-solid fa-briefcase"></i>
+<span>Jobs</span>
+</button>
+<div class="w-14 h-14"></div>
+<button onclick="window.location.href='completed_jobs.html'" class=nav-btn>
+<i class="fa-solid fa-clock-rotate-left"></i>
+<span>History</span>
+</button>
+<button @click=logout() class=nav-btn>
+<i class="fa-solid fa-user"></i>
+<span>Profile</span>
+</button>
+</div>
+</nav>
+<script>const firebaseConfig={apiKey:"AIzaSyCFCS5Epty691ONqtUqcngfV-Fz53j6x_o",authDomain:"fixzen-73d68.firebaseapp.com",projectId:"fixzen-73d68",messagingSenderId:"816193738840",appId:"1:816193738840:web:7ba3545e56d3538bf7522d"};if(!firebase.apps.length){firebase.initializeApp(firebaseConfig)}window.firebaseMessaging=firebase.messaging();</script>
+<script src=techniciandashboard.js></script>
 </body>
 </html>
