@@ -1,49 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang=en>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Contact Us - FixZen | Send Message to Email</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
-    
-    <style>
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .glass-input {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(223, 212, 195, 0.5);
-        }
-        .glass-input:focus {
-            border-color: #A07D54;
-            box-shadow: 0 0 0 3px rgba(160, 125, 84, 0.1);
-        }
-        .issue-card {
-            transition: all 0.25s ease;
-        }
-        .issue-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px -8px rgba(93, 86, 70, 0.20);
-        }
-        .contact-badge {
-            background: rgba(160, 125, 84, 0.08);
-            border: 1px solid rgba(160, 125, 84, 0.15);
-        }
-    </style>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Contact Us - FixZen | Send Message to Email</title>
+<script src=https://cdn.tailwindcss.com></script>
+<script defer src=https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js></script>
+<link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css>
+<script type=text/javascript src=https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel=stylesheet>
+<style>.hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{-ms-overflow-style:none;scrollbar-width:none}.glass-input{background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(223,212,195,0.5)}.glass-input:focus{border-color:#a07d54;box-shadow:0 0 0 3px rgba(160,125,84,0.1)}.issue-card{transition:all .25s ease}.issue-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px -8px rgba(93,86,70,0.20)}.contact-badge{background:rgba(160,125,84,0.08);border:1px solid rgba(160,125,84,0.15)}</style>
 </head>
-
-<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white"
-      x-data="{ 
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white" x-data="{ 
           sending: false, 
           success: false, 
           errorMsg: '',
@@ -152,159 +122,128 @@
               window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
           }
       }">
-
-    <div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-[#FAFAF8] pb-24 overflow-hidden flex flex-col">
-
-        <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/40 px-6 py-4 flex items-center gap-4">
-            <button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-brand-olive hover:bg-brand-gold hover:text-white transition-colors shadow-sm">
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-            <h1 class="font-sans font-bold text-lg text-brand-olive">Get in Touch</h1>
-        </header>
-
-        <div class="relative h-[280px] bg-contact-hero bg-cover bg-center animate-slide-up rounded-b-[40px] overflow-hidden shadow-2xl">
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/70 to-brand-olive/30"></div>
-            <div class="absolute inset-0 flex flex-col justify-center px-8 text-white">
-                <p class="text-brand-beige font-bold text-xs uppercase tracking-widest mb-3">We're here for you</p>
-                <h2 class="font-serif text-3xl leading-tight mb-6">How can we <br>help today?</h2>
-                <div class="flex gap-4 animate-fade-in-delayed opacity-0">
-                    <a href="tel:+919356337279" class="flex-1 h-12 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl flex items-center justify-center gap-2 font-bold text-sm hover:bg-brand-gold transition-colors active:scale-95">
-                        <i class="fa-solid fa-phone-volume"></i> Call Us
-                    </a>
-                    <a href="https://wa.me/919356337279?text=Hi%20FixZen" target="_blank" class="flex-1 h-12 bg-green-500/80 backdrop-blur-md border border-white/30 rounded-xl flex items-center justify-center gap-2 font-bold text-sm hover:bg-green-600 transition-colors active:scale-95">
-                        <i class="fa-brands fa-whatsapp text-lg"></i> Chat
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ========== NEW: REPORT ISSUE BUTTON ========== -->
-        <div class="px-6 mt-6 animate-slide-up" style="animation-delay: 0.1s;">
-            <button @click="reportIssue()" 
-                    class="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-olive to-brand-gold text-white font-bold shadow-lg shadow-brand-olive/20 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95">
-                <i class="fa-regular fa-flag text-lg"></i>
-                Report an Issue
-                <i class="fa-regular fa-envelope ml-1"></i>
-            </button>
-            <p class="text-[10px] text-brand-dark/50 text-center mt-2">Click on Above button</p>
-        </div>
-
-        <!-- ========== ISSUE CONTACT CARDS ========== -->
-        <div class="px-6 mt-5 animate-slide-up" style="animation-delay: 0.15s;">
-            <h3 class="font-sans font-bold text-md text-brand-olive mb-3 flex items-center gap-2">
-                <i class="fa-regular fa-circle-exclamation text-brand-gold"></i>
-                Quick issue contacts
-            </h3>
-            <div class="grid grid-cols-1 gap-3">
-                <!-- Payment issues -->
-                <div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
-                    <div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shrink-0"><i class="fa-regular fa-credit-card"></i></div>
-                    <div>
-                        <p class="text-xs font-bold text-brand-olive">💳 Payment issues</p>
-                        <div class="flex flex-wrap gap-2 mt-1.5">
-                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Shrikrushna Satpute</span>
-                            <a href="tel:7028736490" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>70287 36490</a>
-                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Tanmay Korde</span>
-                            <a href="tel:9356337279" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>93563 37279</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Website issues -->
-                <div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
-                    <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 shrink-0"><i class="fa-regular fa-window-maximize"></i></div>
-                    <div>
-                        <p class="text-xs font-bold text-brand-olive">🌐 Website issues</p>
-                        <div class="flex flex-wrap gap-2 mt-1.5">
-                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Shantanu Ingole</span>
-                            <a href="tel:7219628145" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>72196 28145</a>
-                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Vedant Gawande</span>
-                            <a href="tel:7741880910" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>77418 80910</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Service issues -->
-                <div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
-                    <div class="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center text-rose-700 shrink-0"><i class="fa-regular fa-handshake"></i></div>
-                    <div>
-                        <p class="text-xs font-bold text-brand-olive">🛠️ Service issues</p>
-                        <div class="flex flex-wrap gap-2 mt-1.5">
-                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Vedant Gawande</span>
-                            <a href="tel:7741880910" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>77418 80910</a>
-                            <span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Tanmay Korde</span>
-                            <a href="tel:9356337279" class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>93563 37279</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ========== LEADERSHIP SECTION (moved to bottom) ========== -->
-        <div class="px-6 mt-8 animate-slide-up" style="animation-delay: 0.25s;">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-sans font-bold text-lg text-brand-olive">Meet Leadership</h3>
-                <span class="text-[10px] text-brand-gold font-bold uppercase tracking-wider">The Visionaries</span>
-            </div>
-            
-           <div class="grid grid-cols-2 gap-4">
-   
-    
-    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-        <img src="shantanu-ingole.jpg" alt="Shantanu Ingole" 
-             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-blue/30 mb-2"
-             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%223E5974%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ESI%3C/text%3E%3C/svg%3E';">
-        <h4 class="font-bold text-sm text-brand-olive">Shantanu Ingole</h4>
-        <p class="text-[9px] text-brand-blue font-bold uppercase mt-1">Board Of Director & cheif Execative officer</p>
-    </div>
-    
-    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-        <img src="shrikrushna-satpute.jpg" alt="Shrikrushna Satpute" 
-             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-olive/30 mb-2"
-             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%225D5646%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ESS%3C/text%3E%3C/svg%3E';">
-        <h4 class="font-bold text-sm text-brand-olive">Shrikrushna Satpute</h4>
-        <p class="text-[9px] text-brand-olive font-bold uppercase mt-1">Board Of Director & Cheif finance officer & cheif marketing officer</p>
-    </div>
-    
-     <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-        <img src="tanmay-korde.jpg" alt="Tanmay Korde" 
-             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-gold/30 mb-2"
-             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22%235D5646%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ETK%3C/text%3E%3C/svg%3E';">
-        <h4 class="font-bold text-sm text-brand-olive">Tanmay Korde</h4>
-        <p class="text-[9px] text-brand-gold font-bold uppercase mt-1">Board Of Director & Cheif Technology Officer</p>
-    </div>
-    
-    <div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
-        <img src="vedant-gawande.jpg" alt="Vedant Gawande" 
-             class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-red-400/30 mb-2"
-             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22EF4444%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3EVG%3C/text%3E%3C/svg%3E';">
-        <h4 class="font-bold text-sm text-brand-olive">Vedant Gawande</h4>
-        <p class="text-[9px] text-red-400 font-bold uppercase mt-1">Board Of Director & cheif operational officer & cheif production officer</p>
-    </div>
+<div class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-[#FAFAF8] pb-24 overflow-hidden flex flex-col">
+<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/40 px-6 py-4 flex items-center gap-4">
+<button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center text-brand-olive hover:bg-brand-gold hover:text-white transition-colors shadow-sm">
+<i class="fa-solid fa-arrow-left"></i>
+</button>
+<h1 class="font-sans font-bold text-lg text-brand-olive">Get in Touch</h1>
+</header>
+<div class="relative h-[280px] bg-contact-hero bg-cover bg-center animate-slide-up rounded-b-[40px] overflow-hidden shadow-2xl">
+<div class="absolute inset-0 bg-gradient-to-t from-brand-olive via-brand-olive/70 to-brand-olive/30"></div>
+<div class="absolute inset-0 flex flex-col justify-center px-8 text-white">
+<p class="text-brand-beige font-bold text-xs uppercase tracking-widest mb-3">We're here for you</p>
+<h2 class="font-serif text-3xl leading-tight mb-6">How can we <br>help today?</h2>
+<div class="flex gap-4 animate-fade-in-delayed opacity-0">
+<a href=tel:+919356337279 class="flex-1 h-12 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl flex items-center justify-center gap-2 font-bold text-sm hover:bg-brand-gold transition-colors active:scale-95">
+<i class="fa-solid fa-phone-volume"></i> Call Us
+</a>
+<a href="https://wa.me/919356337279?text=Hi%20FixZen" target=_blank class="flex-1 h-12 bg-green-500/80 backdrop-blur-md border border-white/30 rounded-xl flex items-center justify-center gap-2 font-bold text-sm hover:bg-green-600 transition-colors active:scale-95">
+<i class="fa-brands fa-whatsapp text-lg"></i> Chat
+</a>
 </div>
-
-        
-            <div class="bg-brand-cream/50 rounded-2xl p-6 flex flex-col gap-6 border border-brand-beige/30 mb-6">
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0"><i class="fa-solid fa-location-dot"></i></div>
-                    <div><h4 class="font-bold text-brand-olive text-sm mb-1">www.fixzenix.com</h4><p class="text-xs text-brand-dark/70 leading-relaxed">FixZenix, <br>Amravati, MH - 444601</p></div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0"><i class="fa-solid fa-clock"></i></div>
-                    <div><h4 class="font-bold text-brand-olive text-sm mb-1">Support Hours</h4><p class="text-xs text-brand-dark/70 leading-relaxed">Mon - Sun: 9:00 AM - 8:00 PM</p></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Modal -->
-    <div x-show="success" style="display: none;" class="fixed inset-0 z-[100] flex items-end justify-center pointer-events-none">
-        <div class="absolute inset-0 bg-brand-olive/30 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
-        <div class="bg-white w-full max-w-md rounded-t-[40px] p-8 text-center shadow-2xl relative z-10 pointer-events-auto pb-12" x-transition:enter="transition transform ease-out duration-500" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transition transform ease-in duration-300" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce"><i class="fa-solid fa-check text-4xl text-green-500"></i></div>
-            <h3 class="font-serif text-2xl text-brand-olive mb-2">Message Sent! ✨</h3>
-            <p class="text-brand-dark/60 text-sm mb-8 px-4">Thank you for reaching out. Your message has been sent to the FixZen team. We'll respond within 24 hours.</p>
-            <button @click="success = false" class="w-full py-4 bg-brand-olive text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">Okay, Got it</button>
-        </div>
-    </div>
-<script src="contact.js"></script>
+</div>
+</div>
+<div class="px-6 mt-6 animate-slide-up" style=animation-delay:.1s>
+<button @click=reportIssue() class="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-olive to-brand-gold text-white font-bold shadow-lg shadow-brand-olive/20 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95">
+<i class="fa-regular fa-flag text-lg"></i>
+Report an Issue
+<i class="fa-regular fa-envelope ml-1"></i>
+</button>
+<p class="text-[10px] text-brand-dark/50 text-center mt-2">Click on Above button</p>
+</div>
+<div class="px-6 mt-5 animate-slide-up" style=animation-delay:.15s>
+<h3 class="font-sans font-bold text-md text-brand-olive mb-3 flex items-center gap-2">
+<i class="fa-regular fa-circle-exclamation text-brand-gold"></i>
+Quick issue contacts
+</h3>
+<div class="grid grid-cols-1 gap-3">
+<div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
+<div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shrink-0"><i class="fa-regular fa-credit-card"></i></div>
+<div>
+<p class="text-xs font-bold text-brand-olive">💳 Payment issues</p>
+<div class="flex flex-wrap gap-2 mt-1.5">
+<span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Shrikrushna Satpute</span>
+<a href=tel:7028736490 class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>70287 36490</a>
+<span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Tanmay Korde</span>
+<a href=tel:9356337279 class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>93563 37279</a>
+</div>
+</div>
+</div>
+<div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
+<div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 shrink-0"><i class="fa-regular fa-window-maximize"></i></div>
+<div>
+<p class="text-xs font-bold text-brand-olive">🌐 Website issues</p>
+<div class="flex flex-wrap gap-2 mt-1.5">
+<span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Shantanu Ingole</span>
+<a href=tel:7219628145 class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>72196 28145</a>
+<span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Vedant Gawande</span>
+<a href=tel:7741880910 class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>77418 80910</a>
+</div>
+</div>
+</div>
+<div class="issue-card bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 flex items-start gap-4">
+<div class="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center text-rose-700 shrink-0"><i class="fa-regular fa-handshake"></i></div>
+<div>
+<p class="text-xs font-bold text-brand-olive">🛠️ Service issues</p>
+<div class="flex flex-wrap gap-2 mt-1.5">
+<span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Vedant Gawande</span>
+<a href=tel:7741880910 class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>77418 80910</a>
+<span class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-dark/80"><i class="fa-regular fa-user mr-1"></i>Tanmay Korde</span>
+<a href=tel:9356337279 class="contact-badge text-[10px] px-3 py-1 rounded-full font-medium text-brand-gold hover:bg-brand-gold hover:text-white transition"><i class="fa-solid fa-phone mr-1"></i>93563 37279</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 mt-8 animate-slide-up" style=animation-delay:.25s>
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-sans font-bold text-lg text-brand-olive">Meet Leadership</h3>
+<span class="text-[10px] text-brand-gold font-bold uppercase tracking-wider">The Visionaries</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+<img src=shantanu-ingole.jpg alt="Shantanu Ingole" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-blue/30 mb-2" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%223E5974%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ESI%3C/text%3E%3C/svg%3E'">
+<h4 class="font-bold text-sm text-brand-olive">Shantanu Ingole</h4>
+<p class="text-[9px] text-brand-blue font-bold uppercase mt-1">Board Of Director & cheif Execative officer</p>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+<img src=shrikrushna-satpute.jpg alt="Shrikrushna Satpute" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-olive/30 mb-2" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%225D5646%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ESS%3C/text%3E%3C/svg%3E'">
+<h4 class="font-bold text-sm text-brand-olive">Shrikrushna Satpute</h4>
+<p class="text-[9px] text-brand-olive font-bold uppercase mt-1">Board Of Director & Cheif finance officer & cheif marketing officer</p>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+<img src=tanmay-korde.jpg alt="Tanmay Korde" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-brand-gold/30 mb-2" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22%235D5646%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3ETK%3C/text%3E%3C/svg%3E'">
+<h4 class="font-bold text-sm text-brand-olive">Tanmay Korde</h4>
+<p class="text-[9px] text-brand-gold font-bold uppercase mt-1">Board Of Director & Cheif Technology Officer</p>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow-glass-card border border-brand-beige/30 text-center">
+<img src=vedant-gawande.jpg alt="Vedant Gawande" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-red-400/30 mb-2" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22EF4444%22/%3E%3Ctext x=%2232%22 y=%2240%22 font-size=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22%3EVG%3C/text%3E%3C/svg%3E'">
+<h4 class="font-bold text-sm text-brand-olive">Vedant Gawande</h4>
+<p class="text-[9px] text-red-400 font-bold uppercase mt-1">Board Of Director & cheif operational officer & cheif production officer</p>
+</div>
+</div>
+<div class="bg-brand-cream/50 rounded-2xl p-6 flex flex-col gap-6 border border-brand-beige/30 mb-6">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0"><i class="fa-solid fa-location-dot"></i></div>
+<div><h4 class="font-bold text-brand-olive text-sm mb-1">www.fixzenix.com</h4><p class="text-xs text-brand-dark/70 leading-relaxed">FixZenix, <br>Amravati, MH - 444601</p></div>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-brand-olive/10 flex items-center justify-center text-brand-olive shrink-0"><i class="fa-solid fa-clock"></i></div>
+<div><h4 class="font-bold text-brand-olive text-sm mb-1">Support Hours</h4><p class="text-xs text-brand-dark/70 leading-relaxed">Mon - Sun: 9:00 AM - 8:00 PM</p></div>
+</div>
+</div>
+</div>
+</div>
+<div x-show=success style=display:none class="fixed inset-0 z-[100] flex items-end justify-center pointer-events-none">
+<div class="absolute inset-0 bg-brand-olive/30 backdrop-blur-sm transition-opacity" x-transition:enter="ease-out duration-300" x-transition:enter-start=opacity-0 x-transition:enter-end=opacity-100 x-transition:leave="ease-in duration-300" x-transition:leave-start=opacity-100 x-transition:leave-end=opacity-0></div>
+<div class="bg-white w-full max-w-md rounded-t-[40px] p-8 text-center shadow-2xl relative z-10 pointer-events-auto pb-12" x-transition:enter="transition transform ease-out duration-500" x-transition:enter-start=translate-y-full x-transition:enter-end=translate-y-0 x-transition:leave="transition transform ease-in duration-300" x-transition:leave-start=translate-y-0 x-transition:leave-end=translate-y-full>
+<div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce"><i class="fa-solid fa-check text-4xl text-green-500"></i></div>
+<h3 class="font-serif text-2xl text-brand-olive mb-2">Message Sent! ✨</h3>
+<p class="text-brand-dark/60 text-sm mb-8 px-4">Thank you for reaching out. Your message has been sent to the FixZen team. We'll respond within 24 hours.</p>
+<button @click="success = false" class="w-full py-4 bg-brand-olive text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">Okay, Got it</button>
+</div>
+</div>
+<script src=contact.js></script>
 </body>
 </html>
