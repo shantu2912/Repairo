@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang=en class=scroll-smooth>
 <head>
-<meta charset="UTF-8">
+<meta charset=UTF-8>
 <meta name=viewport content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>FixZenix - Premium Home Services</title>
 <meta name=theme-color content=#5D5646>
@@ -14,12 +14,12 @@
 <script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js></script>
 <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css>
-<script src="index.js"></script>
+<script src=index.js></script>
 </head>
-<body class="bg-brand-cream text-brand-dark antialiased" x-data="{
-         loading: true,
-         searchOpen: false,
-         sidebarOpen: false,
+<body class="bg-brand-cream text-brand-dark antialiased" x-data="{ 
+         loading: true, 
+         searchOpen: false, 
+         sidebarOpen: false, 
          slideIndex: 0,
          searchQuery: '',
          user: null,
@@ -60,8 +60,8 @@
 
          get filteredServices() {
              if (this.searchQuery === '') return [];
-             return this.masterList.filter(item =>
-                 item.n.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+             return this.masterList.filter(item => 
+                 item.n.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
                  item.cat.toLowerCase().includes(this.searchQuery.toLowerCase())
              );
          },
@@ -185,7 +185,7 @@
              window.scrollTo({ top: 0, behavior: 'smooth' });
          }
      }" x-init="
-         if (sessionStorage.getItem('introShown')) { loading = false; }
+         if (sessionStorage.getItem('introShown')) { loading = false; } 
          else { setTimeout(() => { loading = false; sessionStorage.setItem('introShown', 'true'); }, 4000); }
 
          this.currentActiveJobId = localStorage.getItem('active_job_id');
@@ -435,110 +435,39 @@ Book Now →
 </button>
 </div>
 </div>
-<!-- Service Categories -->
 <div class="pb-12 space-y-8 mt-6">
-<div class="category-section px-5">
-<div class="flex items-center gap-2 mb-4">
-<div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-<h2 class="font-sans font-bold text-xl text-brand-olive">Construction & Home</h2>
-</div>
-<div class="grid grid-cols-3 gap-3">
-<template x-for="s in masterList.filter(item => item.cat === 'Home_cat')">
-<div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-<div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-<img :src=s.img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-</div>
-<div class="text-center mt-2">
-<span class="text-[11px] font-semibold text-brand-dark" x-text=s.n></span>
-</div>
-</div>
-</div>
-</template>
-</div>
-</div>
-<div class="category-section px-5">
-<div class="flex items-center gap-2 mb-4">
-<div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-<h2 class="font-sans font-bold text-xl text-brand-olive">Appliance Repair</h2>
-</div>
-<div class="grid grid-cols-3 gap-3">
-<template x-for="s in masterList.filter(item => item.cat === 'Appliance')">
-<div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-<div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-<img :src=s.img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-</div>
-<div class="text-center mt-2">
-<span class="text-[11px] font-semibold text-brand-dark" x-text=s.n></span>
-</div>
-</div>
-</div>
-</template>
-</div>
-</div>
-<div class="category-section px-5">
-<div class="flex items-center gap-2 mb-4">
-<div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-<h2 class="font-sans font-bold text-xl text-brand-olive">Electronics & IT</h2>
-</div>
-<div class="grid grid-cols-3 gap-3">
-<template x-for="s in masterList.filter(item => item.cat === 'Electronics')">
-<div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-<div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-<img :src=s.img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-</div>
-<div class="text-center mt-2">
-<span class="text-[11px] font-semibold text-brand-dark" x-text=s.n></span>
-</div>
-</div>
-</div>
-</template>
-</div>
-</div>
-<div class="category-section px-5">
-<div class="flex items-center gap-2 mb-4">
-<div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-<h2 class="font-sans font-bold text-xl text-brand-olive">Automobile</h2>
-</div>
-<div class="grid grid-cols-3 gap-3">
-<template x-for="s in masterList.filter(item => item.cat === 'Auto')">
-<div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-<div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-<img :src=s.img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-</div>
-<div class="text-center mt-2">
-<span class="text-[11px] font-semibold text-brand-dark" x-text=s.n></span>
-</div>
-</div>
-</div>
-</template>
-</div>
-</div>
-<div class="category-section px-5 pb-8">
-<div class="flex items-center gap-2 mb-4">
-<div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
-<h2 class="font-sans font-bold text-xl text-brand-olive">Other Services</h2>
-</div>
-<div class="grid grid-cols-3 gap-3">
-<template x-for="s in masterList.filter(item => item.cat === 'Other')">
-<div @click="navigate('service.html?id='+s.n)" class="service-card cursor-pointer">
-<div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-<img :src=s.img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-</div>
-<div class="text-center mt-2">
-<span class="text-[11px] font-semibold text-brand-dark" x-text=s.n></span>
-</div>
-</div>
-</div>
-</template>
-</div>
-</div>
-</div>
-<template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
+        <template x-for="section in [
+          { title: 'Construction & Home', category: 'Home_cat' },
+          { title: 'Appliance Repair', category: 'Appliance' },
+          { title: 'Electronics & IT', category: 'Electronics' },
+          { title: 'Automobile', category: 'Auto' },
+          { title: 'Other Services', category: 'Other' }
+        ]" :key="section.category">
+          <section class="category-section px-5">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-7 bg-gradient-to-b from-brand-gold to-brand-olive rounded-full"></div>
+              <h2 class="font-sans font-bold text-xl text-brand-olive" x-text="section.title"></h2>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+              <template x-for="service in masterList.filter(item => item.cat === section.category)" :key="service.n">
+                <button type="button"
+                  @click="navigate('service.html?id=' + service.n)"
+                  class="service-card cursor-pointer text-left">
+                  <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+                    <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
+                      <img :src="service.img" :alt="service.n" class="w-full h-full object-cover transition-transform duration-500">
+                    </div>
+                    <div class="text-center mt-2">
+                      <span class="text-[11px] font-semibold text-brand-dark" x-text="service.n"></span>
+                    </div>
+                  </div>
+                </button>
+              </template>
+            </div>
+          </section>
+        </template>
+      </div>
+      <template x-if="currentActiveJobId && currentActiveJobId !== 'null' && currentActiveJobId !== ''">
 <div class="fixed bottom-[140px] left-4 right-4 z-40 animate-pulse">
 <div class="bg-gradient-to-r from-brand-olive to-brand-dark rounded-2xl p-4 shadow-2xl border border-brand-gold/30 flex flex-col gap-3">
 <div class="flex items-center gap-3">
@@ -646,6 +575,6 @@ Online Assistant
 </div>
 </div>
 </div>
-<script type="module" src="./app.js"></script>
+<script type=module src=./app.js></script>
 </body>
 </html>
