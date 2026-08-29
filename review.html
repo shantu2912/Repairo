@@ -1,84 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang=en>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixzenix - Service Review & Rating</title>
-
-    <!-- Tailwind CSSs for styling -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<title>Fixzenix - Service Review & Rating</title>
+<script src=https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4></script>
+<script src=https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2></script>
 </head>
 <body class="bg-[#fdfbf7] text-[#4a3728] min-h-screen flex items-center justify-center p-4">
-
-    <div class="bg-[#f9f6f0] p-8 rounded-2xl shadow-xl max-w-md w-full border border-[#f1ebe1]">
-        <!-- Brand Header -->
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-extrabold tracking-tight text-[#4a3728]">
-                Fixzenix
-            </h1>
-            <p class="text-sm text-[#8c7662] mt-1">We value your review! Please let us know how we did.</p>
-        </div>
-
-        <form id="reviewForm" class="space-y-5">
-            <!-- Customer Name -->
-            <div>
-                <label class="block text-sm font-semibold text-[#5c4738] mb-1">Customer Name</label>
-                <input type="text" id="customerName" required 
-                    class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition placeholder-[#bdae9e]" 
-                    placeholder="John Doe">
-            </div>
-
-            <!-- Service Booked -->
-            <div>
-                <label class="block text-sm font-semibold text-[#5c4738] mb-1">Service Booked</label>
-                <input type="text" id="serviceBooked" required 
-                    class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition placeholder-[#bdae9e]" 
-                    placeholder="e.g., Home Cleaning, AC Repair">
-            </div>
-
-            <!-- Past Services Count -->
-            <div>
-                <label class="block text-sm font-semibold text-[#5c4738] mb-1">Number of Past Services Booked</label>
-                <input type="number" id="pastServices" min="0" required 
-                    class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition placeholder-[#bdae9e]" 
-                    placeholder="0">
-            </div>
-
-            <!-- Service Rating (1-5) -->
-            <div>
-                <label class="block text-sm font-semibold text-[#5c4738] mb-1">Service Rating (1 - 5 Stars)</label>
-                <select id="serviceRating" required 
-                    class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition">
-                    <option value="" disabled selected class="text-[#bdae9e]">Select a rating</option>
-                    <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                    <option value="4">⭐⭐⭐⭐ 4 - Very Good</option>
-                    <option value="3">⭐⭐⭐ 3 - Good</option>
-                    <option value="2">⭐⭐ 2 - Fair</option>
-                    <option value="1">⭐ 1 - Poor</option>
-                </select>
-            </div>
-
-            <!-- Review Description -->
-            <div>
-                <label class="block text-sm font-semibold text-[#5c4738] mb-1">Review Description</label>
-                <textarea id="reviewDescription" rows="4" required 
-                    class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition resize-none placeholder-[#bdae9e]" 
-                    placeholder="Share your experience with us..."></textarea>
-            </div>
-
-            <!-- Brownie Colored Submit Button -->
-            <button type="submit" id="submitBtn"
-                class="w-full bg-[#4a3728] hover:bg-[#3d2d20] text-[#fdfbf7] font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-200 flex justify-center items-center cursor-pointer">
-                Submit Review
-            </button>
-        </form>
-
-        <!-- Status Message -->
-        <p id="statusMessage" class="mt-4 text-center text-sm font-medium hidden"></p>
-    </div>
-<script src="review.js"></script>
-  
+<div class="bg-[#f9f6f0] p-8 rounded-2xl shadow-xl max-w-md w-full border border-[#f1ebe1]">
+<div class="text-center mb-6">
+<h1 class="text-3xl font-extrabold tracking-tight text-[#4a3728]">
+Fixzenix
+</h1>
+<p class="text-sm text-[#8c7662] mt-1">We value your review! Please let us know how we did.</p>
+</div>
+<form id=reviewForm class=space-y-5>
+<div>
+<label class="block text-sm font-semibold text-[#5c4738] mb-1">Customer Name</label>
+<input type=text id=customerName required class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition placeholder-[#bdae9e]" placeholder="John Doe">
+</div>
+<div>
+<label class="block text-sm font-semibold text-[#5c4738] mb-1">Service Booked</label>
+<input type=text id=serviceBooked required class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition placeholder-[#bdae9e]" placeholder="e.g., Home Cleaning, AC Repair">
+</div>
+<div>
+<label class="block text-sm font-semibold text-[#5c4738] mb-1">Number of Past Services Booked</label>
+<input type=number id=pastServices min=0 required class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition placeholder-[#bdae9e]" placeholder=0>
+</div>
+<div>
+<label class="block text-sm font-semibold text-[#5c4738] mb-1">Service Rating (1 - 5 Stars)</label>
+<select id=serviceRating required class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition">
+<option value disabled selected class=text-[#bdae9e]>Select a rating</option>
+<option value=5>⭐⭐⭐⭐⭐ 5 - Excellent</option>
+<option value=4>⭐⭐⭐⭐ 4 - Very Good</option>
+<option value=3>⭐⭐⭐ 3 - Good</option>
+<option value=2>⭐⭐ 2 - Fair</option>
+<option value=1>⭐ 1 - Poor</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-semibold text-[#5c4738] mb-1">Review Description</label>
+<textarea id=reviewDescription rows=4 required class="w-full px-4 py-2 rounded-lg border border-[#e6dec3] bg-white text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#8c7662] focus:border-transparent transition resize-none placeholder-[#bdae9e]" placeholder="Share your experience with us..."></textarea>
+</div>
+<button type=submit id=submitBtn class="w-full bg-[#4a3728] hover:bg-[#3d2d20] text-[#fdfbf7] font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-200 flex justify-center items-center cursor-pointer">
+Submit Review
+</button>
+</form>
+<p id=statusMessage class="mt-4 text-center text-sm font-medium hidden"></p>
+</div>
+<script src=review.js></script>
 </body>
 </html>
