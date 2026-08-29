@@ -1,451 +1,227 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang=en>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rate Your Experience | FixZen</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-olive': '#5D5646',
-                        'brand-gold': '#A07D54',
-                        'brand-cream': '#F5F1E8',
-                        'brand-dark': '#2D2B29',
-                        'brand-green': '#3D9E6E',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #F5F1E8;
-            color: #2D2B29;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Decorative background */
-        .bg-pattern {
-            position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
-        }
-        .bg-pattern::before {
-            content: '';
-            position: absolute; top: -120px; right: -120px;
-            width: 420px; height: 420px;
-            background: radial-gradient(circle, rgba(160,125,84,0.13) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        .bg-pattern::after {
-            content: '';
-            position: absolute; bottom: -80px; left: -80px;
-            width: 320px; height: 320px;
-            background: radial-gradient(circle, rgba(93,86,70,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        .dot-grid {
-            position: absolute; inset: 0;
-            background-image: radial-gradient(circle, rgba(93,86,70,0.07) 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
-        /* Star rating */
-        .star-btn { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
-        .star-btn:active { transform: scale(0.85); }
-        .star-btn.active { transform: scale(1.15); }
-        .star-icon { transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); filter: drop-shadow(0 0 0px #A07D54); }
-        .star-icon.lit { color: #A07D54; filter: drop-shadow(0 0 8px rgba(160,125,84,0.6)); }
-
-        /* Tag chips */
-        .tag-chip {
-            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-            cursor: pointer;
-        }
-        .tag-chip:active { transform: scale(0.93); }
-        .tag-chip.selected {
-            background: #5D5646;
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(93,86,70,0.25);
-        }
-
-        /* Slide animations */
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-10px) rotate(2deg); }
-            66% { transform: translateY(-5px) rotate(-2deg); }
-        }
-        @keyframes confettiFall {
-            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-        .slide-up { animation: slideUp 0.5s ease forwards; }
-        .pop-in { animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        .float-anim { animation: float 4s ease-in-out infinite; }
-
-        .step-enter { animation: slideUp 0.4s ease forwards; }
-
-        /* Gold shimmer button */
-        .shimmer-btn {
-            background: linear-gradient(110deg, #A07D54 40%, #c9a87a 50%, #A07D54 60%);
-            background-size: 200% auto;
-            animation: shimmer 2.5s linear infinite;
-        }
-
-        /* Confetti piece */
-        .confetti-piece {
-            position: fixed;
-            width: 10px; height: 10px;
-            top: -20px;
-            border-radius: 2px;
-            animation: confettiFall linear forwards;
-            pointer-events: none;
-            z-index: 999;
-        }
-
-        /* Not completed state */
-        @keyframes pendingPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(160,125,84,0.3); }
-            50% { box-shadow: 0 0 0 16px rgba(160,125,84,0); }
-        }
-        .pending-pulse { animation: pendingPulse 2s ease infinite; }
-
-        /* Card glass */
-        .card {
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.7);
-            box-shadow: 0 8px 40px rgba(93,86,70,0.1);
-        }
-
-        /* Progress dots */
-        .dot { transition: all 0.3s ease; }
-        .dot.active { background: #A07D54; width: 24px; border-radius: 4px; }
-    </style>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rate Your Experience | FixZen</title>
+<script src=https://cdn.tailwindcss.com></script>
+<script src=https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2></script>
+<script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@1,700&display=swap" rel=stylesheet>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css>
+<script>tailwind.config={theme:{extend:{colors:{"brand-olive":"#5D5646","brand-gold":"#A07D54","brand-cream":"#F5F1E8","brand-dark":"#2D2B29","brand-green":"#3D9E6E"}}}};</script>
+<style>*{-webkit-tap-highlight-color:transparent}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f1e8;color:#2d2b29;min-height:100vh;overflow-x:hidden}.bg-pattern{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}.bg-pattern::before{content:'';position:absolute;top:-120px;right:-120px;width:420px;height:420px;background:radial-gradient(circle,rgba(160,125,84,0.13) 0,transparent 70%);border-radius:50%}.bg-pattern::after{content:'';position:absolute;bottom:-80px;left:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(93,86,70,0.1) 0,transparent 70%);border-radius:50%}.dot-grid{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(93,86,70,0.07) 1px,transparent 1px);background-size:24px 24px}.star-btn{transition:transform .2s cubic-bezier(0.34,1.56,0.64,1)}.star-btn:active{transform:scale(0.85)}.star-btn.active{transform:scale(1.15)}.star-icon{transition:all .25s cubic-bezier(0.34,1.56,0.64,1);filter:drop-shadow(0 0 0 #A07D54)}.star-icon.lit{color:#a07d54;filter:drop-shadow(0 0 8px rgba(160,125,84,0.6))}.tag-chip{transition:all .2s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer}.tag-chip:active{transform:scale(0.93)}.tag-chip.selected{background:#5d5646;color:white;transform:scale(1.05);box-shadow:0 4px 12px rgba(93,86,70,0.25)}@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}@keyframes float{0%,100%{transform:translateY(0px) rotate(0deg)}33%{transform:translateY(-10px) rotate(2deg)}66%{transform:translateY(-5px) rotate(-2deg)}}@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}.slide-up{animation:slideUp .5s ease forwards}.pop-in{animation:popIn .4s cubic-bezier(0.34,1.56,0.64,1) forwards}.float-anim{animation:float 4s ease-in-out infinite}.step-enter{animation:slideUp .4s ease forwards}.shimmer-btn{background:linear-gradient(110deg,#A07D54 40%,#c9a87a 50%,#A07D54 60%);background-size:200% auto;animation:shimmer 2.5s linear infinite}.confetti-piece{position:fixed;width:10px;height:10px;top:-20px;border-radius:2px;animation:confettiFall linear forwards;pointer-events:none;z-index:999}@keyframes pendingPulse{0%,100%{box-shadow:0 0 0 0 rgba(160,125,84,0.3)}50%{box-shadow:0 0 0 16px rgba(160,125,84,0)}}.pending-pulse{animation:pendingPulse 2s ease infinite}.card{background:rgba(255,255,255,0.88);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 40px rgba(93,86,70,0.1)}.dot{transition:all .3s ease}.dot.active{background:#a07d54;width:24px;border-radius:4px}</style>
 </head>
-
-<body x-data="feedbackApp()" x-init="init()">
-
-    <!-- Background -->
-    <div class="bg-pattern"><div class="dot-grid"></div></div>
-
-    <!-- Confetti container -->
-    <div id="confetti-container"></div>
-
-    <!-- ===================== LOADING STATE ===================== -->
-    <div x-show="pageLoading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-brand-cream">
-        <div class="w-16 h-16 rounded-2xl bg-brand-olive flex items-center justify-center mb-5 float-anim">
-            <i class="fa-solid fa-wand-magic-sparkles text-2xl text-white"></i>
-        </div>
-        <div class="flex gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style="animation-delay:0s"></span>
-            <span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style="animation-delay:0.15s"></span>
-            <span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style="animation-delay:0.3s"></span>
-        </div>
-    </div>
-
-    <!-- ===================== JOB NOT COMPLETED GATE ===================== -->
-    <div x-show="!pageLoading && !jobCompleted && !submitted"
-         class="fixed inset-0 z-40 flex items-center justify-center p-6">
-        <div class="card rounded-[2.5rem] p-8 w-full max-w-sm text-center slide-up">
-
-            <!-- Animated clock icon -->
-            <div class="relative w-24 h-24 mx-auto mb-6">
-                <div class="w-24 h-24 rounded-full bg-amber-50 border-4 border-brand-gold/30 flex items-center justify-center pending-pulse">
-                    <i class="fa-regular fa-clock text-4xl text-brand-gold"></i>
-                </div>
-                <div class="absolute -top-1 -right-1 w-8 h-8 bg-brand-olive rounded-full flex items-center justify-center shadow-lg">
-                    <i class="fa-solid fa-hourglass-half text-xs text-white"></i>
-                </div>
-            </div>
-
-            <h2 class="text-2xl font-extrabold text-brand-olive mb-2 tracking-tight">Work in Progress</h2>
-            <p class="text-sm text-brand-dark/60 leading-relaxed mb-2">Your expert is still working on the job. We'll unlock your feedback form once the service is marked <span class="font-bold text-brand-green">Completed</span>.</p>
-
-            <!-- Status badge -->
-            <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2 mt-2 mb-6">
-                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span class="text-xs font-bold text-amber-700 uppercase tracking-wider" x-text="jobStatus ? jobStatus.replace('_',' ') : 'Pending'"></span>
-            </div>
-
-            <p class="text-[11px] text-brand-dark/40 mb-6">You'll receive a notification when your job is complete and you can share your experience.</p>
-
-            <button @click="window.location.href='index.html'"
-                    class="w-full py-3.5 rounded-2xl bg-brand-olive text-white font-bold text-sm tracking-wide hover:bg-brand-gold transition-all active:scale-95 shadow-lg">
-                <i class="fa-solid fa-house mr-2"></i> Back to Home
-            </button>
-        </div>
-    </div>
-
-    <!-- ===================== MAIN FEEDBACK FORM ===================== -->
-    <div x-show="!pageLoading && jobCompleted && !submitted"
-         class="relative z-10 min-h-screen flex flex-col items-center justify-center p-5 py-10">
-
-        <div class="w-full max-w-sm slide-up">
-
-            <!-- Header -->
-            <div class="text-center mb-7">
-                <div class="relative w-20 h-20 mx-auto mb-4">
-                    <div class="w-20 h-20 bg-brand-olive rounded-[1.5rem] rotate-6 flex items-center justify-center shadow-xl">
-                        <i class="fa-solid fa-star text-brand-gold text-3xl"></i>
-                    </div>
-                    <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-brand-gold rounded-full flex items-center justify-center shadow-md">
-                        <i class="fa-solid fa-check text-white text-xs"></i>
-                    </div>
-                </div>
-                <h1 class="text-[1.6rem] font-extrabold text-brand-olive tracking-tight leading-tight">
-                    How did we do?
-                </h1>
-                <p class="text-xs text-brand-gold font-bold uppercase tracking-[0.2em] mt-1.5">Share Your Experience</p>
-
-                <!-- Service info pill -->
-                <div x-show="jobData" class="inline-flex items-center gap-2 bg-white/70 border border-brand-gold/20 rounded-full px-4 py-1.5 mt-3 shadow-sm">
-                    <i class="fa-solid fa-screwdriver-wrench text-brand-gold text-xs"></i>
-                    <span class="text-xs font-semibold text-brand-dark" x-text="jobData?.category || 'Service'"></span>
-                </div>
-            </div>
-
-            <!-- Progress dots -->
-            <div class="flex justify-center gap-2 mb-6">
-                <div class="dot h-2 rounded-full bg-brand-gold" :class="step >= 1 ? 'active' : 'w-2 bg-brand-gold/30'"></div>
-                <div class="dot h-2 rounded-full" :class="step >= 2 ? 'active bg-brand-gold' : 'w-2 bg-brand-gold/30'"></div>
-                <div class="dot h-2 rounded-full" :class="step >= 3 ? 'active bg-brand-gold' : 'w-2 bg-brand-gold/30'"></div>
-            </div>
-
-            <!-- ---- STEP 1: STAR RATING ---- -->
-            <div x-show="step === 1" class="card rounded-[2rem] p-6 mb-4 step-enter">
-
-                <p class="text-center text-sm font-bold text-brand-dark/60 mb-5 uppercase tracking-widest text-[10px]">Tap to rate</p>
-
-                <!-- Stars -->
-                <div class="flex justify-center gap-3 mb-3">
-                    <template x-for="i in 5" :key="i">
-                        <button @click="setRating(i)" class="star-btn" :class="rating === i ? 'active' : ''">
-                            <i class="fa-solid fa-star text-4xl star-icon transition-all"
-                               :class="i <= rating ? 'lit' : 'text-gray-200'"></i>
-                        </button>
-                    </template>
-                </div>
-
-                <!-- Rating label -->
-                <div class="h-8 flex items-center justify-center mb-6">
-                    <div x-show="rating > 0" class="pop-in flex items-center gap-2">
-                        <span class="text-2xl" x-text="getRatingEmoji(rating)"></span>
-                        <span class="text-base font-extrabold text-brand-olive" x-text="getRatingLabel(rating)"></span>
-                    </div>
-                    <p x-show="rating === 0" class="text-xs text-brand-dark/30 font-medium">No rating yet</p>
-                </div>
-
-                <!-- Quick tags (show after rating) -->
-                <div x-show="rating > 0" class="mb-6">
-                    <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest text-center mb-3">What stood out?</p>
-                    <div class="flex flex-wrap justify-center gap-2">
-                        <template x-for="tag in getTagsForRating()" :key="tag.label">
-                            <button @click="toggleTag(tag.label)"
-                                    class="tag-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border"
-                                    :class="selectedTags.includes(tag.label) ? 'selected' : 'bg-white text-brand-olive border-brand-olive/10 shadow-sm'">
-                                <span x-text="tag.icon"></span>
-                                <span x-text="tag.label"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-
-                <button @click="step = 2" :disabled="rating === 0"
-                        class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg"
-                        :class="rating > 0 ? 'shimmer-btn text-white' : 'bg-gray-100 text-gray-300 cursor-not-allowed'">
-                    Continue &nbsp;<i class="fa-solid fa-arrow-right text-xs"></i>
-                </button>
-            </div>
-
-            <!-- ---- STEP 2: COMMENT ---- -->
-            <div x-show="step === 2" class="card rounded-[2rem] p-6 mb-4 step-enter">
-                <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 2 of 3</p>
-                <h3 class="text-lg font-extrabold text-brand-olive mb-4">Tell us more</h3>
-
-                <!-- Partner card -->
-                <div class="flex items-center gap-3 bg-brand-cream/60 rounded-2xl p-3 mb-4 border border-brand-gold/10">
-                    <div class="w-12 h-12 rounded-xl bg-brand-olive flex items-center justify-center shadow-md flex-shrink-0">
-                        <i class="fa-solid fa-user-tie text-white text-lg"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-black text-brand-dark" x-text="jobData?.customer_name ? 'Your Expert' : 'Your Expert'">Your Expert</p>
-                        <p class="text-[10px] text-brand-dark/40 font-medium" x-text="jobData?.category || 'Service Partner'"></p>
-                    </div>
-                    <div class="ml-auto flex">
-                        <template x-for="s in rating">
-                            <i class="fa-solid fa-star text-brand-gold text-[10px]"></i>
-                        </template>
-                    </div>
-                </div>
-
-                <textarea x-model="comment"
-                          placeholder="Share what you loved, or what could be better…"
-                          rows="4"
-                          class="w-full bg-brand-cream/50 border border-brand-olive/10 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-gold/50 outline-none resize-none font-medium placeholder:text-brand-dark/30 mb-4"></textarea>
-
-                <!-- Character count -->
-                <p class="text-[10px] text-brand-dark/30 text-right mb-4" x-text="comment.length + ' characters'"></p>
-
-                <div class="flex gap-3">
-                    <button @click="step = 1" class="w-12 h-12 rounded-xl border border-brand-olive/15 bg-white text-brand-olive flex items-center justify-center flex-shrink-0 hover:bg-brand-cream transition-all active:scale-90">
-                        <i class="fa-solid fa-arrow-left text-sm"></i>
-                    </button>
-                    <button @click="step = 3"
-                            class="flex-1 py-3.5 shimmer-btn text-white rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg">
-                        Next &nbsp;<i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ---- STEP 3: REVIEW SUMMARY + SUBMIT ---- -->
-            <div x-show="step === 3" class="card rounded-[2rem] p-6 mb-4 step-enter">
-                <p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 3 of 3</p>
-                <h3 class="text-lg font-extrabold text-brand-olive mb-4">Confirm & Submit</h3>
-
-                <!-- Full review summary -->
-                <div class="bg-brand-cream/70 rounded-2xl p-4 mb-5 border border-brand-gold/15 space-y-3">
-
-                    <!-- Service info -->
-                    <div class="flex items-center gap-3 pb-3 border-b border-brand-olive/10">
-                        <div class="w-10 h-10 rounded-xl bg-brand-olive flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-screwdriver-wrench text-white text-sm"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-black text-brand-dark" x-text="jobData?.category || 'Service'"></p>
-                            <p class="text-[10px] text-brand-dark/40">FixZen Verified Partner</p>
-                        </div>
-                    </div>
-
-                    <!-- Star rating row -->
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest">Rating</span>
-                        <div class="flex items-center gap-1.5">
-                            <div class="flex gap-0.5">
-                                <template x-for="s in 5">
-                                    <i class="fa-solid fa-star text-sm" :class="s <= rating ? 'text-brand-gold' : 'text-gray-200'"></i>
-                                </template>
-                            </div>
-                            <span class="text-xs font-extrabold text-brand-olive" x-text="getRatingLabel(rating)"></span>
-                        </div>
-                    </div>
-
-                    <!-- Tags row -->
-                    <div x-show="selectedTags.length > 0">
-                        <p class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest mb-1.5">Highlights</p>
-                        <div class="flex flex-wrap gap-1">
-                            <template x-for="tag in selectedTags">
-                                <span class="bg-brand-olive/10 text-brand-olive text-[9px] font-bold px-2.5 py-1 rounded-full" x-text="tag"></span>
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Comment row -->
-                    <div x-show="comment">
-                        <p class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest mb-1">Your Note</p>
-                        <p class="text-xs text-brand-dark/60 italic leading-snug" x-text="'❝ ' + comment.slice(0, 80) + (comment.length > 80 ? '…' : '') + ' ❞'"></p>
-                    </div>
-                </div>
-
-                <div class="flex gap-3">
-                    <button @click="step = 2" class="w-12 h-12 rounded-xl border border-brand-olive/15 bg-white text-brand-olive flex items-center justify-center flex-shrink-0 hover:bg-brand-cream transition-all active:scale-90">
-                        <i class="fa-solid fa-arrow-left text-sm"></i>
-                    </button>
-                    <button @click="submitReview()" :disabled="loading"
-                            class="flex-1 py-3.5 shimmer-btn text-white rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50">
-                        <span x-show="!loading"><i class="fa-solid fa-paper-plane mr-2"></i>Submit Review</span>
-                        <i x-show="loading" class="fa-solid fa-circle-notch fa-spin"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Footer note -->
-            <p class="text-center text-[10px] text-brand-dark/30 font-medium mt-2">
-                <i class="fa-solid fa-lock mr-1"></i>Your feedback is private & secure
-            </p>
-
-        </div>
-    </div>
-
-    <!-- ===================== SUCCESS SCREEN ===================== -->
-    <div x-show="submitted"
-         class="fixed inset-0 z-[500] flex flex-col items-center justify-center p-6 text-center overflow-hidden"
-         style="display:none;">
-
-        <!-- Layered background -->
-        <div class="absolute inset-0 bg-gradient-to-br from-brand-olive via-[#4a4436] to-[#2d2b29]"></div>
-        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px); background-size: 28px 28px;"></div>
-        <div class="absolute top-0 right-0 w-80 h-80 rounded-full" style="background: radial-gradient(circle, rgba(160,125,84,0.25) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full" style="background: radial-gradient(circle, rgba(160,125,84,0.15) 0%, transparent 70%); transform: translate(-30%, 30%);"></div>
-
-        <div class="relative z-10 pop-in">
-            <!-- Trophy icon with glow -->
-            <div class="relative mx-auto mb-6 w-28 h-28">
-                <div class="absolute inset-0 rounded-full bg-brand-gold/20 blur-xl scale-150"></div>
-                <div class="w-28 h-28 rounded-full bg-gradient-to-br from-brand-gold to-[#c9a050] flex items-center justify-center shadow-2xl relative">
-                    <i class="fa-solid fa-trophy text-5xl text-white drop-shadow-lg"></i>
-                </div>
-                <!-- Sparkles -->
-                <div class="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
-                    <i class="fa-solid fa-star text-xs text-brand-gold"></i>
-                </div>
-                <div class="absolute -bottom-1 -left-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
-                    <i class="fa-solid fa-star text-[8px] text-brand-gold"></i>
-                </div>
-            </div>
-
-            <h2 class="text-4xl font-extrabold text-white mb-2 tracking-tight">Thank You!</h2>
-            <p class="text-brand-cream/70 text-sm max-w-[220px] mx-auto leading-relaxed mb-2">
-                Your review just earned your partner a <span class="text-brand-gold font-bold">bonus reward</span>.
-            </p>
-
-            <!-- Stars display -->
-            <div class="flex justify-center gap-1.5 mb-4">
-                <template x-for="s in 5">
-                    <i class="fa-solid fa-star text-lg" :class="s <= rating ? 'text-brand-gold' : 'text-white/20'"></i>
-                </template>
-            </div>
-
-            <!-- Coins earned card -->
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 mb-8 inline-block">
-                <p class="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Reward Granted</p>
-                <div class="flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-coins text-brand-gold text-xl"></i>
-                    <span class="text-2xl font-black text-white" x-text="rating * 10 + ' Tokens'"></span>
-                </div>
-            </div>
-
-            <button @click="window.location.href='index.html'"
-                    class="w-full max-w-[280px] py-4 bg-white text-brand-olive rounded-2xl font-extrabold text-sm uppercase tracking-widest hover:bg-brand-gold hover:text-white transition-all active:scale-95 shadow-xl">
-                <i class="fa-solid fa-house mr-2"></i>Back to Home
-            </button>
-        </div>
-    </div>
-<script src="feedback.js"></script>
-   
+<body x-data=feedbackApp() x-init=init()>
+<div class=bg-pattern><div class=dot-grid></div></div>
+<div id=confetti-container></div>
+<div x-show=pageLoading class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-brand-cream">
+<div class="w-16 h-16 rounded-2xl bg-brand-olive flex items-center justify-center mb-5 float-anim">
+<i class="fa-solid fa-wand-magic-sparkles text-2xl text-white"></i>
+</div>
+<div class="flex gap-1.5">
+<span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style=animation-delay:0s></span>
+<span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style=animation-delay:0.15s></span>
+<span class="w-2 h-2 rounded-full bg-brand-gold animate-bounce" style=animation-delay:0.3s></span>
+</div>
+</div>
+<div x-show="!pageLoading && !jobCompleted && !submitted" class="fixed inset-0 z-40 flex items-center justify-center p-6">
+<div class="card rounded-[2.5rem] p-8 w-full max-w-sm text-center slide-up">
+<div class="relative w-24 h-24 mx-auto mb-6">
+<div class="w-24 h-24 rounded-full bg-amber-50 border-4 border-brand-gold/30 flex items-center justify-center pending-pulse">
+<i class="fa-regular fa-clock text-4xl text-brand-gold"></i>
+</div>
+<div class="absolute -top-1 -right-1 w-8 h-8 bg-brand-olive rounded-full flex items-center justify-center shadow-lg">
+<i class="fa-solid fa-hourglass-half text-xs text-white"></i>
+</div>
+</div>
+<h2 class="text-2xl font-extrabold text-brand-olive mb-2 tracking-tight">Work in Progress</h2>
+<p class="text-sm text-brand-dark/60 leading-relaxed mb-2">Your expert is still working on the job. We'll unlock your feedback form once the service is marked <span class="font-bold text-brand-green">Completed</span>.</p>
+<div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2 mt-2 mb-6">
+<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+<span class="text-xs font-bold text-amber-700 uppercase tracking-wider" x-text="jobStatus ? jobStatus.replace('_',' ') : 'Pending'"></span>
+</div>
+<p class="text-[11px] text-brand-dark/40 mb-6">You'll receive a notification when your job is complete and you can share your experience.</p>
+<button @click="window.location.href='index.html'" class="w-full py-3.5 rounded-2xl bg-brand-olive text-white font-bold text-sm tracking-wide hover:bg-brand-gold transition-all active:scale-95 shadow-lg">
+<i class="fa-solid fa-house mr-2"></i> Back to Home
+</button>
+</div>
+</div>
+<div x-show="!pageLoading && jobCompleted && !submitted" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-5 py-10">
+<div class="w-full max-w-sm slide-up">
+<div class="text-center mb-7">
+<div class="relative w-20 h-20 mx-auto mb-4">
+<div class="w-20 h-20 bg-brand-olive rounded-[1.5rem] rotate-6 flex items-center justify-center shadow-xl">
+<i class="fa-solid fa-star text-brand-gold text-3xl"></i>
+</div>
+<div class="absolute -bottom-1 -right-1 w-7 h-7 bg-brand-gold rounded-full flex items-center justify-center shadow-md">
+<i class="fa-solid fa-check text-white text-xs"></i>
+</div>
+</div>
+<h1 class="text-[1.6rem] font-extrabold text-brand-olive tracking-tight leading-tight">
+How did we do?
+</h1>
+<p class="text-xs text-brand-gold font-bold uppercase tracking-[0.2em] mt-1.5">Share Your Experience</p>
+<div x-show=jobData class="inline-flex items-center gap-2 bg-white/70 border border-brand-gold/20 rounded-full px-4 py-1.5 mt-3 shadow-sm">
+<i class="fa-solid fa-screwdriver-wrench text-brand-gold text-xs"></i>
+<span class="text-xs font-semibold text-brand-dark" x-text="jobData?.category || 'Service'"></span>
+</div>
+</div>
+<div class="flex justify-center gap-2 mb-6">
+<div class="dot h-2 rounded-full bg-brand-gold" :class="step >= 1 ? 'active' : 'w-2 bg-brand-gold/30'"></div>
+<div class="dot h-2 rounded-full" :class="step >= 2 ? 'active bg-brand-gold' : 'w-2 bg-brand-gold/30'"></div>
+<div class="dot h-2 rounded-full" :class="step >= 3 ? 'active bg-brand-gold' : 'w-2 bg-brand-gold/30'"></div>
+</div>
+<div x-show="step === 1" class="card rounded-[2rem] p-6 mb-4 step-enter">
+<p class="text-center text-sm font-bold text-brand-dark/60 mb-5 uppercase tracking-widest text-[10px]">Tap to rate</p>
+<div class="flex justify-center gap-3 mb-3">
+<template x-for="i in 5" :key=i>
+<button @click=setRating(i) class=star-btn :class="rating === i ? 'active' : ''">
+<i class="fa-solid fa-star text-4xl star-icon transition-all" :class="i <= rating ? 'lit' : 'text-gray-200'"></i>
+</button>
+</template>
+</div>
+<div class="h-8 flex items-center justify-center mb-6">
+<div x-show="rating > 0" class="pop-in flex items-center gap-2">
+<span class=text-2xl x-text=getRatingEmoji(rating)></span>
+<span class="text-base font-extrabold text-brand-olive" x-text=getRatingLabel(rating)></span>
+</div>
+<p x-show="rating === 0" class="text-xs text-brand-dark/30 font-medium">No rating yet</p>
+</div>
+<div x-show="rating > 0" class=mb-6>
+<p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest text-center mb-3">What stood out?</p>
+<div class="flex flex-wrap justify-center gap-2">
+<template x-for="tag in getTagsForRating()" :key=tag.label>
+<button @click=toggleTag(tag.label) class="tag-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border" :class="selectedTags.includes(tag.label) ? 'selected' : 'bg-white text-brand-olive border-brand-olive/10 shadow-sm'">
+<span x-text=tag.icon></span>
+<span x-text=tag.label></span>
+</button>
+</template>
+</div>
+</div>
+<button @click="step = 2" :disabled="rating === 0" class="w-full py-4 rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg" :class="rating > 0 ? 'shimmer-btn text-white' : 'bg-gray-100 text-gray-300 cursor-not-allowed'">
+Continue &nbsp;<i class="fa-solid fa-arrow-right text-xs"></i>
+</button>
+</div>
+<div x-show="step === 2" class="card rounded-[2rem] p-6 mb-4 step-enter">
+<p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 2 of 3</p>
+<h3 class="text-lg font-extrabold text-brand-olive mb-4">Tell us more</h3>
+<div class="flex items-center gap-3 bg-brand-cream/60 rounded-2xl p-3 mb-4 border border-brand-gold/10">
+<div class="w-12 h-12 rounded-xl bg-brand-olive flex items-center justify-center shadow-md flex-shrink-0">
+<i class="fa-solid fa-user-tie text-white text-lg"></i>
+</div>
+<div>
+<p class="text-xs font-black text-brand-dark" x-text="jobData?.customer_name ? 'Your Expert' : 'Your Expert'">Your Expert</p>
+<p class="text-[10px] text-brand-dark/40 font-medium" x-text="jobData?.category || 'Service Partner'"></p>
+</div>
+<div class="ml-auto flex">
+<template x-for="s in rating">
+<i class="fa-solid fa-star text-brand-gold text-[10px]"></i>
+</template>
+</div>
+</div>
+<textarea x-model=comment placeholder="Share what you loved, or what could be better…" rows=4 class="w-full bg-brand-cream/50 border border-brand-olive/10 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-gold/50 outline-none resize-none font-medium placeholder:text-brand-dark/30 mb-4"></textarea>
+<p class="text-[10px] text-brand-dark/30 text-right mb-4" x-text="comment.length + ' characters'"></p>
+<div class="flex gap-3">
+<button @click="step = 1" class="w-12 h-12 rounded-xl border border-brand-olive/15 bg-white text-brand-olive flex items-center justify-center flex-shrink-0 hover:bg-brand-cream transition-all active:scale-90">
+<i class="fa-solid fa-arrow-left text-sm"></i>
+</button>
+<button @click="step = 3" class="flex-1 py-3.5 shimmer-btn text-white rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg">
+Next &nbsp;<i class="fa-solid fa-arrow-right text-xs"></i>
+</button>
+</div>
+</div>
+<div x-show="step === 3" class="card rounded-[2rem] p-6 mb-4 step-enter">
+<p class="text-[10px] font-black text-brand-olive/60 uppercase tracking-widest mb-1">Step 3 of 3</p>
+<h3 class="text-lg font-extrabold text-brand-olive mb-4">Confirm & Submit</h3>
+<div class="bg-brand-cream/70 rounded-2xl p-4 mb-5 border border-brand-gold/15 space-y-3">
+<div class="flex items-center gap-3 pb-3 border-b border-brand-olive/10">
+<div class="w-10 h-10 rounded-xl bg-brand-olive flex items-center justify-center flex-shrink-0">
+<i class="fa-solid fa-screwdriver-wrench text-white text-sm"></i>
+</div>
+<div>
+<p class="text-xs font-black text-brand-dark" x-text="jobData?.category || 'Service'"></p>
+<p class="text-[10px] text-brand-dark/40">FixZen Verified Partner</p>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest">Rating</span>
+<div class="flex items-center gap-1.5">
+<div class="flex gap-0.5">
+<template x-for="s in 5">
+<i class="fa-solid fa-star text-sm" :class="s <= rating ? 'text-brand-gold' : 'text-gray-200'"></i>
+</template>
+</div>
+<span class="text-xs font-extrabold text-brand-olive" x-text=getRatingLabel(rating)></span>
+</div>
+</div>
+<div x-show="selectedTags.length > 0">
+<p class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest mb-1.5">Highlights</p>
+<div class="flex flex-wrap gap-1">
+<template x-for="tag in selectedTags">
+<span class="bg-brand-olive/10 text-brand-olive text-[9px] font-bold px-2.5 py-1 rounded-full" x-text=tag></span>
+</template>
+</div>
+</div>
+<div x-show=comment>
+<p class="text-[10px] font-black text-brand-olive/50 uppercase tracking-widest mb-1">Your Note</p>
+<p class="text-xs text-brand-dark/60 italic leading-snug" x-text="'❝ ' + comment.slice(0, 80) + (comment.length > 80 ? '…' : '') + ' ❞'"></p>
+</div>
+</div>
+<div class="flex gap-3">
+<button @click="step = 2" class="w-12 h-12 rounded-xl border border-brand-olive/15 bg-white text-brand-olive flex items-center justify-center flex-shrink-0 hover:bg-brand-cream transition-all active:scale-90">
+<i class="fa-solid fa-arrow-left text-sm"></i>
+</button>
+<button @click=submitReview() :disabled=loading class="flex-1 py-3.5 shimmer-btn text-white rounded-2xl font-extrabold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:opacity-50">
+<span x-show=!loading><i class="fa-solid fa-paper-plane mr-2"></i>Submit Review</span>
+<i x-show=loading class="fa-solid fa-circle-notch fa-spin"></i>
+</button>
+</div>
+</div>
+<p class="text-center text-[10px] text-brand-dark/30 font-medium mt-2">
+<i class="fa-solid fa-lock mr-1"></i>Your feedback is private & secure
+</p>
+</div>
+</div>
+<div x-show=submitted class="fixed inset-0 z-[500] flex flex-col items-center justify-center p-6 text-center overflow-hidden" style=display:none>
+<div class="absolute inset-0 bg-gradient-to-br from-brand-olive via-[#4a4436] to-[#2d2b29]"></div>
+<div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle,rgba(255,255,255,0.2) 1px,transparent 1px);background-size:28px 28px"></div>
+<div class="absolute top-0 right-0 w-80 h-80 rounded-full" style="background:radial-gradient(circle,rgba(160,125,84,0.25) 0,transparent 70%);transform:translate(30%,-30%)"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 rounded-full" style="background:radial-gradient(circle,rgba(160,125,84,0.15) 0,transparent 70%);transform:translate(-30%,30%)"></div>
+<div class="relative z-10 pop-in">
+<div class="relative mx-auto mb-6 w-28 h-28">
+<div class="absolute inset-0 rounded-full bg-brand-gold/20 blur-xl scale-150"></div>
+<div class="w-28 h-28 rounded-full bg-gradient-to-br from-brand-gold to-[#c9a050] flex items-center justify-center shadow-2xl relative">
+<i class="fa-solid fa-trophy text-5xl text-white drop-shadow-lg"></i>
+</div>
+<div class="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+<i class="fa-solid fa-star text-xs text-brand-gold"></i>
+</div>
+<div class="absolute -bottom-1 -left-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+<i class="fa-solid fa-star text-[8px] text-brand-gold"></i>
+</div>
+</div>
+<h2 class="text-4xl font-extrabold text-white mb-2 tracking-tight">Thank You!</h2>
+<p class="text-brand-cream/70 text-sm max-w-[220px] mx-auto leading-relaxed mb-2">
+Your review just earned your partner a <span class="text-brand-gold font-bold">bonus reward</span>.
+</p>
+<div class="flex justify-center gap-1.5 mb-4">
+<template x-for="s in 5">
+<i class="fa-solid fa-star text-lg" :class="s <= rating ? 'text-brand-gold' : 'text-white/20'"></i>
+</template>
+</div>
+<div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 mb-8 inline-block">
+<p class="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Reward Granted</p>
+<div class="flex items-center justify-center gap-2">
+<i class="fa-solid fa-coins text-brand-gold text-xl"></i>
+<span class="text-2xl font-black text-white" x-text="rating * 10 + ' Tokens'"></span>
+</div>
+</div>
+<button @click="window.location.href='index.html'" class="w-full max-w-[280px] py-4 bg-white text-brand-olive rounded-2xl font-extrabold text-sm uppercase tracking-widest hover:bg-brand-gold hover:text-white transition-all active:scale-95 shadow-xl">
+<i class="fa-solid fa-house mr-2"></i>Back to Home
+</button>
+</div>
+</div>
+<script src=feedback.js></script>
 </body>
 </html>
