@@ -279,38 +279,80 @@ async function loadJob() {
     return;
   }
   jobData = data;
+  setupAdditionalIssue();
 
-  if (data.is_inspection_job) {
-    document.getElementById("inspectionQuoteCard").classList.remove("hidden");
+  // Quote is available for EVERY active job. A customer can report an additional
+  // issue even when the original booking was a normal fixed-price service.
+  const quoteCard = document.getElementById("inspectionQuoteCard");
+  if (quoteCard) quoteCard.classList.remove("hidden");
 
-    if (data.other_issue && data.other_issue.trim()) {
-        const otherBox = document.getElementById("customerOtherIssueBox");
-        const otherText = document.getElementById("customerOtherIssueText");
-        if (otherBox && otherText) {
-            otherText.innerText = data.other_issue.trim();
-            otherBox.classList.remove("hidden");
-        }
-    }
+  const isInspectionJob = data.is_inspection_job === true;
+  const inspectionFee = isInspectionJob ? (Number(data.inspection_fee_amount) || 0) : 0;
 
-    if (data.device && data.device.includes(',')) {
-        const mixedBox = document.getElementById("mixedServicesBox");
-        const mixedText = document.getElementById("mixedServicesText");
-        if (mixedBox && mixedText) {
-            mixedText.innerText = data.device;
-            mixedBox.classList.remove("hidden");
-        }
-    }
+  const title = document.getElementById("quoteCardTitle");
+  const subtitle = document.getElementById("quoteCardSubtitle");
+  const feeBadgeWrap = document.getElementById("inspectionFeeBadgeWrap");
+  const adjustmentBox = document.getElementById("inspectionAdjustmentBox");
+  const normalInfoBox = document.getElementById("normalQuoteInfoBox");
+  const adjustmentRow = document.getElementById("adjustmentRow");
 
-    const feeAmount = data.inspection_fee_amount;
+  if (isInspectionJob) {
+    if (title) title.innerText = "Inspection Quote";
+    if (subtitle) subtitle.innerText = "Enter the repair cost after inspection and send it to the customer for approval.";
+    if (feeBadgeWrap) feeBadgeWrap.classList.remove("hidden");
+    if (adjustmentBox) adjustmentBox.classList.remove("hidden");
+    if (normalInfoBox) normalInfoBox.classList.add("hidden");
+    if (adjustmentRow) adjustmentRow.classList.remove("hidden");
+
     const feeLabel = document.getElementById("inspectionFeeLabel");
-    if (feeLabel && feeAmount) feeLabel.innerText = feeAmount;
     const feeBadge = document.getElementById("inspectionFeeBadge");
-    if (feeBadge && feeAmount) feeBadge.innerText = feeAmount;
+    if (feeLabel) feeLabel.innerText = inspectionFee;
+    if (feeBadge) feeBadge.innerText = inspectionFee;
+  } else {
+    if (title) title.innerText = "Additional Work Quote";
+    if (subtitle) subtitle.innerText = "Customer has another issue? Quote the extra work here.";
+    if (feeBadgeWrap) feeBadgeWrap.classList.add("hidden");
+    if (adjustmentBox) adjustmentBox.classList.add("hidden");
+    if (normalInfoBox) normalInfoBox.classList.remove("hidden");
+    if (adjustmentRow) adjustmentRow.classList.add("hidden");
   }
 
-  if (data.is_inspection_job && data.quote_status === "approved") {
-    showToast("Customer approved the quote. You can start repair work now.", "success", 4200);
-    document.getElementById("inspectionQuoteCard").style.display = "none";
+  if (data.other_issue && data.other_issue.trim()) {
+    const otherBox = document.getElementById("customerOtherIssueBox");
+    const otherText = document.getElementById("customerOtherIssueText");
+    if (otherBox && otherText) {
+      otherText.innerText = data.other_issue.trim();
+      otherBox.classList.remove("hidden");
+    }
+  }
+
+  // Show all booked services whenever there is more than one service.
+  if (data.device && data.device.includes(',')) {
+    const mixedBox = document.getElementById("mixedServicesBox");
+    const mixedText = document.getElementById("mixedServicesText");
+    if (mixedBox && mixedText) {
+      mixedText.innerText = data.device;
+      mixedBox.classList.remove("hidden");
+    }
+  }
+
+  // Once any quote has been approved, hide the quote editor for that quote.
+  if (data.quote_status === "approved") {
+    showToast("Customer approved the quote. You can continue the repair work now.", "success", 4200);
+    if (quoteCard) quoteCard.style.display = "none";
+  } else if (data.quote_status === "submitted") {
+    // Restore waiting state after refresh/reopen.
+    const submitBtn = document.getElementById("submitQuoteBtn");
+    const cancelBtn = document.getElementById("cancelQuoteBtn");
+    if (submitBtn) {
+      submitBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> Waiting for Approval';
+      submitBtn.disabled = true;
+    }
+    if (cancelBtn) cancelBtn.style.display = "none";
+    ["labourCost", "materialCost", "extraCharges", "quoteDescription"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
   }
 
   document.getElementById("category").innerText = data.category || "Service";
@@ -628,15 +670,106 @@ if (errorBackBtn) {
 
 document.getElementById("refreshLocationBtn").onclick = manualRefresh;
 
+// ══════════════════════════════════════════════
+// ADDITIONAL ISSUE (SEPARATE FROM QUOTE LOGIC)
+// ══════════════════════════════════════════════
+function setupAdditionalIssue() {
+    const issueInput = document.getElementById("additionalIssueText");
+    const priceInput = document.getElementById("additionalIssuePrice");
+    const preview = document.getElementById("additionalIssuePreview");
+    const saveBtn = document.getElementById("saveAdditionalIssueBtn");
+    const status = document.getElementById("additionalIssueStatus");
+
+    if (!issueInput || !priceInput || !saveBtn) return;
+
+    // Load existing values when the job already has an additional issue saved.
+    if (jobData?.additional_issue) issueInput.value = jobData.additional_issue;
+    if (jobData?.additional_issue_price != null) priceInput.value = jobData.additional_issue_price;
+
+    const updatePreview = () => {
+        const price = Math.max(0, Number(priceInput.value) || 0);
+        if (preview) preview.textContent = `₹${price}`;
+    };
+
+    priceInput.addEventListener("input", updatePreview);
+    updatePreview();
+
+    saveBtn.addEventListener("click", async () => {
+        const issue = issueInput.value.trim();
+        const price = Math.max(0, Number(priceInput.value) || 0);
+
+        if (!issue) {
+            showToast("Please enter the additional issue.", "warning", 2600);
+            issueInput.focus();
+            return;
+        }
+
+        if (price <= 0) {
+            showToast("Please enter the additional price.", "warning", 2600);
+            priceInput.focus();
+            return;
+        }
+
+        const originalHtml = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        try {
+            // IMPORTANT: These fields are intentionally separate from quoted_amount,
+            // quoted_labour, quoted_material, quoted_extra and quote_status.
+            const { data, error } = await sb
+                .from("jobs")
+                .update({
+                    additional_issue: issue,
+                    additional_issue_price: price
+                })
+                .eq("id", jobId)
+                .select("additional_issue, additional_issue_price")
+                .single();
+
+            if (error) throw error;
+
+            jobData.additional_issue = data?.additional_issue ?? issue;
+            jobData.additional_issue_price = data?.additional_issue_price ?? price;
+
+            if (status) {
+                status.textContent = `✓ Saved: ${issue} — ₹${price}`;
+                status.classList.remove("hidden");
+            }
+            saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
+            showToast("Additional issue saved separately from the quote.", "success", 3000);
+
+            setTimeout(() => {
+                saveBtn.innerHTML = originalHtml;
+                saveBtn.disabled = false;
+            }, 1400);
+        } catch (err) {
+            console.error("Additional issue save error:", err);
+            showToast("Could not save additional issue. Make sure the jobs table has additional_issue and additional_issue_price columns.", "error", 5000);
+            saveBtn.innerHTML = originalHtml;
+            saveBtn.disabled = false;
+        }
+    });
+}
+
+function getQuotePricing() {
+    const isInspectionJob = jobData?.is_inspection_job === true;
+    const inspectionFee = isInspectionJob ? (Number(jobData?.inspection_fee_amount) || 0) : 0;
+    return { isInspectionJob, inspectionFee };
+}
+
 function setupQuotePreview() {
     const inputs = ["labourCost", "materialCost", "extraCharges"];
-    const inspectionFee = jobData?.inspection_fee_amount || 149;
 
     function updatePreview() {
         const labour = Number(document.getElementById("labourCost")?.value) || 0;
         const material = Number(document.getElementById("materialCost")?.value) || 0;
         const extra = Number(document.getElementById("extraCharges")?.value) || 0;
         const total = labour + material + extra;
+        const { inspectionFee } = getQuotePricing();
+
+        // For inspection jobs the already-paid inspection fee is deducted.
+        // For normal bookings there is NO fake/default inspection deduction.
         const payable = Math.max(0, total - inspectionFee);
 
         const previewLabour = document.getElementById("previewLabour");
@@ -656,7 +789,10 @@ function setupQuotePreview() {
 
     inputs.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener("input", updatePreview);
+        if (el && !el.dataset.quotePreviewBound) {
+            el.dataset.quotePreviewBound = "1";
+            el.addEventListener("input", updatePreview);
+        }
     });
     updatePreview();
 }
@@ -678,23 +814,26 @@ async function submitInspectionQuote() {
     }
 
     const totalQuote = labour + material + extra;
-    const inspectionFee = jobData?.inspection_fee_amount || 299;
-    const fixedServicesTotal = jobData?.original_price ? (jobData.original_price - inspectionFee) : 0;
+    const { isInspectionJob, inspectionFee } = getQuotePricing();
     const customerPayable = Math.max(0, totalQuote - inspectionFee);
 
-    const fixedLine = fixedServicesTotal > 0
-        ? `Fixed Services (already included): ₹${fixedServicesTotal}\n`
+    const inspectionLine = isInspectionJob
+        ? `Inspection Fee Paid: ₹${inspectionFee}\n`
         : "";
-    const confirmMsg = `📋 Quote Summary\n\n` +
+
+    const quoteTypeLine = isInspectionJob
+        ? "Inspection / Repair Quote"
+        : "Additional Work Quote";
+
+    const confirmMsg = `📋 ${quoteTypeLine}\n\n` +
         `Labour: ₹${labour}\n` +
         `Material: ₹${material}\n` +
         `Extra Charges: ₹${extra}\n` +
         `━━━━━━━━━━━━━━━\n` +
         `Total Quote: ₹${totalQuote}\n` +
-        `Inspection Fee Paid: ₹${inspectionFee}\n` +
-        fixedLine +
+        inspectionLine +
         `━━━━━━━━━━━━━━━\n` +
-        `Customer Payable: ₹${customerPayable}\n\n` +
+        `Customer Payable for this quote: ₹${customerPayable}\n\n` +
         `Send this quote to the customer for approval?`;
 
     if (!confirm(confirmMsg)) return;
@@ -720,7 +859,7 @@ async function submitInspectionQuote() {
 
         if (error) throw error;
 
-        showToast(`Quote submitted — ₹${totalQuote} total, ₹${customerPayable} payable. Waiting for approval.`, "success", 4200);
+        showToast(`Quote submitted — ₹${totalQuote} total, ₹${customerPayable} payable for this quote. Waiting for approval.`, "success", 4200);
 
         submitBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> Waiting for Approval';
         submitBtn.disabled = true;
