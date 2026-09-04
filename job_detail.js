@@ -945,6 +945,8 @@ if (jobId) {
         .subscribe();
 }
 
+
+
 loadJob();
 
 window.addEventListener("beforeunload", () => {
