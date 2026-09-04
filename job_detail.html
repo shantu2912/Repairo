@@ -356,13 +356,64 @@
         </div>
       </div>
 
-      <!-- INSPECTION QUOTE CARD -->
+      <!-- ADDITIONAL ISSUE CARD -->
+      <div id="additionalIssueCard" class="glass-card p-5 rounded-2xl mb-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-9 h-9 rounded-xl bg-brand-gold/10 flex items-center justify-center">
+            <i class="fas fa-circle-plus text-brand-gold"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-brand-dark text-base">Additional Issue</h3>
+            <p class="text-[9px] text-brand-dark/45 mt-0.5">Record an extra problem found during the service.</p>
+          </div>
+        </div>
+
+        <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/65">
+          <i class="fas fa-info-circle text-brand-gold mr-1"></i>
+          Use this only for an issue that was not part of the customer's original booking. This is kept separate from the existing quote.
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-triangle-exclamation mr-1"></i> Issue / Problem
+            </label>
+            <textarea id="additionalIssueText" rows="3" placeholder="e.g. Water leakage found in the inlet pipe..." class="w-full border border-brand-beige rounded-xl p-3 text-brand-dark text-sm focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition resize-none"></textarea>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-brand-dark/60 uppercase tracking-wider block mb-1">
+              <i class="fas fa-indian-rupee-sign mr-1"></i> Additional Price
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold">₹</span>
+              <input type="number" inputmode="numeric" min="0" id="additionalIssuePrice" placeholder="0" class="w-full border border-brand-beige rounded-xl p-3 pl-8 text-brand-dark font-medium focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-4 pt-3 border-t border-brand-beige/40">
+          <div>
+            <p class="text-[9px] text-brand-dark/40 uppercase tracking-wider">Additional Amount</p>
+            <p id="additionalIssuePreview" class="font-mono font-extrabold text-brand-gold">₹0</p>
+          </div>
+          <button id="saveAdditionalIssueBtn" type="button" class="py-3 px-4 rounded-xl bg-brand-olive text-white font-bold hover:bg-brand-gold transition-all btn-touch shadow-sm flex items-center gap-2">
+            <i class="fas fa-save"></i> Save Issue
+          </button>
+        </div>
+        <p id="additionalIssueStatus" class="hidden text-[10px] mt-2 text-green-600 font-medium"></p>
+      </div>
+
+      <!-- ADDITIONAL WORK / INSPECTION QUOTE CARD -->
       <div id="inspectionQuoteCard" class="glass-card p-5 rounded-2xl hidden">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-clipboard-list text-brand-gold text-lg"></i>
-          <h3 class="font-bold text-brand-dark text-base">Inspection Quote</h3>
-          <span class="ml-auto text-[9px] bg-brand-cream px-2 py-1 rounded-full text-brand-olive">
-            <i class="fas fa-rupee-sign"></i> Inspection: ₹<span id="inspectionFeeBadge">299</span> paid
+          <div>
+            <h3 id="quoteCardTitle" class="font-bold text-brand-dark text-base">Additional Work Quote</h3>
+            <p id="quoteCardSubtitle" class="text-[9px] text-brand-dark/45 mt-0.5">Use this if the customer reports another issue or extra work is required.</p>
+          </div>
+          <span id="inspectionFeeBadgeWrap" class="hidden ml-auto text-[9px] bg-brand-cream px-2 py-1 rounded-full text-brand-olive whitespace-nowrap">
+            <i class="fas fa-rupee-sign"></i> Inspection: ₹<span id="inspectionFeeBadge">0</span> paid
           </span>
         </div>
 
@@ -380,9 +431,14 @@
           <p id="mixedServicesText" class="text-xs text-brand-dark/70 leading-relaxed"></p>
         </div>
 
-        <div class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
+        <div id="inspectionAdjustmentBox" class="hidden bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
           <i class="fas fa-info-circle text-brand-gold mr-1"></i>
-          Customer has already paid ₹<span id="inspectionFeeLabel">299</span> inspection fee. This will be adjusted from the final quote amount.
+          Customer has already paid ₹<span id="inspectionFeeLabel">0</span> inspection fee. This will be adjusted from the final quote amount.
+        </div>
+
+        <div id="normalQuoteInfoBox" class="bg-brand-cream/30 rounded-xl p-3 mb-4 text-xs text-brand-dark/70">
+          <i class="fas fa-circle-plus text-brand-gold mr-1"></i>
+          Use this quote only for additional work, another fault, extra labour, or parts not covered by the customer's booked service.
         </div>
 
         <div class="space-y-3">
@@ -441,9 +497,9 @@
               <span class="text-brand-olive">Total Quote:</span>
               <span class="font-mono text-brand-gold" id="previewTotal">₹0</span>
             </div>
-            <div class="flex justify-between text-xs mt-2 text-green-600">
+            <div id="adjustmentRow" class="hidden flex justify-between text-xs mt-2 text-green-600">
               <span>Inspection fee adjustment:</span>
-              <span id="adjustmentInfo">-₹299 (already paid)</span>
+              <span id="adjustmentInfo">-₹0 (already paid)</span>
             </div>
             <div class="flex justify-between text-sm font-bold mt-1 pt-1 border-t border-green-200">
               <span class="text-brand-dark">Customer Payable:</span>
