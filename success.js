@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -285,8 +284,28 @@ Alpine.data('trackingApp', () => ({
                 });
 
             if (orderError || !order?.id) {
+                // TEMPORARY DEBUG: the edge function returns detailed Razorpay
+                // error info in its JSON body on failure. supabase-js hides that
+                // body behind a generic message, so pull it out manually here.
+                let debugBody = null;
+                try {
+                    if (orderError?.context?.json) {
+                        debugBody = await orderError.context.json();
+                    } else if (orderError?.context?.text) {
+                        debugBody = await orderError.context.text();
+                    }
+                } catch (parseErr) {
+                    console.error('Could not parse edge function error body:', parseErr);
+                }
+                console.error('create-razorpay-order failure details:', debugBody || orderError);
+                alert(
+                    'Payment init failed:\n' +
+                    JSON.stringify(debugBody || orderError?.message || 'unknown error', null, 2)
+                );
                 throw new Error(
-                    orderError?.message || 'Could not initialize secure payment.'
+                    (debugBody && (debugBody.error || debugBody)) ||
+                    orderError?.message ||
+                    'Could not initialize secure payment.'
                 );
             }
 
