@@ -149,6 +149,15 @@
             if (!rawId) { window.location.href = 'index.html'; return; }
             
             let id = rawId.toLowerCase().replace(/\s+/g, '').trim();
+
+            // Pull latest prices / sub-services / qty tiers from Supabase.
+            // Falls back to the built-in servicesDB in service.js if the
+            // database is unreachable or a category isn't in it yet.
+            await window.loadServicesDB();
+            if (window.qtyConfigFromDB && Object.keys(window.qtyConfigFromDB).length) {
+                this.qtyConfig = window.qtyConfigFromDB;
+            }
+
             this.service = servicesDB[id] || servicesDB['default'];
             if(!servicesDB[id]) this.service.name = rawId; 
 
