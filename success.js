@@ -1,6 +1,17 @@
 const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const SUPABASE_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
+
+const sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* =========================================================
+   TAILWIND CONFIG
+========================================================= */
 
 tailwind.config = {
     theme: {
@@ -10,13 +21,17 @@ tailwind.config = {
                 'brand-gold': '#A07D54',
                 'brand-green': '#10B981'
             },
+
             fontFamily: {
                 sans: ['"Plus Jakarta Sans"', 'sans-serif']
             },
+
             animation: {
-                'ripple': 'ripple 2s linear infinite',
-                'slide-up-fade': 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                ripple: 'ripple 2s linear infinite',
+                'slide-up-fade':
+                    'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
             },
+
             keyframes: {
                 ripple: {
                     '0%': {
@@ -28,6 +43,7 @@ tailwind.config = {
                         opacity: '0'
                     }
                 },
+
                 slideUpFade: {
                     '0%': {
                         opacity: '0',
@@ -43,49 +59,91 @@ tailwind.config = {
     }
 };
 
+
+/* =========================================================
+   ALPINE APP
+========================================================= */
+
 document.addEventListener('alpine:init', () => {
+
     Alpine.data('trackingApp', () => ({
+
+        /* =====================================================
+           JOB
+        ===================================================== */
+
         jobId: null,
+        fullJobData: null,
+
         technicianFound: false,
         techData: null,
+
+        jobStatus: 'pending',
         secondsElapsed: 0,
         timerInterval: null,
 
-        otpCode: null,
-        jobStatus: 'pending',
+        /* =====================================================
+           PAYMENT
+        ===================================================== */
+
         paymentStatus: 'UNPAID',
+
+        // This is the amount customer needs to pay technician.
         payableAmount: 0,
-        finalPayableAmount: 0,
-        paymentModalOpen: false,
-        paymentLoading: false,
+
+        /* =====================================================
+           QUOTE
+        ===================================================== */
 
         quoteAmount: 0,
         quoteDescription: '',
         quoteStatus: '',
+
         inspectionFee: 299,
+
         showQuoteCard: false,
+
         quoteLabour: 0,
         quoteMaterial: 0,
         quoteExtra: 0,
 
+        /* =====================================================
+           OTP
+        ===================================================== */
+
+        otpCode: null,
+
+        /* =====================================================
+           BILL
+        ===================================================== */
+
         showBill: false,
-        fullJobData: null,
+
         billLineItems: [],
         billServiceName: '',
         billVariantName: '',
+
         isInspectionJob: false,
+
         billSubtotal: 0,
         billDiscountAmount: 0,
         billPlatformFee: 0,
         billGrandTotal: 0,
+
         billInspectionFee: 299,
         billQuoteAmount: 0,
         billAdvancePaid: 0,
         billBalancePaid: 0,
         billRefundDue: 0,
+
         billAmountInWords: '',
-        isPrinting: false,
         billTechId: 'N/A',
+
+        isPrinting: false,
+
+        /* =====================================================
+           FEEDBACK
+        ===================================================== */
 
         showFeedback: false,
         feedbackStep: 1,
@@ -95,27 +153,55 @@ document.addEventListener('alpine:init', () => {
         feedbackLoading: false,
         feedbackDone: false,
 
+        /* =====================================================
+           LOYALTY
+        ===================================================== */
+
         loyaltyReward: null,
         loyaltyChecked: false,
+
+        /* =====================================================
+           MAP
+        ===================================================== */
 
         map: null,
         techMarker: null,
         etaMins: 12,
 
+
+        /* =====================================================
+           INIT
+        ===================================================== */
+
         async init() {
-            const params = new URLSearchParams(window.location.search);
+
+            const params = new URLSearchParams(
+                window.location.search
+            );
+
             this.jobId = params.get('job_id');
 
             if (!this.jobId) {
-                alert("Invalid tracking link.");
+
+                alert('Invalid tracking link.');
+
                 window.location.href = 'index.html';
+
                 return;
             }
 
             this.startTimer();
+
             await this.checkJobStatus();
 
-            const channel = sb.channel('waiting-room-' + this.jobId);
+
+            /* =================================================
+               REALTIME JOB LISTENER
+            ================================================= */
+
+            const channel = sb.channel(
+                'waiting-room-' + this.jobId
+            );
 
             channel
                 .on(
@@ -127,484 +213,333 @@ document.addEventListener('alpine:init', () => {
                         filter: `id=eq.${this.jobId}`
                     },
                     async (payload) => {
-                        console.log('Real-time updates payload:', payload);
 
-                        if (!payload.new) return;
+                        console.log(
+                            'Real-time updates payload:',
+                            payload
+                        );
 
-                        if (payload.new.status) {
-                            this.jobStatus = payload.new.status;
+
+                        if (!payload.new) {
+                            return;
+                        }
+
+
+                        const job = payload.new;
+
+
+                        /* =====================================
+                           JOB STATUS
+                        ===================================== */
+
+                        if (job.status) {
+
+                            this.jobStatus = job.status;
 
                             if (
                                 this.jobStatus !== 'pending' &&
                                 this.jobStatus !== 'searching'
                             ) {
+
                                 this.technicianFound = true;
+
+                                if (this.timerInterval) {
+                                    clearInterval(
+                                        this.timerInterval
+                                    );
+                                }
                             }
+
+
+                            /* =================================
+                               COMPLETED
+                            ================================= */
 
                             if (
-                                this.jobStatus === 'completed' &&
-                                payload.new.user_id
+                                this.jobStatus === 'completed'
                             ) {
-                                this.checkLoyaltyReward(payload.new.user_id);
+
+                                const uid =
+                                    job.user_id ||
+                                    this.fullJobData?.user_id;
+
+                                if (uid) {
+                                    this.checkLoyaltyReward(uid);
+                                }
                             }
                         }
 
-                        if (payload.new.payment_status) {
-                            this.paymentStatus = String(
-                                payload.new.payment_status
-                            ).toUpperCase();
+
+                        /* =====================================
+                           PAYMENT STATUS
+                           NO RAZORPAY
+                        ===================================== */
+
+                        if (job.payment_status) {
+
+                            this.paymentStatus =
+                                job.payment_status;
                         }
 
-                        if (payload.new.payable_amount != null) {
-                            this.payableAmount = Number(
-                                payload.new.payable_amount
-                            );
-                        }
 
-                        await this.refreshJobData();
+                        /* =====================================
+                           UPDATE FINAL PRICE
+                        ===================================== */
 
-                        if (payload.new.quote_status !== undefined) {
+                        this.setPayableAmount(job);
+
+
+                        /* =====================================
+                           QUOTE UPDATES
+                        ===================================== */
+
+                        if (
+                            job.quote_status !== undefined
+                        ) {
+
                             this.quoteStatus =
-                                payload.new.quote_status || '';
+                                job.quote_status;
 
-                            this.quoteAmount = Number(
-                                payload.new.quoted_amount || 0
-                            );
-
-                            this.quoteDescription =
-                                payload.new.quote_description || '';
-
-                            this.quoteLabour = Number(
-                                payload.new.quoted_labour || 0
-                            );
-
-                            this.quoteMaterial = Number(
-                                payload.new.quoted_material || 0
-                            );
-
-                            this.quoteExtra = Number(
-                                payload.new.quoted_extra || 0
-                            );
-
-                            this.showQuoteCard =
-                                payload.new.quote_status === 'submitted';
-
-                            if (
-                                payload.new.quote_status ===
-                                'approved'
-                            ) {
-                                this.showQuoteCard = false;
-
-                                const quote = Number(
-                                    payload.new.quoted_amount || 0
+                            this.quoteAmount =
+                                Number(
+                                    job.quoted_amount || 0
                                 );
 
-                                const inspection = Number(
-                                    payload.new.inspection_fee_amount ||
+                            this.quoteDescription =
+                                job.quote_description || '';
+
+                            this.quoteLabour =
+                                Number(
+                                    job.quoted_labour || 0
+                                );
+
+                            this.quoteMaterial =
+                                Number(
+                                    job.quoted_material || 0
+                                );
+
+                            this.quoteExtra =
+                                Number(
+                                    job.quoted_extra || 0
+                                );
+
+                            this.inspectionFee =
+                                Number(
+                                    job.inspection_fee_amount ||
                                     299
                                 );
 
-                                this.payableAmount = Number(
-                                    payload.new.customer_price ??
-                                    payload.new.payable_amount ??
-                                    Math.max(
-                                        0,
-                                        quote - inspection
-                                    )
-                                );
+
+                            this.showQuoteCard =
+                                job.quote_status ===
+                                'submitted';
+
+
+                            /* =============================
+                               QUOTE APPROVED
+                            ============================= */
+
+                            if (
+                                job.quote_status ===
+                                'approved'
+                            ) {
+
+                                this.showQuoteCard =
+                                    false;
+
+                                this.setPayableAmount(job);
 
                                 await this.refreshJobData();
                             }
 
+
+                            /* =============================
+                               QUOTE REJECTED
+                            ============================= */
+
                             if (
-                                payload.new.quote_status ===
+                                job.quote_status ===
                                 'rejected'
                             ) {
-                                this.showQuoteCard = false;
+
+                                this.showQuoteCard =
+                                    false;
                             }
                         }
 
+
+                        /* =====================================
+                           OTP
+                        ===================================== */
+
                         if (
-                            this.isPaymentComplete &&
-                            (
-                                payload.new.completion_otp ||
-                                payload.new.otp
-                            )
+                            job.completion_otp ||
+                            job.otp
                         ) {
+
                             this.otpCode =
-                                payload.new.completion_otp ||
-                                payload.new.otp;
-                        } else if (!this.isPaymentComplete) {
+                                job.completion_otp ||
+                                job.otp;
+
+                        } else if (
+                            job.otp === null &&
+                            job.completion_otp === null
+                        ) {
+
                             this.otpCode = null;
                         }
 
+
+                        /* =====================================
+                           TECHNICIAN
+                        ===================================== */
+
                         if (
-                            payload.new.tech_id &&
+                            job.tech_id &&
                             !this.techData
                         ) {
-                            await this.fetchTechnician(
-                                payload.new.tech_id
+
+                            this.fetchTechnician(
+                                job.tech_id
                             );
                         }
+
+
+                        /* =====================================
+                           SAVE LATEST JOB
+                        ===================================== */
+
+                        this.fullJobData = {
+                            ...(this.fullJobData || {}),
+                            ...job
+                        };
                     }
                 )
                 .subscribe();
+
         },
 
-        get isPaymentComplete() {
-            const status = String(
-                this.paymentStatus || ''
-            ).toUpperCase();
 
-            return [
-                'PAID',
-                'SUCCESS',
-                'COMPLETED'
-            ].includes(status);
-        },
+        /* =====================================================
+           FINAL PRICE CALCULATION
+        ===================================================== */
 
-        get showFinalPayment() {
-            const activeStatuses = [
-                'arrived',
-                'started',
-                'in_progress',
-                'awaiting_payment'
-            ];
+        setPayableAmount(job) {
 
-            return (
-                activeStatuses.includes(this.jobStatus) &&
-                Number(this.finalPayableAmount || 0) > 0 &&
-                !this.isPaymentComplete
-            );
-        },
-
-        calculateFinalBillAmount(job) {
-            if (!job) return 0;
-
-            const n = (v) => {
-                const x = Number(v);
-                return Number.isFinite(x) ? x : 0;
-            };
-
-            const inspectionFee = n(
-                job.inspection_fee_amount || 299
-            );
-
-            const originalPrice = n(
-                job.original_price ??
-                job.discounted_price
-            );
-
-            const discountedPrice = n(
-                job.discounted_price ??
-                job.original_price
-            );
-
-            const servicesSelected = String(
-                job.services_selected ||
-                job.device ||
-                ''
-            );
-
-            const serviceNames = servicesSelected
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean);
-
-            const isInspectionJob =
-                !!job.is_inspection_job ||
-                serviceNames.some(
-                    name =>
-                        name.toLowerCase() ===
-                        'other issue'
-                );
-
-            const quoteTotal = n(
-                job.quoted_amount ||
-                (
-                    n(job.quoted_labour) +
-                    n(job.quoted_material) +
-                    n(job.quoted_extra)
-                )
-            );
-
-            const quoteApproved =
-                job.quote_status === 'approved';
-
-            let approvedQuoteBalance = 0;
-
-            if (quoteApproved || quoteTotal > 0) {
-                if (
-                    job.customer_price !== null &&
-                    job.customer_price !== undefined
-                ) {
-                    approvedQuoteBalance = Math.max(
-                        0,
-                        n(job.customer_price)
-                    );
-                } else {
-                    approvedQuoteBalance = Math.max(
-                        0,
-                        quoteTotal -
-                        (
-                            isInspectionJob
-                                ? inspectionFee
-                                : 0
-                        )
-                    );
-                }
-            }
-
-            const additionalIssuePrice = Math.max(
-                0,
-                n(job.additional_issue_price)
-            );
-
-            let payable = 0;
-
-            if (quoteApproved || quoteTotal > 0) {
-                payable =
-                    approvedQuoteBalance +
-                    additionalIssuePrice;
-            } else if (isInspectionJob) {
-                payable = additionalIssuePrice;
-            } else {
-                const base =
-                    discountedPrice ||
-                    originalPrice;
-
-                payable = Math.max(
-                    0,
-                    base +
-                    49 +
-                    additionalIssuePrice
-                );
-            }
-
-            return Number(
-                Math.max(0, payable).toFixed(2)
-            );
-        },
-
-        async payFinalAmount() {
-            if (
-                this.paymentLoading ||
-                this.isPaymentComplete
-            ) {
+            if (!job) {
                 return;
             }
 
-            this.paymentLoading = true;
 
-            try {
-                const {
-                    data: job,
-                    error
-                } = await sb
-                    .from('jobs')
-                    .select('*')
-                    .eq('id', this.jobId)
-                    .single();
+            let amount = 0;
 
-                if (error || !job) {
-                    throw new Error(
-                        error?.message ||
-                        'Could not load the final bill.'
-                    );
-                }
 
-                const finalAmount =
-                    this.calculateFinalBillAmount(job);
+            /* ================================================
+               1. APPROVED QUOTE
+               customer_price is the correct balance after
+               inspection fee has already been paid.
+            ================================================ */
 
-                if (
-                    !Number.isFinite(finalAmount) ||
-                    finalAmount <= 0
-                ) {
-                    throw new Error(
-                        'The final bill amount is not available yet.'
-                    );
-                }
+            if (
+                job.customer_price !== null &&
+                job.customer_price !== undefined
+            ) {
 
-                this.fullJobData = job;
-                this.finalPayableAmount = finalAmount;
-                this.payableAmount = finalAmount;
+                amount =
+                    Number(job.customer_price) || 0;
 
-                if (
-                    typeof Razorpay === 'undefined'
-                ) {
-                    throw new Error(
-                        'Secure payment gateway is not loaded. Please refresh the page and try again.'
-                    );
-                }
-
-                this.paymentModalOpen = true;
-
-                const {
-                    data: order,
-                    error: orderError
-                } = await sb.functions.invoke(
-                    'create-razorpay-order',
-                    {
-                        body: {
-                            jobId: job.id,
-                            amount: Math.round(
-                                finalAmount * 100
-                            ),
-                            final_bill_amount:
-                                finalAmount
-                        }
-                    }
-                );
-
-                if (
-                    orderError ||
-                    !order?.id
-                ) {
-                    throw new Error(
-                        orderError?.message ||
-                        'Could not initialize secure payment.'
-                    );
-                }
-
-                const options = {
-                    key: 'rzp_test_TI4hJKB1B4rwKx',
-                    amount: order.amount,
-                    currency:
-                        order.currency || 'INR',
-                    name:
-                        'FixZenix Home Services',
-                    description:
-                        `Final bill payment for ${
-                            job.device ||
-                            job.category ||
-                            'Service'
-                        }`,
-                    order_id: order.id,
-
-                    handler: async (response) => {
-                        try {
-                            const generatedOtp =
-                                Math.floor(
-                                    100000 +
-                                    Math.random() *
-                                    900000
-                                ).toString();
-
-                            const {
-                                data: verifyResult,
-                                error: verifyError
-                            } =
-                                await sb.functions.invoke(
-                                    'verify-razorpay-payment',
-                                    {
-                                        body: {
-                                            jobId: job.id,
-                                            razorpay_order_id:
-                                                response.razorpay_order_id,
-                                            razorpay_payment_id:
-                                                response.razorpay_payment_id,
-                                            razorpay_signature:
-                                                response.razorpay_signature,
-                                            amount:
-                                                Math.round(
-                                                    finalAmount *
-                                                    100
-                                                ),
-                                            final_bill_amount:
-                                                finalAmount,
-                                            completion_otp:
-                                                generatedOtp
-                                        }
-                                    }
-                                );
-
-                            if (
-                                verifyError ||
-                                verifyResult?.status !==
-                                'success'
-                            ) {
-                                throw new Error(
-                                    verifyError?.message ||
-                                    'Payment verification failed. OTP was not released.'
-                                );
-                            }
-
-                            this.paymentStatus = 'PAID';
-                            this.finalPayableAmount =
-                                finalAmount;
-                            this.payableAmount =
-                                finalAmount;
-                            this.otpCode =
-                                generatedOtp;
-
-                            await this.refreshJobData();
-
-                            alert(
-                                `✅ Payment Successful!\n\n` +
-                                `Final Bill: ₹${finalAmount.toFixed(2)}\n\n` +
-                                `Your completion code is now available. Share it with the technician.`
-                            );
-                        } catch (err) {
-                            console.error(
-                                'Payment verification error:',
-                                err
-                            );
-
-                            this.otpCode = null;
-
-                            alert(
-                                'Payment was received, but verification could not be completed. Please contact FixZenix support before making another payment.'
-                            );
-                        } finally {
-                            this.paymentModalOpen = false;
-                            this.paymentLoading = false;
-                        }
-                    },
-
-                    prefill: {
-                        name:
-                            job.customer_name ||
-                            'Customer',
-                        contact:
-                            job.phone || ''
-                    },
-
-                    theme: {
-                        color: '#A07D54'
-                    },
-
-                    modal: {
-                        ondismiss: () => {
-                            this.paymentModalOpen =
-                                false;
-                            this.paymentLoading =
-                                false;
-                        }
-                    }
-                };
-
-                const rzp =
-                    new Razorpay(options);
-
-                rzp.open();
-
-            } catch (err) {
-                console.error(
-                    'Final payment error:',
-                    err
-                );
-
-                this.paymentModalOpen = false;
-                this.paymentLoading = false;
-
-                alert(
-                    err.message ||
-                    'Could not start payment.'
-                );
             }
+
+
+            /* ================================================
+               2. APPROVED QUOTE FALLBACK
+            ================================================ */
+
+            else if (
+                job.quote_status === 'approved' &&
+                job.quoted_amount !== null &&
+                job.quoted_amount !== undefined
+            ) {
+
+                const quote =
+                    Number(job.quoted_amount) || 0;
+
+                const inspection =
+                    Number(
+                        job.inspection_fee_amount || 299
+                    );
+
+                amount =
+                    Math.max(
+                        0,
+                        quote - inspection
+                    );
+            }
+
+
+            /* ================================================
+               3. NORMAL FIXED SERVICE
+            ================================================ */
+
+            else if (
+                job.discounted_price !== null &&
+                job.discounted_price !== undefined
+            ) {
+
+                amount =
+                    Number(job.discounted_price) || 0;
+            }
+
+
+            /* ================================================
+               4. ORIGINAL PRICE FALLBACK
+            ================================================ */
+
+            else if (
+                job.original_price !== null &&
+                job.original_price !== undefined
+            ) {
+
+                amount =
+                    Number(job.original_price) || 0;
+            }
+
+
+            /* ================================================
+               5. PAYABLE AMOUNT FALLBACK
+            ================================================ */
+
+            else if (
+                job.payable_amount !== null &&
+                job.payable_amount !== undefined
+            ) {
+
+                amount =
+                    Number(job.payable_amount) || 0;
+            }
+
+
+            /* ================================================
+               FINAL
+            ================================================ */
+
+            this.payableAmount =
+                Math.max(0, amount);
+
+
+            console.log(
+                'FINAL PRICE TO PAY:',
+                this.payableAmount
+            );
         },
 
+
+        /* =====================================================
+           REFRESH JOB DATA
+        ===================================================== */
+
         async refreshJobData() {
+
             const {
                 data: job,
                 error
@@ -614,313 +549,71 @@ document.addEventListener('alpine:init', () => {
                 .eq('id', this.jobId)
                 .single();
 
-            if (error || !job) return;
 
-            this.fullJobData = job;
+            if (error) {
 
-            this.paymentStatus = String(
-                job.payment_status ||
-                this.paymentStatus ||
-                'UNPAID'
-            ).toUpperCase();
+                console.error(
+                    'Refresh job error:',
+                    error
+                );
 
-            this.finalPayableAmount =
-                this.calculateFinalBillAmount(job);
+                return;
+            }
 
-            this.payableAmount =
-                this.finalPayableAmount;
 
-            this.otpCode =
-                this.isPaymentComplete
-                    ? (
-                        job.completion_otp ||
-                        job.otp ||
-                        this.otpCode ||
-                        null
-                    )
-                    : null;
+            if (job) {
 
-            this.updateBillAmounts(job);
+                this.fullJobData = job;
+
+                /* Update final customer amount */
+                this.setPayableAmount(job);
+
+                /* Update payment status */
+                if (job.payment_status) {
+
+                    this.paymentStatus =
+                        job.payment_status;
+                }
+
+                /* Update quote */
+                if (job.quote_status) {
+
+                    this.quoteStatus =
+                        job.quote_status;
+
+                    this.quoteAmount =
+                        Number(
+                            job.quoted_amount || 0
+                        );
+
+                    this.inspectionFee =
+                        Number(
+                            job.inspection_fee_amount ||
+                            299
+                        );
+                }
+
+                this.updateBillAmounts(job);
+            }
         },
+
+
+        /* =====================================================
+           BILL DATA
+        ===================================================== */
 
         updateBillAmounts(job) {
-            if (!job) return;
 
             this.fullJobData = job;
-
-            const n = (v) => {
-                const x = Number(v);
-                return Number.isFinite(x) ? x : 0;
-            };
-
-            const inspectionFee = n(
-                job.inspection_fee_amount || 299
-            );
-
-            const grossPrice = n(
-                job.original_price ??
-                job.discounted_price
-            );
-
-            const totalPrice = n(
-                job.discounted_price ??
-                job.original_price
-            );
-
-            const discountAmount = Math.max(
-                0,
-                grossPrice - totalPrice
-            );
-
-            const servicesSelected = String(
-                job.services_selected ||
-                job.device ||
-                ''
-            );
-
-            const serviceNames = servicesSelected
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean);
-
-            const isInspectionJob =
-                !!job.is_inspection_job ||
-                serviceNames.some(
-                    name =>
-                        name.toLowerCase() ===
-                        'other issue'
-                );
-
-            this.isInspectionJob =
-                isInspectionJob;
-
-            this.billInspectionFee =
-                inspectionFee;
-
-            this.billDiscountAmount =
-                discountAmount;
-
-            let priceMap = null;
-
-            if (job.service_price_breakdown) {
-                try {
-                    const parsed =
-                        typeof job.service_price_breakdown ===
-                        'string'
-                            ? JSON.parse(
-                                job.service_price_breakdown
-                            )
-                            : job.service_price_breakdown;
-
-                    if (
-                        parsed &&
-                        typeof parsed === 'object'
-                    ) {
-                        priceMap = parsed;
-                    }
-                } catch (e) {
-                    priceMap = null;
-                }
-            }
-
-            const fixedServiceNames =
-                serviceNames.filter(
-                    name =>
-                        name.toLowerCase() !==
-                        'other issue'
-                );
-
-            const fixedTotal =
-                isInspectionJob
-                    ? Math.max(
-                        0,
-                        totalPrice -
-                        inspectionFee
-                    )
-                    : totalPrice;
-
-            const lineItems = [];
-
-            if (fixedServiceNames.length > 0) {
-                if (priceMap) {
-                    fixedServiceNames.forEach(
-                        name => {
-                            const price = n(
-                                priceMap[name]
-                            );
-
-                            if (price > 0) {
-                                lineItems.push({
-                                    type: 'simple',
-                                    name: name,
-                                    desc: job.category
-                                        ? `${job.category} • Booked Service`
-                                        : 'Booked Service',
-                                    price: price
-                                });
-                            }
-                        }
-                    );
-                } else {
-                    const per =
-                        fixedServiceNames.length
-                            ? fixedTotal /
-                              fixedServiceNames.length
-                            : 0;
-
-                    fixedServiceNames.forEach(
-                        name => {
-                            lineItems.push({
-                                type: 'simple',
-                                name: name,
-                                desc: job.category
-                                    ? `${job.category} • Booked Service`
-                                    : 'Booked Service',
-                                price: per
-                            });
-                        }
-                    );
-                }
-            } else if (
-                !isInspectionJob &&
-                totalPrice > 0
-            ) {
-                lineItems.push({
-                    type: 'simple',
-                    name:
-                        job.service_name ||
-                        job.category ||
-                        'Booked Service',
-                    desc:
-                        'Original booked service',
-                    price: totalPrice
-                });
-            }
-
-            const quoteTotal = n(
-                job.quoted_amount ||
-                (
-                    n(job.quoted_labour) +
-                    n(job.quoted_material) +
-                    n(job.quoted_extra)
-                )
-            );
-
-            if (
-                quoteTotal > 0 &&
-                (
-                    job.quote_status ===
-                    'approved' ||
-                    isInspectionJob
-                )
-            ) {
-                lineItems.push({
-                    type: 'quote',
-                    name:
-                        'Additional Service / Repair',
-                    desc:
-                        job.other_issue ||
-                        'New service requested during the booking.',
-                    workDesc:
-                        job.quote_description || '',
-                    labour:
-                        n(job.quoted_labour),
-                    material:
-                        n(job.quoted_material),
-                    extra:
-                        n(job.quoted_extra),
-                    price: quoteTotal
-                });
-            }
-
-            const additionalIssue =
-                String(
-                    job.additional_issue || ''
-                ).trim();
-
-            const additionalIssuePrice =
-                n(job.additional_issue_price);
-
-            if (
-                additionalIssue &&
-                additionalIssuePrice > 0
-            ) {
-                lineItems.push({
-                    type:
-                        'additional_issue',
-                    name:
-                        'Additional Issue',
-                    desc:
-                        additionalIssue,
-                    price:
-                        additionalIssuePrice
-                });
-            }
-
-            this.billLineItems =
-                lineItems;
-
-            this.billQuoteAmount =
-                quoteTotal;
-
-            this.billSubtotal =
-                lineItems.reduce(
-                    (sum, item) =>
-                        sum + n(item.price),
-                    0
-                );
-
-            this.billPlatformFee =
-                isInspectionJob
-                    ? 0
-                    : 49;
-
-            this.billGrandTotal =
-                Math.max(
-                    0,
-                    this.billSubtotal -
-                    discountAmount
-                ) +
-                this.billPlatformFee;
-
-            this.finalPayableAmount =
-                this.calculateFinalBillAmount(
-                    job
-                );
-
-            this.payableAmount =
-                this.finalPayableAmount;
-
-            if (this.isPaymentComplete) {
-                this.billBalancePaid =
-                    this.finalPayableAmount;
-
-                this.billAdvancePaid =
-                    Math.max(
-                        0,
-                        this.billGrandTotal -
-                        this.finalPayableAmount
-                    );
-            } else {
-                this.billBalancePaid = 0;
-
-                this.billAdvancePaid =
-                    Math.max(
-                        0,
-                        this.billGrandTotal -
-                        this.finalPayableAmount
-                    );
-            }
-
-            this.billRefundDue = 0;
-
-            this.billAmountInWords =
-                this.numberToWords(
-                    this.billGrandTotal
-                );
         },
 
+
+        /* =====================================================
+           LOYALTY REWARD
+        ===================================================== */
+
         async checkLoyaltyReward(userId) {
+
             if (
                 this.loyaltyChecked ||
                 !userId
@@ -930,7 +623,9 @@ document.addEventListener('alpine:init', () => {
 
             this.loyaltyChecked = true;
 
+
             try {
+
                 const {
                     data: existing
                 } = await sb
@@ -942,11 +637,15 @@ document.addEventListener('alpine:init', () => {
                     )
                     .maybeSingle();
 
+
                 if (existing) {
+
                     this.loyaltyReward =
                         existing;
+
                     return;
                 }
+
 
                 const {
                     count,
@@ -969,9 +668,11 @@ document.addEventListener('alpine:init', () => {
                         'completed'
                     );
 
+
                 if (countError) {
                     throw countError;
                 }
+
 
                 if (
                     !count ||
@@ -980,57 +681,66 @@ document.addEventListener('alpine:init', () => {
                     return;
                 }
 
+
                 const code =
                     'LOYAL' +
                     Math.floor(
                         1000 +
-                        Math.random() *
-                        9000
+                        Math.random() * 9000
                     );
+
 
                 const expiry =
                     new Date();
 
                 expiry.setDate(
-                    expiry.getDate() +
-                    60
+                    expiry.getDate() + 60
                 );
+
 
                 const {
                     data: created,
                     error: insertError
                 } = await sb
                     .from('promos')
-                    .insert([{
-                        code: code,
-                        type: 'percent',
-                        value: 15,
-                        expiry:
-                            expiry
-                                .toISOString()
-                                .split('T')[0],
-                        usage_count: 0,
-                        created_at:
-                            new Date().toISOString(),
-                        user_id: userId,
-                        milestone_job_id:
-                            this.jobId
-                    }])
+                    .insert([
+                        {
+                            code: code,
+                            type: 'percent',
+                            value: 15,
+                            expiry:
+                                expiry
+                                    .toISOString()
+                                    .split('T')[0],
+                            usage_count: 0,
+                            created_at:
+                                new Date()
+                                    .toISOString(),
+                            user_id: userId,
+                            milestone_job_id:
+                                this.jobId
+                        }
+                    ])
                     .select()
                     .single();
 
+
                 if (insertError) {
+
                     console.error(
                         'Loyalty reward creation failed:',
                         insertError.message
                     );
+
                     return;
                 }
+
 
                 this.loyaltyReward =
                     created;
 
             } catch (err) {
+
                 console.error(
                     'Loyalty reward check failed:',
                     err
@@ -1038,17 +748,26 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+
+        /* =====================================================
+           NUMBER TO WORDS
+        ===================================================== */
+
         numberToWords(num) {
-            num = Math.round(
-                Math.max(
-                    0,
-                    num || 0
-                )
-            );
+
+            num =
+                Math.round(
+                    Math.max(
+                        0,
+                        num || 0
+                    )
+                );
+
 
             if (num === 0) {
                 return 'Zero';
             }
+
 
             const ones = [
                 '',
@@ -1073,6 +792,7 @@ document.addEventListener('alpine:init', () => {
                 'Nineteen'
             ];
 
+
             const tens = [
                 '',
                 '',
@@ -1085,6 +805,7 @@ document.addEventListener('alpine:init', () => {
                 'Eighty',
                 'Ninety'
             ];
+
 
             const twoDigits = n =>
                 n < 20
@@ -1101,25 +822,23 @@ document.addEventListener('alpine:init', () => {
                         )
                     );
 
+
             const threeDigits = n =>
                 n < 100
                     ? twoDigits(n)
                     : (
                         ones[
-                            Math.floor(
-                                n / 100
-                            )
+                            Math.floor(n / 100)
                         ] +
                         ' Hundred' +
                         (
                             n % 100
                                 ? ' ' +
-                                  twoDigits(
-                                      n % 100
-                                  )
+                                  twoDigits(n % 100)
                                 : ''
                         )
                     );
+
 
             let result = '';
 
@@ -1130,12 +849,14 @@ document.addEventListener('alpine:init', () => {
 
             num %= 10000000;
 
+
             const lakh =
                 Math.floor(
                     num / 100000
                 );
 
             num %= 100000;
+
 
             const thousand =
                 Math.floor(
@@ -1144,7 +865,9 @@ document.addEventListener('alpine:init', () => {
 
             num %= 1000;
 
+
             const hundred = num;
+
 
             if (crore) {
                 result +=
@@ -1152,11 +875,13 @@ document.addEventListener('alpine:init', () => {
                     ' Crore ';
             }
 
+
             if (lakh) {
                 result +=
                     threeDigits(lakh) +
                     ' Lakh ';
             }
+
 
             if (thousand) {
                 result +=
@@ -1164,16 +889,25 @@ document.addEventListener('alpine:init', () => {
                     ' Thousand ';
             }
 
+
             if (hundred) {
                 result +=
                     threeDigits(hundred);
             }
 
+
             return result.trim();
         },
 
+
+        /* =====================================================
+           OPEN BILL
+        ===================================================== */
+
         async openBillModal() {
+
             try {
+
                 const {
                     data: job,
                     error: jobError
@@ -1183,20 +917,31 @@ document.addEventListener('alpine:init', () => {
                     .eq('id', this.jobId)
                     .single();
 
+
                 if (jobError) {
                     throw jobError;
                 }
 
+
                 this.fullJobData = job;
 
+
+                /* ============================================
+                   TECHNICIAN
+                ============================================ */
+
+                let techIdDisplay = 'N/A';
+
+
                 if (job.tech_id) {
+
                     const {
                         data: tech,
                         error: techError
                     } = await sb
                         .from('technicians')
                         .select(
-                            'tech_id, name, phone, image_url'
+                            'tech_id, name'
                         )
                         .eq(
                             'id',
@@ -1204,29 +949,30 @@ document.addEventListener('alpine:init', () => {
                         )
                         .single();
 
+
                     if (
                         !techError &&
                         tech
                     ) {
-                        this.billTechId =
+
+                        techIdDisplay =
                             tech.tech_id ||
                             tech.id
-                                ?.slice(
+                                .slice(
                                     0,
                                     8
                                 )
-                                .toUpperCase() ||
-                            'N/A';
+                                .toUpperCase();
+
 
                         if (!this.techData) {
-                            this.techData =
-                                tech;
+                            this.techData = tech;
                         }
+
                     } else {
-                        this.billTechId =
-                            String(
-                                job.tech_id
-                            )
+
+                        techIdDisplay =
+                            job.tech_id
                                 .slice(
                                     0,
                                     8
@@ -1235,71 +981,449 @@ document.addEventListener('alpine:init', () => {
                     }
                 }
 
+
+                /* ============================================
+                   SERVICE
+                ============================================ */
+
                 this.billServiceName =
                     job.service_name ||
                     job.category ||
                     'Expert Service';
+
 
                 this.billVariantName =
                     job.variant_name ||
                     job.device ||
                     'Service';
 
-                this.paymentStatus =
-                    String(
-                        job.payment_status ||
-                        this.paymentStatus ||
-                        'UNPAID'
-                    ).toUpperCase();
 
-                this.quoteStatus =
-                    job.quote_status ||
-                    this.quoteStatus ||
-                    '';
+                const OTHER_LABEL =
+                    'Other Issue';
 
-                this.quoteAmount =
-                    Number(
-                        job.quoted_amount ||
-                        0
-                    );
 
-                this.quoteDescription =
-                    job.quote_description ||
-                    '';
-
-                this.quoteLabour =
-                    Number(
-                        job.quoted_labour ||
-                        0
-                    );
-
-                this.quoteMaterial =
-                    Number(
-                        job.quoted_material ||
-                        0
-                    );
-
-                this.quoteExtra =
-                    Number(
-                        job.quoted_extra ||
-                        0
-                    );
-
-                this.inspectionFee =
+                const inspFee =
                     Number(
                         job.inspection_fee_amount ||
                         299
                     );
 
-                this.updateBillAmounts(
-                    job
-                );
+
+                const grossPrice =
+                    parseFloat(
+                        job.original_price ??
+                        job.discounted_price ??
+                        0
+                    );
+
+
+                const totalPrice =
+                    parseFloat(
+                        job.discounted_price ??
+                        job.original_price ??
+                        0
+                    );
+
+
+                const discountAmount =
+                    Math.max(
+                        0,
+                        grossPrice -
+                        totalPrice
+                    );
+
+
+                /* ============================================
+                   SERVICES
+                ============================================ */
+
+                const servicesSelected =
+                    job.services_selected ||
+                    job.device ||
+                    '';
+
+
+                const serviceNames =
+                    servicesSelected
+                        ? servicesSelected
+                            .split(',')
+                            .map(
+                                s =>
+                                    s.trim()
+                            )
+                            .filter(Boolean)
+                        : ['Service'];
+
+
+                const fixedServiceNames =
+                    serviceNames.filter(
+                        n =>
+                            n !==
+                            OTHER_LABEL
+                    );
+
+
+                const hasOtherService =
+                    !!job.is_inspection_job ||
+                    serviceNames.some(
+                        n =>
+                            n ===
+                            OTHER_LABEL
+                    );
+
+
+                const fixedTotal =
+                    hasOtherService
+                        ? Math.max(
+                            0,
+                            totalPrice -
+                            inspFee
+                        )
+                        : totalPrice;
+
+
+                /* ============================================
+                   PRICE BREAKDOWN
+                ============================================ */
+
+                let priceMap = null;
+
+
+                if (
+                    job.service_price_breakdown
+                ) {
+
+                    try {
+
+                        const parsed =
+                            typeof job
+                                .service_price_breakdown ===
+                            'string'
+                                ? JSON.parse(
+                                    job.service_price_breakdown
+                                )
+                                : job.service_price_breakdown;
+
+
+                        if (
+                            parsed &&
+                            typeof parsed ===
+                                'object'
+                        ) {
+
+                            priceMap =
+                                parsed;
+                        }
+
+                    } catch (e) {
+
+                        priceMap = null;
+                    }
+                }
+
+
+                const lineItems = [];
+
+
+                /* ============================================
+                   FIXED SERVICES
+                ============================================ */
+
+                if (
+                    fixedServiceNames.length >
+                    0
+                ) {
+
+                    if (priceMap) {
+
+                        fixedServiceNames.forEach(
+                            name => {
+
+                                const price =
+                                    Number(
+                                        priceMap[
+                                            name
+                                        ] ?? 0
+                                    );
+
+
+                                if (price > 0) {
+
+                                    lineItems.push(
+                                        {
+                                            type:
+                                                'simple',
+
+                                            name:
+                                                name,
+
+                                            desc:
+                                                job.category
+                                                    ? `${job.category} • Service Charge`
+                                                    : 'Service Charge',
+
+                                            price:
+                                                price
+                                        }
+                                    );
+                                }
+                            }
+                        );
+
+                    } else {
+
+                        const per =
+                            fixedServiceNames.length >
+                            0
+                                ? fixedTotal /
+                                  fixedServiceNames.length
+                                : 0;
+
+
+                        fixedServiceNames.forEach(
+                            name => {
+
+                                lineItems.push(
+                                    {
+                                        type:
+                                            'simple',
+
+                                        name:
+                                            name,
+
+                                        desc:
+                                            job.category
+                                                ? `${job.category} • Service Charge`
+                                                : 'Service Charge',
+
+                                        price:
+                                            per
+                                    }
+                                );
+                            }
+                        );
+                    }
+                }
+
+
+                /* ============================================
+                   QUOTE SERVICE
+                ============================================ */
+
+                let quotedTotal = 0;
+
+
+                if (hasOtherService) {
+
+                    const labour =
+                        Number(
+                            job.quoted_labour ||
+                            0
+                        );
+
+
+                    const material =
+                        Number(
+                            job.quoted_material ||
+                            0
+                        );
+
+
+                    const extra =
+                        Number(
+                            job.quoted_extra ||
+                            0
+                        );
+
+
+                    quotedTotal =
+                        Number(
+                            job.quoted_amount ||
+                            (
+                                labour +
+                                material +
+                                extra
+                            ) ||
+                            0
+                        );
+
+
+                    const issueDesc =
+                        job.other_issue
+                            ? job.other_issue
+                            : 'Issue diagnosed and resolved on-site by the technician.';
+
+
+                    lineItems.push(
+                        {
+                            type:
+                                'quote',
+
+                            name:
+                                'Other Service (On-Site Diagnosis & Repair)',
+
+                            desc:
+                                issueDesc,
+
+                            workDesc:
+                                job.quote_description ||
+                                '',
+
+                            labour:
+                                labour,
+
+                            material:
+                                material,
+
+                            extra:
+                                extra,
+
+                            price:
+                                quotedTotal
+                        }
+                    );
+                }
+
+
+                /* ============================================
+                   BILL VALUES
+                ============================================ */
+
+                this.billLineItems =
+                    lineItems;
+
+
+                this.isInspectionJob =
+                    hasOtherService;
+
+
+                this.billInspectionFee =
+                    inspFee;
+
+
+                this.billQuoteAmount =
+                    quotedTotal;
+
+
+                this.billSubtotal =
+                    lineItems.reduce(
+                        (sum, item) =>
+                            sum +
+                            (item.price || 0),
+                        0
+                    );
+
+
+                this.billDiscountAmount =
+                    discountAmount;
+
+
+                /* ============================================
+                   INSPECTION JOB BILL
+                ============================================ */
+
+                if (hasOtherService) {
+
+                    this.billPlatformFee =
+                        0;
+
+
+                    this.billGrandTotal =
+                        Math.max(
+                            0,
+                            this.billSubtotal -
+                            discountAmount
+                        );
+
+
+                    this.billAdvancePaid =
+                        fixedTotal +
+                        inspFee;
+
+
+                    if (
+                        quotedTotal >=
+                        inspFee
+                    ) {
+
+                        this.billBalancePaid =
+                            quotedTotal -
+                            inspFee;
+
+                        this.billRefundDue =
+                            0;
+
+                    } else {
+
+                        this.billBalancePaid =
+                            0;
+
+                        this.billRefundDue =
+                            inspFee -
+                            quotedTotal;
+                    }
+
+
+                }
+
+                /* ============================================
+                   NORMAL SERVICE BILL
+                ============================================ */
+
+                else {
+
+                    this.billPlatformFee =
+                        49;
+
+
+                    this.billGrandTotal =
+                        Math.max(
+                            0,
+                            this.billSubtotal -
+                            discountAmount
+                        ) +
+                        this.billPlatformFee;
+
+
+                    this.billAdvancePaid =
+                        this.billGrandTotal;
+
+
+                    this.billBalancePaid =
+                        0;
+
+
+                    this.billRefundDue =
+                        0;
+                }
+
+
+                /* ============================================
+                   AMOUNT IN WORDS
+                ============================================ */
+
+                this.billAmountInWords =
+                    this.numberToWords(
+                        this.billGrandTotal
+                    );
+
+
+                /* ============================================
+                   TECH ID
+                ============================================ */
+
+                this.billTechId =
+                    techIdDisplay;
+
 
                 this.$nextTick(() => {
+
                     this.showBill = true;
+
                 });
 
             } catch (err) {
+
                 console.error(
                     'Error opening bill:',
                     err
@@ -1311,28 +1435,41 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+
+        /* =====================================================
+           DOWNLOAD PDF
+        ===================================================== */
+
         downloadPDF() {
+
             this.isPrinting = true;
+
 
             const element =
                 document.getElementById(
                     'invoice-content'
                 );
 
+
             const opt = {
+
                 margin: 0.5,
+
                 filename:
                     `FixZen_Invoice_${this.jobId
                         .slice(0, 6)
                         .toUpperCase()}.pdf`,
+
                 image: {
                     type: 'jpeg',
                     quality: 0.98
                 },
+
                 html2canvas: {
                     scale: 2,
                     useCORS: true
                 },
+
                 jsPDF: {
                     unit: 'in',
                     format: 'letter',
@@ -1340,16 +1477,25 @@ document.addEventListener('alpine:init', () => {
                 }
             };
 
+
             html2pdf()
                 .set(opt)
                 .from(element)
                 .save()
+
                 .then(() => {
-                    this.isPrinting = false;
+
+                    this.isPrinting =
+                        false;
+
                 })
+
                 .catch(err => {
+
                     console.error(err);
-                    this.isPrinting = false;
+
+                    this.isPrinting =
+                        false;
 
                     alert(
                         'Error generating PDF. Please try again.'
@@ -1357,52 +1503,82 @@ document.addEventListener('alpine:init', () => {
                 });
         },
 
+
+        /* =====================================================
+           TIMER
+        ===================================================== */
+
         startTimer() {
+
             this.timerInterval =
                 setInterval(() => {
+
                     this.secondsElapsed++;
+
                 }, 1000);
         },
 
+
+        /* =====================================================
+           FORMATTED TIMER
+        ===================================================== */
+
         get formattedTime() {
+
             const m =
                 Math.floor(
-                    this.secondsElapsed /
-                    60
+                    this.secondsElapsed / 60
                 )
                     .toString()
                     .padStart(2, '0');
 
+
             const s =
                 (
-                    this.secondsElapsed %
-                    60
+                    this.secondsElapsed % 60
                 )
                     .toString()
                     .padStart(2, '0');
+
 
             return `${m}:${s}`;
         },
 
+
+        /* =====================================================
+           SEARCH MESSAGE
+        ===================================================== */
+
         get searchMessage() {
+
             if (
                 this.secondsElapsed <
                 15
             ) {
+
                 return 'Alerting nearby experts...';
             }
+
 
             if (
                 this.secondsElapsed <
                 45
             ) {
+
                 return 'Connecting with top-rated pros...';
             }
+
 
             return 'High demand. Still searching...';
         },
 
+
+        /* =====================================================
+           INITIAL JOB LOAD
+        ===================================================== */
+
         async checkJobStatus() {
+
             const {
                 data: job,
                 error
@@ -1412,33 +1588,70 @@ document.addEventListener('alpine:init', () => {
                 .eq('id', this.jobId)
                 .single();
 
+
             if (error) {
+
                 console.error(
                     'Error fetching job:',
                     error
                 );
+
                 return;
             }
 
-            if (!job) return;
 
-            this.fullJobData = job;
+            if (!job) {
+                return;
+            }
+
+
+            this.fullJobData =
+                job;
+
+
+            /* ================================================
+               JOB STATUS
+            ================================================ */
 
             if (job.status) {
+
                 this.jobStatus =
                     job.status;
             }
 
+
+            /* ================================================
+               PAYMENT STATUS
+            ================================================ */
+
             if (job.payment_status) {
+
                 this.paymentStatus =
-                    String(
-                        job.payment_status
-                    ).toUpperCase();
+                    job.payment_status;
             }
 
-            if (job.quote_status) {
+
+            /* ================================================
+               CRITICAL:
+               LOAD FINAL CUSTOMER PRICE
+            ================================================ */
+
+            this.setPayableAmount(
+                job
+            );
+
+
+            /* ================================================
+               QUOTE DATA
+            ================================================ */
+
+            if (
+                job.quote_status
+            ) {
+
                 this.quoteStatus =
                     job.quote_status;
+
 
                 this.quoteAmount =
                     Number(
@@ -1446,9 +1659,11 @@ document.addEventListener('alpine:init', () => {
                         0
                     );
 
+
                 this.quoteDescription =
                     job.quote_description ||
                     '';
+
 
                 this.quoteLabour =
                     Number(
@@ -1456,11 +1671,13 @@ document.addEventListener('alpine:init', () => {
                         0
                     );
 
+
                 this.quoteMaterial =
                     Number(
                         job.quoted_material ||
                         0
                     );
+
 
                 this.quoteExtra =
                     Number(
@@ -1468,40 +1685,59 @@ document.addEventListener('alpine:init', () => {
                         0
                     );
 
+
                 this.inspectionFee =
                     Number(
                         job.inspection_fee_amount ||
                         299
                     );
 
+
                 this.showQuoteCard =
                     job.quote_status ===
                     'submitted';
             }
 
+
+            /* ================================================
+               TECHNICIAN
+            ================================================ */
+
             if (job.tech_id) {
-                await this.fetchTechnician(
+
+                this.fetchTechnician(
                     job.tech_id
                 );
             }
 
+
+            /* ================================================
+               OTP
+            ================================================ */
+
             if (
-                this.isPaymentComplete &&
-                (
-                    job.completion_otp ||
-                    job.otp
-                )
+                job.completion_otp ||
+                job.otp
             ) {
+
                 this.otpCode =
                     job.completion_otp ||
                     job.otp;
-            } else {
-                this.otpCode = null;
             }
+
+
+            /* ================================================
+               BILL
+            ================================================ */
 
             this.updateBillAmounts(
                 job
             );
+
+
+            /* ================================================
+               TECHNICIAN FOUND
+            ================================================ */
 
             if (
                 this.jobStatus !==
@@ -1509,30 +1745,51 @@ document.addEventListener('alpine:init', () => {
                 this.jobStatus !==
                     'searching'
             ) {
+
                 this.technicianFound =
                     true;
 
-                if (
-                    this.timerInterval
-                ) {
+
+                if (this.timerInterval) {
+
                     clearInterval(
                         this.timerInterval
                     );
                 }
             }
 
+
+            /* ================================================
+               COMPLETED
+            ================================================ */
+
             if (
                 this.jobStatus ===
                     'completed' &&
                 job.user_id
             ) {
+
                 this.checkLoyaltyReward(
                     job.user_id
                 );
             }
+
+
+            console.log(
+                'Initial FINAL PRICE:',
+                this.payableAmount
+            );
         },
 
-        async fetchTechnician(techId) {
+
+        /* =====================================================
+           FETCH TECHNICIAN
+        ===================================================== */
+
+        async fetchTechnician(
+            techId
+        ) {
+
             const {
                 data: tech,
                 error
@@ -1542,38 +1799,62 @@ document.addEventListener('alpine:init', () => {
                 .eq('id', techId)
                 .single();
 
+
             if (error) {
+
                 console.error(
                     'Error fetching technician:',
                     error
                 );
+
                 return;
             }
 
-            if (!tech) return;
 
-            this.techData = tech;
-            this.technicianFound = true;
+            if (tech) {
 
-            if (this.timerInterval) {
-                clearInterval(
-                    this.timerInterval
-                );
-            }
+                this.techData =
+                    tech;
 
-            if (
-                this.jobStatus !==
-                    'completed' &&
-                !this.otpCode
-            ) {
-                this.$nextTick(() => {
-                    this.initMap();
-                });
+
+                this.technicianFound =
+                    true;
+
+
+                if (this.timerInterval) {
+
+                    clearInterval(
+                        this.timerInterval
+                    );
+                }
+
+
+                if (
+                    this.jobStatus !==
+                        'completed' &&
+                    !this.otpCode
+                ) {
+
+                    this.$nextTick(() => {
+
+                        this.initMap();
+
+                    });
+                }
             }
         },
 
+
+        /* =====================================================
+           MAP
+        ===================================================== */
+
         initMap() {
-            if (this.map) return;
+
+            if (this.map) {
+                return;
+            }
+
 
             const customerLat =
                 21.1458;
@@ -1581,18 +1862,19 @@ document.addEventListener('alpine:init', () => {
             const customerLng =
                 79.0882;
 
+
             let techLat =
                 21.1200;
 
             let techLng =
                 79.0600;
 
+
             this.map =
                 L.map(
                     'trackingMap',
                     {
-                        zoomControl:
-                            false
+                        zoomControl: false
                     }
                 ).setView(
                     [
@@ -1602,46 +1884,70 @@ document.addEventListener('alpine:init', () => {
                     13
                 );
 
+
             L.tileLayer(
                 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
                 {
                     attribution:
                         '&copy; OpenStreetMap contributors &copy; CARTO',
+
                     maxZoom: 19
                 }
             ).addTo(
                 this.map
             );
 
+
+            /* =============================================
+               CUSTOMER ICON
+            ============================================= */
+
             const customerIcon =
-                L.divIcon({
-                    html:
-                        `<div class="w-8 h-8 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white"><i class="fa-solid fa-house text-xs"></i></div>`,
-                    className: '',
-                    iconSize: [
-                        32,
-                        32
-                    ],
-                    iconAnchor: [
-                        16,
-                        32
-                    ]
-                });
+                L.divIcon(
+                    {
+                        html:
+                            `<div class="w-8 h-8 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                                <i class="fa-solid fa-house text-xs"></i>
+                            </div>`,
+
+                        className: '',
+
+                        iconSize:
+                            [32, 32],
+
+                        iconAnchor:
+                            [16, 32]
+                    }
+                );
+
+
+            /* =============================================
+               TECH ICON
+            ============================================= */
 
             const techIcon =
-                L.divIcon({
-                    html:
-                        `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative"><div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div><i class="fa-solid fa-truck-fast text-sm relative z-10"></i></div>`,
-                    className: '',
-                    iconSize: [
-                        40,
-                        40
-                    ],
-                    iconAnchor: [
-                        20,
-                        40
-                    ]
-                });
+                L.divIcon(
+                    {
+                        html:
+                            `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative">
+                                <div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div>
+                                <i class="fa-solid fa-truck-fast text-sm relative z-10"></i>
+                            </div>`,
+
+                        className: '',
+
+                        iconSize:
+                            [40, 40],
+
+                        iconAnchor:
+                            [20, 40]
+                    }
+                );
+
+
+            /* =============================================
+               MARKERS
+            ============================================= */
 
             L.marker(
                 [
@@ -1655,6 +1961,7 @@ document.addEventListener('alpine:init', () => {
             ).addTo(
                 this.map
             );
+
 
             this.techMarker =
                 L.marker(
@@ -1670,30 +1977,43 @@ document.addEventListener('alpine:init', () => {
                     this.map
                 );
 
+
+            /* =============================================
+               MAP BOUNDS
+            ============================================= */
+
             const bounds =
-                L.latLngBounds([
+                L.latLngBounds(
                     [
-                        customerLat,
-                        customerLng
-                    ],
-                    [
-                        techLat,
-                        techLng
+                        [
+                            customerLat,
+                            customerLng
+                        ],
+
+                        [
+                            techLat,
+                            techLng
+                        ]
                     ]
-                ]);
+                );
+
 
             this.map.fitBounds(
                 bounds,
                 {
-                    padding: [
-                        30,
-                        30
-                    ]
+                    padding:
+                        [30, 30]
                 }
             );
 
+
+            /* =============================================
+               TECH MOVEMENT
+            ============================================= */
+
             const interval =
                 setInterval(() => {
+
                     if (
                         this.jobStatus !==
                             'arrived' &&
@@ -1702,11 +2022,13 @@ document.addEventListener('alpine:init', () => {
                         this.jobStatus !==
                             'in_progress'
                     ) {
+
                         techLat +=
                             (
                                 customerLat -
                                 techLat
                             ) * 0.08;
+
 
                         techLng +=
                             (
@@ -1714,9 +2036,11 @@ document.addEventListener('alpine:init', () => {
                                 techLng
                             ) * 0.08;
 
+
                         if (
                             this.techMarker
                         ) {
+
                             this.techMarker.setLatLng(
                                 [
                                     techLat,
@@ -1725,22 +2049,34 @@ document.addEventListener('alpine:init', () => {
                             );
                         }
 
+
                         if (
                             Math.random() >
                                 0.7 &&
-                            this.etaMins > 1
+                            this.etaMins >
+                                1
                         ) {
+
                             this.etaMins--;
                         }
+
                     } else {
+
                         clearInterval(
                             interval
                         );
                     }
+
                 }, 2000);
         },
 
+
+        /* =====================================================
+           CANCEL JOB
+        ===================================================== */
+
         async cancelJob() {
+
             if (
                 !confirm(
                     'Cancel your search?'
@@ -1748,6 +2084,7 @@ document.addEventListener('alpine:init', () => {
             ) {
                 return;
             }
+
 
             await sb
                 .from('jobs')
@@ -1760,71 +2097,110 @@ document.addEventListener('alpine:init', () => {
                     this.jobId
                 );
 
+
             window.location.href =
                 'index.html';
         },
 
+
+        /* =====================================================
+           ACCEPT QUOTE
+        ===================================================== */
+
         async acceptQuote() {
+
             if (
                 !confirm(
                     'Approve this quote? The technician will begin work immediately.'
                 )
             ) {
+
                 return;
             }
+
 
             const finalAmount =
                 Math.max(
                     0,
-                    this.quoteAmount -
-                    this.inspectionFee
+                    Number(
+                        this.quoteAmount
+                    ) -
+                    Number(
+                        this.inspectionFee
+                    )
                 );
 
+
             try {
+
                 const {
                     error
                 } = await sb
                     .from('jobs')
-                    .update({
-                        quote_status:
-                            'approved',
-                        customer_approved:
-                            true,
-                        customer_price:
-                            finalAmount,
-                        status:
-                            'in_progress'
-                    })
+                    .update(
+                        {
+                            quote_status:
+                                'approved',
+
+                            customer_approved:
+                                true,
+
+                            customer_price:
+                                finalAmount,
+
+                            status:
+                                'in_progress'
+                        }
+                    )
                     .eq(
                         'id',
                         this.jobId
                     );
 
+
                 if (error) {
                     throw error;
                 }
 
+
+                /* ==========================================
+                   IMMEDIATELY SHOW FINAL PRICE
+                ========================================== */
+
                 this.showQuoteCard =
                     false;
+
 
                 this.quoteStatus =
                     'approved';
 
+
+                this.payableAmount =
+                    finalAmount;
+
+
+                /* ==========================================
+                   REFRESH DATABASE DATA
+                ========================================== */
+
                 await this.refreshJobData();
+
 
                 alert(
                     `✅ Quote Approved!\n\n` +
                     `Total Quote: ₹${this.quoteAmount}\n` +
                     `Inspection Fee Paid: ₹${this.inspectionFee}\n` +
-                    `Amount Due After Job: ₹${finalAmount}\n\n` +
-                    `The technician will now start the repair work.`
+                    `Final Amount to Pay Technician: ₹${finalAmount}\n\n` +
+                    `Please pay this amount to the technician after the work is completed.`
                 );
 
             } catch (err) {
+
                 console.error(
                     'Error approving quote:',
                     err
                 );
+
 
                 alert(
                     'Error approving quote: ' +
@@ -1833,32 +2209,47 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+
+        /* =====================================================
+           REJECT QUOTE
+        ===================================================== */
+
         async rejectQuote() {
-            prompt(
-                'Please share why you\'re rejecting this quote (optional):'
-            );
+
+            const reason =
+                prompt(
+                    'Please share why you\'re rejecting this quote (optional):'
+                );
+
 
             try {
+
                 const {
                     error
                 } = await sb
                     .from('jobs')
-                    .update({
-                        quote_status:
-                            'rejected',
-                        customer_approved:
-                            false,
-                        status:
-                            'cancelled'
-                    })
+                    .update(
+                        {
+                            quote_status:
+                                'rejected',
+
+                            customer_approved:
+                                false,
+
+                            status:
+                                'cancelled'
+                        }
+                    )
                     .eq(
                         'id',
                         this.jobId
                     );
 
+
                 if (error) {
                     throw error;
                 }
+
 
                 alert(
                     'Quote rejected. Your booking has been closed. The inspection fee paid (₹' +
@@ -1866,14 +2257,17 @@ document.addEventListener('alpine:init', () => {
                     ') is non-refundable as the technician visited your location.'
                 );
 
+
                 window.location.href =
                     'index.html';
 
             } catch (err) {
+
                 console.error(
                     'Error rejecting quote:',
                     err
                 );
+
 
                 alert(
                     'Error rejecting quote: ' +
@@ -1882,20 +2276,34 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+
+        /* =====================================================
+           FEEDBACK RATING
+        ===================================================== */
+
         setFeedbackRating(i) {
+
             this.feedbackRating =
                 i;
+
 
             if (
                 navigator.vibrate
             ) {
+
                 navigator.vibrate(
                     30
                 );
             }
         },
 
+
+        /* =====================================================
+           FEEDBACK EMOJI
+        ===================================================== */
+
         getFeedbackEmoji(i) {
+
             return [
                 '😞',
                 '😕',
@@ -1905,7 +2313,13 @@ document.addEventListener('alpine:init', () => {
             ][i - 1] || '';
         },
 
+
+        /* =====================================================
+           FEEDBACK LABEL
+        ===================================================== */
+
         getFeedbackLabel(i) {
+
             return [
                 'Poor',
                 'Fair',
@@ -1915,32 +2329,44 @@ document.addEventListener('alpine:init', () => {
             ][i - 1] || '';
         },
 
+
+        /* =====================================================
+           FEEDBACK TAGS
+        ===================================================== */
+
         getFeedbackTags() {
+
             if (
                 this.feedbackRating >=
                 4
             ) {
+
                 return [
                     {
                         icon: '⚡',
                         label: 'Fast Arrival'
                     },
+
                     {
                         icon: '👔',
                         label: 'Professional'
                     },
+
                     {
                         icon: '✨',
                         label: 'Clean Work'
                     },
+
                     {
                         icon: '😊',
                         label: 'Polite'
                     },
+
                     {
                         icon: '🔧',
                         label: 'Genuine Parts'
                     },
+
                     {
                         icon: '💯',
                         label: 'Worth Every Rupee'
@@ -1948,19 +2374,23 @@ document.addEventListener('alpine:init', () => {
                 ];
             }
 
+
             if (
                 this.feedbackRating ===
                 3
             ) {
+
                 return [
                     {
                         icon: '⏱️',
                         label: 'On Time'
                     },
+
                     {
                         icon: '👍',
                         label: 'Decent Work'
                     },
+
                     {
                         icon: '📞',
                         label: 'Good Communication'
@@ -1968,19 +2398,23 @@ document.addEventListener('alpine:init', () => {
                 ];
             }
 
+
             return [
                 {
                     icon: '⏰',
                     label: 'Late Arrival'
                 },
+
                 {
                     icon: '🔁',
                     label: 'Needs Redo'
                 },
+
                 {
                     icon: '📵',
                     label: 'Poor Communication'
                 },
+
                 {
                     icon: '💸',
                     label: 'Overcharged'
@@ -1988,24 +2422,36 @@ document.addEventListener('alpine:init', () => {
             ];
         },
 
+
+        /* =====================================================
+           TOGGLE FEEDBACK TAG
+        ===================================================== */
+
         toggleFeedbackTag(tag) {
+
             if (
                 this.feedbackTags.includes(
                     tag
                 )
             ) {
+
                 this.feedbackTags =
                     this.feedbackTags.filter(
-                        t => t !== tag
+                        t =>
+                            t !== tag
                     );
+
             } else {
+
                 this.feedbackTags.push(
                     tag
                 );
 
+
                 if (
                     navigator.vibrate
                 ) {
+
                     navigator.vibrate(
                         20
                     );
@@ -2013,7 +2459,13 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+
+        /* =====================================================
+           CONFETTI
+        ===================================================== */
+
         launchConfetti() {
+
             const colors = [
                 '#A07D54',
                 '#1a1a1a',
@@ -2022,50 +2474,73 @@ document.addEventListener('alpine:init', () => {
                 '#fff'
             ];
 
+
             for (
                 let i = 0;
                 i < 55;
                 i++
             ) {
+
                 const p =
                     document.createElement(
                         'div'
                     );
 
+
                 p.className =
                     'confetti-piece';
 
+
                 p.style.cssText =
-                    `left:${Math.random() * 100}vw;top:-20px;width:${Math.random() * 8 + 5}px;height:${Math.random() * 8 + 5}px;background:${colors[Math.floor(Math.random() * colors.length)]};border-radius:${Math.random() > 0.5 ? '50%' : '2px'};animation-duration:${Math.random() * 2 + 1.5}s;animation-delay:${Math.random() * 0.8}s;`;
+                    `left:${Math.random() * 100}vw;
+                     top:-20px;
+                     width:${Math.random() * 8 + 5}px;
+                     height:${Math.random() * 8 + 5}px;
+                     background:${colors[Math.floor(Math.random() * colors.length)]};
+                     border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+                     animation-duration:${Math.random() * 2 + 1.5}s;
+                     animation-delay:${Math.random() * 0.8}s;`;
+
 
                 document.body.appendChild(
                     p
                 );
 
+
                 setTimeout(
-                    () =>
-                        p.remove(),
+                    () => p.remove(),
                     4000
                 );
             }
         },
 
+
+        /* =====================================================
+           SUBMIT FEEDBACK
+        ===================================================== */
+
         async submitFeedback() {
+
             if (
                 !this.feedbackRating
             ) {
+
                 return;
             }
+
 
             const storedPhone =
                 localStorage.getItem(
                     'local_user_phone'
                 );
 
+
             if (!storedPhone) {
+
                 alert(
                     'Session identity missing. Please login again.'
                 );
+
 
                 window.location.href =
                     'loginuser.html';
@@ -2073,10 +2548,13 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
 
+
             this.feedbackLoading =
                 true;
 
+
             try {
+
                 const {
                     data: profile,
                     error: profileError
@@ -2089,65 +2567,81 @@ document.addEventListener('alpine:init', () => {
                     )
                     .maybeSingle();
 
+
                 if (
                     profileError ||
                     !profile
                 ) {
+
                     throw new Error(
                         profileError?.message ||
                         'Profile identity reference missing.'
                     );
                 }
 
+
                 const combinedComment =
-                    this.feedbackTags
-                        .length > 0
+                    this.feedbackTags.length >
+                    0
                         ? `[${this.feedbackTags.join(', ')}] ${this.feedbackComment}`
                         : this.feedbackComment;
+
 
                 const {
                     error: feedbackError
                 } = await sb
                     .from('feedback')
-                    .insert([{
-                        job_id:
-                            this.jobId,
-                        rating:
-                            this.feedbackRating,
-                        comment:
-                            combinedComment,
-                        technician_id:
-                            this.techData?.id ||
-                            null,
-                        user_id:
-                            profile.id
-                    }]);
+                    .insert([
+                        {
+                            job_id:
+                                this.jobId,
 
-                if (
-                    feedbackError
-                ) {
+                            rating:
+                                this.feedbackRating,
+
+                            comment:
+                                combinedComment,
+
+                            technician_id:
+                                this.techData?.id ||
+                                null,
+
+                            user_id:
+                                profile.id
+                        }
+                    ]);
+
+
+                if (feedbackError) {
                     throw feedbackError;
                 }
 
+
                 await sb
                     .from('jobs')
-                    .update({
-                        feedback_provided:
-                            true
-                    })
+                    .update(
+                        {
+                            feedback_provided:
+                                true
+                        }
+                    )
                     .eq(
                         'id',
                         this.jobId
                     );
 
+
                 this.feedbackStep =
                     'done';
 
+
                 this.launchConfetti();
+
 
                 if (
                     navigator.vibrate
                 ) {
+
                     navigator.vibrate(
                         [
                             100,
@@ -2159,28 +2653,39 @@ document.addEventListener('alpine:init', () => {
                     );
                 }
 
+
                 setTimeout(
                     () => {
+
                         this.showFeedback =
                             false;
 
                         this.feedbackDone =
                             true;
+
                     },
                     2800
                 );
 
             } catch (err) {
-                console.error(err);
+
+                console.error(
+                    err
+                );
+
 
                 alert(
                     'Review Submission Error: ' +
                     err.message
                 );
+
             } finally {
+
                 this.feedbackLoading =
                     false;
             }
         }
+
     }));
+
 });
