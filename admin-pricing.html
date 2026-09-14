@@ -1,207 +1,336 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FixZenix Admin - Service & Offer Pricing Manager</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-gold': '#A07D54',
-                        'brand-olive': '#5D5646',
-                        'brand-cream': '#FBF9F5',
-                        'brand-dark': '#2C2823'
-                    }
-                }
-            }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixZenix - Price & Service Admin</title>
+<meta name="theme-color" content="#5D5646">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<!-- Reuses tailwind.config, the Supabase client (window.sb), and the
+     built-in servicesDB fallback that already live in service.js -->
+<script src="service.js"></script>
+<style>
+  body{font-family:'Inter',system-ui,sans-serif}
+  .h-serif{font-family:'Playfair Display',serif}
+  ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:#a07d54;border-radius:10px}
+</style>
 </head>
+<body class="bg-brand-cream text-brand-dark antialiased" x-data="adminApp()" x-init="init()">
 
-<body class="bg-brand-cream text-brand-dark antialiased font-sans min-h-screen"
-      x-data="adminPricingManager()" x-init="init()">
+<!-- ============ PASSCODE GATE ============ -->
+<!-- This is a UI-only convenience gate, not real security. Anyone who
+     knows your Supabase anon key could still write to these tables
+     directly unless you lock writes down with RLS (see schema.sql).
+     For a real deployment, replace this with Supabase Auth login and
+     an "authenticated" write policy. -->
+<div x-show="!unlocked" x-cloak class="min-h-screen flex items-center justify-center p-6">
+  <div class="glass-card bg-white rounded-2xl shadow-premium p-8 w-full max-w-sm">
+    <h1 class="h-serif text-2xl mb-1">Admin Access</h1>
+    <p class="text-sm text-brand-olive mb-4">Enter the admin passcode to manage prices.</p>
+    <input type="password" x-model="passcodeInput" @keyup.enter="tryUnlock()"
+           placeholder="Passcode"
+           class="w-full border border-brand-beige rounded-lg px-4 py-3 mb-3 focus:outline-none focus:ring-2 focus:ring-brand-gold">
+    <button @click="tryUnlock()" class="w-full bg-brand-dark text-white rounded-lg py-3 font-semibold hover:bg-brand-olive transition">
+      Unlock
+    </button>
+    <p x-show="passcodeError" x-cloak class="text-brand-red text-sm mt-2">Incorrect passcode.</p>
+  </div>
+</div>
 
-    <!-- Header -->
-    <header class="bg-white border-b border-brand-gold/20 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-olive text-white flex items-center justify-center font-bold text-lg">
-                    FZ
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-brand-olive">FixZenix Admin</h1>
-                    <p class="text-xs text-brand-dark/50">Service Offer & Price Management</p>
-                </div>
+<!-- ============ MAIN ADMIN UI ============ -->
+<div x-show="unlocked" x-cloak class="max-w-6xl mx-auto p-4 md:p-8">
+
+  <header class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="h-serif text-3xl gradient-text">Service & Price Manager</h1>
+      <p class="text-brand-olive text-sm">Edits here go live on the service page immediately.</p>
+    </div>
+    <button @click="loadAll()" class="text-sm bg-white border border-brand-beige px-4 py-2 rounded-lg hover:bg-brand-beige/40 transition">
+      <i class="fa-solid fa-rotate mr-1"></i> Refresh
+    </button>
+  </header>
+
+  <div x-show="toast" x-cloak class="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white"
+       :class="toastType==='error' ? 'bg-brand-red' : 'bg-brand-green'" x-text="toast"></div>
+
+  <div x-show="loading" class="text-center py-20 text-brand-olive">
+    <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+    <p class="mt-2">Loading services...</p>
+  </div>
+
+  <div x-show="!loading" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+    <!-- Category list -->
+    <aside class="md:col-span-1 bg-white rounded-xl shadow-glass p-4 h-fit">
+      <h2 class="font-semibold mb-3">Categories</h2>
+      <template x-for="cat in categories" :key="cat.id">
+        <button @click="selectCategory(cat)"
+                class="w-full text-left px-3 py-2 rounded-lg mb-1 text-sm flex justify-between items-center"
+                :class="activeCat && activeCat.id===cat.id ? 'bg-brand-dark text-white' : 'hover:bg-brand-beige/40'">
+          <span x-text="cat.name"></span>
+          <span class="text-xs opacity-70" x-text="itemCount(cat.slug)"></span>
+        </button>
+      </template>
+
+      <hr class="my-4 border-brand-beige">
+
+      <h3 class="font-semibold mb-2 text-sm">Add New Category</h3>
+      <input x-model="newCat.slug" placeholder="slug (e.g. carpenter)" class="w-full text-sm border border-brand-beige rounded-lg px-3 py-2 mb-2">
+      <input x-model="newCat.name" placeholder="Display name" class="w-full text-sm border border-brand-beige rounded-lg px-3 py-2 mb-2">
+      <input x-model="newCat.icon" placeholder="fa-icon-name (fa-bolt)" class="w-full text-sm border border-brand-beige rounded-lg px-3 py-2 mb-2">
+      <input x-model="newCat.image" placeholder="Image URL" class="w-full text-sm border border-brand-beige rounded-lg px-3 py-2 mb-2">
+      <textarea x-model="newCat.description" placeholder="Description" class="w-full text-sm border border-brand-beige rounded-lg px-3 py-2 mb-2" rows="2"></textarea>
+      <button @click="addCategory()" class="w-full bg-brand-gold text-white text-sm rounded-lg py-2 font-semibold hover:bg-brand-olive transition">
+        <i class="fa-solid fa-plus mr-1"></i> Add Category
+      </button>
+    </aside>
+
+    <!-- Selected category's sub-services -->
+    <main class="md:col-span-3">
+      <template x-if="!activeCat">
+        <div class="bg-white rounded-xl shadow-glass p-8 text-center text-brand-olive">
+          Select a category on the left to manage its prices.
+        </div>
+      </template>
+
+      <template x-if="activeCat">
+        <div>
+          <div class="bg-white rounded-xl shadow-glass p-5 mb-4">
+            <h2 class="text-xl font-semibold mb-3" x-text="activeCat.name"></h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-brand-olive border-b border-brand-beige">
+                    <th class="py-2 pr-2">Name</th>
+                    <th class="py-2 pr-2 w-24">Price</th>
+                    <th class="py-2 pr-2 w-24">Was (₹)</th>
+                    <th class="py-2 pr-2 w-16">Popular</th>
+                    <th class="py-2 pr-2 w-16">Active</th>
+                    <th class="py-2 pr-2 w-32"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="item in items" :key="item.id">
+                    <tr class="border-b border-brand-beige/50">
+                      <td class="py-2 pr-2">
+                        <input x-model="item.name" class="w-full border border-transparent hover:border-brand-beige focus:border-brand-gold rounded px-2 py-1 focus:outline-none">
+                      </td>
+                      <td class="py-2 pr-2">
+                        <input type="number" x-model.number="item.price" class="w-full border border-brand-beige rounded px-2 py-1 focus:outline-none focus:border-brand-gold">
+                      </td>
+                      <td class="py-2 pr-2">
+                        <input type="number" x-model.number="item.original_price" class="w-full border border-brand-beige rounded px-2 py-1 focus:outline-none focus:border-brand-gold">
+                      </td>
+                      <td class="py-2 pr-2 text-center">
+                        <input type="checkbox" x-model="item.popular" class="w-4 h-4">
+                      </td>
+                      <td class="py-2 pr-2 text-center">
+                        <input type="checkbox" x-model="item.active" class="w-4 h-4">
+                      </td>
+                      <td class="py-2 pr-2 whitespace-nowrap">
+                        <button @click="saveItem(item)" class="text-brand-green mr-2" title="Save"><i class="fa-solid fa-check"></i></button>
+                        <button @click="deleteItem(item)" class="text-brand-red" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                      </td>
+                    </tr>
+                  </template>
+                  <tr x-show="items.length===0">
+                    <td colspan="6" class="py-4 text-center text-brand-olive">No sub-services yet. Add one below.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
 
-            <div class="flex items-center gap-3">
-                <div class="relative w-full sm:w-64">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="text" x-model="searchQuery" placeholder="Search sub-service..." 
-                           class="w-full bg-brand-cream border border-brand-gold/30 rounded-xl pl-8 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-gold/40">
-                </div>
-                <button @click="saveAllChanges()" 
-                        :disabled="saving"
-                        class="bg-brand-gold hover:bg-brand-olive text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
-                    <i class="fa-solid fa-floppy-disk" :class="saving ? 'fa-spin' : ''"></i>
-                    <span x-text="saving ? 'Saving...' : 'Save Pricing'"></span>
-                </button>
+          <!-- Add new sub-service -->
+          <div class="bg-white rounded-xl shadow-glass p-5">
+            <h3 class="font-semibold mb-3">Add New Sub-Service to <span x-text="activeCat.name"></span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input x-model="newItem.name" placeholder="Service name (e.g. Fan Repair)" class="border border-brand-beige rounded-lg px-3 py-2 text-sm">
+              <input type="number" x-model.number="newItem.price" placeholder="Price (₹)" class="border border-brand-beige rounded-lg px-3 py-2 text-sm">
+              <input type="number" x-model.number="newItem.original_price" placeholder="Was price (₹, optional)" class="border border-brand-beige rounded-lg px-3 py-2 text-sm">
+              <input x-model="newItem.duration" placeholder="Duration (e.g. 20-30 min)" class="border border-brand-beige rounded-lg px-3 py-2 text-sm">
+              <input x-model="newItem.warranty" placeholder="Warranty (e.g. 30 Days)" class="border border-brand-beige rounded-lg px-3 py-2 text-sm">
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" x-model="newItem.popular"> Mark as Popular</label>
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" x-model="newItem.is_inspection"> Is Inspection/Visit fee</label>
+              <textarea x-model="newItem.description" placeholder="Description" class="border border-brand-beige rounded-lg px-3 py-2 text-sm md:col-span-2" rows="2"></textarea>
             </div>
+            <button @click="addItem()" class="mt-3 bg-brand-dark text-white text-sm rounded-lg px-5 py-2.5 font-semibold hover:bg-brand-olive transition">
+              <i class="fa-solid fa-plus mr-1"></i> Add Sub-Service
+            </button>
+          </div>
         </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- Status Alert -->
-        <div x-show="toast.show" 
-             x-transition
-             :class="toast.type === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'"
-             class="mb-6 p-4 rounded-xl border flex items-center justify-between text-xs font-bold shadow-sm">
-            <span x-text="toast.message"></span>
-            <button @click="toast.show = false"><i class="fa-solid fa-xmark text-sm"></i></button>
-        </div>
-
-        <!-- Service Cards Table -->
-        <div class="space-y-6">
-            <template x-for="(service, categoryKey) in filteredServices" :key="categoryKey">
-                <div class="bg-white border border-brand-gold/20 rounded-2xl shadow-sm overflow-hidden">
-                    
-                    <!-- Category Banner -->
-                    <div class="bg-brand-cream px-6 py-4 border-b border-brand-gold/10 flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-layer-group text-brand-gold"></i>
-                            <h2 class="font-bold text-brand-olive text-base" x-text="service.name"></h2>
-                        </div>
-                        <span class="text-[10px] font-bold bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded-full uppercase tracking-wider"
-                              x-text="(service.subs || []).length + ' Sub-services'"></span>
-                    </div>
-
-                    <!-- Sub-Services List -->
-                    <div class="divide-y divide-gray-100">
-                        <template x-for="(sub, index) in service.subs" :key="index">
-                            <div class="p-4 sm:p-6 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                
-                                <!-- Info -->
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="font-bold text-brand-dark text-sm" x-text="sub.n"></h3>
-                                        <span x-show="sub.popular" class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">🔥 Popular</span>
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-1" x-text="sub.d"></p>
-                                </div>
-
-                                <!-- Inputs -->
-                                <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
-                                    
-                                    <!-- Original Price Input -->
-                                    <div class="w-28">
-                                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Original Price (₹)</label>
-                                        <input type="number" x-model.number="sub.op" @input="calculateDiscount(sub)"
-                                               class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-gold">
-                                    </div>
-
-                                    <!-- Offer Price Input -->
-                                    <div class="w-28">
-                                        <label class="block text-[9px] font-bold text-brand-gold uppercase tracking-wider mb-1">Offer Price (₹)</label>
-                                        <input type="number" x-model.number="sub.p" @input="calculateDiscount(sub)"
-                                               class="w-full bg-white border border-brand-gold/40 rounded-lg px-3 py-1.5 text-xs font-bold text-brand-olive focus:outline-none focus:ring-2 focus:ring-brand-gold">
-                                    </div>
-
-                                    <!-- Discount Preview Badge -->
-                                    <div class="w-20 text-center">
-                                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Discount</label>
-                                        <span class="inline-block px-2 py-1 rounded-md text-[10px] font-extrabold"
-                                              :class="sub.discount > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-400'"
-                                              x-text="sub.discount > 0 ? sub.discount + '% OFF' : '0%'">
-                                        </span>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-
-                </div>
-            </template>
-        </div>
+      </template>
     </main>
+  </div>
+</div>
 
-    <script>
-        function adminPricingManager() {
-            return {
-                searchQuery: '',
-                saving: false,
-                toast: { show: false, message: '', type: 'success' },
-                
-                // Demo Database Structure (Can sync directly with Supabase)
-                services: {
-                    'cleaning': {
-                        name: 'Full House & Disinfection Cleaning',
-                        subs: [
-                            { n: 'Full House Deep Clean (1 BHK)', p: 1299, op: 1699, d: 'Complete deep cleaning for 1 BHK apartment.', popular: true, discount: 24 },
-                            { n: 'Full House Deep Clean (2 BHK)', p: 1799, op: 2299, d: 'Complete deep cleaning for 2 BHK apartment.', popular: true, discount: 22 },
-                            { n: 'Full House Deep Clean (3 BHK)', p: 2299, op: 2999, d: 'Complete deep cleaning for 3 BHK apartment.', popular: false, discount: 23 },
-                            { n: 'Bathroom Deep Disinfection (1 Bath)', p: 349, op: 499, d: 'Hard-water scale removal, tile scrubbing, and sanitization.', popular: true, discount: 30 }
-                        ]
-                    }
-                },
+<script>
+function adminApp() {
+  return {
+    // Change this to your own passcode before deploying.
+    // Better yet: replace this whole gate with Supabase Auth (see schema.sql notes).
+    ADMIN_PASSCODE: 'fixzenix2026',
 
-                get filteredServices() {
-                    if (!this.searchQuery.trim()) return this.services;
-                    const query = this.searchQuery.toLowerCase();
-                    
-                    let result = {};
-                    for (let key in this.services) {
-                        const matchingSubs = this.services[key].subs.filter(s => 
-                            s.n.toLowerCase().includes(query) || s.d.toLowerCase().includes(query)
-                        );
-                        if (matchingSubs.length > 0) {
-                            result[key] = { ...this.services[key], subs: matchingSubs };
-                        }
-                    }
-                    return result;
-                },
+    unlocked: false,
+    passcodeInput: '',
+    passcodeError: false,
 
-                calculateDiscount(sub) {
-                    if (sub.op && sub.op > sub.p) {
-                        sub.discount = Math.round(((sub.op - sub.p) / sub.op) * 100);
-                    } else {
-                        sub.discount = 0;
-                    }
-                },
+    loading: true,
+    categories: [],
+    allItems: [],
+    items: [],
+    activeCat: null,
 
-                async saveAllChanges() {
-                    this.saving = true;
-                    
-                    // Logic to send updated servicesDB payload back to Supabase or your config storage
-                    setTimeout(() => {
-                        this.saving = false;
-                        this.showToast('Pricing and discount updates saved successfully!', 'success');
-                    }, 800);
-                },
+    toast: '', toastType: 'success',
 
-                showToast(msg, type = 'success') {
-                    this.toast = { show: true, message: msg, type: type };
-                    setTimeout(() => { this.toast.show = false; }, 4000);
-                },
+    newCat: { slug: '', name: '', icon: '', image: '', description: '' },
+    newItem: { name: '', price: null, original_price: null, duration: '', warranty: '', popular: false, is_inspection: false, description: '' },
 
-                init() {
-                    // Precompute initial discounts
-                    for (let key in this.services) {
-                        this.services[key].subs.forEach(s => this.calculateDiscount(s));
-                    }
-                }
-            }
+    init() {
+      if (sessionStorage.getItem('fz_admin_unlocked') === 'true') {
+        this.unlocked = true;
+        this.loadAll();
+      }
+    },
+
+    tryUnlock() {
+      if (this.passcodeInput === this.ADMIN_PASSCODE) {
+        this.unlocked = true;
+        this.passcodeError = false;
+        sessionStorage.setItem('fz_admin_unlocked', 'true');
+        this.loadAll();
+      } else {
+        this.passcodeError = true;
+      }
+    },
+
+    showToast(msg, type = 'success') {
+      this.toast = msg; this.toastType = type;
+      setTimeout(() => this.toast = '', 2500);
+    },
+
+    async loadAll() {
+      this.loading = true;
+      try {
+        const [catRes, itemRes] = await Promise.all([
+          window.sb.from('service_categories').select('*').order('sort_order'),
+          window.sb.from('service_items').select('*').order('sort_order')
+        ]);
+        if (catRes.error) throw catRes.error;
+        if (itemRes.error) throw itemRes.error;
+
+        this.categories = catRes.data || [];
+        this.allItems = itemRes.data || [];
+
+        if (this.activeCat) {
+          const stillExists = this.categories.find(c => c.id === this.activeCat.id);
+          this.selectCategory(stillExists || this.categories[0] || null);
+        } else if (this.categories.length) {
+          this.selectCategory(this.categories[0]);
         }
-    </script>
+      } catch (err) {
+        this.showToast('Failed to load: ' + err.message, 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    itemCount(slug) {
+      return this.allItems.filter(i => i.category_slug === slug).length;
+    },
+
+    selectCategory(cat) {
+      this.activeCat = cat;
+      this.items = cat ? this.allItems.filter(i => i.category_slug === cat.slug) : [];
+    },
+
+    async saveItem(item) {
+      try {
+        const { error } = await window.sb.from('service_items').update({
+          name: item.name,
+          price: item.price,
+          original_price: item.original_price,
+          popular: item.popular,
+          active: item.active
+        }).eq('id', item.id);
+        if (error) throw error;
+        this.showToast('Saved "' + item.name + '"');
+      } catch (err) {
+        this.showToast('Save failed: ' + err.message, 'error');
+      }
+    },
+
+    async deleteItem(item) {
+      if (!confirm('Delete "' + item.name + '"? This cannot be undone.')) return;
+      try {
+        const { error } = await window.sb.from('service_items').delete().eq('id', item.id);
+        if (error) throw error;
+        this.showToast('Deleted "' + item.name + '"');
+        await this.loadAll();
+      } catch (err) {
+        this.showToast('Delete failed: ' + err.message, 'error');
+      }
+    },
+
+    async addItem() {
+      if (!this.activeCat) return;
+      if (!this.newItem.name || this.newItem.price == null) {
+        this.showToast('Name and price are required.', 'error');
+        return;
+      }
+      try {
+        const { error } = await window.sb.from('service_items').insert({
+          category_slug: this.activeCat.slug,
+          name: this.newItem.name,
+          price: this.newItem.price,
+          original_price: this.newItem.original_price,
+          description: this.newItem.description,
+          duration: this.newItem.duration,
+          warranty: this.newItem.warranty,
+          popular: this.newItem.popular,
+          is_inspection: this.newItem.is_inspection,
+          sort_order: this.items.length + 1,
+          active: true
+        });
+        if (error) throw error;
+        this.newItem = { name: '', price: null, original_price: null, duration: '', warranty: '', popular: false, is_inspection: false, description: '' };
+        this.showToast('Sub-service added.');
+        await this.loadAll();
+      } catch (err) {
+        this.showToast('Add failed: ' + err.message, 'error');
+      }
+    },
+
+    async addCategory() {
+      if (!this.newCat.slug || !this.newCat.name) {
+        this.showToast('Slug and name are required.', 'error');
+        return;
+      }
+      try {
+        const slug = this.newCat.slug.toLowerCase().replace(/\s+/g, '');
+        const { error } = await window.sb.from('service_categories').insert({
+          slug,
+          name: this.newCat.name,
+          icon: this.newCat.icon || 'fa-tools',
+          image: this.newCat.image,
+          description: this.newCat.description,
+          sort_order: this.categories.length + 1,
+          active: true
+        });
+        if (error) throw error;
+        this.newCat = { slug: '', name: '', icon: '', image: '', description: '' };
+        this.showToast('Category added.');
+        await this.loadAll();
+      } catch (err) {
+        this.showToast('Add failed: ' + err.message, 'error');
+      }
+    }
+  };
+}
+</script>
 </body>
 </html>
