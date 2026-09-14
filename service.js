@@ -518,3 +518,81 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 if (window.supabase) {
     window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
+
+// ── LIVE PRICING LOADER ──────────────────────────────────────────
+// Pulls categories, sub-services, and quantity-tier pricing from
+// Supabase and merges them into servicesDB (which stays here purely
+// as an offline fallback in case the DB is unreachable or empty).
+// Call `await window.loadServicesDB()` before reading servicesDB.
+window.loadServicesDB = async function () {
+    if (!window.sb) return servicesDB;
+
+    try {
+        const [catRes, itemRes, qtyRes] = await Promise.all([
+            window.sb.from('service_categories').select('*').eq('active', true).order('sort_order'),
+            window.sb.from('service_items').select('*').eq('active', true).order('sort_order'),
+            window.sb.from('service_qty_options').select('*').eq('active', true)
+        ]);
+
+        if (catRes.error) throw catRes.error;
+        if (itemRes.error) throw itemRes.error;
+
+        const cats = catRes.data || [];
+        const items = itemRes.data || [];
+        const qtyRows = qtyRes.data || [];
+
+        // If the DB hasn't been seeded yet, keep using the hardcoded fallback.
+        if (cats.length === 0) return servicesDB;
+
+        const dbCategories = {};
+        cats.forEach(c => {
+            dbCategories[c.slug] = {
+                name: c.name,
+                image: c.image,
+                desc: c.description,
+                icon: c.icon,
+                subs: []
+            };
+        });
+
+        items.forEach(it => {
+            const cat = dbCategories[it.category_slug];
+            if (!cat) return;
+            cat.subs.push({
+                n: it.name,
+                p: Number(it.price),
+                op: it.original_price != null ? Number(it.original_price) : undefined,
+                d: it.description,
+                duration: it.duration,
+                warranty: it.warranty,
+                material: !!it.material_included,
+                is_inspection: !!it.is_inspection,
+                popular: !!it.popular
+            });
+        });
+
+        // Build qtyConfig-shaped object for the quantity drawer (bathrooms, BHK, sofa seats, etc.)
+        window.qtyConfigFromDB = {};
+        qtyRows.forEach(q => {
+            const tiers = Array.isArray(q.tiers) ? q.tiers : [];
+            const prices = {}, labels = {};
+            tiers.forEach(t => { prices[t.qty] = t.price; labels[t.qty] = t.label; });
+            window.qtyConfigFromDB[q.qty_key] = {
+                label: q.label,
+                max: tiers.length ? Math.max(...tiers.map(t => t.qty)) : 1,
+                baseName: q.base_name,
+                labels,
+                prices,
+                desc: q.description
+            };
+        });
+
+        // DB categories overwrite/extend the built-in fallback list.
+        // (The 'default' entry is left untouched as a last-resort fallback.)
+        Object.assign(servicesDB, dbCategories);
+        return servicesDB;
+    } catch (err) {
+        console.error('Could not load live prices, using built-in fallback data:', err.message);
+        return servicesDB;
+    }
+};
