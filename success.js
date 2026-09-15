@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = 'https://kzxdxnxgouthsywbsnvl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -44,6 +43,10 @@ Alpine.data('trackingApp', () => ({
     quoteLabour: 0,
     quoteMaterial: 0,
     quoteExtra: 0,
+
+    // Additional issue reported separately by the technician (job_detail "Save Issue")
+    additionalIssueText: '',
+    additionalIssuePrice: 0,
     
     // Bill modal variables
     showBill: false,
@@ -235,6 +238,12 @@ Alpine.data('trackingApp', () => ({
             grandTotal = storedFinal;
         }
 
+        // The technician's separately-saved "Additional Issue" charge isn't
+        // part of the quote/inspection flow above, so add it in once here
+        // regardless of which branch produced grandTotal.
+        const additionalIssueAmount = Number(job.additional_issue_price || 0);
+        grandTotal += additionalIssueAmount;
+
         return Number(grandTotal.toFixed(2));
     },
 
@@ -422,6 +431,12 @@ Alpine.data('trackingApp', () => ({
         this.fullJobData = job;
         this.finalPayableAmount = this.calculateFinalBillAmount(job);
         this.payableAmount = this.finalPayableAmount;
+
+        // Keep the "Additional Issue" the technician saves on job_detail in sync
+        // here too, so it shows up live on the tracking page the moment it's
+        // saved (and is guaranteed correct by the time the job is completed).
+        this.additionalIssueText = job.additional_issue || '';
+        this.additionalIssuePrice = Number(job.additional_issue_price || 0);
     },
 
     // Every 5th completed job earns the customer a one-time reward code.
@@ -619,6 +634,19 @@ Alpine.data('trackingApp', () => ({
                 });
             }
 
+            // Additional issue the technician found and saved separately
+            // from the formal quote (job_detail "Save Issue" card).
+            const additionalIssueAmount = Number(job.additional_issue_price || 0);
+            const additionalIssueDesc = (job.additional_issue || '').trim();
+            if (additionalIssueAmount > 0 || additionalIssueDesc) {
+                lineItems.push({
+                    type: 'simple',
+                    name: 'Additional Issue Found',
+                    desc: additionalIssueDesc || 'Extra issue identified and resolved during the visit.',
+                    price: additionalIssueAmount
+                });
+            }
+
             this.billLineItems = lineItems;
             this.isInspectionJob = hasOtherService;
             this.billInspectionFee = inspFee;
@@ -632,17 +660,19 @@ Alpine.data('trackingApp', () => ({
                 this.billAdvancePaid = fixedTotal + inspFee;
 
                 if (quotedTotal >= inspFee) {
-                    this.billBalancePaid = quotedTotal - inspFee;
+                    this.billBalancePaid = (quotedTotal - inspFee) + additionalIssueAmount;
                     this.billRefundDue = 0;
                 } else {
-                    this.billBalancePaid = 0;
+                    this.billBalancePaid = additionalIssueAmount;
                     this.billRefundDue = inspFee - quotedTotal;
                 }
             } else {
                 this.billPlatformFee = 49;
                 this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount) + this.billPlatformFee;
-                this.billAdvancePaid = this.billGrandTotal;
-                this.billBalancePaid = 0;
+                // Additional issue amount is collected on-site at completion,
+                // not part of the amount paid upfront at booking.
+                this.billAdvancePaid = Math.max(0, this.billGrandTotal - additionalIssueAmount);
+                this.billBalancePaid = additionalIssueAmount;
                 this.billRefundDue = 0;
             }
 
