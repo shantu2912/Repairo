@@ -32,7 +32,9 @@ Alpine.data('trackingApp', () => ({
     jobStatus: 'pending',
     paymentStatus: 'UNPAID',
     payableAmount: 0,
+    finalPayableAmount: 0,
     paymentModalOpen: false,
+    paymentLoading: false,
 
     quoteAmount: 0,
     quoteDescription: '',
@@ -96,7 +98,7 @@ Alpine.data('trackingApp', () => ({
         channel
             .on('postgres_changes', 
                 { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, 
-                (payload) => {
+                async (payload) => {
                     console.log('Real-time updates payload:', payload);
                     
                     if (payload.new) {
@@ -111,14 +113,17 @@ Alpine.data('trackingApp', () => ({
                             }
                         }
 
-                        // ── REALTIME PAYMENTS & AUTO-RAZORPAY TRIGGER ──
+                        // ── REALTIME PAYMENT UPDATE ──
+                        // Never reveal the completion OTP until payment is verified.
                         if (payload.new.payment_status) {
-                            this.paymentStatus = payload.new.payment_status;
-                            if (payload.new.payment_status === 'PENDING_CUSTOMER_PAYMENT' && !this.paymentModalOpen) {
-                                this.payableAmount = payload.new.payable_amount || 299;
-                                this.triggerRazorpayCheckout(payload.new);
-                            }
+                            this.paymentStatus = String(payload.new.payment_status).toUpperCase();
                         }
+
+                        if (payload.new.payable_amount != null) {
+                            this.payableAmount = Number(payload.new.payable_amount);
+                        }
+
+                        await this.refreshJobData();
                         
                         // Handle quote data updates
                         if (payload.new.quote_status !== undefined) {
@@ -131,18 +136,28 @@ Alpine.data('trackingApp', () => ({
                             this.showQuoteCard = payload.new.quote_status === 'submitted';
                             
                             if (payload.new.quote_status === 'approved') {
-                                this.showQuoteCard = false;
-                                this.refreshJobData();
-                            }
+    this.showQuoteCard = false;
+
+    const quote = Number(payload.new.quoted_amount || 0);
+    const inspection = Number(payload.new.inspection_fee_amount || 299);
+
+    this.payableAmount = Number(
+        payload.new.customer_price ??
+        payload.new.payable_amount ??
+        Math.max(0, quote - inspection)
+    );
+
+    this.refreshJobData();
+}
                             if (payload.new.quote_status === 'rejected') {
                                 this.showQuoteCard = false;
                             }
                         }
                         
-                        // Capture OTP (Dynamic or Preset)
-                        if (payload.new.completion_otp || payload.new.otp) {
+                        // OTP is intentionally gated by verified payment.
+                        if (this.isPaymentComplete && (payload.new.completion_otp || payload.new.otp)) {
                             this.otpCode = payload.new.completion_otp || payload.new.otp;
-                        } else if (payload.new.otp === null && payload.new.completion_otp === null) {
+                        } else if (!this.isPaymentComplete) {
                             this.otpCode = null;
                         }
                         
@@ -156,82 +171,227 @@ Alpine.data('trackingApp', () => ({
     },
 
     // ─────────────────────────────────────────────────────────
-    // AUTO-RAZORPAY INTEGRATION LOGIC
+    // FINAL BILL PAYMENT
     // ─────────────────────────────────────────────────────────
-    async triggerRazorpayCheckout(job) {
-        if (typeof Razorpay === 'undefined') {
-            console.error("Razorpay SDK not loaded in head.");
-            return;
+
+    get isPaymentComplete() {
+        const status = String(this.paymentStatus || '').toUpperCase();
+        return ['PAID', 'SUCCESS', 'COMPLETED'].includes(status);
+    },
+
+    get showFinalPayment() {
+        const activeStatuses = ['arrived', 'started', 'in_progress', 'awaiting_payment'];
+        return activeStatuses.includes(this.jobStatus) &&
+               Number(this.finalPayableAmount || 0) > 0;
+    },
+
+    calculateFinalBillAmount(job) {
+        if (!job) return 0;
+
+        const OTHER_LABEL = 'Other Issue';
+        const inspFee = Number(job.inspection_fee_amount || 299);
+        const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
+        const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
+        const discountAmount = Math.max(0, grossPrice - totalPrice);
+
+        const servicesSelected = job.services_selected || job.device || '';
+        const serviceNames = servicesSelected
+            ? String(servicesSelected).split(',').map(s => s.trim()).filter(Boolean)
+            : ['Service'];
+
+        const hasOtherService =
+            !!job.is_inspection_job ||
+            serviceNames.some(n => n === OTHER_LABEL);
+
+        const fixedTotal = hasOtherService
+            ? Math.max(0, totalPrice - inspFee)
+            : totalPrice;
+
+        let quotedTotal = 0;
+
+        if (hasOtherService) {
+            const labour = Number(job.quoted_labour || 0);
+            const material = Number(job.quoted_material || 0);
+            const extra = Number(job.quoted_extra || 0);
+
+            quotedTotal = Number(
+                job.quoted_amount || (labour + material + extra) || 0
+            );
         }
 
-        this.paymentModalOpen = true;
-        const payableAmountInPaise = (job.payable_amount || this.payableAmount || 299) * 100;
+        const subtotal = fixedTotal + quotedTotal;
+        const platformFee = hasOtherService ? 0 : 49;
+
+        let grandTotal =
+            Math.max(0, subtotal - discountAmount) + platformFee;
+
+        // For quote/inspection jobs, customer_price is the balance that
+        // the customer is supposed to pay after the inspection fee.
+        const storedFinal = Number(
+            job.customer_price ?? job.payable_amount ?? 0
+        );
+
+        if (hasOtherService && storedFinal > 0) {
+            grandTotal = storedFinal;
+        }
+
+        return Number(grandTotal.toFixed(2));
+    },
+
+    async payFinalAmount() {
+        if (this.paymentLoading || this.isPaymentComplete) return;
+
+        this.paymentLoading = true;
 
         try {
-            // 1. Invoke Supabase Edge Function to Create Razorpay Order
-            const { data: order, error } = await sb.functions.invoke('create-razorpay-order', {
-                body: { jobId: job.id, amount: payableAmountInPaise }
-            });
+            // Re-read the job immediately before payment so the customer
+            // cannot accidentally pay an old amount shown on the page.
+            const { data: job, error } = await sb
+                .from('jobs')
+                .select('*')
+                .eq('id', this.jobId)
+                .single();
 
-            if (error || !order.id) {
-                console.error("Order creation error:", error);
-                this.paymentModalOpen = false;
-                alert("Could not initialize secure gateway order.");
-                return;
+            if (error || !job) {
+                throw new Error(error?.message || 'Could not load the final bill.');
             }
 
-            // 2. Build 6-Digit Completion OTP
-            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const finalAmount = this.calculateFinalBillAmount(job);
 
-            // 3. Configure Checkout Options
+            if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
+                throw new Error('The final bill amount is not available yet.');
+            }
+
+            this.fullJobData = job;
+            this.finalPayableAmount = finalAmount;
+            this.payableAmount = finalAmount;
+
+            if (typeof Razorpay === 'undefined') {
+                throw new Error(
+                    'Secure payment gateway is not loaded. Please refresh the page and try again.'
+                );
+            }
+
+            this.paymentModalOpen = true;
+
+            // The amount sent to Razorpay is the exact final-bill amount.
+            const { data: order, error: orderError } =
+                await sb.functions.invoke('create-razorpay-order', {
+                    body: {
+                        jobId: job.id,
+                        amount: Math.round(finalAmount * 100),
+                        final_bill_amount: finalAmount
+                    }
+                });
+
+            if (orderError || !order?.id) {
+                throw new Error(
+                    orderError?.message || 'Could not initialize secure payment.'
+                );
+            }
+
             const options = {
-                key: "rzp_test_TI4hJKB1B4rwKx", // Your Razorpay Key ID
+                key: order.key_id,
                 amount: order.amount,
-                currency: order.currency,
-                name: "FixZenix Home Services",
-                description: `Payment for ${job.device || job.category || 'Service'}`,
+                currency: order.currency || 'INR',
+                name: 'FixZenix Home Services',
+                description:
+                    `Final bill payment for ${job.device || job.category || 'Service'}`,
                 order_id: order.id,
+
                 handler: async (response) => {
-                    // 4. Verify Payment Signature and Save OTP to Database
-                    const { data: verifyResult, error: verifyError } = await sb.functions.invoke('verify-razorpay-payment', {
-                        body: {
-                            jobId: job.id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            completion_otp: generatedOtp
+                    try {
+                        // The server generates the OTP only after signature + payment checks succeed.
+                        const { data: verifyResult, error: verifyError } =
+                            await sb.functions.invoke(
+                                'verify-razorpay-payment',
+                                {
+                                    body: {
+                                        jobId: job.id,
+                                        razorpay_order_id:
+                                            response.razorpay_order_id,
+                                        razorpay_payment_id:
+                                            response.razorpay_payment_id,
+                                        razorpay_signature:
+                                            response.razorpay_signature,
+                                        amount: Math.round(finalAmount * 100),
+                                        final_bill_amount: finalAmount
+                                    }
+                                }
+                            );
+
+                        if (
+                            verifyError ||
+                            verifyResult?.status !== 'success'
+                        ) {
+                            throw new Error(
+                                verifyError?.message ||
+                                'Payment verification failed. OTP was not released.'
+                            );
                         }
-                    });
 
-                    this.paymentModalOpen = false;
-
-                    if (!verifyError && verifyResult?.status === "success") {
-                        this.otpCode = generatedOtp;
+                        // Only after verified payment:
                         this.paymentStatus = 'PAID';
-                    } else {
-                        alert("Payment Signature Verification Failed!");
+                        this.finalPayableAmount = finalAmount;
+                        this.payableAmount = finalAmount;
+                        this.otpCode = verifyResult.completion_otp || null;
+
+                        await this.refreshJobData();
+
+                        alert(
+                            `✅ Payment Successful!\n\n` +
+                            `Final Bill: ₹${finalAmount.toFixed(2)}\n\n` +
+                            `Your completion code is now available. Share it with the technician.`
+                        );
+                    } catch (err) {
+                        console.error('Payment verification error:', err);
+                        this.otpCode = null;
+
+                        alert(
+                            'Payment was received, but verification could not be completed. ' +
+                            'Please contact FixZenix support before making another payment.'
+                        );
+                    } finally {
+                        this.paymentModalOpen = false;
+                        this.paymentLoading = false;
                     }
                 },
+
                 prefill: {
-                    name: job.customer_name || "Customer",
-                    contact: job.phone || "9876543210"
+                    name: job.customer_name || 'Customer',
+                    contact: job.phone || ''
                 },
+
                 theme: {
-                    color: "#A07D54"
+                    color: '#A07D54'
                 },
+
                 modal: {
                     ondismiss: () => {
                         this.paymentModalOpen = false;
+                        this.paymentLoading = false;
                     }
                 }
             };
 
             const rzp = new Razorpay(options);
+
+            rzp.on('payment.failed', (response) => {
+                console.error('Razorpay payment failed:', response?.error);
+                this.paymentModalOpen = false;
+                this.paymentLoading = false;
+                this.otpCode = null;
+                const reason = response?.error?.description || 'Payment failed. Please try again.';
+                alert(reason);
+            });
+
             rzp.open();
 
         } catch (err) {
-            console.error("Razorpay Checkout Error:", err);
+            console.error('Final payment error:', err);
             this.paymentModalOpen = false;
+            this.paymentLoading = false;
+            alert(err.message || 'Could not start payment.');
         }
     },
 
@@ -243,12 +403,25 @@ Alpine.data('trackingApp', () => ({
             .single();
         if (job) {
             this.fullJobData = job;
+            this.paymentStatus = String(
+                job.payment_status || this.paymentStatus || 'UNPAID'
+            ).toUpperCase();
+
+            this.finalPayableAmount = this.calculateFinalBillAmount(job);
+            this.payableAmount = this.finalPayableAmount;
+
+            this.otpCode = this.isPaymentComplete
+                ? (job.completion_otp || job.otp || this.otpCode || null)
+                : null;
+
             this.updateBillAmounts(job);
         }
     },
 
     updateBillAmounts(job) {
         this.fullJobData = job;
+        this.finalPayableAmount = this.calculateFinalBillAmount(job);
+        this.payableAmount = this.finalPayableAmount;
     },
 
     // Every 5th completed job earns the customer a one-time reward code.
@@ -554,7 +727,9 @@ Alpine.data('trackingApp', () => ({
             }
             
             if (job.tech_id) this.fetchTechnician(job.tech_id);
-            if (job.completion_otp || job.otp) this.otpCode = job.completion_otp || job.otp;
+            this.otpCode = ['PAID', 'SUCCESS', 'COMPLETED'].includes(
+                String(job.payment_status || '').toUpperCase()
+            ) ? (job.completion_otp || job.otp || null) : null;
             
             this.updateBillAmounts(job);
             
