@@ -26,19 +26,18 @@ Alpine.data('trackingApp', () => ({
     techData: null,
     secondsElapsed: 0,
     timerInterval: null,
-    
+
     otpCode: null,
     jobStatus: 'pending',
     paymentStatus: 'UNPAID',
     payableAmount: 0,
     finalPayableAmount: 0,
     paymentModalOpen: false,
-    paymentLoading: false,
 
     quoteAmount: 0,
     quoteDescription: '',
     quoteStatus: '',
-    inspectionFee: 299,
+    inspectionFee: 149,          // ✅ changed from 299 → 149
     showQuoteCard: false,
     quoteLabour: 0,
     quoteMaterial: 0,
@@ -47,7 +46,7 @@ Alpine.data('trackingApp', () => ({
     // Additional issue reported separately by the technician (job_detail "Save Issue")
     additionalIssueText: '',
     additionalIssuePrice: 0,
-    
+
     // Bill modal variables
     showBill: false,
     fullJobData: null,
@@ -59,14 +58,14 @@ Alpine.data('trackingApp', () => ({
     billDiscountAmount: 0,
     billPlatformFee: 0,
     billGrandTotal: 0,
-    billInspectionFee: 299,
+    billInspectionFee: 149,       // ✅ changed from 299 → 149
     billQuoteAmount: 0,
     billAdvancePaid: 0,
     billBalancePaid: 0,
     billRefundDue: 0,
     billAmountInWords: '',
     isPrinting: false,
-    billTechId: 'N/A', // ✅ Technician ID display
+    billTechId: 'N/A',
 
     showFeedback: false,
     feedbackStep: 1,
@@ -78,10 +77,15 @@ Alpine.data('trackingApp', () => ({
 
     loyaltyReward: null,
     loyaltyChecked: false,
-    
+
     map: null,
     techMarker: null,
     etaMins: 12,
+
+    // ── UPI QR payment ─────────────────────────────────────
+    upiId: 'fixzenix@upi',        // 🔁 replace with your real UPI ID
+    upiName: 'FixZenix Services',
+    qrCodeUrl: '',
 
     async init() {
         const params = new URLSearchParams(window.location.search);
@@ -99,11 +103,11 @@ Alpine.data('trackingApp', () => ({
         // Real-time listener for job updates
         const channel = sb.channel('waiting-room-' + this.jobId);
         channel
-            .on('postgres_changes', 
-                { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` }, 
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${this.jobId}` },
                 async (payload) => {
                     console.log('Real-time updates payload:', payload);
-                    
+
                     if (payload.new) {
                         if (payload.new.status) {
                             this.jobStatus = payload.new.status;
@@ -116,8 +120,6 @@ Alpine.data('trackingApp', () => ({
                             }
                         }
 
-                        // ── REALTIME PAYMENT UPDATE ──
-                        // Never reveal the completion OTP until payment is verified.
                         if (payload.new.payment_status) {
                             this.paymentStatus = String(payload.new.payment_status).toUpperCase();
                         }
@@ -127,7 +129,7 @@ Alpine.data('trackingApp', () => ({
                         }
 
                         await this.refreshJobData();
-                        
+
                         // Handle quote data updates
                         if (payload.new.quote_status !== undefined) {
                             this.quoteStatus = payload.new.quote_status;
@@ -137,33 +139,27 @@ Alpine.data('trackingApp', () => ({
                             this.quoteMaterial = payload.new.quoted_material || 0;
                             this.quoteExtra = payload.new.quoted_extra || 0;
                             this.showQuoteCard = payload.new.quote_status === 'submitted';
-                            
+
                             if (payload.new.quote_status === 'approved') {
-    this.showQuoteCard = false;
-
-    const quote = Number(payload.new.quoted_amount || 0);
-    const inspection = Number(payload.new.inspection_fee_amount || 299);
-
-    this.payableAmount = Number(
-        payload.new.customer_price ??
-        payload.new.payable_amount ??
-        Math.max(0, quote - inspection)
-    );
-
-    this.refreshJobData();
-}
+                                this.showQuoteCard = false;
+                                const quote = Number(payload.new.quoted_amount || 0);
+                                this.payableAmount = Number(
+                                    payload.new.customer_price ??
+                                    payload.new.payable_amount ??
+                                    quote
+                                );
+                                this.refreshJobData();
+                            }
                             if (payload.new.quote_status === 'rejected') {
                                 this.showQuoteCard = false;
                             }
                         }
-                        
-                        // OTP is intentionally gated by verified payment.
-                        if (this.isPaymentComplete && (payload.new.completion_otp || payload.new.otp)) {
+
+                        // ✅ OTP appears as soon as the technician clicks "Complete Job"
+                        if (payload.new.completion_otp || payload.new.otp) {
                             this.otpCode = payload.new.completion_otp || payload.new.otp;
-                        } else if (!this.isPaymentComplete) {
-                            this.otpCode = null;
                         }
-                        
+
                         if (payload.new.tech_id && !this.techData) {
                             this.fetchTechnician(payload.new.tech_id);
                         }
@@ -174,7 +170,7 @@ Alpine.data('trackingApp', () => ({
     },
 
     // ─────────────────────────────────────────────────────────
-    // FINAL BILL PAYMENT
+    // PAYMENT HELPERS
     // ─────────────────────────────────────────────────────────
 
     get isPaymentComplete() {
@@ -183,16 +179,16 @@ Alpine.data('trackingApp', () => ({
     },
 
     get showFinalPayment() {
-        const activeStatuses = ['arrived', 'started', 'in_progress', 'awaiting_payment'];
+        const activeStatuses = ['arrived', 'started', 'in_progress', 'awaiting_payment', 'completed'];
         return activeStatuses.includes(this.jobStatus) &&
-               Number(this.finalPayableAmount || 0) > 0;
+               Number(this.finalPayableAmount || 0) > 0 &&
+               !this.otpCode;  // hide payment prompt once OTP is shown
     },
 
     calculateFinalBillAmount(job) {
         if (!job) return 0;
 
         const OTHER_LABEL = 'Other Issue';
-        const inspFee = Number(job.inspection_fee_amount || 299);
         const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
         const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
         const discountAmount = Math.max(0, grossPrice - totalPrice);
@@ -206,10 +202,6 @@ Alpine.data('trackingApp', () => ({
             !!job.is_inspection_job ||
             serviceNames.some(n => n === OTHER_LABEL);
 
-        const fixedTotal = hasOtherService
-            ? Math.max(0, totalPrice - inspFee)
-            : totalPrice;
-
         let quotedTotal = 0;
 
         if (hasOtherService) {
@@ -222,186 +214,48 @@ Alpine.data('trackingApp', () => ({
             );
         }
 
+        const fixedTotal = hasOtherService ? 0 : totalPrice;
         const subtotal = fixedTotal + quotedTotal;
         const platformFee = hasOtherService ? 0 : 49;
 
         let grandTotal =
             Math.max(0, subtotal - discountAmount) + platformFee;
 
-        // For quote/inspection jobs, customer_price is the balance that
-        // the customer is supposed to pay after the inspection fee.
         const storedFinal = Number(
             job.customer_price ?? job.payable_amount ?? 0
         );
 
-        if (hasOtherService && storedFinal > 0) {
+        if (storedFinal > 0) {
             grandTotal = storedFinal;
         }
 
-        // The technician's separately-saved "Additional Issue" charge isn't
-        // part of the quote/inspection flow above, so add it in once here
-        // regardless of which branch produced grandTotal.
         const additionalIssueAmount = Number(job.additional_issue_price || 0);
         grandTotal += additionalIssueAmount;
 
         return Number(grandTotal.toFixed(2));
     },
 
-    async payFinalAmount() {
-        if (this.paymentLoading || this.isPaymentComplete) return;
+    // Build UPI deep-link for QR
+    getUpiLink() {
+        const amount = this.finalPayableAmount || this.payableAmount || 0;
+        if (!amount || amount <= 0) return '';
+        const note = encodeURIComponent(`FixZenix Job ${this.jobId?.slice(0,8) || ''}`);
+        const name = encodeURIComponent(this.upiName);
+        return `upi://pay?pa=${this.upiId}&pn=${name}&am=${amount.toFixed(2)}&cu=INR&tn=${note}`;
+    },
 
-        this.paymentLoading = true;
-
-        try {
-            // Re-read the job immediately before payment so the customer
-            // cannot accidentally pay an old amount shown on the page.
-            const { data: job, error } = await sb
-                .from('jobs')
-                .select('*')
-                .eq('id', this.jobId)
-                .single();
-
-            if (error || !job) {
-                throw new Error(error?.message || 'Could not load the final bill.');
-            }
-
-            const finalAmount = this.calculateFinalBillAmount(job);
-
-            if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
-                throw new Error('The final bill amount is not available yet.');
-            }
-
-            this.fullJobData = job;
-            this.finalPayableAmount = finalAmount;
-            this.payableAmount = finalAmount;
-
-            if (typeof Razorpay === 'undefined') {
-                throw new Error(
-                    'Secure payment gateway is not loaded. Please refresh the page and try again.'
-                );
-            }
-
-            this.paymentModalOpen = true;
-
-            // The amount sent to Razorpay is the exact final-bill amount.
-            const { data: order, error: orderError } =
-                await sb.functions.invoke('create-razorpay-order', {
-                    body: {
-                        jobId: job.id,
-                        amount: Math.round(finalAmount * 100),
-                        final_bill_amount: finalAmount
-                    }
-                });
-
-            if (orderError || !order?.id) {
-                throw new Error(
-                    orderError?.message || 'Could not initialize secure payment.'
-                );
-            }
-
-            const options = {
-                key: order.key_id,
-                amount: order.amount,
-                currency: order.currency || 'INR',
-                name: 'FixZenix Home Services',
-                description:
-                    `Final bill payment for ${job.device || job.category || 'Service'}`,
-                order_id: order.id,
-
-                handler: async (response) => {
-                    try {
-                        // The server generates the OTP only after signature + payment checks succeed.
-                        const { data: verifyResult, error: verifyError } =
-                            await sb.functions.invoke(
-                                'verify-razorpay-payment',
-                                {
-                                    body: {
-                                        jobId: job.id,
-                                        razorpay_order_id:
-                                            response.razorpay_order_id,
-                                        razorpay_payment_id:
-                                            response.razorpay_payment_id,
-                                        razorpay_signature:
-                                            response.razorpay_signature,
-                                        amount: Math.round(finalAmount * 100),
-                                        final_bill_amount: finalAmount
-                                    }
-                                }
-                            );
-
-                        if (
-                            verifyError ||
-                            verifyResult?.status !== 'success'
-                        ) {
-                            throw new Error(
-                                verifyError?.message ||
-                                'Payment verification failed. OTP was not released.'
-                            );
-                        }
-
-                        // Only after verified payment:
-                        this.paymentStatus = 'PAID';
-                        this.finalPayableAmount = finalAmount;
-                        this.payableAmount = finalAmount;
-                        this.otpCode = verifyResult.completion_otp || null;
-
-                        await this.refreshJobData();
-
-                        alert(
-                            `✅ Payment Successful!\n\n` +
-                            `Final Bill: ₹${finalAmount.toFixed(2)}\n\n` +
-                            `Your completion code is now available. Share it with the technician.`
-                        );
-                    } catch (err) {
-                        console.error('Payment verification error:', err);
-                        this.otpCode = null;
-
-                        alert(
-                            'Payment was received, but verification could not be completed. ' +
-                            'Please contact FixZenix support before making another payment.'
-                        );
-                    } finally {
-                        this.paymentModalOpen = false;
-                        this.paymentLoading = false;
-                    }
-                },
-
-                prefill: {
-                    name: job.customer_name || 'Customer',
-                    contact: job.phone || ''
-                },
-
-                theme: {
-                    color: '#A07D54'
-                },
-
-                modal: {
-                    ondismiss: () => {
-                        this.paymentModalOpen = false;
-                        this.paymentLoading = false;
-                    }
-                }
-            };
-
-            const rzp = new Razorpay(options);
-
-            rzp.on('payment.failed', (response) => {
-                console.error('Razorpay payment failed:', response?.error);
-                this.paymentModalOpen = false;
-                this.paymentLoading = false;
-                this.otpCode = null;
-                const reason = response?.error?.description || 'Payment failed. Please try again.';
-                alert(reason);
-            });
-
-            rzp.open();
-
-        } catch (err) {
-            console.error('Final payment error:', err);
-            this.paymentModalOpen = false;
-            this.paymentLoading = false;
-            alert(err.message || 'Could not start payment.');
+    openPaymentModal() {
+        const amount = this.finalPayableAmount || this.payableAmount || 0;
+        if (!amount || amount <= 0) {
+            alert('Payment amount is not available yet.');
+            return;
         }
+        this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(this.getUpiLink())}`;
+        this.paymentModalOpen = true;
+    },
+
+    closePaymentModal() {
+        this.paymentModalOpen = false;
     },
 
     async refreshJobData() {
@@ -419,9 +273,8 @@ Alpine.data('trackingApp', () => ({
             this.finalPayableAmount = this.calculateFinalBillAmount(job);
             this.payableAmount = this.finalPayableAmount;
 
-            this.otpCode = this.isPaymentComplete
-                ? (job.completion_otp || job.otp || this.otpCode || null)
-                : null;
+            // ✅ OTP available whenever set by the technician
+            this.otpCode = job.completion_otp || job.otp || null;
 
             this.updateBillAmounts(job);
         }
@@ -432,9 +285,6 @@ Alpine.data('trackingApp', () => ({
         this.finalPayableAmount = this.calculateFinalBillAmount(job);
         this.payableAmount = this.finalPayableAmount;
 
-        // Keep the "Additional Issue" the technician saves on job_detail in sync
-        // here too, so it shows up live on the tracking page the moment it's
-        // saved (and is guaranteed correct by the time the job is completed).
         this.additionalIssueText = job.additional_issue || '';
         this.additionalIssuePrice = Number(job.additional_issue_price || 0);
     },
@@ -446,7 +296,6 @@ Alpine.data('trackingApp', () => ({
         this.loyaltyChecked = true;
 
         try {
-            // See if this specific completion already generated a reward
             const { data: existing } = await sb
                 .from('promos')
                 .select('*')
@@ -535,7 +384,7 @@ Alpine.data('trackingApp', () => ({
 
             this.fullJobData = job;
 
-            // ✅ Fetch technician with tech_id if available
+            // Fetch technician with tech_id if available
             let techIdDisplay = 'N/A';
             if (job.tech_id) {
                 const { data: tech, error: techError } = await sb
@@ -543,7 +392,7 @@ Alpine.data('trackingApp', () => ({
                     .select('tech_id, name')
                     .eq('id', job.tech_id)
                     .single();
-                
+
                 if (!techError && tech) {
                     techIdDisplay = tech.tech_id || tech.id.slice(0,8).toUpperCase();
                     if (!this.techData) {
@@ -558,7 +407,7 @@ Alpine.data('trackingApp', () => ({
             this.billVariantName = job.variant_name || job.device || 'Service';
 
             const OTHER_LABEL = 'Other Issue';
-            const inspFee = Number(job.inspection_fee_amount || 299);
+            const inspFee = Number(job.inspection_fee_amount || 149);  // ✅ 149
             const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
             const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
             const discountAmount = Math.max(0, grossPrice - totalPrice);
@@ -571,7 +420,7 @@ Alpine.data('trackingApp', () => ({
             const fixedServiceNames = serviceNames.filter(n => n !== OTHER_LABEL);
             const hasOtherService = !!job.is_inspection_job || serviceNames.some(n => n === OTHER_LABEL);
 
-            const fixedTotal = hasOtherService ? Math.max(0, totalPrice - inspFee) : totalPrice;
+            const fixedTotal = hasOtherService ? 0 : totalPrice;
 
             let priceMap = null;
             if (job.service_price_breakdown) {
@@ -634,8 +483,6 @@ Alpine.data('trackingApp', () => ({
                 });
             }
 
-            // Additional issue the technician found and saved separately
-            // from the formal quote (job_detail "Save Issue" card).
             const additionalIssueAmount = Number(job.additional_issue_price || 0);
             const additionalIssueDesc = (job.additional_issue || '').trim();
             if (additionalIssueAmount > 0 || additionalIssueDesc) {
@@ -657,28 +504,19 @@ Alpine.data('trackingApp', () => ({
             if (hasOtherService) {
                 this.billPlatformFee = 0;
                 this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount);
-                this.billAdvancePaid = fixedTotal + inspFee;
-
-                if (quotedTotal >= inspFee) {
-                    this.billBalancePaid = (quotedTotal - inspFee) + additionalIssueAmount;
-                    this.billRefundDue = 0;
-                } else {
-                    this.billBalancePaid = additionalIssueAmount;
-                    this.billRefundDue = inspFee - quotedTotal;
-                }
+                this.billAdvancePaid = 0;          // ✅ no inspection fee paid upfront
+                this.billBalancePaid = this.billGrandTotal;
+                this.billRefundDue = 0;
             } else {
                 this.billPlatformFee = 49;
                 this.billGrandTotal = Math.max(0, this.billSubtotal - discountAmount) + this.billPlatformFee;
-                // Additional issue amount is collected on-site at completion,
-                // not part of the amount paid upfront at booking.
-                this.billAdvancePaid = Math.max(0, this.billGrandTotal - additionalIssueAmount);
-                this.billBalancePaid = additionalIssueAmount;
+                this.billAdvancePaid = 0;          // ✅ nothing paid upfront
+                this.billBalancePaid = this.billGrandTotal;
                 this.billRefundDue = 0;
             }
 
             this.billAmountInWords = this.numberToWords(this.billGrandTotal);
 
-            // ✅ Store the tech ID for display in the bill
             this.billTechId = techIdDisplay;
 
             this.$nextTick(() => {
@@ -694,7 +532,7 @@ Alpine.data('trackingApp', () => ({
     downloadPDF() {
         this.isPrinting = true;
         const element = document.getElementById('invoice-content');
-        
+
         const opt = {
             margin: 0.5,
             filename: `FixZen_Invoice_${this.jobId.slice(0,6).toUpperCase()}.pdf`,
@@ -705,7 +543,7 @@ Alpine.data('trackingApp', () => ({
 
         html2pdf().set(opt).from(element).save()
             .then(() => { this.isPrinting = false; })
-            .catch((err) => { 
+            .catch((err) => {
                 console.error(err);
                 this.isPrinting = false;
                 alert('Error generating PDF. Please try again.');
@@ -734,17 +572,17 @@ Alpine.data('trackingApp', () => ({
             .select('*')
             .eq('id', this.jobId)
             .single();
-            
+
         if (error) {
             console.error('Error fetching job:', error);
             return;
         }
-        
+
         if (job) {
             this.fullJobData = job;
             if (job.status) this.jobStatus = job.status;
             if (job.payment_status) this.paymentStatus = job.payment_status;
-            
+
             if (job.quote_status) {
                 this.quoteStatus = job.quote_status;
                 this.quoteAmount = job.quoted_amount || 0;
@@ -752,17 +590,17 @@ Alpine.data('trackingApp', () => ({
                 this.quoteLabour = job.quoted_labour || 0;
                 this.quoteMaterial = job.quoted_material || 0;
                 this.quoteExtra = job.quoted_extra || 0;
-                this.inspectionFee = job.inspection_fee_amount || 299;
+                this.inspectionFee = job.inspection_fee_amount || 149;  // ✅ 149
                 this.showQuoteCard = job.quote_status === 'submitted';
             }
-            
+
             if (job.tech_id) this.fetchTechnician(job.tech_id);
-            this.otpCode = ['PAID', 'SUCCESS', 'COMPLETED'].includes(
-                String(job.payment_status || '').toUpperCase()
-            ) ? (job.completion_otp || job.otp || null) : null;
-            
+
+            // ✅ OTP shows whenever set by the technician
+            this.otpCode = job.completion_otp || job.otp || null;
+
             this.updateBillAmounts(job);
-            
+
             if (this.jobStatus !== 'pending' && this.jobStatus !== 'searching') {
                 this.technicianFound = true;
                 if (this.timerInterval) clearInterval(this.timerInterval);
@@ -780,17 +618,17 @@ Alpine.data('trackingApp', () => ({
             .select('*')
             .eq('id', techId)
             .single();
-            
+
         if (error) {
             console.error('Error fetching technician:', error);
             return;
         }
-        
+
         if (tech) {
             this.techData = tech;
             this.technicianFound = true;
             clearInterval(this.timerInterval);
-            
+
             if(this.jobStatus !== 'completed' && !this.otpCode) {
                 this.$nextTick(() => {
                     this.initMap();
@@ -800,11 +638,11 @@ Alpine.data('trackingApp', () => ({
     },
 
     initMap() {
-        if (this.map) return; 
+        if (this.map) return;
 
         const customerLat = 21.1458;
         const customerLng = 79.0882;
-        let techLat = 21.1200; 
+        let techLat = 21.1200;
         let techLng = 79.0600;
 
         this.map = L.map('trackingMap', { zoomControl: false }).setView([customerLat, customerLng], 13);
@@ -837,7 +675,7 @@ Alpine.data('trackingApp', () => ({
                 if (this.techMarker) {
                     this.techMarker.setLatLng([techLat, techLng]);
                 }
-                
+
                 if(Math.random() > 0.7 && this.etaMins > 1) {
                     this.etaMins--;
                 }
@@ -855,9 +693,10 @@ Alpine.data('trackingApp', () => ({
 
     async acceptQuote() {
         if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
-        
-        const finalAmount = Math.max(0, this.quoteAmount - this.inspectionFee);
-        
+
+        // ✅ No inspection fee deduction — full quote is due after job
+        const finalAmount = Math.max(0, this.quoteAmount);
+
         try {
             const { error } = await sb
                 .from('jobs')
@@ -868,20 +707,20 @@ Alpine.data('trackingApp', () => ({
                     status: 'in_progress'
                 })
                 .eq('id', this.jobId);
-            
+
             if (error) throw error;
-            
+
             this.showQuoteCard = false;
             this.quoteStatus = 'approved';
-            
+
             await this.refreshJobData();
-            
+
             alert(`✅ Quote Approved!\n\n` +
                   `Total Quote: ₹${this.quoteAmount}\n` +
-                  `Inspection Fee Paid: ₹${this.inspectionFee}\n` +
                   `Amount Due After Job: ₹${finalAmount}\n\n` +
-                  `The technician will now start the repair work.`);
-            
+                  `The technician will now start the repair work. ` +
+                  `Please pay via QR after the job is completed.`);
+
         } catch (err) {
             console.error('Error approving quote:', err);
             alert("Error approving quote: " + err.message);
@@ -890,7 +729,7 @@ Alpine.data('trackingApp', () => ({
 
     async rejectQuote() {
         const reason = prompt("Please share why you're rejecting this quote (optional):");
-        
+
         try {
             const { error } = await sb
                 .from('jobs')
@@ -900,12 +739,12 @@ Alpine.data('trackingApp', () => ({
                     status: 'cancelled'
                 })
                 .eq('id', this.jobId);
-            
+
             if (error) throw error;
-            
-            alert("Quote rejected. Your booking has been closed. The inspection fee paid (₹" + this.inspectionFee + ") is non-refundable as the technician visited your location.");
+
+            alert("Quote rejected. Your booking has been closed.");
             window.location.href = 'index.html';
-            
+
         } catch (err) {
             console.error('Error rejecting quote:', err);
             alert("Error rejecting quote: " + err.message);
@@ -916,15 +755,15 @@ Alpine.data('trackingApp', () => ({
         this.feedbackRating = i;
         if (navigator.vibrate) navigator.vibrate(30);
     },
-    
+
     getFeedbackEmoji(i) {
         return ['😞','😕','😊','😄','🤩'][i-1] || '';
     },
-    
+
     getFeedbackLabel(i) {
         return ['Poor','Fair','Good','Excellent','Incredible!'][i-1] || '';
     },
-    
+
     getFeedbackTags() {
         if (this.feedbackRating >= 4) return [
             {icon:'⚡',label:'Fast Arrival'},{icon:'👔',label:'Professional'},
@@ -939,7 +778,7 @@ Alpine.data('trackingApp', () => ({
             {icon:'📵',label:'Poor Communication'},{icon:'💸',label:'Overcharged'}
         ];
     },
-    
+
     toggleFeedbackTag(tag) {
         if (this.feedbackTags.includes(tag)) {
             this.feedbackTags = this.feedbackTags.filter(t => t !== tag);
@@ -948,7 +787,7 @@ Alpine.data('trackingApp', () => ({
             if (navigator.vibrate) navigator.vibrate(20);
         }
     },
-    
+
     launchConfetti() {
         const colors = ['#A07D54','#1a1a1a','#c9a050','#f4f4f5','#fff'];
         for (let i = 0; i < 55; i++) {
@@ -962,7 +801,7 @@ Alpine.data('trackingApp', () => ({
 
     async submitFeedback() {
         if (!this.feedbackRating) return;
-        
+
         const storedPhone = localStorage.getItem('local_user_phone');
         if (!storedPhone) {
             alert("Session identity missing. Please login again.");
@@ -971,7 +810,7 @@ Alpine.data('trackingApp', () => ({
         }
 
         this.feedbackLoading = true;
-        
+
         try {
             const { data: profile, error: profileError } = await sb
                 .from('profiles')
@@ -998,12 +837,12 @@ Alpine.data('trackingApp', () => ({
             if (feedbackError) throw feedbackError;
 
             await sb.from('jobs').update({ feedback_provided: true }).eq('id', this.jobId);
-            
+
             this.feedbackStep = 'done';
             this.launchConfetti();
-            
+
             if (navigator.vibrate) navigator.vibrate([100,60,100,60,200]);
-            
+
             setTimeout(() => {
                 this.showFeedback = false;
                 this.feedbackDone = true;
