@@ -32,7 +32,7 @@ Alpine.data('trackingApp', () => ({
     paymentStatus: 'UNPAID',
     payableAmount: 0,
     finalPayableAmount: 0,
-    paymentModalOpen: false,
+
 
     quoteAmount: 0,
     quoteDescription: '',
@@ -82,10 +82,7 @@ Alpine.data('trackingApp', () => ({
     techMarker: null,
     etaMins: 12,
 
-    // ── UPI QR payment ─────────────────────────────────────
-    upiId: 'fixzenix@upi',        // 🔁 replace with your real UPI ID
-    upiName: 'FixZenix Services',
-    qrCodeUrl: '',
+    
 
     async init() {
         const params = new URLSearchParams(window.location.search);
@@ -155,10 +152,13 @@ Alpine.data('trackingApp', () => ({
                             }
                         }
 
-                        // ✅ OTP appears as soon as the technician clicks "Complete Job"
-                        if (payload.new.completion_otp || payload.new.otp) {
-                            this.otpCode = payload.new.completion_otp || payload.new.otp;
-                        }
+                        // Tech writes status="in_progress" + otp when they broadcast the code.
+                        // Show OTP as soon as the otp field exists (or when job is completed).
+                        const otpReady = ['in_progress', 'completed'].includes(
+                            String(payload.new.status || '').toLowerCase()
+                        );
+                        const incomingOtp = payload.new.completion_otp || payload.new.otp || null;
+                        this.otpCode = otpReady ? incomingOtp : null;
 
                         if (payload.new.tech_id && !this.techData) {
                             this.fetchTechnician(payload.new.tech_id);
@@ -169,94 +169,63 @@ Alpine.data('trackingApp', () => ({
             .subscribe();
     },
 
-    // ─────────────────────────────────────────────────────────
-    // PAYMENT HELPERS
-    // ─────────────────────────────────────────────────────────
+   
 
-    get isPaymentComplete() {
-        const status = String(this.paymentStatus || '').toUpperCase();
-        return ['PAID', 'SUCCESS', 'COMPLETED'].includes(status);
-    },
+   get showFinalPayment() {
+    const activeStatuses = ['arrived', 'started', 'in_progress', 'awaiting_payment'];
+    return activeStatuses.includes(this.jobStatus) &&
+           Number(this.finalPayableAmount || 0) > 0;
+},
 
-    get showFinalPayment() {
-        const activeStatuses = ['arrived', 'started', 'in_progress', 'awaiting_payment', 'completed'];
-        return activeStatuses.includes(this.jobStatus) &&
-               Number(this.finalPayableAmount || 0) > 0 &&
-               !this.otpCode;  // hide payment prompt once OTP is shown
-    },
+calculateFinalBillAmount(job) {
+    if (!job) return 0;
 
-    calculateFinalBillAmount(job) {
-        if (!job) return 0;
+    const OTHER_LABEL = 'Other Issue';
+    const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
+    const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
+    const discountAmount = Math.max(0, grossPrice - totalPrice);
 
-        const OTHER_LABEL = 'Other Issue';
-        const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
-        const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
-        const discountAmount = Math.max(0, grossPrice - totalPrice);
+    const servicesSelected = job.services_selected || job.device || '';
+    const serviceNames = servicesSelected
+        ? String(servicesSelected).split(',').map(s => s.trim()).filter(Boolean)
+        : ['Service'];
 
-        const servicesSelected = job.services_selected || job.device || '';
-        const serviceNames = servicesSelected
-            ? String(servicesSelected).split(',').map(s => s.trim()).filter(Boolean)
-            : ['Service'];
+    const hasOtherService =
+        !!job.is_inspection_job ||
+        serviceNames.some(n => n === OTHER_LABEL);
 
-        const hasOtherService =
-            !!job.is_inspection_job ||
-            serviceNames.some(n => n === OTHER_LABEL);
+    let quotedTotal = 0;
 
-        let quotedTotal = 0;
+    if (hasOtherService) {
+        const labour = Number(job.quoted_labour || 0);
+        const material = Number(job.quoted_material || 0);
+        const extra = Number(job.quoted_extra || 0);
 
-        if (hasOtherService) {
-            const labour = Number(job.quoted_labour || 0);
-            const material = Number(job.quoted_material || 0);
-            const extra = Number(job.quoted_extra || 0);
-
-            quotedTotal = Number(
-                job.quoted_amount || (labour + material + extra) || 0
-            );
-        }
-
-        const fixedTotal = hasOtherService ? 0 : totalPrice;
-        const subtotal = fixedTotal + quotedTotal;
-        const platformFee = hasOtherService ? 0 : 49;
-
-        let grandTotal =
-            Math.max(0, subtotal - discountAmount) + platformFee;
-
-        const storedFinal = Number(
-            job.customer_price ?? job.payable_amount ?? 0
+        quotedTotal = Number(
+            job.quoted_amount || (labour + material + extra) || 0
         );
+    }
 
-        if (storedFinal > 0) {
-            grandTotal = storedFinal;
-        }
+    const fixedTotal = hasOtherService ? 0 : totalPrice;
+    const subtotal = fixedTotal + quotedTotal;
+    const platformFee = hasOtherService ? 0 : 49;
 
-        const additionalIssueAmount = Number(job.additional_issue_price || 0);
-        grandTotal += additionalIssueAmount;
+    let grandTotal = Math.max(0, subtotal - discountAmount) + platformFee;
 
-        return Number(grandTotal.toFixed(2));
-    },
+    const storedFinal = Number(job.customer_price ?? job.payable_amount ?? 0);
+    if (storedFinal > 0) grandTotal = storedFinal;
 
-    // Build UPI deep-link for QR
-    getUpiLink() {
-        const amount = this.finalPayableAmount || this.payableAmount || 0;
-        if (!amount || amount <= 0) return '';
-        const note = encodeURIComponent(`FixZenix Job ${this.jobId?.slice(0,8) || ''}`);
-        const name = encodeURIComponent(this.upiName);
-        return `upi://pay?pa=${this.upiId}&pn=${name}&am=${amount.toFixed(2)}&cu=INR&tn=${note}`;
-    },
+    // ✅ The ₹149 inspection fee is NOT deducted — customer pays the
+    // full final amount via the technician's QR after work is done.
+    // The inspection fee (if applicable) is already baked into the
+    // technician's quoted amount.
 
-    openPaymentModal() {
-        const amount = this.finalPayableAmount || this.payableAmount || 0;
-        if (!amount || amount <= 0) {
-            alert('Payment amount is not available yet.');
-            return;
-        }
-        this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(this.getUpiLink())}`;
-        this.paymentModalOpen = true;
-    },
+    const additionalIssueAmount = Number(job.additional_issue_price || 0);
+    grandTotal += additionalIssueAmount;
 
-    closePaymentModal() {
-        this.paymentModalOpen = false;
-    },
+    return Number(grandTotal.toFixed(2));
+},
+
 
     async refreshJobData() {
         const { data: job } = await sb
@@ -273,8 +242,12 @@ Alpine.data('trackingApp', () => ({
             this.finalPayableAmount = this.calculateFinalBillAmount(job);
             this.payableAmount = this.finalPayableAmount;
 
-            // ✅ OTP available whenever set by the technician
-            this.otpCode = job.completion_otp || job.otp || null;
+            const otpReady = ['in_progress', 'completed'].includes(
+    String(job.status || '').toLowerCase()
+);
+this.otpCode = otpReady
+    ? (job.otp || job.completion_otp || null)
+    : null;
 
             this.updateBillAmounts(job);
         }
@@ -596,8 +569,12 @@ Alpine.data('trackingApp', () => ({
 
             if (job.tech_id) this.fetchTechnician(job.tech_id);
 
-            // ✅ OTP shows whenever set by the technician
-            this.otpCode = job.completion_otp || job.otp || null;
+          const otpReady = ['in_progress', 'completed'].includes(
+    String(job.status || '').toLowerCase()
+);
+this.otpCode = otpReady
+    ? (job.otp || job.completion_otp || null)
+    : null;
 
             this.updateBillAmounts(job);
 
@@ -692,40 +669,39 @@ Alpine.data('trackingApp', () => ({
     },
 
     async acceptQuote() {
-        if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
+    if (!confirm("Approve this quote? The technician will begin work immediately.")) return;
 
-        // ✅ No inspection fee deduction — full quote is due after job
-        const finalAmount = Math.max(0, this.quoteAmount);
+    const finalAmount = Math.max(0, this.quoteAmount);  // ✅ full quote, no deduction
 
-        try {
-            const { error } = await sb
-                .from('jobs')
-                .update({
-                    quote_status: 'approved',
-                    customer_approved: true,
-                    customer_price: finalAmount,
-                    status: 'in_progress'
-                })
-                .eq('id', this.jobId);
+    try {
+        const { error } = await sb
+            .from('jobs')
+            .update({
+                quote_status: 'approved',
+                customer_approved: true,
+                customer_price: finalAmount,
+                status: 'in_progress'
+            })
+            .eq('id', this.jobId);
 
-            if (error) throw error;
+        if (error) throw error;
 
-            this.showQuoteCard = false;
-            this.quoteStatus = 'approved';
+        this.showQuoteCard = false;
+        this.quoteStatus = 'approved';
 
-            await this.refreshJobData();
+        await this.refreshJobData();
 
-            alert(`✅ Quote Approved!\n\n` +
-                  `Total Quote: ₹${this.quoteAmount}\n` +
-                  `Amount Due After Job: ₹${finalAmount}\n\n` +
-                  `The technician will now start the repair work. ` +
-                  `Please pay via QR after the job is completed.`);
+        alert(`✅ Quote Approved!\n\n` +
+              `Total Quote: ₹${this.quoteAmount}\n` +
+              `Amount Due After Job: ₹${finalAmount}\n\n` +
+              `The technician will now start the repair work. ` +
+              `Please pay via the QR shown by your technician once the job is completed.`);
 
-        } catch (err) {
-            console.error('Error approving quote:', err);
-            alert("Error approving quote: " + err.message);
-        }
-    },
+    } catch (err) {
+        console.error('Error approving quote:', err);
+        alert("Error approving quote: " + err.message);
+    }
+},
 
     async rejectQuote() {
         const reason = prompt("Please share why you're rejecting this quote (optional):");
