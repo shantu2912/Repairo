@@ -180,52 +180,43 @@ Alpine.data('trackingApp', () => ({
 calculateFinalBillAmount(job) {
     if (!job) return 0;
 
-    const OTHER_LABEL = 'Other Issue';
+    // ── Base service price (what the customer originally booked) ──
     const grossPrice = parseFloat(job.original_price ?? job.discounted_price ?? 0);
-    const totalPrice = parseFloat(job.discounted_price ?? job.original_price ?? 0);
-    const discountAmount = Math.max(0, grossPrice - totalPrice);
+    const basePrice  = parseFloat(job.discounted_price ?? job.original_price ?? 0);
+    const discountAmount = Math.max(0, grossPrice - basePrice);
 
+    // ── Is this a pure inspection / "Other Issue" booking? ──
+    const OTHER_LABEL = 'Other Issue';
     const servicesSelected = job.services_selected || job.device || '';
     const serviceNames = servicesSelected
         ? String(servicesSelected).split(',').map(s => s.trim()).filter(Boolean)
         : ['Service'];
-
-    const hasOtherService =
-        !!job.is_inspection_job ||
+    const isInspectionJob = !!job.is_inspection_job ||
         serviceNames.some(n => n === OTHER_LABEL);
 
-    let quotedTotal = 0;
+    // ── Technician's quote for additional work ──
+    const labour   = Number(job.quoted_labour   || 0);
+    const material = Number(job.quoted_material || 0);
+    const extra    = Number(job.quoted_extra    || 0);
+    const quotedTotal = Number(
+        job.quoted_amount || (labour + material + extra) || 0
+    );
 
-    if (hasOtherService) {
-        const labour = Number(job.quoted_labour || 0);
-        const material = Number(job.quoted_material || 0);
-        const extra = Number(job.quoted_extra || 0);
-
-        quotedTotal = Number(
-            job.quoted_amount || (labour + material + extra) || 0
-        );
-    }
-
-    const fixedTotal = hasOtherService ? 0 : totalPrice;
-    const subtotal = fixedTotal + quotedTotal;
-    const platformFee = hasOtherService ? 0 : 49;
-
-    let grandTotal = Math.max(0, subtotal - discountAmount) + platformFee;
-
-    const storedFinal = Number(job.customer_price ?? job.payable_amount ?? 0);
-    if (storedFinal > 0) grandTotal = storedFinal;
-
-    // ✅ The ₹149 inspection fee is NOT deducted — customer pays the
-    // full final amount via the technician's QR after work is done.
-    // The inspection fee (if applicable) is already baked into the
-    // technician's quoted amount.
-
+    // ── Additional issue saved separately by the technician ──
     const additionalIssueAmount = Number(job.additional_issue_price || 0);
-    grandTotal += additionalIssueAmount;
+
+    // ── Platform fee only on normal fixed-price bookings ──
+    const platformFee = isInspectionJob ? 0 : 19;
+
+    // ── Sum everything ──
+    // NOTE: We deliberately do NOT use job.customer_price / job.payable_amount
+    // here. acceptQuote() writes the quote amount into customer_price, so using
+    // it as an override would wipe out the base service price.
+    let grandTotal = basePrice + quotedTotal + additionalIssueAmount;
+    grandTotal = Math.max(0, grandTotal - discountAmount) + platformFee;
 
     return Number(grandTotal.toFixed(2));
 },
-
 
     async refreshJobData() {
         const { data: job } = await sb
@@ -434,28 +425,31 @@ this.otpCode = otpReady
             }
 
             let quotedTotal = 0;
-            if (hasOtherService) {
-                const labour = Number(job.quoted_labour || 0);
+            {
+                const labour   = Number(job.quoted_labour   || 0);
                 const material = Number(job.quoted_material || 0);
-                const extra = Number(job.quoted_extra || 0);
+                const extra    = Number(job.quoted_extra    || 0);
                 quotedTotal = Number(job.quoted_amount || (labour + material + extra) || 0);
-
-                const issueDesc = job.other_issue
-                    ? job.other_issue
-                    : 'Issue diagnosed and resolved on-site by the technician.';
-
-                lineItems.push({
-                    type: 'quote',
-                    name: 'Other Service (On-Site Diagnosis & Repair)',
-                    desc: issueDesc,
-                    workDesc: job.quote_description || '',
-                    labour: labour,
-                    material: material,
-                    extra: extra,
-                    price: quotedTotal
-                });
+            
+                // Add the quote line whenever the technician actually quoted extra work,
+                // regardless of whether the original booking was a fixed-price service.
+                if (quotedTotal > 0) {
+                    const issueDesc = job.other_issue
+                        ? job.other_issue
+                        : 'Issue diagnosed and resolved on-site by the technician.';
+            
+                    lineItems.push({
+                        type: 'quote',
+                        name: 'Additional Work (On-Site Quote)',
+                        desc: issueDesc,
+                        workDesc: job.quote_description || '',
+                        labour: labour,
+                        material: material,
+                        extra: extra,
+                        price: quotedTotal
+                    });
+                }
             }
-
             const additionalIssueAmount = Number(job.additional_issue_price || 0);
             const additionalIssueDesc = (job.additional_issue || '').trim();
             if (additionalIssueAmount > 0 || additionalIssueDesc) {
