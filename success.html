@@ -113,42 +113,7 @@ Cancel Request
 </a>
 </div>
 </div>
-<div x-show="technicianFound && jobStatus !== 'completed' && jobStatus !== 'cancelled' && payableAmount > 0" class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg">
-<div class="flex items-center justify-between">
-<div>
-<p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-Final Price to Pay
-</p>
-<p class="text-3xl font-black text-brand-dark mt-1" x-text="'₹' + Number(payableAmount).toLocaleString('en-IN')"></p>
-</div>
-<div class="w-12 h-12 rounded-xl bg-[#F7F1E8] flex items-center justify-center">
-<i class="fa-solid fa-indian-rupee-sign text-brand-gold text-xl"></i>
-</div>
-</div>
-<div x-show="quoteStatus === 'approved'" class="mt-4 bg-green-50 border border-green-100 rounded-xl p-3">
-<div class="flex justify-between text-xs text-gray-600">
-<span>Approved Quote</span>
-<span class=font-bold>
-₹<span x-text="Number(quoteAmount).toLocaleString('en-IN')"></span>
-</span>
-</div>
-<div class="flex justify-between text-xs text-green-700 mt-1">
-<span>Inspection Fee Already Paid</span>
-<span class=font-bold>
-− ₹<span x-text="Number(inspectionFee).toLocaleString('en-IN')"></span>
-</span>
-</div>
-<div class="border-t border-green-200 mt-2 pt-2 flex justify-between font-black text-sm">
-<span>Balance to Pay</span>
-<span>
-₹<span x-text="Number(payableAmount).toLocaleString('en-IN')"></span>
-</span>
-</div>
-</div>
-<p class="text-[10px] text-gray-400 mt-3 text-center">
-Please Payment before sharing otp to technician.
-</p>
-</div>
+
 <!-- Payment instruction — QR is on the technician's device -->
 <div x-show="technicianFound && !otpCode && jobStatus !== 'cancelled' && payableAmount > 0" class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg" x-transition.opacity>
   <div class="flex items-center justify-between mb-3">
@@ -167,14 +132,14 @@ Please Payment before sharing otp to technician.
     </p>
     <p class="text-xs text-amber-800 leading-relaxed">
       Ask your technician to <strong>show the payment QR</strong>. Scan it with any UPI app
-      (GPay, PhonePe, Paytm, etc.) and pay the exact amount shown above.
+      (GPay) and pay the exact amount shown above.
     </p>
   </div>
 
-  <p class="text-[10px] text-gray-400 mt-3 text-center">
-    <i class="fa-solid fa-shield-check mr-1"></i>
-    Your completion code will appear here once the technician marks the job complete.
-  </p>
+<p class="text-[10px] text-gray-400 mt-3 text-center">
+  <i class="fa-solid fa-circle-info mr-1"></i>
+  Your completion code will appear here once the technician marks the job complete.
+</p>
 </div>
 <div x-show="showQuoteCard && quoteStatus === 'submitted'" class="bg-white border-2 border-brand-gold rounded-2xl p-5 mb-4 shadow-lg animate-slide-up-fade">
 <div class="text-center mb-4">
@@ -410,30 +375,7 @@ help@fixzenix.in
 </div>
 <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-xs">
 <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-receipt mr-1"></i> Payment Summary</p>
-<template x-if=isInspectionJob>
-<div class=space-y-1>
-<div class="flex justify-between text-gray-600">
-<span>Advance Paid (At Booking)</span>
-<span class="font-mono font-bold" x-text="'₹' + billAdvancePaid.toFixed(2)"></span>
-</div>
-<div class="flex justify-between text-gray-400 text-[10px] -mt-0.5">
-<span class=pl-2>incl. inspection fee credited</span>
-<span class=font-mono x-text="'₹' + billInspectionFee.toFixed(2)"></span>
-</div>
-<div class="flex justify-between text-gray-600" x-show="billBalancePaid > 0">
-<span>Balance Paid (On Completion)</span>
-<span class="font-mono font-bold" x-text="'₹' + billBalancePaid.toFixed(2)"></span>
-</div>
-<div class="flex justify-between text-red-500" x-show="billRefundDue > 0">
-<span>Refund Due to Customer</span>
-<span class="font-mono font-bold" x-text="'₹' + billRefundDue.toFixed(2)"></span>
-</div>
-<div class="flex justify-between font-black text-sm border-t border-green-200 pt-1 mt-1 text-green-700">
-<span>Total Settled</span>
-<span x-text="'₹' + (billAdvancePaid + billBalancePaid - billRefundDue).toFixed(2)"></span>
-</div>
-</div>
-</template>
+
 <template x-if=isInspectionJob>
   <div class=space-y-1>
     <div class="flex justify-between font-black text-sm text-green-700">
