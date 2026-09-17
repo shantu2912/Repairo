@@ -72,13 +72,29 @@ let lastBroadcastCoords = null;
 const LIVE_TRACKING_STATUSES = ["accepted", "assigned"];
 
 function startLiveLocationBroadcast() {
-  if (!navigator.geolocation || locationWatchId !== null) return;
+  if (locationWatchId !== null) return; // already watching
+
+  if (!navigator.geolocation) {
+    showToast("This device/browser doesn't support location sharing — customer won't see live tracking.", "warning", 5000);
+    return;
+  }
 
   locationWatchId = navigator.geolocation.watchPosition(
-    pos => broadcastLocation(pos.coords.latitude, pos.coords.longitude),
-    err => console.warn("Live location watch error:", err.message),
+    pos => {
+      console.log("[live-tracking] GPS fix:", pos.coords.latitude, pos.coords.longitude);
+      broadcastLocation(pos.coords.latitude, pos.coords.longitude);
+    },
+    err => {
+      console.warn("[live-tracking] watchPosition error:", err.code, err.message);
+      if (err.code === err.PERMISSION_DENIED) {
+        showToast("Location access is blocked. Enable it in your browser's site settings so the customer can see your live location.", "warning", 6000);
+      } else {
+        showToast("Couldn't get GPS signal for live tracking. Check your location settings.", "warning", 4200);
+      }
+    },
     { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
   );
+  console.log("[live-tracking] watchPosition started, id:", locationWatchId);
 }
 
 function stopLiveLocationBroadcast() {
@@ -103,13 +119,25 @@ async function broadcastLocation(lat, lng) {
   lastBroadcastCoords = { lat, lng };
 
   try {
-    await sb.from("jobs").update({
+    const { error } = await sb.from("jobs").update({
       tech_lat: lat,
       tech_lng: lng,
       tech_location_updated_at: new Date().toISOString()
     }).eq("id", jobId);
+
+    // IMPORTANT: supabase-js does not throw on DB/RLS errors — it resolves
+    // with { error }. Missing this check means failures fail 100% silently.
+    if (error) {
+      console.error("[live-tracking] broadcastLocation DB error:", error.message, error);
+      if (!window.__locErrorToastShown) {
+        window.__locErrorToastShown = true;
+        showToast("Live tracking isn't reaching the server: " + error.message, "error", 6000);
+      }
+    } else {
+      console.log("[live-tracking] location broadcast OK:", lat, lng);
+    }
   } catch (err) {
-    console.warn("Location broadcast failed:", err.message);
+    console.error("[live-tracking] broadcastLocation network/exception:", err.message);
   }
 }
 
@@ -355,6 +383,7 @@ async function loadJob() {
   }
 
   // ── Start/stop live GPS broadcast based on job status ──
+  console.log(`[live-tracking] job status = "${data.status}" — tracking ${LIVE_TRACKING_STATUSES.includes(data.status) ? "ENABLED" : "disabled (not en-route)"}`);
   if (LIVE_TRACKING_STATUSES.includes(data.status)) {
     startLiveLocationBroadcast();
   } else {
