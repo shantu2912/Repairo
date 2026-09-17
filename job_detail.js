@@ -60,6 +60,59 @@ let generatedOtpReference = null;
 let realtimeChannel = null;
 let jobStartTime = null;
 
+// ══════════════════════════════════════════════
+// LIVE LOCATION BROADCAST — pushes technician's real GPS to Supabase
+// so the customer's tracking map shows a real position, not a simulation.
+// ══════════════════════════════════════════════
+let locationWatchId = null;
+let lastBroadcastTime = 0;
+let lastBroadcastCoords = null;
+
+// Statuses during which the technician is still travelling and should be tracked live.
+const LIVE_TRACKING_STATUSES = ["accepted", "assigned"];
+
+function startLiveLocationBroadcast() {
+  if (!navigator.geolocation || locationWatchId !== null) return;
+
+  locationWatchId = navigator.geolocation.watchPosition(
+    pos => broadcastLocation(pos.coords.latitude, pos.coords.longitude),
+    err => console.warn("Live location watch error:", err.message),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+function stopLiveLocationBroadcast() {
+  if (locationWatchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = null;
+  }
+}
+
+async function broadcastLocation(lat, lng) {
+  const now = Date.now();
+
+  // Throttle writes: skip if barely moved (<10m) and it's been under 8s,
+  // and always enforce a hard floor of 4s between writes either way.
+  if (lastBroadcastCoords) {
+    const movedKm = calculateDistance(lat, lng, lastBroadcastCoords.lat, lastBroadcastCoords.lng);
+    if (movedKm < 0.01 && (now - lastBroadcastTime) < 8000) return;
+  }
+  if ((now - lastBroadcastTime) < 4000) return;
+
+  lastBroadcastTime = now;
+  lastBroadcastCoords = { lat, lng };
+
+  try {
+    await sb.from("jobs").update({
+      tech_lat: lat,
+      tech_lng: lng,
+      tech_location_updated_at: new Date().toISOString()
+    }).eq("id", jobId);
+  } catch (err) {
+    console.warn("Location broadcast failed:", err.message);
+  }
+}
+
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -281,6 +334,33 @@ async function loadJob() {
   jobData = data;
   setupAdditionalIssue();
 
+  // ── One-time geocode of the customer's address, cached on the job row ──
+  // This lets the customer's tracking page place its home marker at a real
+  // location instead of guessing, and saves us re-hitting Nominatim later.
+  if (data.customer_lat != null && data.customer_lng != null) {
+    destCoordsCache = { lat: Number(data.customer_lat), lng: Number(data.customer_lng) };
+  } else if (data.location) {
+    geocodeAddress(data.location).then(coords => {
+      if (!coords) return;
+      destCoordsCache = coords;
+      jobData.customer_lat = coords.lat;
+      jobData.customer_lng = coords.lng;
+      sb.from("jobs").update({
+        customer_lat: coords.lat,
+        customer_lng: coords.lng
+      }).eq("id", jobId).then(({ error }) => {
+        if (error) console.warn("Could not cache customer coordinates:", error.message);
+      });
+    });
+  }
+
+  // ── Start/stop live GPS broadcast based on job status ──
+  if (LIVE_TRACKING_STATUSES.includes(data.status)) {
+    startLiveLocationBroadcast();
+  } else {
+    stopLiveLocationBroadcast();
+  }
+
   // Quote is available for EVERY active job. A customer can report an additional
   // issue even when the original booking was a normal fixed-price service.
   const quoteCard = document.getElementById("inspectionQuoteCard");
@@ -442,6 +522,7 @@ document.getElementById("arrivedBtn").onclick = async () => {
 
     btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Arrival Confirmed</span>';
     // Stays disabled — arriving is a one-way step, prevents accidental status reversion
+    stopLiveLocationBroadcast(); // job no longer "en route" — stop pushing GPS updates
     if (navigator.vibrate) navigator.vibrate(100);
     showToast("Arrival marked!", "success", 2200);
   } catch (err) {
@@ -953,4 +1034,5 @@ window.addEventListener("beforeunload", () => {
   if (etaInterval) clearInterval(etaInterval);
   if (elapsedInterval) clearInterval(elapsedInterval);
   if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  stopLiveLocationBroadcast();
 });
