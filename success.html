@@ -77,12 +77,20 @@ Cancel Request
 </div>
 <div class="relative w-full h-48 rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-4 bg-gray-100" x-show="!otpCode && jobStatus !== 'completed'" x-transition.opacity>
 <div id=trackingMap class="w-full h-full"></div>
+<div class="absolute inset-0 z-30 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-2" x-show="!techLocationLive" x-transition.opacity>
+<i class="fa-solid fa-satellite-dish text-2xl text-brand-gold animate-pulse"></i>
+<span class="text-xs font-bold text-gray-600">Getting technician's live location…</span>
+</div>
+<div class="absolute top-3 left-3 bg-amber-500 text-white px-2.5 py-1 rounded-full shadow-lg z-20 flex items-center gap-1.5" x-show="techLocationLive && techLocationStale" x-transition.opacity>
+<i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+<span class="text-[9px] font-extrabold uppercase tracking-wide">Signal Lost</span>
+</div>
 <div class="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-full shadow-lg z-20 flex items-center gap-2 border border-gray-100">
 <span class="relative flex h-2.5 w-2.5">
 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
 </span>
-<span class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wide">ETA: <span x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? '0' : etaMins"></span> Mins</span>
+<span class="text-[10px] font-extrabold text-gray-800 uppercase tracking-wide">ETA: <span x-text="jobStatus === 'arrived' || jobStatus === 'started' || jobStatus === 'in_progress' ? '0' : (techLocationLive ? etaMins : '—')"></span> Mins</span>
 </div>
 </div>
 <div class="bg-gradient-to-b from-green-50 to-white rounded-2xl p-4 border border-green-100 shadow-sm relative mb-4" x-show="!otpCode && jobStatus !== 'completed'" x-transition.opacity>
