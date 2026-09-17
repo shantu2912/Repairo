@@ -69,7 +69,15 @@ let lastBroadcastTime = 0;
 let lastBroadcastCoords = null;
 
 // Statuses during which the technician is still travelling and should be tracked live.
-const LIVE_TRACKING_STATUSES = ["accepted", "assigned"];
+// This app has no "accepted"/"assigned" status — techniciandashboard.js's
+// acceptJob() jumps straight from "pending" to "in_progress" on acceptance.
+// "in_progress" is then reused again later for the quote-approval wait and
+// for the completion-code broadcast, so status alone can't identify "en
+// route". A technician is en route exactly when status is "in_progress"
+// AND arrived_at hasn't been set yet.
+function isTechEnRoute(job) {
+  return job.status === "in_progress" && !job.arrived_at;
+}
 
 function startLiveLocationBroadcast() {
   if (locationWatchId !== null) return; // already watching
@@ -383,8 +391,8 @@ async function loadJob() {
   }
 
   // ── Start/stop live GPS broadcast based on job status ──
-  console.log(`[live-tracking] job status = "${data.status}" — tracking ${LIVE_TRACKING_STATUSES.includes(data.status) ? "ENABLED" : "disabled (not en-route)"}`);
-  if (LIVE_TRACKING_STATUSES.includes(data.status)) {
+  console.log(`[live-tracking] status="${data.status}", arrived_at=${data.arrived_at || "null"} — tracking ${isTechEnRoute(data) ? "ENABLED" : "disabled"}`);
+  if (isTechEnRoute(data)) {
     startLiveLocationBroadcast();
   } else {
     stopLiveLocationBroadcast();
