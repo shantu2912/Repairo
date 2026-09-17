@@ -80,12 +80,15 @@ Alpine.data('trackingApp', () => ({
 
     map: null,
     techMarker: null,
+    routeLine: null,
     customerLat: null,
     customerLng: null,
     etaMins: 12,
     techLocationLive: false,
     techLocationUpdatedAt: null,
     techLocationStale: false,
+    usingRealRoute: false,
+    routeUpdatedAt: null,
 
     
 
@@ -177,17 +180,33 @@ Alpine.data('trackingApp', () => ({
                                 payload.new.tech_location_updated_at
                             );
                         }
+
+                        // Real road route computed by the technician's device (OpenRouteService)
+                        if (payload.new.route_geometry) {
+                            this.updateRoute(
+                                payload.new.route_geometry,
+                                Number(payload.new.route_distance_km),
+                                Number(payload.new.route_duration_min),
+                                payload.new.route_updated_at
+                            );
+                        }
                     }
                 }
             )
             .subscribe();
 
         // Flags the marker as stale if no GPS ping has arrived recently
-        // (e.g. technician lost signal or closed the app).
+        // (e.g. technician lost signal or closed the app). Also falls back
+        // to straight-line ETA if the real route goes stale (ORS down/quota'd).
         setInterval(() => {
-            if (!this.techLocationUpdatedAt) return;
-            const ageMs = Date.now() - new Date(this.techLocationUpdatedAt).getTime();
-            this.techLocationStale = ageMs > 45000;
+            if (this.techLocationUpdatedAt) {
+                const ageMs = Date.now() - new Date(this.techLocationUpdatedAt).getTime();
+                this.techLocationStale = ageMs > 45000;
+            }
+            if (this.routeUpdatedAt) {
+                const routeAgeMs = Date.now() - new Date(this.routeUpdatedAt).getTime();
+                if (routeAgeMs > 60000) this.usingRealRoute = false;
+            }
         }, 5000);
     },
 
@@ -660,6 +679,36 @@ this.otpCode = otpReady
         this.etaMins = distanceKm < 0.1 ? 0 : Math.max(1, Math.round((distanceKm / avgSpeed) * 60));
     },
 
+    // Draws/updates the real road route line computed by the technician's
+    // device via OpenRouteService, and uses its real duration for the ETA.
+    updateRoute(geometryJson, distanceKm, durationMin, updatedAt) {
+        if (!this.map || !geometryJson) return;
+
+        let coords;
+        try {
+            coords = JSON.parse(geometryJson);
+        } catch (e) {
+            console.warn("Could not parse route geometry:", e.message);
+            return;
+        }
+        if (!Array.isArray(coords) || coords.length < 2) return;
+
+        if (this.routeLine) {
+            this.routeLine.setLatLngs(coords);
+        } else {
+            this.routeLine = L.polyline(coords, {
+                color: '#10B981', weight: 4, opacity: 0.85, lineJoin: 'round'
+            }).addTo(this.map);
+            this.routeLine.bringToBack();
+        }
+
+        this.routeUpdatedAt = updatedAt || new Date().toISOString();
+        this.usingRealRoute = true;
+        if (Number.isFinite(durationMin)) {
+            this.etaMins = Math.max(0, Math.round(durationMin));
+        }
+    },
+
     // Called on every real GPS ping received over Supabase realtime.
     updateTechMarker(techLat, techLng, updatedAt) {
         if (!this.map || techLat == null || techLng == null) return;
@@ -674,10 +723,20 @@ this.otpCode = otpReady
             this.techMarker.setLatLng([techLat, techLng]);
         }
 
-        this.updateEtaFromCoords(techLat, techLng);
+        // Only fall back to the straight-line ETA estimate when we don't have
+        // a real (and reasonably fresh) road route — the route update itself
+        // sets a more accurate ETA, and GPS pings arrive far more often than
+        // routes, so we don't want to overwrite a good ETA with a rough one.
+        if (!this.usingRealRoute) {
+            this.updateEtaFromCoords(techLat, techLng);
+        }
 
-        if (this.customerLat != null && this.customerLng != null) {
-            const bounds = L.latLngBounds([[this.customerLat, this.customerLng], [techLat, techLng]]);
+        const bounds = this.routeLine
+            ? this.routeLine.getBounds()
+            : (this.customerLat != null && this.customerLng != null
+                ? L.latLngBounds([[this.customerLat, this.customerLng], [techLat, techLng]])
+                : null);
+        if (bounds) {
             this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
         }
     },
@@ -705,6 +764,11 @@ this.otpCode = otpReady
             className: '', iconSize: [32, 32], iconAnchor: [16, 32]
         });
         L.marker([customerLat, customerLng], {icon: customerIcon}).addTo(this.map);
+
+        // Draw the last known real route immediately if we already have one.
+        if (job.route_geometry) {
+            this.updateRoute(job.route_geometry, Number(job.route_distance_km), Number(job.route_duration_min), job.route_updated_at);
+        }
 
         // Only place the technician marker if we already have a real GPS ping.
         // Otherwise wait for the first realtime update — no simulated position.
