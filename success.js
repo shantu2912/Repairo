@@ -80,7 +80,12 @@ Alpine.data('trackingApp', () => ({
 
     map: null,
     techMarker: null,
+    customerLat: null,
+    customerLng: null,
     etaMins: 12,
+    techLocationLive: false,
+    techLocationUpdatedAt: null,
+    techLocationStale: false,
 
     
 
@@ -163,10 +168,27 @@ Alpine.data('trackingApp', () => ({
                         if (payload.new.tech_id && !this.techData) {
                             this.fetchTechnician(payload.new.tech_id);
                         }
+
+                        // Live GPS ping from the technician's device
+                        if (payload.new.tech_lat != null && payload.new.tech_lng != null) {
+                            this.updateTechMarker(
+                                Number(payload.new.tech_lat),
+                                Number(payload.new.tech_lng),
+                                payload.new.tech_location_updated_at
+                            );
+                        }
                     }
                 }
             )
             .subscribe();
+
+        // Flags the marker as stale if no GPS ping has arrived recently
+        // (e.g. technician lost signal or closed the app).
+        setInterval(() => {
+            if (!this.techLocationUpdatedAt) return;
+            const ageMs = Date.now() - new Date(this.techLocationUpdatedAt).getTime();
+            this.techLocationStale = ageMs > 45000;
+        }, 5000);
     },
 
    
@@ -608,15 +630,70 @@ this.otpCode = otpReady
         }
     },
 
+    // Falls back to the city-centre coordinates only if we truly have nothing
+    // (e.g. the address hasn't been geocoded yet). Real jobs should have
+    // customer_lat/customer_lng cached by the technician's app on load.
+    _techMarkerIcon() {
+        return L.divIcon({
+            html: `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative"><div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div><i class="fa-solid fa-truck-fast text-sm relative z-10"></i></div>`,
+            className: '', iconSize: [40, 40], iconAnchor: [20, 40]
+        });
+    },
+
+    haversineKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    },
+
+    // Mirrors the technician app's own ETA heuristic so both sides agree.
+    updateEtaFromCoords(techLat, techLng) {
+        if (this.customerLat == null || this.customerLng == null) return;
+        const distanceKm = this.haversineKm(techLat, techLng, this.customerLat, this.customerLng);
+        let avgSpeed = 28;
+        if (distanceKm > 12) avgSpeed = 48;
+        else if (distanceKm > 5) avgSpeed = 38;
+        this.etaMins = distanceKm < 0.1 ? 0 : Math.max(1, Math.round((distanceKm / avgSpeed) * 60));
+    },
+
+    // Called on every real GPS ping received over Supabase realtime.
+    updateTechMarker(techLat, techLng, updatedAt) {
+        if (!this.map || techLat == null || techLng == null) return;
+
+        this.techLocationLive = true;
+        this.techLocationStale = false;
+        this.techLocationUpdatedAt = updatedAt || new Date().toISOString();
+
+        if (!this.techMarker) {
+            this.techMarker = L.marker([techLat, techLng], { icon: this._techMarkerIcon() }).addTo(this.map);
+        } else {
+            this.techMarker.setLatLng([techLat, techLng]);
+        }
+
+        this.updateEtaFromCoords(techLat, techLng);
+
+        if (this.customerLat != null && this.customerLng != null) {
+            const bounds = L.latLngBounds([[this.customerLat, this.customerLng], [techLat, techLng]]);
+            this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        }
+    },
+
     initMap() {
         if (this.map) return;
 
-        const customerLat = 21.1458;
-        const customerLng = 79.0882;
-        let techLat = 21.1200;
-        let techLng = 79.0600;
+        const job = this.fullJobData || {};
+        const hasRealCustomerCoords = job.customer_lat != null && job.customer_lng != null;
+        const customerLat = hasRealCustomerCoords ? Number(job.customer_lat) : 21.1458;
+        const customerLng = hasRealCustomerCoords ? Number(job.customer_lng) : 79.0882;
 
-        this.map = L.map('trackingMap', { zoomControl: false }).setView([customerLat, customerLng], 13);
+        this.customerLat = customerLat;
+        this.customerLng = customerLng;
+
+        this.map = L.map('trackingMap', { zoomControl: false }).setView([customerLat, customerLng], 14);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
@@ -627,33 +704,14 @@ this.otpCode = otpReady
             html: `<div class="w-8 h-8 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white"><i class="fa-solid fa-house text-xs"></i></div>`,
             className: '', iconSize: [32, 32], iconAnchor: [16, 32]
         });
-
-        const techIcon = L.divIcon({
-            html: `<div class="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white relative"><div class="absolute inset-0 rounded-full border-4 border-green-200 animate-ping opacity-50"></div><i class="fa-solid fa-truck-fast text-sm relative z-10"></i></div>`,
-            className: '', iconSize: [40, 40], iconAnchor: [20, 40]
-        });
-
         L.marker([customerLat, customerLng], {icon: customerIcon}).addTo(this.map);
-        this.techMarker = L.marker([techLat, techLng], {icon: techIcon}).addTo(this.map);
 
-        const bounds = L.latLngBounds([[customerLat, customerLng], [techLat, techLng]]);
-        this.map.fitBounds(bounds, { padding: [30, 30] });
-
-        const interval = setInterval(() => {
-            if (this.jobStatus !== 'arrived' && this.jobStatus !== 'started' && this.jobStatus !== 'in_progress') {
-                techLat += (customerLat - techLat) * 0.08;
-                techLng += (customerLng - techLng) * 0.08;
-                if (this.techMarker) {
-                    this.techMarker.setLatLng([techLat, techLng]);
-                }
-
-                if(Math.random() > 0.7 && this.etaMins > 1) {
-                    this.etaMins--;
-                }
-            } else {
-                clearInterval(interval);
-            }
-        }, 2000);
+        // Only place the technician marker if we already have a real GPS ping.
+        // Otherwise wait for the first realtime update — no simulated position.
+        const hasRealTechCoords = job.tech_lat != null && job.tech_lng != null;
+        if (hasRealTechCoords) {
+            this.updateTechMarker(Number(job.tech_lat), Number(job.tech_lng), job.tech_location_updated_at);
+        }
     },
 
     async cancelJob() {
