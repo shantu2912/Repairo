@@ -199,6 +199,74 @@ async function geocodeAddress(address) {
   }
 }
 
+// ══════════════════════════════════════════════
+// REAL ROAD ROUTING — OpenRouteService (free tier, no card required)
+// Falls back silently to straight-line distance if it fails or is unavailable.
+// ══════════════════════════════════════════════
+const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQ1OTc5OWRiMzEwZDRlZDc4MGRhMzcyMmRhZGJiYTlmIiwiaCI6Im11cm11cjY0In0=";
+
+let lastRouteFetchTime = 0;
+let lastRouteFetchCoords = null;
+let lastRouteResult = null; // { distanceKm, durationMin, coordinates: [[lat,lng], ...] }
+
+async function fetchRoute(fromLat, fromLng, toLat, toLng) {
+  try {
+    const url = `https://api.openrouteservice.org/v2/directions/driving-car` +
+      `?api_key=${ORS_API_KEY}&start=${fromLng},${fromLat}&end=${toLng},${toLat}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.warn("[routing] ORS request failed:", res.status, await res.text().catch(() => ""));
+      return null;
+    }
+    const data = await res.json();
+    const feature = data?.features?.[0];
+    if (!feature) return null;
+
+    const distanceKm = feature.properties.summary.distance / 1000;
+    const durationMin = feature.properties.summary.duration / 60;
+    // ORS returns [lng, lat] pairs; Leaflet wants [lat, lng]
+    const coordinates = feature.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+
+    return { distanceKm, durationMin, coordinates };
+  } catch (err) {
+    console.warn("[routing] ORS fetch error:", err.message);
+    return null;
+  }
+}
+
+// Pulls a fresh route at most every ~15-20s (or when the technician has
+// moved meaningfully), and pushes it to Supabase so the customer's map can
+// draw the same road route. Never blocks the ETA display — if this fails,
+// the caller falls back to straight-line distance automatically.
+async function maybeRefreshRoute(currentLat, currentLng, destLat, destLng) {
+  const now = Date.now();
+  const movedKm = lastRouteFetchCoords
+    ? calculateDistance(currentLat, currentLng, lastRouteFetchCoords.lat, lastRouteFetchCoords.lng)
+    : Infinity;
+  const routeIsStale = (now - lastRouteFetchTime) > 20000;
+
+  if (!((movedKm > 0.05 || routeIsStale) && (now - lastRouteFetchTime) > 8000)) {
+    return; // too soon / hasn't moved enough — reuse lastRouteResult
+  }
+
+  lastRouteFetchTime = now;
+  lastRouteFetchCoords = { lat: currentLat, lng: currentLng };
+
+  const route = await fetchRoute(currentLat, currentLng, destLat, destLng);
+  if (!route) return; // keep whatever lastRouteResult we already had
+
+  lastRouteResult = route;
+
+  const { error } = await sb.from("jobs").update({
+    route_geometry: JSON.stringify(route.coordinates),
+    route_distance_km: route.distanceKm,
+    route_duration_min: route.durationMin,
+    route_updated_at: new Date().toISOString()
+  }).eq("id", jobId);
+
+  if (error) console.warn("[routing] Could not save route to Supabase:", error.message);
+}
+
 async function updateDistanceAndETA() {
   if (!jobData || !jobData.location) return;
 
@@ -211,13 +279,22 @@ async function updateDistanceAndETA() {
     }
 
     if (destCoordsCache) {
-      const distanceKm = calculateDistance(current.lat, current.lng, destCoordsCache.lat, destCoordsCache.lng);
+      // Fire-and-forget: don't let a slow/failed ORS call block the display.
+      maybeRefreshRoute(current.lat, current.lng, destCoordsCache.lat, destCoordsCache.lng);
 
-      let avgSpeed = 28;
-      if (distanceKm > 12) avgSpeed = 48;
-      else if (distanceKm > 5) avgSpeed = 38;
-
-      const etaMinutes = Math.max(1, Math.round((distanceKm / avgSpeed) * 60));
+      let distanceKm, etaMinutes;
+      if (lastRouteResult) {
+        distanceKm = lastRouteResult.distanceKm;
+        etaMinutes = Math.max(1, Math.round(lastRouteResult.durationMin));
+      } else {
+        // Fallback straight-line estimate — used until the first route
+        // arrives, or permanently if ORS is unreachable/quota'd out.
+        distanceKm = calculateDistance(current.lat, current.lng, destCoordsCache.lat, destCoordsCache.lng);
+        let avgSpeed = 28;
+        if (distanceKm > 12) avgSpeed = 48;
+        else if (distanceKm > 5) avgSpeed = 38;
+        etaMinutes = Math.max(1, Math.round((distanceKm / avgSpeed) * 60));
+      }
 
       const distanceElem = document.getElementById("distanceText");
       if (distanceKm < 0.15) {
