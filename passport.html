@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#5D5646" />
+  <title>Repair Passport · FixZenix</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-olive': '#5D5646', 'brand-gold': '#A07D54', 'brand-cream': '#F8F5F0',
+            'brand-dark': '#2D2B28', 'brand-beige': '#DFD4C3',
+            'success': '#10B981', 'warning': '#F59E0B'
+          },
+          fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'], 'serif-italic': ['Playfair Display', 'serif'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { background: #F8F5F0; }
+    .glass-card { background: rgba(255,255,255,0.85); border: 1px solid rgba(223,212,195,0.4); }
+  </style>
+</head>
+<body class="font-sans text-brand-dark">
+
+  <main class="max-w-md mx-auto p-5 space-y-5 pb-16">
+
+    <div class="text-center pt-6 pb-2">
+      <div class="w-14 h-14 bg-brand-gold/10 text-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+        <i class="fas fa-book-medical text-2xl"></i>
+      </div>
+      <h1 class="text-2xl font-black text-brand-olive">FixZenix Repair Passport&trade;</h1>
+      <p class="text-xs text-brand-dark/50 mt-1">The permanent service record for this appliance</p>
+    </div>
+
+    <div id="loadingState" class="glass-card p-8 rounded-2xl text-center text-sm text-brand-dark/40">
+      <i class="fas fa-spinner fa-spin mr-2"></i> Loading repair history…
+    </div>
+
+    <div id="errorState" class="hidden glass-card p-8 rounded-2xl text-center">
+      <i class="fas fa-circle-exclamation text-3xl text-red-300 mb-3"></i>
+      <p class="text-sm text-brand-dark/60">Couldn't find this appliance's Passport.</p>
+    </div>
+
+    <div id="passportBox" class="hidden space-y-5">
+
+      <!-- ASSET SUMMARY -->
+      <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <p class="text-[9px] uppercase tracking-wider text-brand-gold font-bold mb-1" id="assetCategory"></p>
+        <h2 class="text-xl font-extrabold text-brand-olive" id="assetLabel"></h2>
+        <p class="text-xs text-brand-dark/50 mt-1" id="assetMeta"></p>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="bg-brand-beige/15 rounded-xl p-3 text-center">
+            <p class="text-2xl font-black text-brand-olive" id="statTotalRepairs">0</p>
+            <p class="text-[9px] uppercase tracking-wider text-brand-dark/40 font-bold">Repairs on Record</p>
+          </div>
+          <div class="bg-brand-beige/15 rounded-xl p-3 text-center">
+            <p class="text-2xl font-black text-brand-olive" id="statUnderWarranty">—</p>
+            <p class="text-[9px] uppercase tracking-wider text-brand-dark/40 font-bold">Warranty Status</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div>
+        <p class="text-[10px] uppercase tracking-wider text-brand-gold font-bold mb-3 px-1">Service History</p>
+        <div id="timelineList" class="space-y-4"></div>
+        <p id="noHistoryMsg" class="hidden text-center text-sm text-brand-dark/40 py-8">No completed repairs on record yet for this appliance.</p>
+      </div>
+
+      <p class="text-center text-[9px] text-brand-dark/30 uppercase font-bold tracking-widest pt-2">
+        <i class="fas fa-lock-keyhole"></i> Verified by FixZenix
+      </p>
+    </div>
+  </main>
+
+  <script>
+    const sb = supabase.createClient(
+      "https://kzxdxnxgouthsywbsnvl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eGR4bnhnb3V0aHN5d2JzbnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMTczMzIsImV4cCI6MjA4MTg5MzMzMn0.nqzn89vmTFKVNuZPHfGRxdTg6UHT6GMud238rr49qag"
+    );
+
+    const params = new URLSearchParams(window.location.search);
+    const assetId = params.get("asset_id");
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str == null ? "" : String(str);
+      return div.innerHTML;
+    }
+
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
+    }
+
+    async function loadPassport() {
+      if (!assetId) {
+        showError();
+        return;
+      }
+
+      const { data: asset, error: assetErr } = await sb.from("assets").select("*").eq("id", assetId).single();
+      if (assetErr || !asset) {
+        showError();
+        return;
+      }
+
+      const { data: history, error: histErr } = await sb
+        .from("jobs")
+        .select("id, issue, diagnosis, parts_installed, final_amount, customer_price, quoted_amount, completed_at, warranty_until, warranty_days, is_repeat_issue, tech_id, images, after_images")
+        .eq("asset_id", assetId)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false });
+
+      if (histErr) {
+        console.warn("History load error:", histErr.message);
+      }
+      const rows = history || [];
+
+      const techIds = [...new Set(rows.map(r => r.tech_id).filter(Boolean))];
+      let techNames = {};
+      if (techIds.length > 0) {
+        const { data: techs } = await sb.from("technicians").select("id, name").in("id", techIds);
+        (techs || []).forEach(t => { techNames[t.id] = t.name; });
+      }
+
+      renderAsset(asset);
+      renderStats(rows);
+      renderTimeline(rows, techNames);
+
+      document.getElementById("loadingState").classList.add("hidden");
+      document.getElementById("passportBox").classList.remove("hidden");
+    }
+
+    function showError() {
+      document.getElementById("loadingState").classList.add("hidden");
+      document.getElementById("errorState").classList.remove("hidden");
+    }
+
+    function renderAsset(asset) {
+      document.getElementById("assetCategory").textContent = asset.category || "Appliance";
+      document.getElementById("assetLabel").textContent = asset.device_label;
+      document.getElementById("assetMeta").textContent = [
+        asset.brand, asset.model,
+        asset.purchase_year ? `Purchased ${asset.purchase_year}` : null
+      ].filter(Boolean).join(" · ") || "No additional details on file";
+    }
+
+    function renderStats(rows) {
+      document.getElementById("statTotalRepairs").textContent = rows.length;
+      const now = new Date();
+      const activeWarranty = rows.find(r => r.warranty_until && new Date(r.warranty_until) > now);
+      const warrantyEl = document.getElementById("statUnderWarranty");
+      if (activeWarranty) {
+        warrantyEl.textContent = "Active";
+        warrantyEl.className = "text-2xl font-black text-success";
+      } else {
+        warrantyEl.textContent = rows.length ? "Expired" : "—";
+        warrantyEl.className = "text-2xl font-black text-brand-dark/30";
+      }
+    }
+
+    function renderTimeline(rows, techNames) {
+      const list = document.getElementById("timelineList");
+      if (rows.length === 0) {
+        document.getElementById("noHistoryMsg").classList.remove("hidden");
+        list.innerHTML = "";
+        return;
+      }
+
+      const now = new Date();
+      list.innerHTML = rows.map(r => {
+        const cost = r.final_amount ?? r.customer_price ?? r.quoted_amount;
+        const techName = techNames[r.tech_id] || "FixZenix Technician";
+        const warrantyBadge = r.warranty_until
+          ? (new Date(r.warranty_until) > now
+              ? `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-success bg-green-50 px-2 py-0.5 rounded-full"><i class="fas fa-shield-check"></i> Warranty until ${fmtDate(r.warranty_until)}</span>`
+              : `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-brand-dark/30 bg-gray-100 px-2 py-0.5 rounded-full">Warranty expired</span>`)
+          : "";
+        const repeatBadge = r.is_repeat_issue
+          ? `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full"><i class="fas fa-rotate-left"></i> Repeat visit</span>`
+          : "";
+
+        const beforeImgs = Array.isArray(r.images) ? r.images : [];
+        const afterImgs = Array.isArray(r.after_images) ? r.after_images : [];
+        const imgRow = (beforeImgs.length || afterImgs.length) ? `
+          <div class="flex gap-2 mt-2 overflow-x-auto">
+            ${beforeImgs.map(src => `<img src="${escapeHtml(src)}" class="w-16 h-16 object-cover rounded-lg border border-brand-beige/40" alt="Before" />`).join("")}
+            ${afterImgs.map(src => `<img src="${escapeHtml(src)}" class="w-16 h-16 object-cover rounded-lg border border-success/40" alt="After" />`).join("")}
+          </div>` : "";
+
+        return `
+          <div class="glass-card p-4 rounded-2xl shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-bold text-brand-dark/60"><i class="far fa-calendar mr-1"></i>${fmtDate(r.completed_at)}</p>
+              ${cost != null ? `<p class="text-sm font-black text-brand-olive">₹${cost}</p>` : ""}
+            </div>
+            <p class="text-sm text-brand-dark"><span class="font-bold">Complaint:</span> ${escapeHtml(r.issue || "—")}</p>
+            ${r.diagnosis ? `<p class="text-sm text-brand-dark mt-1"><span class="font-bold">Diagnosis:</span> ${escapeHtml(r.diagnosis)}</p>` : ""}
+            ${r.parts_installed ? `<p class="text-sm text-brand-dark mt-1"><span class="font-bold">Parts installed:</span> ${escapeHtml(r.parts_installed)}</p>` : ""}
+            <p class="text-[11px] text-brand-dark/40 mt-1.5"><i class="fas fa-user-gear mr-1"></i>${escapeHtml(techName)}</p>
+            ${imgRow}
+            <div class="flex flex-wrap gap-1.5 mt-2.5">${warrantyBadge}${repeatBadge}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    loadPassport();
+  </script>
+</body>
+</html>
