@@ -475,6 +475,8 @@ async function loadJob() {
     stopLiveLocationBroadcast();
   }
 
+  initRepairPassport();
+
   // Quote is available for EVERY active job. A customer can report an additional
   // issue even when the original booking was a normal fixed-price service.
   const quoteCard = document.getElementById("inspectionQuoteCard");
@@ -798,24 +800,13 @@ document.getElementById("verifyOtpBtn").onclick = async () => {
           "Painter": 600, "Mason": 600, "Welder": 600, "Roofer": 600, "AC Tech": 600
         };
         const fee = BASE_FEES[jobData.category] || 450;
+        pendingCompletionFee = fee;
 
-        await sb.from("jobs").update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-          technician_fee: fee
-        }).eq("id", jobId);
-
-        localStorage.removeItem("locked_job_id");
-        window.onpopstate = null; // Unbind system locks on successful validation lifecycle
-        if (etaInterval) clearInterval(etaInterval);
-        if (elapsedInterval) clearInterval(elapsedInterval);
-        if (realtimeChannel) sb.removeChannel(realtimeChannel);
-
-        verifyBtn.innerHTML = '<i class="fas fa-circle-check"></i> Code Success!';
+        verifyBtn.innerHTML = '<i class="fas fa-circle-check"></i> Code Verified!';
         if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
 
         closeOtpBottomSheet();
-        showCompletionModal(fee);
+        openPassportCaptureSheet(); // diagnosis/parts/warranty, then this actually marks the job completed
 
     } catch (err) {
         showToast("Verification workflow terminal error: " + err.message, "error");
@@ -1141,6 +1132,304 @@ if (jobId) {
 }
 
 
+
+// ══════════════════════════════════════════════
+// FIXZENIX REPAIR PASSPORT™
+// Links this job to a persistent per-appliance asset record and surfaces
+// its full repair history to the technician before they start work.
+// ══════════════════════════════════════════════
+const passportLoading = document.getElementById("passportLoading");
+const passportLinkSection = document.getElementById("passportLinkSection");
+const passportLinkedSection = document.getElementById("passportLinkedSection");
+const passportExistingAssets = document.getElementById("passportExistingAssets");
+const passportShowNewAssetForm = document.getElementById("passportShowNewAssetForm");
+const passportNewAssetForm = document.getElementById("passportNewAssetForm");
+const passportCreateAssetBtn = document.getElementById("passportCreateAssetBtn");
+const passportHistoryList = document.getElementById("passportHistoryList");
+const passportNoHistory = document.getElementById("passportNoHistory");
+const linkedAssetLabel = document.getElementById("linkedAssetLabel");
+const linkedAssetMeta = document.getElementById("linkedAssetMeta");
+const repeatIssueBanner = document.getElementById("repeatIssueBanner");
+const repeatIssueDetail = document.getElementById("repeatIssueDetail");
+
+if (passportShowNewAssetForm) {
+  passportShowNewAssetForm.onclick = () => {
+    passportNewAssetForm.classList.toggle("hidden");
+  };
+}
+
+async function initRepairPassport() {
+  const card = document.getElementById("passportCard");
+  if (!jobData.user_id) {
+    // Guest booking with no account — can't build a persistent history for them.
+    if (card) card.classList.add("hidden");
+    return;
+  }
+  if (card) card.classList.remove("hidden");
+
+  if (jobData.asset_id) {
+    await loadLinkedAssetAndHistory(jobData.asset_id);
+  } else {
+    await loadCandidateAssets();
+  }
+}
+
+async function loadCandidateAssets() {
+  passportLoading.classList.remove("hidden");
+  passportLinkedSection.classList.add("hidden");
+
+  const { data: assets, error } = await sb
+    .from("assets")
+    .select("*")
+    .eq("user_id", jobData.user_id)
+    .order("created_at", { ascending: false });
+
+  passportLoading.classList.add("hidden");
+  passportLinkSection.classList.remove("hidden");
+
+  if (error) {
+    console.warn("[passport] Could not load assets:", error.message);
+    passportExistingAssets.innerHTML = "";
+    return;
+  }
+
+  // Same-category assets first, since that's the most likely match.
+  const sorted = [...(assets || [])].sort((a, b) => {
+    const aMatch = a.category === jobData.category ? 0 : 1;
+    const bMatch = b.category === jobData.category ? 0 : 1;
+    return aMatch - bMatch;
+  });
+
+  if (sorted.length === 0) {
+    passportExistingAssets.innerHTML = `<p class="text-xs text-brand-dark/40 py-1">No appliances on file for this customer yet.</p>`;
+    return;
+  }
+
+  passportExistingAssets.innerHTML = sorted.map(asset => `
+    <button type="button" class="w-full text-left bg-brand-beige/15 hover:bg-brand-beige/30 border border-brand-beige/30 rounded-xl p-3 transition passport-pick-asset" data-asset-id="${asset.id}">
+      <p class="text-sm font-bold text-brand-dark">${escapeHtml(asset.device_label)}</p>
+      <p class="text-[10px] text-brand-dark/40 mt-0.5">${escapeHtml([asset.category, asset.brand, asset.model].filter(Boolean).join(" · ") || "No details on file")}</p>
+    </button>
+  `).join("");
+
+  passportExistingAssets.querySelectorAll(".passport-pick-asset").forEach(btn => {
+    btn.onclick = () => linkAssetToJob(btn.dataset.assetId);
+  });
+}
+
+if (passportCreateAssetBtn) {
+  passportCreateAssetBtn.onclick = async () => {
+    const label = document.getElementById("assetLabelInput").value.trim();
+    if (!label) {
+      showToast("Give the appliance a name first.", "warning", 2400);
+      return;
+    }
+    passportCreateAssetBtn.disabled = true;
+    passportCreateAssetBtn.textContent = "Saving…";
+
+    const brand = document.getElementById("assetBrandInput").value.trim() || null;
+    const model = document.getElementById("assetModelInput").value.trim() || null;
+    const yearVal = document.getElementById("assetYearInput").value;
+    const purchase_year = yearVal ? parseInt(yearVal, 10) : null;
+
+    const { data: newAsset, error } = await sb.from("assets").insert({
+      user_id: jobData.user_id,
+      category: jobData.category || null,
+      device_label: label,
+      brand, model, purchase_year
+    }).select().single();
+
+    if (error || !newAsset) {
+      showToast("Could not save appliance: " + (error?.message || "unknown error"), "error");
+      passportCreateAssetBtn.disabled = false;
+      passportCreateAssetBtn.textContent = "Save & Link";
+      return;
+    }
+
+    await linkAssetToJob(newAsset.id);
+  };
+}
+
+async function linkAssetToJob(assetId) {
+  const { error } = await sb.from("jobs").update({ asset_id: assetId }).eq("id", jobId);
+  if (error) {
+    showToast("Could not link appliance: " + error.message, "error");
+    return;
+  }
+  jobData.asset_id = assetId;
+  await loadLinkedAssetAndHistory(assetId);
+}
+
+async function loadLinkedAssetAndHistory(assetId) {
+  passportLoading.classList.remove("hidden");
+  passportLinkSection.classList.add("hidden");
+  passportLinkedSection.classList.add("hidden");
+
+  const { data: asset, error: assetErr } = await sb.from("assets").select("*").eq("id", assetId).single();
+  if (assetErr || !asset) {
+    console.warn("[passport] Could not load asset:", assetErr?.message);
+    passportLoading.classList.add("hidden");
+    return;
+  }
+
+  const { data: history, error: histErr } = await sb
+    .from("jobs")
+    .select("id, issue, diagnosis, parts_installed, final_amount, customer_price, quoted_amount, completed_at, warranty_until, is_repeat_issue, tech_id")
+    .eq("asset_id", assetId)
+    .eq("status", "completed")
+    .neq("id", jobId)
+    .order("completed_at", { ascending: false });
+
+  if (histErr) console.warn("[passport] Could not load history:", histErr.message);
+
+  const historyRows = history || [];
+
+  // Resolve technician names for the history rows in one batch query.
+  const techIds = [...new Set(historyRows.map(h => h.tech_id).filter(Boolean))];
+  let techNames = {};
+  if (techIds.length > 0) {
+    const { data: techs } = await sb.from("technicians").select("id, name").in("id", techIds);
+    (techs || []).forEach(t => { techNames[t.id] = t.name; });
+  }
+
+  passportLoading.classList.add("hidden");
+  passportLinkedSection.classList.remove("hidden");
+
+  linkedAssetLabel.textContent = asset.device_label;
+  linkedAssetMeta.textContent = [asset.category, asset.brand, asset.model, asset.purchase_year ? `~${new Date().getFullYear() - asset.purchase_year} yrs old` : null]
+    .filter(Boolean).join(" · ");
+
+  // Warranty callback check: most recent history entry still under warranty.
+  const now = new Date();
+  const activeWarrantyEntry = historyRows.find(h => h.warranty_until && new Date(h.warranty_until) > now);
+  if (activeWarrantyEntry && !jobData.is_repeat_issue) {
+    const untilStr = new Date(activeWarrantyEntry.warranty_until).toLocaleDateString();
+    repeatIssueDetail.textContent = `Prior repair "${activeWarrantyEntry.diagnosis || activeWarrantyEntry.issue || "—"}" is still under warranty until ${untilStr}.`;
+    repeatIssueBanner.classList.remove("hidden");
+
+    jobData.is_repeat_issue = true;
+    jobData.repeat_of_job_id = activeWarrantyEntry.id;
+    sb.from("jobs").update({
+      is_repeat_issue: true,
+      repeat_of_job_id: activeWarrantyEntry.id
+    }).eq("id", jobId).then(({ error }) => {
+      if (error) console.warn("[passport] Could not flag repeat issue:", error.message);
+    });
+  } else {
+    repeatIssueBanner.classList.add("hidden");
+  }
+
+  if (historyRows.length === 0) {
+    passportNoHistory.classList.remove("hidden");
+    passportHistoryList.innerHTML = "";
+    return;
+  }
+  passportNoHistory.classList.add("hidden");
+
+  passportHistoryList.innerHTML = historyRows.map(h => {
+    const cost = h.final_amount ?? h.customer_price ?? h.quoted_amount;
+    const dateStr = h.completed_at ? new Date(h.completed_at).toLocaleDateString() : "—";
+    const techName = techNames[h.tech_id] || "Technician";
+    const warrantyBadge = h.warranty_until
+      ? (new Date(h.warranty_until) > now
+          ? `<span class="text-[9px] font-bold text-green-600">Under warranty until ${new Date(h.warranty_until).toLocaleDateString()}</span>`
+          : `<span class="text-[9px] text-brand-dark/30">Warranty expired</span>`)
+      : "";
+    const repeatTag = h.is_repeat_issue ? `<span class="text-[9px] font-bold text-amber-600 ml-1"><i class="fas fa-rotate-left"></i> Repeat</span>` : "";
+
+    return `
+      <div class="bg-brand-beige/10 border border-brand-beige/30 rounded-xl p-3">
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-[10px] font-bold text-brand-dark/60">${dateStr} · ${escapeHtml(techName)}</p>
+          ${cost != null ? `<p class="text-[10px] font-mono text-brand-dark/50">₹${cost}</p>` : ""}
+        </div>
+        <p class="text-xs text-brand-dark"><span class="font-bold">Complaint:</span> ${escapeHtml(h.issue || "—")}</p>
+        ${h.diagnosis ? `<p class="text-xs text-brand-dark mt-0.5"><span class="font-bold">Diagnosis:</span> ${escapeHtml(h.diagnosis)}</p>` : ""}
+        ${h.parts_installed ? `<p class="text-xs text-brand-dark mt-0.5"><span class="font-bold">Parts:</span> ${escapeHtml(h.parts_installed)}</p>` : ""}
+        <div class="mt-1.5">${warrantyBadge}${repeatTag}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+
+// ══════════════════════════════════════════════
+// REPAIR PASSPORT™ CAPTURE — shown after OTP verification, before the job closes
+// ══════════════════════════════════════════════
+const passportCaptureOverlay = document.getElementById("passportCaptureOverlay");
+const passportCaptureSheet = document.getElementById("passportCaptureSheet");
+const passportCaptureError = document.getElementById("passportCaptureError");
+const passportCaptureSaveBtn = document.getElementById("passportCaptureSaveBtn");
+let pendingCompletionFee = 0;
+
+function openPassportCaptureSheet() {
+  passportCaptureOverlay.classList.remove("hidden");
+  setTimeout(() => {
+    passportCaptureOverlay.classList.add("opacity-100");
+    passportCaptureSheet.classList.remove("translate-y-full");
+  }, 50);
+}
+
+function closePassportCaptureSheet() {
+  passportCaptureSheet.classList.add("translate-y-full");
+  passportCaptureOverlay.classList.remove("opacity-100");
+  setTimeout(() => passportCaptureOverlay.classList.add("hidden"), 300);
+}
+
+if (passportCaptureSaveBtn) {
+  passportCaptureSaveBtn.onclick = async () => {
+    const diagnosis = document.getElementById("passportDiagnosisInput").value.trim();
+    const partsInstalled = document.getElementById("passportPartsInput").value.trim() || null;
+    const warrantyDaysVal = document.getElementById("passportWarrantyInput").value;
+    const warrantyDays = warrantyDaysVal ? parseInt(warrantyDaysVal, 10) : 0;
+
+    if (!diagnosis) {
+      passportCaptureError.classList.remove("hidden");
+      return;
+    }
+    passportCaptureError.classList.add("hidden");
+
+    passportCaptureSaveBtn.disabled = true;
+    passportCaptureSaveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    const now = new Date();
+    const warranty_until = warrantyDays > 0
+      ? new Date(now.getTime() + warrantyDays * 86400000).toISOString()
+      : null;
+
+    try {
+      const { error } = await sb.from("jobs").update({
+        status: "completed",
+        completed_at: now.toISOString(),
+        technician_fee: pendingCompletionFee,
+        diagnosis,
+        parts_installed: partsInstalled,
+        warranty_days: warrantyDays || null,
+        warranty_until
+      }).eq("id", jobId);
+
+      if (error) throw error;
+
+      localStorage.removeItem("locked_job_id");
+      window.onpopstate = null;
+      if (etaInterval) clearInterval(etaInterval);
+      if (elapsedInterval) clearInterval(elapsedInterval);
+      if (realtimeChannel) sb.removeChannel(realtimeChannel);
+
+      closePassportCaptureSheet();
+      showCompletionModal(pendingCompletionFee);
+    } catch (err) {
+      showToast("Could not save Repair Passport entry: " + err.message, "error");
+      passportCaptureSaveBtn.disabled = false;
+      passportCaptureSaveBtn.innerHTML = '<span>Save &amp; Close Job</span> <i class="fas fa-arrow-right text-xs"></i>';
+    }
+  };
+}
 
 loadJob();
 
