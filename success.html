@@ -244,6 +244,10 @@ If you approve, the technician will start work immediately. You'll pay the remai
 </div>
 <h2 class="text-3xl font-black text-brand-dark mb-2">Job Completed!</h2>
 <p class="text-sm text-gray-500 mb-6 px-2">Thank you for choosing FixZenix. The technician has successfully verified your code and completed the service.</p>
+<a x-show="fullJobData && fullJobData.asset_id" :href="'passport.html?asset_id=' + fullJobData.asset_id" class="inline-flex items-center gap-2 mb-6 mx-1 bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-olive font-bold text-sm hover:bg-brand-beige/30 transition-all">
+<i class="fa-solid fa-book-medical text-brand-gold"></i> View This Appliance's Repair Passport&trade;
+<i class="fa-solid fa-arrow-right text-xs opacity-50"></i>
+</a>
 <div x-show=loyaltyReward x-cloak x-transition class="mb-6 mx-1 rounded-2xl p-5 text-left relative overflow-hidden" style="background:linear-gradient(135deg,#A07D54 0,#5D5646 100%)">
 <p class="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-1">
 <i class="fa-solid fa-gift mr-1"></i> 5 Services Completed — Reward Unlocked!
