@@ -274,6 +274,53 @@
         </div>
       </div>
 
+      <!-- FIXZENIX REPAIR PASSPORT™ -->
+      <div id="passportCard" class="glass-card p-5 rounded-2xl border border-brand-beige/40">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-7 h-7 rounded-lg bg-brand-gold/10 flex items-center justify-center">
+            <i class="fas fa-book-medical text-brand-gold text-xs"></i>
+          </div>
+          <p class="text-[10px] uppercase tracking-wider text-brand-gold font-bold">FixZenix Repair Passport&trade;</p>
+        </div>
+
+        <div id="passportLoading" class="text-xs text-brand-dark/40 py-2">Checking appliance history…</div>
+
+        <!-- No asset linked yet: pick an existing one or register a new appliance -->
+        <div id="passportLinkSection" class="hidden space-y-3">
+          <p class="text-xs text-brand-dark/50">Link this job to the customer's appliance to see its full repair history.</p>
+          <div id="passportExistingAssets" class="space-y-2"></div>
+          <button id="passportShowNewAssetForm" type="button" class="w-full text-xs font-bold text-brand-gold border border-dashed border-brand-gold/40 rounded-xl py-2.5 hover:bg-brand-gold/5 transition">
+            <i class="fas fa-plus"></i> Register New Appliance
+          </button>
+          <div id="passportNewAssetForm" class="hidden space-y-2 bg-brand-beige/15 rounded-xl p-3 border border-brand-beige/30">
+            <input id="assetLabelInput" type="text" placeholder="Appliance name (e.g. Kitchen AC)" class="w-full text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold" />
+            <div class="grid grid-cols-2 gap-2">
+              <input id="assetBrandInput" type="text" placeholder="Brand (optional)" class="w-full text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold" />
+              <input id="assetModelInput" type="text" placeholder="Model (optional)" class="w-full text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold" />
+            </div>
+            <input id="assetYearInput" type="number" placeholder="Purchase year (optional)" class="w-full text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold" />
+            <button id="passportCreateAssetBtn" type="button" class="w-full bg-brand-gold text-white text-xs font-bold rounded-lg py-2.5 hover:bg-brand-olive transition">Save &amp; Link</button>
+          </div>
+        </div>
+
+        <!-- Asset linked: callback banner + timeline -->
+        <div id="passportLinkedSection" class="hidden space-y-3">
+          <div id="repeatIssueBanner" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
+            <i class="fas fa-triangle-exclamation text-amber-500 mt-0.5 text-xs"></i>
+            <div class="text-xs text-amber-800">
+              <p class="font-bold">Possible warranty callback</p>
+              <p id="repeatIssueDetail" class="mt-0.5"></p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <p id="linkedAssetLabel" class="text-sm font-bold text-brand-dark truncate"></p>
+            <span id="linkedAssetMeta" class="text-[10px] text-brand-dark/40 whitespace-nowrap"></span>
+          </div>
+          <div id="passportHistoryList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+          <p id="passportNoHistory" class="hidden text-xs text-brand-dark/40">No prior repairs on record for this appliance — this will be its first Passport entry.</p>
+        </div>
+      </div>
+
       <!-- CUSTOMER + NAVIGATION -->
       <div class="glass-card p-5 rounded-2xl">
         <div class="flex items-center gap-3 mb-4">
@@ -595,6 +642,46 @@
       <p class="text-center text-[9px] text-gray-400 mt-4 uppercase font-bold tracking-widest">
         <i class="fas fa-lock-keyhole"></i> FixZen Verified Lifecycle
       </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       REPAIR PASSPORT™ CAPTURE (after OTP, before job closes)
+  ═══════════════════════════════════════════ -->
+  <div id="passportCaptureOverlay" class="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm z-[100] flex items-end justify-center hidden opacity-0 transition-opacity duration-300">
+    <div id="passportCaptureSheet" class="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 shadow-2xl border-t border-white transform translate-y-full transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
+      <div class="w-12 h-1 bg-brand-beige/60 rounded-full mx-auto mb-6"></div>
+
+      <div class="text-center mb-5">
+        <div class="w-14 h-14 bg-brand-gold/10 text-brand-gold rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <i class="fas fa-book-medical text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-brand-dark">Complete Repair Passport&trade;</h3>
+        <p class="text-xs text-gray-500 mt-1">A few quick details before closing the job — this becomes part of the appliance's permanent history.</p>
+      </div>
+
+      <div class="space-y-3 mb-5">
+        <div>
+          <label class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Diagnosis <span class="text-red-400">*</span></label>
+          <textarea id="passportDiagnosisInput" rows="2" placeholder="What was actually wrong?" class="w-full mt-1 text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold resize-none"></textarea>
+        </div>
+        <div>
+          <label class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Parts Installed</label>
+          <textarea id="passportPartsInput" rows="2" placeholder="e.g. Compressor relay, 2.5uF capacitor (optional)" class="w-full mt-1 text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold resize-none"></textarea>
+        </div>
+        <div>
+          <label class="text-[9px] uppercase tracking-wider text-brand-gold font-bold">Warranty Period (days)</label>
+          <input id="passportWarrantyInput" type="number" value="30" min="0" class="w-full mt-1 text-sm border border-brand-beige/50 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-gold" />
+        </div>
+      </div>
+
+      <div id="passportCaptureError" class="hidden text-center text-xs text-red-500 font-bold mb-3">
+        <i class="fas fa-circle-exclamation mr-1"></i> Please add a diagnosis before finishing.
+      </div>
+
+      <button id="passportCaptureSaveBtn" class="w-full py-3.5 bg-brand-gold hover:bg-brand-olive text-white rounded-xl text-sm font-black tracking-wider shadow-md transition-colors flex items-center justify-center gap-2 btn-touch">
+        <span>Save &amp; Close Job</span> <i class="fas fa-arrow-right text-xs"></i>
+      </button>
     </div>
   </div>
 
