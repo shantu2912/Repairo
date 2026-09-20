@@ -42,21 +42,25 @@
             {n:'AC Tech', cat:'Appliance', img:'acrepair7.jpg'},
             {n:'Fridge', cat:'Appliance', img:'fridge8.jpg'},
             {n:'Washing M.', cat:'Appliance', img:'washingmachine9.jpg'},
-            {n:'Microwave', cat:'Appliance', img:'microwave10.jpg'},
-            {n:'RO Filter', cat:'Appliance', img:'rofilter11.jpg'},
+            {n:'Microwave', cat:'Appliance', img:'microwave10.jpg', disabled:true},
+            {n:'RO Filter', cat:'Appliance', img:'rofilter11.jpg', disabled:true},
 
             // ELECTRONICS
-            {n:'TV / LED', cat:'Electronics', img:'tv12.jpg'},
-            {n:'CCTV', cat:'Electronics', img:'cctv13.jpg'},
+            {n:'TV / LED', cat:'Electronics', img:'tv12.jpg', disabled:true},
+            {n:'CCTV', cat:'Electronics', img:'cctv13.jpg', disabled:true},
 
             // AUTO
-            {n:'Car Mech', cat:'Auto', img:'car14.jpg'},
-            {n:'Bike Mech', cat:'Auto', img:'bike15.jpg'},
+            {n:'Car Mech', cat:'Auto', img:'car14.jpg', disabled:true},
+            {n:'Bike Mech', cat:'Auto', img:'bike15.jpg', disabled:true},
 
             // OTHER
             {n:'Pest Ctrl', cat:'Other', img:'pestctrl16.jpg'},
-            {n:'Grass Cutting', cat:'Other', img:'grasscut17.jpg'}
+            {n:'Grass Cutting', cat:'Other', img:'grasscut17.jpg', disabled:true}
         ],
+
+         // Coming Soon modal state
+         comingSoonOpen: false,
+         comingSoonServiceName: '',
 
          get filteredServices() {
              if (this.searchQuery === '') return [];
@@ -134,6 +138,17 @@
                  sessionStorage.setItem('redirect_to', url);
                  window.location.href = 'loginuser.html';
              }
+         },
+
+         // Called from every service card click. If the service is marked
+         // disabled, show the "Coming Soon" popup instead of navigating.
+         handleServiceClick(service) {
+             if (service && service.disabled) {
+                 this.comingSoonServiceName = service.n;
+                 this.comingSoonOpen = true;
+                 return;
+             }
+             this.navigate('service.html?id=' + service.n);
          },
 
          handleCartNavigation() {
@@ -399,7 +414,7 @@ Book Now →
 <div x-show="searchQuery.length > 0" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-[-10px]" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-[-10px]" @click.outside="searchQuery = ''" class="absolute top-full left-2 right-2 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-40 max-h-80 overflow-y-auto">
 <div class="divide-y divide-brand-beige/30">
 <template x-for="result in filteredServices">
-<div @click="navigate('service.html?id=' + result.n)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer transition-all group">
+<div @click="handleServiceClick(result)" class="flex items-center gap-4 p-3 hover:bg-brand-cream/50 cursor-pointer transition-all group">
 <div class="text-2xl w-12 h-12 rounded-full overflow-hidden bg-brand-cream flex items-center justify-center group-hover:scale-110 transition-transform">
 <img :src=result.img class="w-full h-full object-cover">
 </div>
@@ -407,7 +422,8 @@ Book Now →
 <p class="font-bold text-sm text-brand-dark" x-text=result.n></p>
 <p class="text-[10px] text-brand-dark/50 uppercase tracking-wider" x-text=result.cat></p>
 </div>
-<i class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold transition-all"></i>
+<span x-show="result.disabled" class="text-[9px] font-bold text-brand-gold bg-brand-gold/10 px-2 py-1 rounded-full ml-auto uppercase tracking-wider">Soon</span>
+<i x-show="!result.disabled" class="fa-solid fa-chevron-right text-xs text-brand-dark/30 ml-auto group-hover:text-brand-gold transition-all"></i>
 </div>
 </template>
 </div>
@@ -451,11 +467,15 @@ Book Now →
             <div class="grid grid-cols-3 gap-3">
               <template x-for="service in masterList.filter(item => item.cat === section.category)" :key="service.n">
                 <button type="button"
-                  @click="navigate('service.html?id=' + service.n)"
+                  @click="handleServiceClick(service)"
                   class="service-card cursor-pointer text-left">
-                  <div class="bg-white rounded-2xl p-3 shadow-premium hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+                  <div class="bg-white rounded-2xl p-3 shadow-premium transition-all duration-300 relative overflow-hidden"
+                       :class="service.disabled ? 'opacity-60' : 'hover:shadow-card-hover hover:-translate-y-1'">
                     <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-brand-cream to-white">
-                      <img :src="service.img" :alt="service.n" class="w-full h-full object-cover transition-transform duration-500">
+                      <img :src="service.img" :alt="service.n" class="w-full h-full object-cover transition-transform duration-500" :class="service.disabled ? 'grayscale' : ''">
+                      <div x-show="service.disabled" class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span class="text-white text-[9px] font-black uppercase tracking-wider bg-brand-gold/90 px-2 py-1 rounded-full">Coming Soon</span>
+                      </div>
                     </div>
                     <div class="text-center mt-2">
                       <span class="text-[11px] font-semibold text-brand-dark" x-text="service.n"></span>
@@ -573,6 +593,27 @@ Online Assistant
 ➤
 </button>
 </div>
+</div>
+</div>
+<!-- Coming Soon Modal -->
+<div x-show="comingSoonOpen" x-transition.opacity @keydown.escape.window="comingSoonOpen = false" class="fixed inset-0 z-[95] flex items-center justify-center px-6" style="display:none">
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="comingSoonOpen = false"></div>
+<div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 text-center animate-fade-in-scale">
+<button @click="comingSoonOpen = false" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-brand-cream flex items-center justify-center text-brand-dark hover:rotate-90 transition-all duration-300">
+<i class="fa-solid fa-xmark"></i>
+</button>
+<div class="w-16 h-16 mx-auto rounded-full bg-brand-gold/10 flex items-center justify-center mb-4">
+<i class="fa-solid fa-clock text-2xl text-brand-gold"></i>
+</div>
+<h3 class="font-sans font-bold text-lg text-brand-olive mb-1">
+<span x-text="comingSoonServiceName"></span> Service Coming Soon
+</h3>
+<p class="text-sm text-brand-dark/60 leading-relaxed mb-5">
+Sorry for the inconvenience! This service will be available for booking within the next <span class="font-bold text-brand-gold">30 days</span>. We're working hard to bring it to you.
+</p>
+<button @click="comingSoonOpen = false" class="w-full py-3 rounded-xl bg-brand-olive text-white font-bold text-sm hover:bg-brand-dark transition-all">
+Okay, Got It
+</button>
 </div>
 </div>
 <script type=module src=./app.js></script>
