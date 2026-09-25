@@ -225,6 +225,24 @@ const servicesDB = {
             { n: "Other Painting Issue", p: 199, op: 249, d: "Can't find your problem? Expert inspection. Fee adjusted in final bill if work is approved.", is_inspection: true, popular: false }
         ]
     },
+    "solar": {
+    name: "Expert Solar Service",
+    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800",
+    desc: "Professional solar panel installation, maintenance, cleaning and repair services for homes and businesses.",
+    icon: "fa-solar-panel",
+    subs: [
+        { n: "Solar Panel Inspection", p: 199, op: 299, d: "Complete solar panel system inspection and fault diagnosis.", duration: "30-45 min", warranty: "N/A", material: false, is_inspection: true, popular: true },
+        { n: "Solar Panel Cleaning", p: 299, op: 399, d: "Professional cleaning of solar panels for better performance.", duration: "45-60 min", warranty: "7 Days", material: false, popular: true },
+        { n: "Solar Panel Installation", p: 1499, op: 1999, d: "Professional installation of customer-supplied solar panels.", duration: "2-4 hours", warranty: "30 Days", material: false, popular: true },
+        { n: "Solar Panel Removal", p: 999, op: 1299, d: "Safe removal of existing solar panels.", duration: "1-2 hours", warranty: "N/A", material: false },
+        { n: "Solar Wiring Repair", p: 399, op: 549, d: "Repair faulty solar wiring and connections.", duration: "45-60 min", warranty: "30 Days", material: false },
+        { n: "Solar Inverter Installation", p: 699, op: 899, d: "Installation and connection of solar inverter.", duration: "60-90 min", warranty: "30 Days", material: false },
+        { n: "Solar Inverter Repair", p: 499, op: 699, d: "Diagnosis and repair of solar inverter issues.", duration: "45-60 min", warranty: "30 Days", material: false },
+        { n: "Solar Battery Connection", p: 399, op: 549, d: "Solar battery wiring and connection service.", duration: "45-60 min", warranty: "30 Days", material: false },
+        { n: "Solar System Maintenance", p: 599, op: 799, d: "Complete solar system maintenance and performance check.", duration: "60-90 min", warranty: "30 Days", material: false },
+        { n: "Other Solar Issue", p: 199, op: 299, d: "Expert inspection for any solar-related problem.", duration: "30-45 min", warranty: "N/A", material: false, is_inspection: true }
+    ]
+},
     "mason": {
         name: "Expert Masonry Work",
         image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=800",
