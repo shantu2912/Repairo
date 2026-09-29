@@ -135,6 +135,30 @@ loyaltyMessage: '',
     );
 },
 
+        loadLoyaltyStatus() {
+
+    this.noOfServices =
+        Number(this.user?.no_of_services || 0);
+
+    const loyaltyOffers = {
+        10: 10,
+        20: 10,
+        35: 10,
+        50: 12,
+        75: 10,
+        100: 12
+    };
+
+    this.loyaltyDiscountPercent =
+        loyaltyOffers[this.noOfServices] || 0;
+
+    this.loyaltyUnlocked =
+        this.loyaltyDiscountPercent > 0;
+},
+
+        this.user = profile;
+        this.loadLoyaltyStatus();
+
         get totalDiscountAmount() {
 
     return Math.min(
@@ -687,6 +711,44 @@ Verified Pro
 </div>
 <div class="px-5 mt-6">
 <div class="flex justify-between items-end mb-4">
+
+        <div
+    x-show="loyaltyUnlocked"
+    x-cloak
+    class="mx-4 mb-4 rounded-2xl border border-green-200
+           bg-green-50 p-4"
+>
+    <div class="flex items-start gap-3">
+
+        <div class="text-2xl">
+            🎉
+        </div>
+
+        <div>
+
+            <h3 class="font-bold text-green-700">
+                Fixzenix Loyal Customer Offer
+            </h3>
+
+            <p class="text-sm text-green-700 mt-1">
+                You have completed
+                <strong x-text="noOfServices"></strong>
+                services with Fixzenix.
+            </p>
+
+            <p class="text-sm text-green-700 mt-1">
+                You are eligible for a
+                <strong
+                    x-text="loyaltyDiscountPercent + '%'"
+                ></strong>
+                flat discount on your next service.
+            </p>
+
+        </div>
+
+    </div>
+</div>
+        
 <div>
 <h3 class="font-bold text-lg text-brand-olive flex items-center gap-2">
 <i class="fas fa-list-check text-brand-gold"></i>
