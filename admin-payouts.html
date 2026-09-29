@@ -148,12 +148,20 @@ async function loadPayouts(){
 const { data, error } = await sb
 .from("jobs")
 .select(`
-  id,
-  technician_fee,
-  category,
-  status,
-  payout_status,
-  technicians!jobs_tech_fk(name, phone)
+    id,
+    technician_fee,
+    category,
+    status,
+    payout_status,
+    original_price,
+    discounted_price,
+    loyalty_discount_percent,
+    loyalty_discount_amount,
+    commission_rate,
+    gross_commission,
+    commission_discount_absorbed,
+    net_commission,
+    technicians!jobs_tech_fk(name, phone)
 `)
 .eq("status","completed")
 .order("created_at",{ascending:false});
@@ -181,7 +189,14 @@ jobs.forEach(j=>{
 
 const paid = j.payout_status === "paid"
 const fee = j.technician_fee || 0
+const grossCommission =
+    Number(j.gross_commission || 0);
 
+const loyaltyDiscount =
+    Number(j.loyalty_discount_amount || 0);
+
+const netCommission =
+    Number(j.net_commission || 0);
 list.innerHTML += `
 
 <tr class="border-t hover:bg-gray-50">
@@ -211,7 +226,49 @@ ID: ${j.id.substring(0,8)}
 <td class="p-5 font-bold text-[#5D5646]">
 ₹${fee}
 </td>
+<td class="p-5">
 
+    <div class="text-sm font-bold">
+        Customer: ₹${j.discounted_price || 0}
+    </div>
+
+    <div class="text-xs text-gray-500">
+        Original: ₹${j.original_price || 0}
+    </div>
+
+    ${
+        loyaltyDiscount > 0
+        ? `
+        <div class="text-xs text-green-600 font-semibold mt-1">
+            Loyalty: ${j.loyalty_discount_percent}% OFF
+            (-₹${loyaltyDiscount})
+        </div>
+        `
+        : ''
+    }
+
+</td>
+<td class="p-5">
+
+    <div class="text-sm">
+        Gross: ₹${grossCommission.toFixed(2)}
+    </div>
+
+    ${
+        loyaltyDiscount > 0
+        ? `
+        <div class="text-xs text-red-500">
+            Loyalty absorbed: -₹${loyaltyDiscount.toFixed(2)}
+        </div>
+        `
+        : ''
+    }
+
+    <div class="font-bold text-[#5D5646]">
+        Net Commission: ₹${netCommission.toFixed(2)}
+    </div>
+
+</td>
 <td class="p-5 text-center">
 
 <span class="px-3 py-1 text-xs rounded-full
