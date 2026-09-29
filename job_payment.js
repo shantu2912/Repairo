@@ -47,7 +47,14 @@
                 },
 
                 async verifyPayment() {
-                    const confirmed = confirm("Are you sure you have received ₹" + this.calculateFee(this.job) + "?");
+                    const customerBill =
+    this.calculateCustomerBill(this.job);
+
+const confirmed = confirm(
+    "Are you sure you have received ₹" +
+    customerBill +
+    "?"
+);
                     if (!confirmed) return;
 
                     const { error } = await window.sb
@@ -91,6 +98,18 @@
                     const BASE = { "Carpenter": 800, "Plumber": 600, "Electrician": 600, "AC Tech": 600 };
                     return BASE[job.category] ?? 400;
                 },
+
+                    calculateCustomerBill(job) {
+
+    if (!job) return 0;
+
+    return Number(
+        job.discounted_price ??
+        job.original_price ??
+        0
+    );
+
+},
 
                 goBack() {
                     window.location.href = 'techniciandashboard.html';
