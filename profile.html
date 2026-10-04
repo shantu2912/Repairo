@@ -192,16 +192,7 @@
 </button>
 </div>
 </div>
-<div x-show=!referredBy class="p-4 bg-[#F4F1EA] rounded-2xl space-y-2">
-<p class="text-[10px] font-extrabold uppercase tracking-wider text-gray-600">Have a Friend's Referral Code?</p>
-<div class="flex gap-2">
-<input type=text x-model=inputReferralCode placeholder="Enter Code (e.g. TANMAY892)" class="flex-1 px-3.5 py-2.5 bg-white rounded-xl border border-gray-200 text-xs font-mono font-bold uppercase text-gray-900">
-<button type=button @click=applyReferralCode() :disabled=applyingCode class="px-4 py-2.5 brand-gradient text-white text-xs font-extrabold rounded-xl cursor-pointer active:scale-95 transition-all">
-<span x-show=!applyingCode>Apply</span>
-<span x-show=applyingCode><i class="fa-solid fa-spinner fa-spin"></i></span>
-</button>
-</div>
-</div>
+
 <div x-show=referredBy class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2 text-emerald-800 text-xs font-bold">
 <i class="fa-solid fa-circle-check text-emerald-600"></i>
 <span>Referred by: <span class=font-mono x-text=referredBy></span></span>
